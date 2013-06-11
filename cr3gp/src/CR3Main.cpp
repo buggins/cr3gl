@@ -6,6 +6,7 @@ CR3Main game;
 CR3Main::CR3Main()
     : _scene(NULL)
 {
+	//getConfig();
 }
 
 void CR3Main::initialize()
@@ -73,6 +74,9 @@ void CR3Main::keyEvent(Keyboard::KeyEvent evt, int key)
         case Keyboard::KEY_ESCAPE:
             exit();
             break;
+		case Keyboard::KEY_RETURN:
+			//Platform::
+            break;
         }
     }
 }
@@ -88,4 +92,9 @@ void CR3Main::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int conta
     case Touch::TOUCH_MOVE:
         break;
     };
+}
+
+void CR3Main::resizeEvent(unsigned int width, unsigned int height)
+{
+	Game::resizeEvent(width, height);
 }

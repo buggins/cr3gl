@@ -49,6 +49,8 @@ protected:
      */
     void render(float elapsedTime);
 
+	void resizeEvent(unsigned int width, unsigned int height);
+
 private:
 
     /**
