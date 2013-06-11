@@ -12,6 +12,7 @@ void CR3Main::initialize()
 {
     // Load game scene from file
     _scene = Scene::load("res/box.gpb");
+	_form = Form::create("res/ui/forms/formVerticalLayout.form"); 
 
     // Set the aspect ratio for the scene's camera to match the current resolution
     _scene->getActiveCamera()->setAspectRatio(getAspectRatio());
@@ -32,12 +33,14 @@ void CR3Main::initialize()
 void CR3Main::finalize()
 {
     SAFE_RELEASE(_scene);
+    SAFE_RELEASE(_form);
 }
 
 void CR3Main::update(float elapsedTime)
 {
     // Rotate model
     _scene->findNode("box")->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
+	_form->update(elapsedTime);
 }
 
 void CR3Main::render(float elapsedTime)
@@ -47,6 +50,7 @@ void CR3Main::render(float elapsedTime)
 
     // Visit all the nodes in the scene for drawing
     _scene->visit(this, &CR3Main::drawScene);
+	_form->draw();
 }
 
 bool CR3Main::drawScene(Node* node)
