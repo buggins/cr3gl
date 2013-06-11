@@ -254,7 +254,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../GamePlay/external-deps/lua/include;../../../GamePlay/external-deps/bullet/include;../../../GamePlay/gameplay/src;../../../GamePlay/external-deps/openal/include/AL;../../../GamePlay/external-deps/oggvorbis/include;../../../GamePlay/external-deps/libpng/include;../../../GamePlay/external-deps/zlib/include;../../../GamePlay/external-deps/glew/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../GamePlay/gameplay/src;../../../GamePlay/external-deps/libpng/include;../../../GamePlay/external-deps/zlib/include;../../../GamePlay/external-deps/glew/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

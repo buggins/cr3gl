@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E25EE815-F066-4080-9AC1-9BF07A3E3519}</ProjectGuid>
+    <RootNamespace>crengine</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:\projects\GamePlay\external-deps\libpng\include;C:\projects\GamePlay\external-deps\zlib\include;C:\projects\GamePlay\external-deps\freetype2\include;C:\projects\cr3\crengine\thirdparty\antiword;C:\projects\cr3\crengine\thirdparty\libjpeg;C:\projects\cr3\crengine\crengine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\crengine\crengine\src\chmfmt.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\cp_stats.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\crgui.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\crskin.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\crtest.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\crtxtenc.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\epubfmt.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\hist.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\hyphman.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lstridmap.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvbmpbuf.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvdocview.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvdrawbuf.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvfnt.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvfntman.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvimg.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvmemman.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvpagesplitter.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvrend.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvstream.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvstring.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvstsheet.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvstyles.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvtextfm.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvtinydom.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\lvxml.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\pdbfmt.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\props.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\rtfimp.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\s32utils.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\txtselector.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\wolutil.cpp" />
+    <ClCompile Include="..\..\..\crengine\crengine\src\wordfmt.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftheader.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftoption.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\freetype.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftadvanc.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbbox.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbdf.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbitmap.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbzip2.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftcache.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftchapters.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftcid.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fterrdef.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fterrors.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgasp.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftglyph.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgxval.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgzip.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftimage.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftincrem.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlist.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlzw.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmac.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmm.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmodapi.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmoderr.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftotval.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftoutln.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftpfr.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftrender.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsizes.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsnames.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftstroke.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsynth.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsystem.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fttrigon.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fttypes.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftxf86.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\t1tables.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ttnameid.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\tttables.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\tttags.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ttunpat.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\ft2build.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\libpng\include\png.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\crc32.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\deflate.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\gzguts.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\inffast.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\inffixed.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\inflate.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\inftrees.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\trees.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\zconf.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\zlib.h" />
+    <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\zutil.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\chmfmt.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\cp_stats.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\cr3version.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crengine.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crgui.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\cri18n.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crsetup.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crskin.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crtest.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crtrace.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\crtxtenc.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\cssdef.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\dtddef.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\big5.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\big5_2003.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\cp936ext.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\gb2312.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\gbkext1.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\gbkext2.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\jisx0213.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\encodings\ksc5601.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\epubfmt.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\fb2def.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\gammatbl.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\hist.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\hyphman.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lstridmap.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvarray.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvbmpbuf.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvdocview.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvdrawbuf.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvfnt.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvfntman.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvhashtable.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvimg.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvmemman.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvpagesplitter.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvptrvec.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvref.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvrefcache.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvrend.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvstream.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvstring.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvstsheet.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvstyles.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvtextfm.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvthread.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvtinydom.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvtypes.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\lvxml.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\pdbfmt.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\props.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\rtfcmd.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\rtfimp.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\txtselector.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\wolutil.h" />
+    <ClInclude Include="..\..\..\crengine\crengine\include\wordfmt.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
