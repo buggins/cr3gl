@@ -287,118 +287,7 @@
     <ClInclude Include="..\..\..\crengine\crengine\include\encodings\ksc5601.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\ft2build.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\freetype.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftadvanc.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbbox.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbdf.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbitmap.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftbzip2.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftcache.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftchapters.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftcid.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fterrdef.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fterrors.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgasp.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftglyph.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgxval.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftgzip.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftimage.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftincrem.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlcdfil.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlist.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftlzw.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmac.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmm.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmodapi.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftmoderr.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftotval.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftoutln.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftpfr.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftrender.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsizes.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsnames.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftstroke.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsynth.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftsystem.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fttrigon.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\fttypes.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftwinfnt.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ftxf86.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\t1tables.h">
@@ -414,21 +303,6 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\ttunpat.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftconfig.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftheader.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftmodule.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftoption.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\GamePlay\external-deps\freetype2\include\freetype\config\ftstdlib.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\GamePlay\external-deps\zlib\include\crc32.h">
