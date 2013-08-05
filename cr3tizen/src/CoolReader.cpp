@@ -9,6 +9,8 @@
 #include "CoolReader.h"
 #include "CoolReaderFrame.h"
 
+#include "glfont.h"
+
 using namespace Tizen::App;
 using namespace Tizen::Base;
 using namespace Tizen::System;
@@ -18,6 +20,10 @@ using namespace Tizen::Ui::Controls;
 CoolReaderApp::CoolReaderApp(void)
 {
 	lString16 s = L"aaa";//test
+	CRLog::setLogLevel(CRLog::LL_TRACE);
+	CRLog::debug("Starting application");
+	InitFontManager(lString8());
+	LVInitGLFontManager(fontMan);
 }
 
 CoolReaderApp::~CoolReaderApp(void)
