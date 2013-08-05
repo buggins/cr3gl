@@ -292,7 +292,7 @@ void GLDrawBuf::createFramebuffer()
 {
 	if (_textureBuf) {
 		// generate IDs
-		CRLog::debug("GLDrawBuf::createFramebuffer");
+		CRLog::debug("GLDrawBuf::createFramebuffer %dx%d", _tdx, _tdy);
 		glGenTextures(1, &_textureId);
 		if (checkError("createFramebuffer glGenTextures")) return;
 		glGenFramebuffersOES(1, &_framebufferId);
@@ -307,6 +307,8 @@ void GLDrawBuf::createFramebuffer()
 //		if (checkError("createFramebuffer glBindRenderbuffer")) return;
 
 		glBindTexture(GL_TEXTURE_2D, _textureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+		checkError("glTexImage2D");
 
 		//glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_RGBA8_OES, _tdx, _tdy);
 
@@ -320,7 +322,6 @@ void GLDrawBuf::createFramebuffer()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
 
 		//		if (_bpp == 16)
 //			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565_OES, _tdx, _tdy, 0, GL_RGB565_OES, GL_UNSIGNED_BYTE, NULL);
@@ -328,11 +329,12 @@ void GLDrawBuf::createFramebuffer()
 //			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _tdx, _tdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
+		checkError("glFramebufferTexture2DOES");
 		// Always check that our framebuffer is ok
 		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
 			CRLog::error("glFramebufferTexture2DOES failed");
 		}
-		glClearColor(0, 0, 0, 1);
+		glClearColor(0.5f, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 //		if (checkError("createFramebuffer glTexImage2D")) return;
 	}
@@ -373,12 +375,12 @@ void GLDrawBuf::beforeDrawing()
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
 		glPushMatrix();
-		glViewport(0,0,_dx,_dy);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrthof(0, _dx, _dy, 0, -1.0f, 1.0f);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+		glViewport(0,0,_dx,_dy);
+//		glMatrixMode(GL_MODELVIEW);
+//		glLoadIdentity();
 	}
 }
 

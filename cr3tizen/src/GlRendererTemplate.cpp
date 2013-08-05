@@ -89,8 +89,9 @@ GlRendererTemplate::Draw(void)
 	backbuf.beforeDrawing();
 	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
 	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
-	backbuf.FillRect(0, 0, 100, 100, 0x0055aa55);
-	backbuf.FillRect(50, 50, 270, 200, 0x4080FF00);
+	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
+	backbuf.FillRect(50, 50, 270, 200, 0x0080FF00);
+	backbuf.FillRect(0, 0, 500, 10, 0x00ffffff);
 	backbuf.afterDrawing();
 
 	glClearColor(0.5f, 0.5f, 0.7f, 1);
