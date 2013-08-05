@@ -292,6 +292,7 @@ void GLDrawBuf::createFramebuffer()
 {
 	if (_textureBuf) {
 		// generate IDs
+		CRLog::debug("GLDrawBuf::createFramebuffer");
 		glGenTextures(1, &_textureId);
 		if (checkError("createFramebuffer glGenTextures")) return;
 		glGenFramebuffersOES(1, &_framebufferId);
@@ -313,26 +314,26 @@ void GLDrawBuf::createFramebuffer()
 
 		//if (checkError("createFramebuffer glBindTexture")) return;
 		//glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT, width, height);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		if (checkError("createFramebuffer glPixelStorei")) return;
+		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		//if (checkError("createFramebuffer glPixelStorei")) return;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		if (checkError("createFramebuffer glTexParameteri")) return;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		if (_bpp == 16)
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565_OES, _tdx, _tdy, 0, GL_RGB565_OES, GL_UNSIGNED_BYTE, NULL);
-		else
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _tdx, _tdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+
+		//		if (_bpp == 16)
+//			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565_OES, _tdx, _tdy, 0, GL_RGB565_OES, GL_UNSIGNED_BYTE, NULL);
+//		else
+//			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _tdx, _tdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
 		// Always check that our framebuffer is ok
 		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
 			CRLog::error("glFramebufferTexture2DOES failed");
-			return;
 		}
-//		glClearColor(1, 1, 1, 1);
-//		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
 //		if (checkError("createFramebuffer glTexImage2D")) return;
 	}
 }
@@ -340,6 +341,7 @@ void GLDrawBuf::createFramebuffer()
 void GLDrawBuf::deleteFramebuffer()
 {
 	if (_textureBuf) {
+		CRLog::debug("GLDrawBuf::deleteFramebuffer");
 		if (_textureId != 0) {
 			glDeleteTextures(1, &_textureId);
 			checkError("deleteFramebuffer - glDeleteTextures");
@@ -349,6 +351,7 @@ void GLDrawBuf::deleteFramebuffer()
 //			checkError("deleteFramebuffer - glDeleteRenderbuffer");
 //		}
 		if (_framebufferId != 0) {
+			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
 			glDeleteFramebuffersOES(1, &_framebufferId);
 			checkError("deleteFramebuffer - glDeleteFramebuffer");
 		}
@@ -365,10 +368,17 @@ void GLDrawBuf::beforeDrawing()
 			if (_textureId == 0 || _framebufferId == 0) {
 				createFramebuffer();
 			}
+			CRLog::debug("Setting render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
+		glPushMatrix();
 		glViewport(0,0,_dx,_dy);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrthof(0, _dx, _dy, 0, -1.0f, 1.0f);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 	}
 }
 
@@ -377,9 +387,11 @@ void GLDrawBuf::afterDrawing()
 	if (--_prepareStage == 0) {
 		if (_textureBuf) {
 			//bind the base framebuffer
+			CRLog::debug("Finished render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
 		}
+		glPopMatrix();
 	}
 }
 

@@ -8,6 +8,8 @@
 #include "tizenx.h"
 #include "cr3tizen.h"
 #include "lvstring.h"
+#include "glfont.h"
+#include "gldrawbuf.h"
 
 
 class CRTizenLogger : public CRLog
@@ -15,12 +17,14 @@ class CRTizenLogger : public CRLog
 protected:
     virtual void log( const char * level, const char * msg, va_list args )
     {
+    	char buf[4096];
+    	vsnprintf(buf, 4095, msg, args);
         if (!strcmp("ERROR", level))
-        	AppLogExceptionInternal("", 0, msg, args);
+        	AppLogExceptionInternal("", 0, "%s", buf);
         else if (!strcmp("INFO", level))
-        	AppLogInternal("", 0, msg, args);
+        	AppLogInternal("", 0, "%s", buf);
         else
-        	AppLogDebugInternal("", 0, msg, args);
+        	AppLogDebugInternal("", 0, "%s", buf);
     }
 public:
     CRTizenLogger()
@@ -43,4 +47,12 @@ public:
 
 void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
+}
+
+void LVInitCoolReaderTizen() {
+	LVSetTizenLogger();
+	CRLog::info("Starting CoolReader");
+	CRLog::setLogLevel(CRLog::LL_TRACE);
+	InitFontManager(lString8());
+	LVInitGLFontManager(fontMan);
 }

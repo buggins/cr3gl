@@ -20,13 +20,7 @@ using namespace Tizen::Ui::Controls;
 
 CoolReaderApp::CoolReaderApp(void)
 {
-	LVSetTizenLogger();
-	CRLog::setLogLevel(CRLog::LL_TRACE);
-	CRLog::debug("Starting application");
-	CRLog::error("Testing error logger");
-	CRLog::info("Testing info logger");
-	InitFontManager(lString8());
-	LVInitGLFontManager(fontMan);
+	LVInitCoolReaderTizen();
 }
 
 CoolReaderApp::~CoolReaderApp(void)
@@ -76,7 +70,7 @@ CoolReaderApp::OnAppInitialized(void)
 		__player = new Tizen::Graphics::Opengl::GlPlayer;
 		__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
 
-		__player->SetFps(10);
+		__player->SetFps(2);
 		__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_RGB565);
 
 		__player->Start();

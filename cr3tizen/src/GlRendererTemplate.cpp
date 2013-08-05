@@ -82,23 +82,26 @@ GlRendererTemplate::TerminateGl(void)
 bool
 GlRendererTemplate::Draw(void)
 {
-	glClearColor(0.5f, 0.5f, 0.7f, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+	CRLog::debug("GlRendererTemplate::Draw is called");
 
 
 	GLDrawBuf backbuf(300, 400, 32, true);
 	backbuf.beforeDrawing();
 	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
 	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
+	backbuf.FillRect(0, 0, 100, 100, 0x0055aa55);
 	backbuf.FillRect(50, 50, 270, 200, 0x4080FF00);
 	backbuf.afterDrawing();
 
-	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 16, false);
+	glClearColor(0.5f, 0.5f, 0.7f, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 16, false);
 	buf.beforeDrawing();
 	buf.FillRect(100, 100, 300, 500, 0x0055aa55);
-//	buf.FillRect(200, 300, 400, 700, 0x80aa55aa);
-	buf.DrawRescaled(&backbuf, 150, 150, 300, 300, 0);
+	buf.FillRect(200, 300, 400, 700, 0x80aa55aa);
+	backbuf.DrawTo(&buf, 150, 150, 0, NULL);
+	//buf.DrawRescaled(&backbuf, 150, 150, 300, 300, 0);
 	buf.afterDrawing();
 	glFlush();
 	return true;

@@ -8,6 +8,7 @@
 #ifndef CR3TIZEN_H_
 #define CR3TIZEN_H_
 
+void LVInitCoolReaderTizen();
 void LVSetTizenLogger();
 
 
