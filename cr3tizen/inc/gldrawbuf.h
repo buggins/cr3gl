@@ -27,6 +27,7 @@ protected:
 	bool _textureBuf;
 	GLuint _textureId;
 	GLuint _framebufferId;
+	//GLuint _renderbufferId;
 	int _prepareStage;
 public:
 	virtual void createFramebuffer();
