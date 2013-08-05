@@ -13,7 +13,7 @@
 #define MAX_TEX_SIZE 4096
 static int nearestPOT(int n) {
 	for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i++) {
-		if (n >= i)
+		if (n <= i)
 			return i;
 	}
 	return MIN_TEX_SIZE;
@@ -154,7 +154,13 @@ void LVGLFillColor(lUInt32 color, float * buf, int count) {
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
 	beforeDrawing();
-	GLfloat vertices[] = {x0,y0,0, x0,y1,0, x1,y1,0, x0,y0,0, x1,y1,0, x1,y0,0};
+	GLfloat vertices[] = {
+			x0,_dy-y0,0,
+			x0,_dy-y1,0,
+			x1,_dy-y1,0,
+			x0,_dy-y0,0,
+			x1,_dy-y1,0,
+			x1,_dy-y0,0};
 	GLfloat colors[6 * 4];
 	LVGLFillColor(color, colors, 6);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -240,7 +246,7 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 		if (_textureBuf && _textureId != 0) {
 			glbuf->beforeDrawing();
 
-			LVGLDrawTexture(_textureId, x, y, x + _dx, y + _dy, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF);
+			LVGLDrawTexture(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF);
 
 			glbuf->afterDrawing();
 		} else {
@@ -259,7 +265,7 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
 			beforeDrawing();
 
-			LVGLDrawTexture(glbuf->_textureId, x, y, x + dx, y + dy, 0, 0, glbuf->_dx / (float)glbuf->_tdx, glbuf->_dy / (float)glbuf->_tdy, 0xFFFFFF);
+			LVGLDrawTexture(glbuf->_textureId, x, _dy - y - dy, x + dx, _dy - y, 0, 0, glbuf->_dx / (float)glbuf->_tdx, glbuf->_dy / (float)glbuf->_tdy, 0xFFFFFF);
 
 			afterDrawing();
 		} else {

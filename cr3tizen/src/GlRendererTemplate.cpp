@@ -99,10 +99,13 @@ GlRendererTemplate::Draw(void)
 
 	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 16, false);
 	buf.beforeDrawing();
-	buf.FillRect(100, 100, 300, 500, 0x0055aa55);
-	buf.FillRect(200, 300, 400, 700, 0x80aa55aa);
-	backbuf.DrawTo(&buf, 150, 150, 0, NULL);
-	//buf.DrawRescaled(&backbuf, 150, 150, 300, 300, 0);
+	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
+	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
+	buf.FillRect(0, 0, 500, 10, 0x000000FF);
+	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
+	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
+	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
+	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
 	buf.afterDrawing();
 	glFlush();
 	return true;
