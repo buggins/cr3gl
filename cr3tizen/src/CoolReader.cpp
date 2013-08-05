@@ -73,7 +73,7 @@ CoolReaderApp::OnAppInitialized(void)
 		__player = new Tizen::Graphics::Opengl::GlPlayer;
 		__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
 
-		__player->SetFps(60);
+		__player->SetFps(10);
 		__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_RGB565);
 
 		__player->Start();

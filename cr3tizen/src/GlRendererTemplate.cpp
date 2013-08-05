@@ -1,4 +1,5 @@
 #include "GlRendererTemplate.h"
+#include "gldrawbuf.h"
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -56,19 +57,15 @@ GlRendererTemplate::InitializeGl(void)
 
 	glShadeModel(GL_SMOOTH);
 	glViewport(0, 0, GetTargetControlWidth(), GetTargetControlHeight());
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
-	SetPerspective(60.0f, 1.0f * GetTargetControlWidth() / GetTargetControlHeight(), 1.0f, 400.0f);
-
-	glClearColor(0, 0, 0, 1);
+	glOrthof(0, GetTargetControlWidth(), GetTargetControlHeight(), 0, -1.0f, 1.0f);
+	glClearColor(1, 1, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	return true;
@@ -85,58 +82,11 @@ GlRendererTemplate::TerminateGl(void)
 bool
 GlRendererTemplate::Draw(void)
 {
-	// TODO:
-	// Draw a scene and perform what to be necessary for each scene.
-
-	static const GLfloat vertices[] =
-	{
-		ZERO, ONEP, ZERO,
-		ONEN, ONEN, ZERO,
-		ONEP, ONEN, ZERO,
-		ZERO, ONEP, ZERO,
-		ONEP, ONEN, ZERO,
-		ONEN, ONEN, ZERO
-	};
-
-	static const GLfloat vertexColor[] =
-	{
-		ONEP, ZERO, ZERO, ONEP,
-		ZERO, ONEP, ZERO, ONEP,
-		ZERO, ZERO, ONEP, ONEP,
-		ONEP, ZERO, ZERO, ONEP,
-		ZERO, ZERO, ONEP, ONEP,
-		ZERO, ONEP, ZERO, ONEP
-	};
-
-	static const unsigned short indexBuffer[] =
-	{
-		0, 1, 2, 3, 4, 5
-	};
-
-	__angle = (__angle + 10) % (360 * 3);
-
+	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 16, false);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4, GL_FLOAT, 0, vertexColor);
-
-	glMatrixMode(GL_MODELVIEW);
-	{
-		glLoadIdentity();
-		glTranslatef(0, 0, GLfloat(-5.0f));
-		glRotatef(GLfloat(__angle), 0, GLfloat(1.0f), 0);
-	}
-
-	glDrawElements(GL_TRIANGLES, 3*2, GL_UNSIGNED_SHORT, &indexBuffer[0]);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-
+	buf.FillRect(100, 100, 300, 500, 0x0055aa55);
+	buf.FillRect(200, 300, 400, 700, 0x80aa55aa);
 	glFlush();
-
 	return true;
 }
 

@@ -6,6 +6,28 @@
  */
 
 #include "gldrawbuf.h"
+#include <glext.h>
+
+
+#define MIN_TEX_SIZE 64
+#define MAX_TEX_SIZE 4096
+static int nearestPOT(int n) {
+	for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i++) {
+		if (n >= i)
+			return i;
+	}
+	return MIN_TEX_SIZE;
+}
+
+static bool checkError(const char * context) {
+	if (glGetError() != GL_NO_ERROR) {
+		CRLog::error("GLDrawBuf : GL Error at %s", context);
+		return true;
+	}
+	return false;
+}
+
+
 
 /// rotates buffer contents by specified angle
 void GLDrawBuf::Rotate( cr_rotate_angle_t angle ) {
@@ -90,7 +112,7 @@ int  GLDrawBuf::GetRowSize()
 /// fills buffer with specified color
 void GLDrawBuf::Clear( lUInt32 color )
 {
-	CRLog::error("GLDrawBuf::Clear() is not implemented");
+	FillRect(0, 0, _dx, _dy, color);
 }
 
 /// get pixel value
@@ -114,10 +136,37 @@ lUInt32 GLDrawBuf::GetInterpolatedColor(int x16, int y16)
 	return 0;
 }
 
+// utility function to fill 4-float array of vertex colors with converted CR 32bit color
+void LVGLFillColor(lUInt32 color, float * buf, int count) {
+	float r = ((color >> 16) & 255) / 255.0f;
+	float g = ((color >> 8) & 255) / 255.0f;
+	float b = ((color >> 0) & 255) / 255.0f;
+	float a = (((color >> 24) & 255) ^ 255) / 255.0f;
+	for (int i=0; i<count; i++) {
+		*buf++ = r;
+		*buf++ = g;
+		*buf++ = b;
+		*buf++ = a;
+	}
+}
+
 /// fills rectangle with specified color
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
-	CRLog::error("GLDrawBuf::FillRect() is not implemented");
+	beforeDrawing();
+	GLfloat vertices[] = {x0,y0,0, x0,y1,0, x1,y1,0, x0,y0,0, x1,y1,0, x1,y0,0};
+	GLfloat colors[6 * 4];
+	LVGLFillColor(color, colors, 6);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	glColorPointer(4, GL_FLOAT, 0, colors);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	afterDrawing();
 }
 
 /// draws rounded rectangle with specified line width, rounding radius, and color
@@ -141,7 +190,12 @@ void GLDrawBuf::InvertRect(int x0, int y0, int x1, int y1)
 /// sets new size
 void GLDrawBuf::Resize( int dx, int dy )
 {
-	CRLog::error("GLDrawBuf::Resize() is not implemented");
+	deleteFramebuffer();
+	_dx = dx;
+	_dy = dy;
+	_tdx = nearestPOT(dx);
+	_tdy = nearestPOT(dy);
+	_prepareStage = 0;
 }
 
 /// draws bitmap (1 byte per pixel) using specified palette
@@ -186,27 +240,83 @@ lUInt8 * GLDrawBuf::GetScanLine( int y )
 	return NULL;
 }
 
-/// destructor
-GLDrawBuf::~GLDrawBuf()
+void GLDrawBuf::createFramebuffer()
 {
+	if (_textureBuf) {
+		glGenTextures(1, &_textureId);
+		if (checkError("createFramebuffer glGenTextures")) return;
+		glGenFramebuffersOES(1, &_framebufferId);
+		if (checkError("createFramebuffer glGenFramebuffers")) return;
+		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
+		if (checkError("createFramebuffer glBindFramebuffer")) return;
+		glBindTexture(GL_TEXTURE_2D, _textureId);
+		if (checkError("createFramebuffer glBindTexture")) return;
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		if (checkError("createFramebuffer glPixelStorei")) return;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		if (checkError("createFramebuffer glTexParameteri")) return;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _tdx, _tdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		if (checkError("createFramebuffer glTexImage2D")) return;
+	}
 }
 
-#define MIN_TEX_SIZE 64
-#define MAX_TEX_SIZE 4096
-static int nearestPOT(int n) {
-	for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i++) {
-		if (n >= i)
-			return i;
+void GLDrawBuf::deleteFramebuffer()
+{
+	if (_textureBuf) {
+		if (_textureId != 0) {
+			glDeleteTextures(1, &_textureId);
+			checkError("deleteFramebuffer - glDeleteTextures");
+		}
+		if (_framebufferId != 0) {
+			glDeleteFramebuffersOES(1, &_framebufferId);
+			checkError("deleteFramebuffer - glDeleteFramebuffer");
+		}
+		_textureId = 0;
+		_framebufferId = 0;
 	}
-	return MIN_TEX_SIZE;
+}
+
+void GLDrawBuf::beforeDrawing()
+{
+	if (_prepareStage++ == 0) {
+		if (_textureBuf) {
+			if (_textureId == 0 || _framebufferId == 0) {
+				createFramebuffer();
+				glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
+				checkError("beforeDrawing - glFramebufferTexture2D");
+			}
+		}
+	}
+}
+
+void GLDrawBuf::afterDrawing()
+{
+	if (--_prepareStage == 0) {
+		if (_textureBuf) {
+			//bind the base framebuffer
+			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
+			checkError("afterDrawing - glBindFramebuffer");
+		}
+	}
 }
 
 /// create drawing texture of specified size
-GLDrawBuf::GLDrawBuf(int width, int height, int bpp)
+GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 : _dx(width), _dy(height),
 		_tdx(nearestPOT(width)), _tdy(nearestPOT(height)), _bpp(bpp),
 		_hidePartialGlyphs(false), _clipRect(0, 0, width, height),
-		_textColor(0x000000), _backgroundColor(0xFFFFFF)
+		_textColor(0x000000), _backgroundColor(0xFFFFFF),
+		_textureBuf(useTexture), _textureId(0), _framebufferId(0), _prepareStage(0)
 {
 
 }
+
+/// destructor
+GLDrawBuf::~GLDrawBuf()
+{
+	deleteFramebuffer();
+}
+
