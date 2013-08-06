@@ -33,6 +33,8 @@ class GLFontManager : public LVFontManager
 {
 protected:
 	LVFontManager * _base;
+	LVHashTable<LVFont *, LVFontRef> _mapByBase;
+	LVHashTable<LVFont *, LVFontRef> _mapByGl;
 public:
     /// garbage collector frees unused fonts
     virtual void gc();
@@ -70,6 +72,9 @@ public:
     /// get kerning mode: true==ON, false=OFF
     virtual void setKerning( bool kerningEnabled );
 
+    /// notification from GLFont - instance is going to close
+	virtual void removeFontInstance(LVFont * glFont);
+
     /// constructor
     GLFontManager(LVFontManager * base);
     /// destructor
@@ -101,10 +106,12 @@ bool LVInitGLFontManager(LVFontManager * base) {
 class GLFont : public LVFont
 {
 	LVFontRef _base;
+	GLFontManager * _fontMan;
 public:
 
-	GLFont(LVFontRef baseFont) {
+	GLFont(LVFontRef baseFont, GLFontManager * manager) {
 		_base = baseFont;
+		_fontMan = manager;
 	}
 
 	/// hyphenation character
@@ -246,10 +253,20 @@ public:
 
 
 
-
-    /// garbage collector frees unused fonts
+/// garbage collector frees unused fonts
 void GLFontManager::gc()
 {
+	// remove links from hash maps
+	LVHashTable<LVFont *, LVFontRef>::iterator iter = _mapByBase.forwardIterator();
+	for (;;) {
+		LVHashTable<LVFont *, LVFontRef>::pair * item = iter.next();
+		if (!item)
+			break;
+		if (item->value.getRefCount() <= 1) {
+			removeFontInstance(item->value.get());
+		}
+	}
+	// free base font instances
 	_base->gc();
 }
 
@@ -257,9 +274,24 @@ void GLFontManager::gc()
 LVFontRef GLFontManager::GetFont(int size, int weight, bool italic, css_font_family_t family, lString8 typeface, int documentId)
 {
 	LVFontRef res = _base->GetFont(size, weight, italic, family, typeface, documentId);
-	res = LVFontRef(new GLFont(res));
-	return res;
+	LVFontRef existing = _mapByBase.get(res.get());
+	if (!existing) {
+		LVFontRef f = LVFontRef(new GLFont(res, this));
+		_mapByBase.set(res.get(), f);
+		_mapByGl.set(f.get(), res);
+		return f;
+	} else {
+		return existing;
+	}
 }
+
+/// notification from GLFont - instance is going to close
+void GLFontManager::removeFontInstance(LVFont * glFont) {
+	LVFont * base = _mapByGl.get(glFont).get();
+	_mapByGl.remove(glFont);
+	_mapByBase.remove(base);
+}
+
 
 /// set fallback font face (returns true if specified font is found)
 bool GLFontManager::SetFallbackFontFace( lString8 face )
@@ -343,7 +375,7 @@ void GLFontManager::setKerning( bool kerningEnabled )
 }
 
 /// constructor
-GLFontManager::GLFontManager(LVFontManager * base) : LVFontManager(), _base(base)
+GLFontManager::GLFontManager(LVFontManager * base) : LVFontManager(), _base(base), _mapByBase(1000), _mapByGl(1000)
 {
 	CRLog::debug("Created GL Font Manager");
 }
