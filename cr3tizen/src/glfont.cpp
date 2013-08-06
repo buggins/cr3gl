@@ -7,6 +7,7 @@
 
 #include <crengine.h>
 #include "glfont.h"
+#include <gl.h>
 
 #if (USE_FREETYPE==1)
 
@@ -28,6 +29,174 @@
 
 #endif
 
+class GLGlyphCachePage;
+class GLGlyphCache;
+class GLFont;
+
+#define GL_GLYPH_CACHE_PAGE_SIZE 1024
+class GLGlyphCachePage {
+	GLGlyphCache * cache;
+	LVGrayDrawBuf * drawbuf;
+	int currentLine;
+	int nextLine;
+	int x;
+	bool closed;
+	bool needUpdateTexture;
+	GLuint textureId;
+public:
+	GLGlyphCache * getCache() { return cache; }
+	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(0), closed(false), needUpdateTexture(false), textureId(0) {
+		// create drawing buffer
+		drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
+		// init free lines
+		currentLine = nextLine = x = 0;
+	}
+	virtual ~GLGlyphCachePage() {
+		if (drawbuf)
+			delete drawbuf;
+		if (textureId != 0)
+			glDeleteTextures(1, &textureId);
+	}
+	void updateTexture() {
+		if (drawbuf == NULL)
+			return; // no draw buffer!!!
+	    if (textureId == 0) {
+			glGenTextures(1, &textureId);
+			if (glGetError() != GL_NO_ERROR)
+				return;
+	    }
+	    glBindTexture(GL_TEXTURE_2D, textureId);
+	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
+	    if (glGetError() != GL_NO_ERROR) {
+	        glDeleteTextures(1, &textureId);
+	        return;
+	    }
+	    needUpdateTexture = false;
+	    if (closed) {
+	    	delete drawbuf;
+	    	drawbuf = NULL;
+	    }
+	}
+	void drawItem(GLGlyphCacheItem * item, int x, int y, lUInt32 color) {
+		if (needUpdateTexture)
+			updateTexture();
+		if (textureId != 0) {
+			// TODO: draw
+		}
+	}
+	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {
+		if (closed)
+			return NULL;
+		// next line if necessary
+		if (x + glyph->bmp_width > GL_GLYPH_CACHE_PAGE_SIZE) {
+			// move to next line
+			currentLine = nextLine;
+			x = 0;
+		}
+		// check if no room left for glyph height
+		if (currentLine + glyph->bmp_height > GL_GLYPH_CACHE_PAGE_SIZE) {
+			closed = true;
+			return NULL;
+		}
+		GLGlyphCacheItem * cacheItem = new GLGlyphCacheItem();
+		cacheItem->x0 = x / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+		cacheItem->y0 = currentLine / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+		cacheItem->x1 = (x + glyph->bmp_width) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+		cacheItem->y1 = (currentLine + glyph->bmp_height) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+		cacheItem->originX = glyph->origin_x;
+		cacheItem->originY = glyph->origin_y;
+		cacheItem->width = glyph->advance;
+		cacheItem->page = this;
+		cacheItem->font = font;
+		// draw glyph to buffer, if non empty
+		if (glyph->bmp_height && glyph->bmp_width) {
+			if (nextLine < currentLine + glyph->bmp_height)
+				nextLine = currentLine + glyph->bmp_height;
+			if (!drawbuf) {
+				drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
+				drawbuf->SetBackgroundColor(0x000000);
+				drawbuf->SetTextColor(0xFFFFFF);
+			}
+			drawbuf->Draw(x, currentLine, glyph->bmp, glyph->bmp_width, glyph->bmp_height, NULL);
+			x += glyph->bmp_width;
+			needUpdateTexture = true;
+		}
+		return cacheItem;
+	}
+};
+
+void GLGlyphCacheItem::draw(int x, int y, lUInt32 color) {
+	page->drawItem(this, x, y, color);
+}
+
+//============================================================================================
+// GLGlyphCache implementation
+#define LVGLMakeGlyphKey(ch, font) ((((lUInt64)ch) << 32) ^ ((lUInt64)font))
+
+void GLGlyphCache::clear() {
+	LVHashTable<lUInt64, GLGlyphCacheItem*>::iterator iter = _map.forwardIterator();
+	for (;;) {
+		LVHashTable<lUInt64, GLGlyphCacheItem*>::pair * item = iter.next();
+		if (!item)
+			break;
+		delete item->value;
+		item->value = NULL;
+	}
+	_map.clear();
+}
+void GLGlyphCache::clearFontGlyphs(GLFont * font) {
+	LVHashTable<lUInt64, GLGlyphCacheItem*>::iterator iter = _map.forwardIterator();
+	LVArray<lUInt64> keysForRemove(256, 0);
+	for (;;) {
+		LVHashTable<lUInt64, GLGlyphCacheItem*>::pair * item = iter.next();
+		if (!item)
+			break;
+		if (item->value) {
+			if (item->value->font == font)
+				keysForRemove.add(item->key);
+		}
+	}
+	for (int i = 0; i<keysForRemove.length(); i++) {
+		GLGlyphCacheItem* removed = _map.get(keysForRemove[i]);
+		_map.remove(keysForRemove[i]);
+		if (removed)
+			delete removed;
+	}
+}
+GLGlyphCache::GLGlyphCache() : _map(32768) {
+
+}
+GLGlyphCache::~GLGlyphCache() {
+
+}
+GLGlyphCacheItem * GLGlyphCache::get(lChar16 ch, GLFont * font) {
+	GLGlyphCacheItem *  res = _map.get(LVGLMakeGlyphKey(ch, font));
+	return res;
+}
+GLGlyphCacheItem * GLGlyphCache::put(lChar16 ch, GLFont * font, LVFontGlyphCacheItem * glyph) {
+	GLGlyphCachePage * page;
+	if (_pages.length() == 0) {
+		page = new GLGlyphCachePage(this);
+		_pages.add(page);
+	}
+	page = _pages[_pages.length() - 1];
+	GLGlyphCacheItem * item = page->addItem(font, glyph);
+	if (!item) {
+		page = new GLGlyphCachePage(this);
+		_pages.add(page);
+		item = page->addItem(font, glyph);
+	}
+	_map.set(LVGLMakeGlyphKey(ch, font), item);
+	return item;
+}
+
+
+//=======================================================================================================
 /// font manager interface class
 class GLFontManager : public LVFontManager
 {
@@ -258,14 +427,19 @@ void GLFontManager::gc()
 {
 	// remove links from hash maps
 	LVHashTable<LVFont *, LVFontRef>::iterator iter = _mapByBase.forwardIterator();
+	LVArray<LVFont *> keysForRemove(32, 0);
+	// prepare list of fonts to free
 	for (;;) {
 		LVHashTable<LVFont *, LVFontRef>::pair * item = iter.next();
 		if (!item)
 			break;
 		if (item->value.getRefCount() <= 1) {
-			removeFontInstance(item->value.get());
+			keysForRemove.add(item->key);
 		}
 	}
+	// free found unused fonts
+	for (int i=0; i<keysForRemove.length(); i++)
+		removeFontInstance(keysForRemove[i]);
 	// free base font instances
 	_base->gc();
 }
