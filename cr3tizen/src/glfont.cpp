@@ -5,6 +5,7 @@
  *      Author: vlopatin
  */
 
+#include <crengine.h>
 #include "glfont.h"
 
 #if (USE_FREETYPE==1)
@@ -85,7 +86,7 @@ public:
 };
 
 bool LVInitGLFontManager(LVFontManager * base) {
-    if ( fontMan ) {
+    if (fontMan && fontMan != base) {
         delete fontMan;
     }
     fontMan = new GLFontManager(base);
@@ -127,7 +128,6 @@ LVFontRef GLFontManager::GetFallbackFont(int size)
 /// registers font by name
 bool GLFontManager::RegisterFont( lString8 name )
 {
-	CRLog::debug("Registering font %s", name.c_str());
 	return _base->RegisterFont(name);
 }
 
@@ -189,9 +189,8 @@ void GLFontManager::setKerning( bool kerningEnabled )
 }
 
 /// constructor
-GLFontManager::GLFontManager(LVFontManager * base) : _base(base)
+GLFontManager::GLFontManager(LVFontManager * base) : LVFontManager(), _base(base)
 {
-	//
 	CRLog::debug("Created GL Font Manager");
 }
 

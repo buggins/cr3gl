@@ -56,5 +56,6 @@ void LVInitCoolReaderTizen() {
 	LVInitGLFontManager(fontMan);
 	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansMeduim.ttf"));
 	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansRegular.ttf"));
-	//fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
+	fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
+	fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 }

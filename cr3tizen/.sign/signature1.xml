@@ -16,11 +16,11 @@
 </Reference>
 <Reference URI="bin/CoolReader.exe">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>64VHHQ1GyRNJbu+NUpao7LB9Dz4s3+M721D2eyBIzVU=</DigestValue>
+<DigestValue>xVVOLA/myJij05/IMzYJJkbAgtMA88kbWb0iOT1o4+I=</DigestValue>
 </Reference>
 <Reference URI="author-signature.xml">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>Fm6yJHyXYUXbTXxBMAy+E9ayle+wosQXtP7ydx6A3A0=</DigestValue>
+<DigestValue>0T5XCyULY6v8j0cRpdWkJrvrcZ+FojDvdmvkIx9G1PE=</DigestValue>
 </Reference>
 <Reference URI="#prop">
 <Transforms>
@@ -31,9 +31,9 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-g1gCIM65HmDiLmbL3zLHzJu1cYe9Qo00lyVXadspG/5S69vVQzolps7Zp7l6GiSeeC4c1FUa+zTS
-dNK+3eW2zlwFnOkdkC53rfai30FdGzsHunMT5s/9aVO+n7WFmHRYVdmToEqHw2Wt2a6re9Zw3gYC
-yo0nIhaWLF9HgycZHds=
+GzKhvz37cHHnVTX0L5uQircEVT5OXwzEILeKYAgearcifnQjTQbqY3ovpMMx+RC4XJ6twFGMQiiF
+FsHn1u4FbEJ9OrSqVYR45uBw6Z/fkKHFMIqCkGKC48S8SblkmUgV2KBX4WBJ3G8V3waYjrX9HL89
+Z4GbNGoi3DTkq7u8SBo=
 </SignatureValue>
 <KeyInfo>
 <X509Data>
