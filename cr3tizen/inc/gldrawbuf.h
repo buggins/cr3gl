@@ -11,6 +11,8 @@
 #include <lvdrawbuf.h>
 #include <gl.h>
 
+#include "glscene.h"
+
 /// Abstract drawing buffer
 class GLDrawBuf : public LVDrawBuf
 {
@@ -29,6 +31,7 @@ protected:
 	GLuint _framebufferId;
 	//GLuint _renderbufferId;
 	int _prepareStage;
+	GLScene * _scene;
 public:
 	virtual void createFramebuffer();
 	virtual void deleteFramebuffer();

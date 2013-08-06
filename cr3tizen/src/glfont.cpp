@@ -466,7 +466,6 @@ void GLFontManager::removeFontInstance(LVFont * glFont) {
 	_mapByBase.remove(base);
 }
 
-
 /// set fallback font face (returns true if specified font is found)
 bool GLFontManager::SetFallbackFontFace( lString8 face )
 {

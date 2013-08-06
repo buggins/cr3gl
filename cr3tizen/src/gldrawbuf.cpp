@@ -150,29 +150,42 @@ void LVGLFillColor(lUInt32 color, float * buf, int count) {
 	}
 }
 
+class GLFillRectItem : public GLSceneItem {
+public:
+	int x0;
+	int y0;
+	int x1;
+    int y1;
+    lUInt32 color;
+    GLFillRectItem(int _x0, int _y0, int _x1, int _y1, lUInt32 _color) : x0(_x0), y0(_y0), x1(_x1), y1(_y1), color(_color) { }
+    virtual void draw() {
+    	GLfloat vertices[] = {
+    			x0,y0,0,
+    			x0,y1,0,
+    			x1,y1,0,
+    			x0,y0,0,
+    			x1,y1,0,
+    			x1,y0,0};
+    	GLfloat colors[6 * 4];
+    	LVGLFillColor(color, colors, 6);
+    	glEnableClientState(GL_VERTEX_ARRAY);
+    	glEnableClientState(GL_COLOR_ARRAY);
+    	glVertexPointer(3, GL_FLOAT, 0, vertices);
+    	glColorPointer(4, GL_FLOAT, 0, colors);
+
+    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    	glDisableClientState(GL_COLOR_ARRAY);
+    	glDisableClientState(GL_VERTEX_ARRAY);
+    }
+};
+
 /// fills rectangle with specified color
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
-	beforeDrawing();
-	GLfloat vertices[] = {
-			x0,_dy-y0,0,
-			x0,_dy-y1,0,
-			x1,_dy-y1,0,
-			x0,_dy-y0,0,
-			x1,_dy-y1,0,
-			x1,_dy-y0,0};
-	GLfloat colors[6 * 4];
-	LVGLFillColor(color, colors, 6);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glColorPointer(4, GL_FLOAT, 0, colors);
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	afterDrawing();
+	if (_scene) {
+		_scene->add(new GLFillRectItem(x0, _dy - y0, x1, _dy - y1, color));
+	}
 }
 
 /// draws rounded rectangle with specified line width, rounding radius, and color
@@ -385,6 +398,7 @@ void GLDrawBuf::beforeDrawing()
 		glLoadIdentity();
 		glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 		glViewport(0,0,_dx,_dy);
+		_scene = LVGLPushScene(new GLScene());
 //		glMatrixMode(GL_MODELVIEW);
 //		glLoadIdentity();
 	}
@@ -393,6 +407,16 @@ void GLDrawBuf::beforeDrawing()
 void GLDrawBuf::afterDrawing()
 {
 	if (--_prepareStage == 0) {
+		if (_scene) {
+			_scene->draw();
+			_scene->clear();
+			if (LVGLPopScene() != _scene) {
+				CRLog::error("Current scene does not match");
+			}
+			delete _scene;
+			_scene = NULL;
+
+		}
 		if (_textureBuf) {
 			//bind the base framebuffer
 			CRLog::debug("Finished render to texture");
@@ -411,7 +435,8 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 		_textColor(0x000000), _backgroundColor(0xFFFFFF),
 		_textureBuf(useTexture), _textureId(0), _framebufferId(0),
 		//_renderbufferId(0),
-		_prepareStage(0)
+		_prepareStage(0),
+		_scene(NULL)
 {
 
 }
