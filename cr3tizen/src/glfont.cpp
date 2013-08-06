@@ -94,6 +94,159 @@ bool LVInitGLFontManager(LVFontManager * base) {
 }
 
 
+/** \brief base class for fonts
+
+    implements single interface for font of any engine
+*/
+class GLFont : public LVFont
+{
+	LVFontRef _base;
+public:
+
+	GLFont(LVFontRef baseFont) {
+		_base = baseFont;
+	}
+
+	/// hyphenation character
+    virtual lChar16 getHyphChar() { return _base->getHyphChar(); }
+
+    /// hyphen width
+    virtual int getHyphenWidth() { return _base->getHyphenWidth(); }
+
+    /**
+     * Max width of -/./,/!/? to use for visial alignment by width
+     */
+    virtual int getVisualAligmentWidth() { return _base->getVisualAligmentWidth(); }
+
+    /** \brief get glyph info
+        \param glyph is pointer to glyph_info_t struct to place retrieved info
+        \return true if glyh was found
+    */
+    virtual bool getGlyphInfo( lUInt16 code, glyph_info_t * glyph, lChar16 def_char=0 ) { return _base->getGlyphInfo(code, glyph, def_char); }
+
+    /** \brief measure text
+        \param text is text string pointer
+        \param len is number of characters to measure
+        \param max_width is maximum width to measure line
+        \param def_char is character to replace absent glyphs in font
+        \param letter_spacing is number of pixels to add between letters
+        \return number of characters before max_width reached
+    */
+    virtual lUInt16 measureText(
+                        const lChar16 * text, int len,
+                        lUInt16 * widths,
+                        lUInt8 * flags,
+                        int max_width,
+                        lChar16 def_char,
+                        int letter_spacing=0,
+                        bool allow_hyphenation=true
+                     ) {
+    	return _base->measureText(text, len, widths, flags, max_width, def_char, letter_spacing, allow_hyphenation);
+    }
+    /** \brief measure text
+        \param text is text string pointer
+        \param len is number of characters to measure
+        \return width of specified string
+    */
+    virtual lUInt32 getTextWidth(
+                        const lChar16 * text, int len
+        ) {
+    	return _base->getTextWidth(text, len);
+    }
+
+//    /** \brief get glyph image in 1 byte per pixel format
+//        \param code is unicode character
+//        \param buf is buffer [width*height] to place glyph data
+//        \return true if glyph was found
+//    */
+//    virtual bool getGlyphImage(lUInt16 code, lUInt8 * buf, lChar16 def_char=0) = 0;
+    /** \brief get glyph item
+        \param code is unicode character
+        \return glyph pointer if glyph was found, NULL otherwise
+    */
+    virtual LVFontGlyphCacheItem * getGlyph(lUInt16 ch, lChar16 def_char=0) {
+    	return _base->getGlyph(ch, def_char);
+    }
+    /// returns font baseline offset
+    virtual int getBaseline() {
+    	return _base->getBaseline();
+    }
+    /// returns font height including normal interline space
+    virtual int getHeight() const {
+    	return _base->getHeight();
+    }
+    /// returns font character size
+    virtual int getSize() const {
+    	return _base->getSize();
+    }
+    /// returns font weight
+    virtual int getWeight() const {
+    	return _base->getWeight();
+    }
+    /// returns italic flag
+    virtual int getItalic() const {
+    	return _base->getItalic();
+    }
+    /// returns char width
+    virtual int getCharWidth( lChar16 ch, lChar16 def_char=0 ) {
+    	return _base->getCharWidth(ch, def_char);
+    }
+    /// retrieves font handle
+    virtual void * GetHandle() {
+    	return _base->GetHandle();
+    }
+    /// returns font typeface name
+    virtual lString8 getTypeFace() const {
+    	return _base->getTypeFace();
+    }
+    /// returns font family id
+    virtual css_font_family_t getFontFamily() const {
+    	return _base->getFontFamily();
+    }
+    /// draws text string
+    virtual void DrawTextString( LVDrawBuf * buf, int x, int y,
+                       const lChar16 * text, int len,
+                       lChar16 def_char, lUInt32 * palette = NULL, bool addHyphen = false,
+                       lUInt32 flags=0, int letter_spacing=0 ) {
+    	// TODO: implement OpenGL related behavior
+    	_base->DrawTextString(buf, x, y, text, len, def_char, palette, addHyphen, flags, letter_spacing);
+    }
+
+    /// get bitmap mode (true=monochrome bitmap, false=antialiased)
+    virtual bool getBitmapMode() { return _base->getBitmapMode(); }
+    /// set bitmap mode (true=monochrome bitmap, false=antialiased)
+    virtual void setBitmapMode( bool mode ) { _base->setBitmapMode(mode); }
+
+    /// get kerning mode: true==ON, false=OFF
+    virtual bool getKerning() const { return _base->getKerning(); }
+    /// get kerning mode: true==ON, false=OFF
+    virtual void setKerning( bool kerning) { _base->setKerning(kerning); }
+
+    /// sets current hinting mode
+    virtual void setHintingMode(hinting_mode_t mode) { _base->setHintingMode(mode); }
+    /// returns current hinting mode
+    virtual hinting_mode_t  getHintingMode() const { return _base->getHintingMode(); }
+
+    /// returns true if font is empty
+    virtual bool IsNull() const {
+    	return _base->IsNull();
+    }
+    virtual bool operator ! () const {
+    	return _base->operator !();
+    }
+    virtual void Clear() {
+    	_base->Clear();
+    }
+    virtual ~GLFont() { }
+    /// set fallback font for this font
+    void setFallbackFont( LVFastRef<LVFont> font ) { _base->setFallbackFont(font); }
+    /// get fallback font for this font
+    LVFont * getFallbackFont() { return _base->getFallbackFont(); }
+};
+
+
+
+
     /// garbage collector frees unused fonts
 void GLFontManager::gc()
 {
@@ -104,6 +257,7 @@ void GLFontManager::gc()
 LVFontRef GLFontManager::GetFont(int size, int weight, bool italic, css_font_family_t family, lString8 typeface, int documentId)
 {
 	LVFontRef res = _base->GetFont(size, weight, italic, family, typeface, documentId);
+	res = LVFontRef(new GLFont(res));
 	return res;
 }
 
