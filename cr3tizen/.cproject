@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.1131058960">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.1131058960" moduleId="org.eclipse.cdt.core.settings" name="Debug">
@@ -47,7 +45,7 @@
 									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.2108200958" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -81,7 +79,7 @@
 									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.1791055272" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -131,11 +129,8 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.1398353058" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/Debug}&quot;"/>
 								</option>
-								<option id="gnu.cpp.link.option.libs.1646639379" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="crengine"/>
-								</option>
+								<option id="gnu.cpp.link.option.libs.1646639379" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.363181718" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -143,7 +138,7 @@
 							</tool>
 							<tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1488346665" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1563732458" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.762385612" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -151,16 +146,114 @@
 							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.1589432227" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler"/>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.1131058960.1864769306" name="/" resourcePath="cr3">
+						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug.1766668472" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.354303026" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver.804473361"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1024659406" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1166358193">
+								<option id="gnu.cpp.compiler.option.include.paths.1600689182" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.1839164078" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.726910389" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+									<listOptionValue builtIn="false" value="DEBUG=1"/>
+								</option>
+								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.717490342" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1107047920" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1328350759">
+								<option id="gnu.c.compiler.option.include.paths.686863215" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.355739446" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.802448668" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+									<listOptionValue builtIn="false" value="DEBUG=1"/>
+								</option>
+								<inputType id="sbi.gnu.c.compiler.tizen.inputType.1724531605" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.2075983916" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.868129543"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.452480880" name="C++ Linker" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.1771282171"/>
+							<tool id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.107054136" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1488346665">
+								<option id="gnu.both.asm.option.include.paths.58825108" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.524253583" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.1000203743" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler.412748002"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.2129195224" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler.1589432227"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/crengine/include"/>
+						<entry excluding="minigzip.c|example.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/zlib"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libpng"/>
+						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/crengine/src"/>
+						<entry excluding="saveas.c|xml.c|startup.c|riscos.c|postscript.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|imgtrans.c|icons.c|fonts_r.c|fmt_text.c|drawfile.c|draw.c|dib2sprt.c|dib2eps.c|Unix-only|Win32-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry excluding="src/chm_http.c|src/test_chmLib.c|src/extract_chmLib.c|src/enumdir_chmLib.c|src/enum_chmLib.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/chmlib"/>
+						<entry excluding="src/raster/ftraster.c|src/base/ftutil.c|src/base/fttrigon.c|src/base/ftstream.c|src/base/ftsnames.c|src/base/ftrfork.c|src/base/ftoutln.c|src/base/ftobjs.c|src/base/ftgloadr.c|src/base/ftcalc.c|src/base/ftadvanc.c|src/base/ftmac.c|src/tools|src/type42/t42parse.c|src/type42/t42objs.c|src/type42/t42drivr.c|src/type1/t1parse.c|src/type1/t1objs.c|src/type1/t1load.c|src/type1/t1gload.c|src/type1/t1driver.c|src/type1/t1afm.c|src/truetype/ttsubpix.c|src/truetype/ttpload.c|src/truetype/ttpic.c|src/truetype/ttobjs.c|src/truetype/ttinterp.c|src/truetype/ttgxvar.c|src/truetype/ttgload.c|src/truetype/ttdriver.c|src/smooth/ftspic.c|src/smooth/ftsmooth.c|src/smooth/ftgrays.c|src/sfnt/ttsbit0.c|src/sfnt/ttsbit.c|src/sfnt/ttpost.c|src/sfnt/ttmtx.c|src/sfnt/ttload.c|src/sfnt/ttkern.c|src/sfnt/ttcmap.c|src/sfnt/ttbdf.c|src/sfnt/sfobjs.c|src/sfnt/sfntpic.c|src/sfnt/sfdriver.c|src/sfnt/pngshim.c|src/raster/rastpic.c|src/raster/ftrend1.c|src/psnames/pspic.c|src/psnames/psmodule.c|src/pshinter/pshrec.c|src/pshinter/pshpic.c|src/pshinter/pshmod.c|src/pshinter/pshglob.c|src/pshinter/pshalgo.c|src/psaux/t1decode.c|src/psaux/t1cmap.c|src/psaux/psobjs.c|src/psaux/psconv.c|src/psaux/psauxmod.c|src/psaux/afmparse.c|src/pfr/pfrsbit.c|src/pfr/pfrobjs.c|src/pfr/pfrload.c|src/pfr/pfrgload.c|src/pfr/pfrdrivr.c|src/pfr/pfrcmap.c|src/pcf/pcfutil.c|src/pcf/pcfread.c|src/pcf/pcfdrivr.c|src/otvalid/otvmod.c|src/otvalid/otvmath.c|src/otvalid/otvjstf.c|src/otvalid/otvgsub.c|src/otvalid/otvgpos.c|src/otvalid/otvgdef.c|src/otvalid/otvcommn.c|src/otvalid/otvbase.c|src/lzw/ftzopen.c|src/gxvalid/gxvtrak.c|src/gxvalid/gxvprop.c|src/gxvalid/gxvopbd.c|src/gxvalid/gxvmorx5.c|src/gxvalid/gxvmorx4.c|src/gxvalid/gxvmorx2.c|src/gxvalid/gxvmorx1.c|src/gxvalid/gxvmorx0.c|src/gxvalid/gxvmorx.c|src/gxvalid/gxvmort5.c|src/gxvalid/gxvmort4.c|src/gxvalid/gxvmort2.c|src/gxvalid/gxvmort1.c|src/gxvalid/gxvmort0.c|src/gxvalid/gxvmort.c|src/gxvalid/gxvmod.c|src/gxvalid/gxvlcar.c|src/gxvalid/gxvkern.c|src/gxvalid/gxvjust.c|src/gxvalid/gxvfgen.c|src/gxvalid/gxvfeat.c|src/gxvalid/gxvcommn.c|src/gxvalid/gxvbsln.c|src/cid/cidriver.c|src/cid/cidparse.c|src/cid/cidobjs.c|src/cid/cidload.c|src/cid/cidgload.c|src/cff/cffpic.c|src/cff/cffparse.c|src/cff/cffobjs.c|src/cff/cffload.c|src/cff/cffgload.c|src/cff/cffdrivr.c|src/cff/cffcmap.c|src/cff/cf2stack.c|src/cff/cf2read.c|src/cff/cf2intrp.c|src/cff/cf2hints.c|src/cff/cf2ft.c|src/cff/cf2font.c|src/cff/cf2error.c|src/cff/cf2blues.c|src/cff/cf2arrst.c|src/cache/ftcsbits.c|src/cache/ftcmru.c|src/cache/ftcmanag.c|src/cache/ftcimage.c|src/cache/ftcglyph.c|src/cache/ftccmap.c|src/cache/ftccache.c|src/cache/ftcbasic.c|src/bdf/bdflib.c|src/bdf/bdfdrivr.c|src/autofit/afwarp.c|src/autofit/afpic.c|src/autofit/afmodule.c|src/autofit/afloader.c|src/autofit/aflatin2.c|src/autofit/aflatin.c|src/autofit/afindic.c|src/autofit/afhints.c|src/autofit/afglobal.c|src/autofit/afdummy.c|src/autofit/afcjk.c|src/autofit/afangles.c|objs|docs|devel|builds|src/gzip/zutil.c|src/gzip/infutil.c|src/gzip/inftrees.c|src/gzip/inflate.c|src/gzip/infcodes.c|src/gzip/infblock.c|src/gzip/adler32.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/freetype"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="crengine;org.tizen.nativecpp.config.sbi.gcc45.lib.debug.207090299" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1390290940">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1390290940" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -207,6 +300,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.817095641" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -238,6 +332,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.2119239366" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -284,11 +379,8 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.2005635586" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/Release}&quot;"/>
 								</option>
-								<option id="gnu.cpp.link.option.libs.1087927488" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="crengine"/>
-								</option>
+								<option id="gnu.cpp.link.option.libs.1087927488" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1233663886" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -296,12 +388,104 @@
 							</tool>
 							<tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.946151710" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1345106149" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1686531665" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.717616478" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler"/>
 							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.2094857242" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1390290940.1198966648" name="/" resourcePath="cr3">
+						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.release.1442435256" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.release" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.1902268171" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver.1836028086"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1465918953" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1056342805">
+								<option id="gnu.cpp.compiler.option.include.paths.2135194461" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.1041061665" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1263021490" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+									<listOptionValue builtIn="false" value="NDEBUG=1"/>
+								</option>
+								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.54626958" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.117555013" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1630530040">
+								<option id="gnu.c.compiler.option.include.paths.153786262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.656997810" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.243630440" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+									<listOptionValue builtIn="false" value="NDEBUG=1"/>
+								</option>
+								<inputType id="sbi.gnu.c.compiler.tizen.inputType.1779292651" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.1533785811" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.179730620"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.242381783" name="C++ Linker" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.1008845586"/>
+							<tool id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.843041643" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.946151710">
+								<option id="gnu.both.asm.option.include.paths.1045219658" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1363715751" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.2083076949" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler.717616478"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.588966388" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler.2094857242"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -311,9 +495,7 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="crengine;org.tizen.nativecpp.config.sbi.gcc45.lib.release.685131720" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.da.273808668">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.da.273808668" moduleId="org.eclipse.cdt.core.settings" name="Dynamic Analyzer">
@@ -361,6 +543,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1126231" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_USE_DA_"/>
@@ -397,6 +580,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.188296196" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_USE_DA_"/>
@@ -458,13 +642,109 @@
 								</inputType>
 							</tool>
 							<tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1660956159" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1977841225" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.1977841225" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1553439913" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.347321190" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler"/>
 							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.520281924" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.da.273808668.625486424" name="/" resourcePath="cr3">
+						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug.da.1071363596" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug.da" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.1325433286" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver.1853921798"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.da.1042832178" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.da.446465095">
+								<option id="gnu.cpp.compiler.option.include.paths.2038569935" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.1242754594" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1701697685" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_USE_DA_"/>
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+								</option>
+								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.1622443743" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1450740244" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.448372028">
+								<option id="gnu.c.compiler.option.include.paths.169380034" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1733523065" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1989697804" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_USE_DA_"/>
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
+								</option>
+								<inputType id="sbi.gnu.c.compiler.tizen.inputType.582743050" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.533690491" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.1426803310"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.da.1871583384" name="C++ Linker" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.da.302234687"/>
+							<tool id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1436880987" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1660956159">
+								<option id="gnu.both.asm.option.include.paths.1015602211" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.298591582" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.256699982" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler.347321190"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.1553382843" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler.520281924"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -492,6 +772,8 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.tizen.nativecommon.TizenGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/CoolReader"/>
+	</storageModule>
 	<storageModule moduleId="com.samsung.tizen.nativeapp.projectInfo" version="1.0.0"/>
 </cproject>

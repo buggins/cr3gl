@@ -29,7 +29,6 @@ protected:
 public:
     CRTizenLogger()
     {
-        static unsigned char utf8sign[] = {0xEF, 0xBB, 0xBF};
         static const char * log_level_names[] = {
         "FATAL",
         "ERROR",
@@ -55,4 +54,7 @@ void LVInitCoolReaderTizen() {
 	CRLog::setLogLevel(CRLog::LL_TRACE);
 	InitFontManager(lString8());
 	LVInitGLFontManager(fontMan);
+	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansMeduim.ttf"));
+	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansRegular.ttf"));
+	//fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
 }

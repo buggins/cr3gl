@@ -127,6 +127,7 @@ LVFontRef GLFontManager::GetFallbackFont(int size)
 /// registers font by name
 bool GLFontManager::RegisterFont( lString8 name )
 {
+	CRLog::debug("Registering font %s", name.c_str());
 	return _base->RegisterFont(name);
 }
 
@@ -139,13 +140,14 @@ bool GLFontManager::RegisterDocumentFont(int documentId, LVContainerRef containe
 /// unregisters all document fonts
 void GLFontManager::UnregisterDocumentFonts(int documentId)
 {
-	return _base->UnregisterDocumentFonts(documentId);
+	_base->UnregisterDocumentFonts(documentId);
 }
 
 /// initializes font manager
 bool GLFontManager::Init( lString8 path )
 {
 	// nothing to do
+	return true;
 }
 
 /// get count of registered fonts

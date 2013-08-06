@@ -3,7 +3,6 @@
 	<name>CoolReader</name>
 	<comment></comment>
 	<projects>
-		<project>crengine</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -86,6 +85,13 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>org.tizen.nativecpp.apichecker.core.tizenCppNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>cr3</name>
+			<type>2</type>
+			<location>C:/projects/coolreader/cr3</location>
+		</link>
+	</linkedResources>
 	<filteredResources>
 		<filter>
 			<id>1375431677084</id>
