@@ -151,7 +151,10 @@ public:
 };
 
 
+// utility function to fill 4-float array of vertex colors with converted CR 32bit color
 void LVGLFillColor(lUInt32 color, float * buf, int count);
+// converts color from CoolReader format and calls glColor4f
+void LVGLSetColor(lUInt32 color);
 
 
 #endif /* GLDRAWBUF_H_ */

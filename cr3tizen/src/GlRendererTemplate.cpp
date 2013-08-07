@@ -90,13 +90,17 @@ GlRendererTemplate::Draw(void)
 	GLDrawBuf backbuf(300, 400, 32, true);
 	backbuf.beforeDrawing();
 	backbuf.SetBackgroundColor(0x000000);
+	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
+	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
+	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
+	backbuf.FillRect(50, 50, 270, 200, 0x0080FF00);
+	backbuf.FillRect(0, 0, 500, 10, 0x00ffffff);
 	backbuf.SetTextColor(0xFFFF00);
-//	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
-//	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
-//	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
-//	backbuf.FillRect(50, 50, 270, 200, 0x0080FF00);
-//	backbuf.FillRect(0, 0, 500, 10, 0x00ffffff);
 	font->DrawTextString(&backbuf, 5, 5,
+            L"Hello Tizen - testing text", 26,
+            '?');
+	backbuf.SetTextColor(0x0080FF);
+	font->DrawTextString(&backbuf, 45, 45,
             L"Hello Tizen - testing text", 26,
             '?');
 	backbuf.afterDrawing();

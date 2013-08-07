@@ -136,6 +136,15 @@ lUInt32 GLDrawBuf::GetInterpolatedColor(int x16, int y16)
 	return 0;
 }
 
+// converts color from CoolReader format and calls glColor4f
+void LVGLSetColor(lUInt32 color) {
+	float r = ((color >> 16) & 255) / 255.0f;
+	float g = ((color >> 8) & 255) / 255.0f;
+	float b = ((color >> 0) & 255) / 255.0f;
+	float a = (((color >> 24) & 255) ^ 255) / 255.0f;
+	glColor4f(r, g, b, a);
+}
+
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
 void LVGLFillColor(lUInt32 color, float * buf, int count) {
 	float r = ((color >> 16) & 255) / 255.0f;
