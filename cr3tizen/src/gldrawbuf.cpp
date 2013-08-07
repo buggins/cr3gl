@@ -168,6 +168,7 @@ public:
     			x1,y0,0};
     	GLfloat colors[6 * 4];
     	LVGLFillColor(color, colors, 6);
+    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     	glEnableClientState(GL_VERTEX_ARRAY);
     	glEnableClientState(GL_COLOR_ARRAY);
     	glVertexPointer(3, GL_FLOAT, 0, vertices);
@@ -256,7 +257,9 @@ public:
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
     	GLfloat colors[6 * 4];
     	LVGLFillColor(color, colors, 6);
+    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     	glActiveTexture(GL_TEXTURE0);
+    	glBindTexture(GL_TEXTURE_2D, textureId);
     	glEnable(GL_TEXTURE_2D);
     	glEnableClientState(GL_VERTEX_ARRAY);
     	//glEnableClientState(GL_COLOR_ARRAY);

@@ -151,6 +151,7 @@ public:
 };
 
 
+void LVGLFillColor(lUInt32 color, float * buf, int count);
 
 
 #endif /* GLDRAWBUF_H_ */

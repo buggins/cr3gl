@@ -9,6 +9,7 @@
 #define GLFONT_H_
 
 #include <lvfntman.h>
+#include <lvhashtable.h>
 
 // factory
 bool LVInitGLFontManager(LVFontManager * base);
@@ -20,6 +21,8 @@ class GLGlyphCachePage;
 struct GLGlyphCacheItem {
 	lInt8   originX;     ///< X origin for glyph
 	lInt8   originY;     ///< Y origin for glyph
+	lInt8   dx;          ///< width of glyph
+	lInt8   dy;          ///< height of glyph
 	lUInt8  width;       ///< full width of glyph (advance)
 	// texture coordinates
 	float x0;

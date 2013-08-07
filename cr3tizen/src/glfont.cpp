@@ -6,6 +6,7 @@
  */
 
 #include <gl.h>
+#include <glext.h>
 #include <crengine.h>
 #include "glfont.h"
 #include "glscene.h"
@@ -31,6 +32,14 @@
 
 #endif
 
+static bool checkError(const char * context) {
+	if (glGetError() != GL_NO_ERROR) {
+		CRLog::error("GLFont : GL Error at %s", context);
+		return true;
+	}
+	return false;
+}
+
 class GLGlyphCachePage;
 class GLGlyphCache;
 class GLFont;
@@ -47,9 +56,9 @@ class GLGlyphCachePage {
 	GLuint textureId;
 public:
 	GLGlyphCache * getCache() { return cache; }
-	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(0), closed(false), needUpdateTexture(false), textureId(0) {
+	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(NULL), closed(false), needUpdateTexture(false), textureId(0) {
 		// create drawing buffer
-		drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
+		//drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 		// init free lines
 		currentLine = nextLine = x = 0;
 	}
@@ -63,17 +72,24 @@ public:
 		if (drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (textureId == 0) {
+	    	CRLog::debug("updateTexture - new texture");
 			glGenTextures(1, &textureId);
 			if (glGetError() != GL_NO_ERROR)
 				return;
 	    }
+    	CRLog::debug("updateTexture - setting image %dx%d", drawbuf->GetWidth(), drawbuf->GetHeight());
 	    glBindTexture(GL_TEXTURE_2D, textureId);
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
+	    //glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
+	    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
+//#define DP(x) (drawbuf->GetPixel(x,0)!=0?'1':'0')
+    	//CRLog::debug("%c%c%c%c%c%c%c%c%c%c", DP(0),DP(1),DP(2),DP(3),DP(4),DP(5),DP(6),DP(7),DP(8),DP(9));
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
+	    checkError("updateTexture - glTexImage2D");
 	    if (glGetError() != GL_NO_ERROR) {
 	        glDeleteTextures(1, &textureId);
 	        return;
@@ -88,7 +104,55 @@ public:
 		if (needUpdateTexture)
 			updateTexture();
 		if (textureId != 0) {
-			// TODO: draw
+			//CRLog::trace("drawing character at %d,%d", x, y);
+			float dstx0 = x;
+			float dsty0 = y;
+			float dstx1 = x + (item->dx);
+			float dsty1 = y - (item->dy);
+			float srcx0 = item->x0;
+			float srcy0 = item->y0;
+			float srcx1 = item->x1;
+			float srcy1 = item->y1;
+			//CRLog::trace("drawing character at %f,%f %f,%f (%f,%f,%f,%f)", dstx0, dsty0, dstx1, dsty1, srcx0, srcy0, srcx1, srcy1);
+	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+	    	//GLfloat colors[6 * 4];
+	    	//LVGLFillColor(color, colors, 6);
+	    	glActiveTexture(GL_TEXTURE0);
+	    	glEnable(GL_TEXTURE_2D);
+	    	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	    	//glColor4f(1.0, 0.5f, 0.0, 1.0f);
+	    	//glBlendColor(1,0,0,1);
+	    	//glEnable(GL_BLEND);
+	    	//glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	    	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+	    	//glBlendFunc(GL_CONSTANT_COLOR,GL_ONE_MINUS_SRC_COLOR);
+
+//	    	glColor4f( 1.0f, 1.0f, 0.0f, 1.0f );
+
+	    	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+//	    	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+//	    	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
+//	    	glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+//	    	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+//	    	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+
+	    	glEnableClientState(GL_VERTEX_ARRAY);
+	    	//glEnableClientState(GL_COLOR_ARRAY);
+	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	    	//glColorPointer(4, GL_FLOAT, 0, colors);
+	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+
+	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	    	//glDisableClientState(GL_COLOR_ARRAY);
+	    	glDisableClientState(GL_VERTEX_ARRAY);
+	    	glDisable(GL_TEXTURE_2D);
 		}
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {
@@ -103,6 +167,7 @@ public:
 		// check if no room left for glyph height
 		if (currentLine + glyph->bmp_height > GL_GLYPH_CACHE_PAGE_SIZE) {
 			closed = true;
+			updateTexture();
 			return NULL;
 		}
 		GLGlyphCacheItem * cacheItem = new GLGlyphCacheItem();
@@ -110,6 +175,8 @@ public:
 		cacheItem->y0 = currentLine / (float)GL_GLYPH_CACHE_PAGE_SIZE;
 		cacheItem->x1 = (x + glyph->bmp_width) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
 		cacheItem->y1 = (currentLine + glyph->bmp_height) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+		cacheItem->dx = glyph->bmp_width;
+		cacheItem->dy = glyph->bmp_height;
 		cacheItem->originX = glyph->origin_x;
 		cacheItem->originY = glyph->origin_y;
 		cacheItem->width = glyph->advance;
@@ -123,7 +190,10 @@ public:
 				drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 				drawbuf->SetBackgroundColor(0x000000);
 				drawbuf->SetTextColor(0xFFFFFF);
+				drawbuf->Clear(0x000000);
 			}
+//#define BCH(x) (glyph->bmp[x] > 127 ?'1':'0')
+//			CRLog::debug("Adding new glyph at %d,%d: %c%c%c%c%c%c%c%c", x, currentLine, BCH(0),BCH(1),BCH(2),BCH(3),BCH(4),BCH(5),BCH(6),BCH(7) );
 			drawbuf->Draw(x, currentLine, glyph->bmp, glyph->bmp_width, glyph->bmp_height, NULL);
 			x += glyph->bmp_width;
 			needUpdateTexture = true;
@@ -468,7 +538,7 @@ public:
 					int w = item->width + (kerning >> 6);
 					scene->add(new GLCharGlyphItem(item,
 							x + (kerning>>6) + item->originX,
-							y + _baseline - item->originY,
+							glbuf->GetHeight() - (y + _baseline - item->originY),
 							color));
 
 					x  += w + letter_spacing;
