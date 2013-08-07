@@ -5,9 +5,11 @@
  *      Author: vlopatin
  */
 
+#include <gl.h>
 #include <crengine.h>
 #include "glfont.h"
-#include <gl.h>
+#include "glscene.h"
+#include "gldrawbuf.h"
 
 #if (USE_FREETYPE==1)
 
@@ -204,6 +206,7 @@ protected:
 	LVFontManager * _base;
 	LVHashTable<LVFont *, LVFontRef> _mapByBase;
 	LVHashTable<LVFont *, LVFontRef> _mapByGl;
+	GLGlyphCache * _cache;
 public:
     /// garbage collector frees unused fonts
     virtual void gc();
@@ -257,6 +260,10 @@ public:
     /// returns current hinting mode
     virtual hinting_mode_t  GetHintingMode();
 
+    GLGlyphCache * getCache() {
+    	return _cache;
+    }
+
 };
 
 bool LVInitGLFontManager(LVFontManager * base) {
@@ -267,6 +274,20 @@ bool LVInitGLFontManager(LVFontManager * base) {
     return true;
 }
 
+class GLCharGlyphItem : public GLSceneItem {
+	GLGlyphCacheItem * item;
+	int x;
+	int y;
+	lUInt32 color;
+public:
+	GLCharGlyphItem(GLGlyphCacheItem * _item, int _x, int _y, lUInt32 _color)
+	: item(_item), x(_x), y(_y), color(_color)
+	{
+	}
+	virtual void draw() {
+		item->draw(x, y, color);
+	}
+};
 
 /** \brief base class for fonts
 
@@ -383,9 +404,99 @@ public:
     virtual void DrawTextString( LVDrawBuf * buf, int x, int y,
                        const lChar16 * text, int len,
                        lChar16 def_char, lUInt32 * palette = NULL, bool addHyphen = false,
-                       lUInt32 flags=0, int letter_spacing=0 ) {
-    	// TODO: implement OpenGL related behavior
-    	_base->DrawTextString(buf, x, y, text, len, def_char, palette, addHyphen, flags, letter_spacing);
+                       lUInt32 flags=0, int letter_spacing=0 )
+    {
+		if (len <= 0)
+			return;
+    	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf *>(buf);
+    	if (glbuf) {
+    		// use specific rendering for GL buffer
+        	GLGlyphCache * cache = _fontMan->getCache();
+        	GLScene * scene = LVGLPeekScene();
+        	if (!scene) {
+        		CRLog::error("DrawTextString - no current scene");
+        		return;
+        	}
+			if (letter_spacing < 0 || letter_spacing > 50)
+				letter_spacing = 0;
+			lvRect clip;
+			buf->GetClipRect( &clip );
+			int _height = _base->getHeight();
+			int _size = _base->getSize();
+			int _baseline = _base->getBaseline();
+			lUInt32 color = glbuf->GetTextColor();
+			if ( y + _height < clip.top || y >= clip.bottom )
+				return;
+
+	#if (ALLOW_KERNING==1)
+			bool use_kerning = _base->kerningEnabled();
+	#endif
+			int i;
+
+			lChar16 previous = 0;
+			//lUInt16 prev_width = 0;
+			lChar16 ch;
+			// measure character widths
+			bool isHyphen = false;
+			int x0 = x;
+			for ( i=0; i<=len; i++) {
+				if ( i==len && (!addHyphen || isHyphen) )
+					break;
+				if ( i<len ) {
+					ch = text[i];
+					if ( ch=='\t' )
+						ch = ' ';
+					isHyphen = (ch==UNICODE_SOFT_HYPHEN_CODE) && (i<len-1);
+				} else {
+					ch = UNICODE_SOFT_HYPHEN_CODE;
+					isHyphen = 0;
+				}
+				int kerning = 0;
+	#if (ALLOW_KERNING==1)
+				kerning = _base->getKerning(previous, ch, def_char);
+	#endif
+				GLGlyphCacheItem * item = cache->get(ch, this);
+				if (!item) {
+					LVFontGlyphCacheItem * glyph = getGlyph(ch, def_char);
+					if (glyph) {
+						item = cache->put(ch, this, glyph);
+					}
+				}
+				if ( !item )
+					continue;
+				if ( (item && !isHyphen) || i>=len-1 ) { // avoid soft hyphens inside text string
+					int w = item->width + (kerning >> 6);
+					scene->add(new GLCharGlyphItem(item,
+							x + (kerning>>6) + item->originX,
+							y + _baseline - item->originY,
+							color));
+
+					x  += w + letter_spacing;
+					previous = ch;
+				}
+			}
+			if ( flags & LTEXT_TD_MASK ) {
+				// text decoration: underline, etc.
+				int h = _size > 30 ? 2 : 1;
+				lUInt32 cl = buf->GetTextColor();
+				if ( flags & LTEXT_TD_UNDERLINE || flags & LTEXT_TD_BLINK ) {
+					int liney = y + _baseline + h;
+					buf->FillRect( x0, liney, x, liney+h, cl );
+				}
+				if ( flags & LTEXT_TD_OVERLINE ) {
+					int liney = y + h;
+					buf->FillRect( x0, liney, x, liney+h, cl );
+				}
+				if ( flags & LTEXT_TD_LINE_THROUGH ) {
+	//                int liney = y + _baseline - _size/4 - h/2;
+					int liney = y + _baseline - _size*2/7;
+					buf->FillRect( x0, liney, x, liney+h, cl );
+				}
+			}
+    	} else {
+    		// use base font rendering for non-GL buffers
+    		_base->DrawTextString(buf, x, y, text, len, def_char, palette, addHyphen, flags, letter_spacing);
+    	}
     }
 
     /// get bitmap mode (true=monochrome bitmap, false=antialiased)
@@ -550,12 +661,14 @@ void GLFontManager::setKerning( bool kerningEnabled )
 /// constructor
 GLFontManager::GLFontManager(LVFontManager * base) : LVFontManager(), _base(base), _mapByBase(1000), _mapByGl(1000)
 {
+	_cache = new GLGlyphCache();
 	CRLog::debug("Created GL Font Manager");
 }
 
 /// destructor
 GLFontManager::~GLFontManager()
 {
+	delete _cache;
 	delete _base;
 }
 
