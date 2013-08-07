@@ -146,13 +146,24 @@ GlRendererTemplate::Draw(void)
 	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
 
 
+	LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+	CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
 	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
+	text->setFont(bigfont);
+	text->setBackground(0xFFFFFF);
+	layout->addChild(text);
+	text = new CRUITextWidget(lString16(L"Second line"));
 	text->setFont(font);
-	text->setBackground(CRUIImageRef(new CRUISolidFillImage(0xFF80FF)));
+	text->setBackground(0xD0E0E0);
+	text->setMargin(14)->setPadding(16);
+	layout->addChild(text);
+	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
+	layout->addChild((new CRUITextWidget(lString16(L"Line number 7")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
 	//text->setBa
-	text->measure(400, 400);
-	text->layout(0, 0, text->getMeasuredWidth(), text->getMeasuredHeight());
-	text->draw(&buf);
+	layout->measure(400, 500);
+	layout->layout(50, 50, 50 + layout->getMeasuredWidth(), 50 + layout->getMeasuredHeight());
+	layout->draw(&buf);
 
 
 	buf.afterDrawing();

@@ -33,18 +33,27 @@ protected:
 	lvRect _pos;
 	lvRect _margin;
 	lvRect _padding;
-	int _width;
-	int _height;
+	int _layoutWidth;
+	int _layoutHeight;
 	int _measuredWidth;
 	int _measuredHeight;
 	CRUIWidget * _parent;
 	CRUIImageRef _background;
 	bool _layoutRequested;
 public:
+	int getLayoutWidth() { return _layoutWidth; }
+	int getLayoutHeight() { return _layoutHeight; }
+	CRUIWidget * setLayoutParams(int width, int height) { _layoutWidth = width; _layoutHeight = height; return this; }
+	CRUIWidget * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
+	CRUIWidget * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
+
+	virtual CRUIWidget * setTextColor(lUInt32 color) { return this; }
+	virtual CRUIWidget * setText(lString16 text) { return this; }
+	virtual CRUIWidget * setFont(LVFontRef font) { return this; }
 
 	enum {
-		FILL_PARENT = -1,
-		WRAP_CONTENT = -2
+		FILL_PARENT  = 0x40000000,
+		WRAP_CONTENT = 0x20000000
 	};
 
 
@@ -93,10 +102,10 @@ protected:
 	LVFontRef _font;
 	lUInt32 _textColor;
 public:
-	virtual CRUITextWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
-	virtual CRUITextWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
-	virtual CRUITextWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
-	virtual CRUITextWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
+	virtual CRUIWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
+	virtual CRUIWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
+	virtual CRUIWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
+	virtual CRUIWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
 
 	CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines), _textColor(0) {}
 	/// measure dimensions
@@ -128,6 +137,12 @@ public:
 class CRUIVerticalLayout : public CRUIContainerWidget {
 protected:
 public:
+	/// measure dimensions
+	virtual void measure(int baseWidth, int baseHeight);
+	/// updates widget position based on specified rectangle
+	virtual void layout(int left, int top, int right, int bottom);
+	/// draws widget with its children to specified surface
+	virtual void draw(LVDrawBuf * buf);
 };
 
 #endif /* GLUI_H_ */
