@@ -2,6 +2,7 @@
 #include "gldrawbuf.h"
 #include "glfont.h"
 #include <crengine.h>
+#include "glui.h"
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -143,6 +144,15 @@ GlRendererTemplate::Draw(void)
 	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
 	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
 	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
+
+
+	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
+	text->setFont(font);
+	text->setBackground(CRUIImageRef(new CRUISolidFillImage(0xFF80FF)));
+	//text->setBa
+	text->measure(400, 400);
+	text->layout(0, 0, text->getMeasuredWidth(), text->getMeasuredHeight());
+	text->draw(&buf);
 
 
 	buf.afterDrawing();
