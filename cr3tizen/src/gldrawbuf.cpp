@@ -77,7 +77,14 @@ void GLDrawBuf::GetClipRect( lvRect * clipRect )
 /// sets clip rect
 void GLDrawBuf::SetClipRect( const lvRect * clipRect )
 {
-	_clipRect = *clipRect;
+	if (clipRect) {
+		_clipRect = *clipRect;
+	} else {
+		_clipRect.left = 0;
+		_clipRect.top = 0;
+		_clipRect.right = _dx;
+		_clipRect.bottom = _dy;
+	}
 }
 /// set to true for drawing in Paged mode, false for Scroll mode
 void GLDrawBuf::setHidePartialGlyphs( bool hide )
@@ -264,9 +271,11 @@ public:
     virtual void draw() {
     	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-    	GLfloat colors[6 * 4];
-    	LVGLFillColor(color, colors, 6);
-    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    	//GLfloat colors[6 * 4];
+    	//LVGLFillColor(color, colors, 6);
+    	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    	//LVGLSetColor(0xFFFFFF);
+    	glColor4f(1,1,1,1);
     	glActiveTexture(GL_TEXTURE0);
     	glBindTexture(GL_TEXTURE_2D, textureId);
     	glEnable(GL_TEXTURE_2D);

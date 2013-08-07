@@ -10,9 +10,11 @@
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
 
+class LVDocView;
 class GlRendererTemplate :
 	public Tizen::Graphics::Opengl::IGlRenderer
 {
+		LVDocView * _docview;
 public:
 	GlRendererTemplate(void);
 	~GlRendererTemplate(void);

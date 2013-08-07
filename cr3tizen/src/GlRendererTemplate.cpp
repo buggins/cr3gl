@@ -1,6 +1,7 @@
 #include "GlRendererTemplate.h"
 #include "gldrawbuf.h"
 #include "glfont.h"
+#include <crengine.h>
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -43,6 +44,9 @@ GlRendererTemplate::GlRendererTemplate(void)
 	, __controlHeight(0)
 	, __angle(0)
 {
+	_docview = new LVDocView(32);
+	_docview->Resize(300, 400);
+	_docview->createDefaultDocument(lString16(L"Test document"), lString16(L"Just testing if GL rendering is working ok"));
 }
 
 GlRendererTemplate::~GlRendererTemplate(void)
@@ -85,11 +89,17 @@ GlRendererTemplate::Draw(void)
 {
 	CRLog::debug("GlRendererTemplate::Draw is called");
 
+	GLDrawBuf pagebuf(300, 400, 32, true);
+	pagebuf.beforeDrawing();
+	_docview->Draw(pagebuf, false);
+	pagebuf.afterDrawing();
+
 
 	LVFontRef font = fontMan->GetFont(24, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 	GLDrawBuf backbuf(300, 400, 32, true);
 	backbuf.beforeDrawing();
 	backbuf.SetBackgroundColor(0x000000);
+	backbuf.Clear(0x4040C0);
 	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
 	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
 	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
@@ -103,20 +113,38 @@ GlRendererTemplate::Draw(void)
 	font->DrawTextString(&backbuf, 45, 45,
             L"Hello Tizen - testing text", 26,
             '?');
+	font = fontMan->GetFont(32, 400, true, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+	backbuf.SetTextColor(0xFF0000);
+	font->DrawTextString(&backbuf, 45, 145,
+            L"Red text", 8,
+            '?');
+	backbuf.SetTextColor(0x00FF00);
+	font->DrawTextString(&backbuf, 45, 185,
+            L"Green text", 10,
+            '?');
+	backbuf.SetTextColor(0x0000FF);
+	font->DrawTextString(&backbuf, 45, 225,
+            L"Blue text", 9,
+            '?');
 	backbuf.afterDrawing();
 
-	glClearColor(0.5f, 0.5f, 0.7f, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+//	glClearColor(0.5f, 0.5f, 0.7f, 1);
+//	glClear(GL_COLOR_BUFFER_BIT);
 
 	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 16, false);
 	buf.beforeDrawing();
+
+
 	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
 	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
 	buf.FillRect(0, 0, 500, 10, 0x000000FF);
+	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
 	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
 	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
 	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
 	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
+
+
 	buf.afterDrawing();
 	glFlush();
 	return true;
