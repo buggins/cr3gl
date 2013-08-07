@@ -229,27 +229,72 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 	CRLog::error("GLDrawBuf::Draw(img) is not implemented");
 }
 
-void LVGLDrawTexture(int textureId, int dstx0, int dsty0, int dstx1, int dsty1, float srcx0, float srcy0, float srcx1, float srcy1, lUInt32 color) {
-	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-	GLfloat colors[6 * 4];
-	LVGLFillColor(color, colors, 6);
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	//glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	//glColorPointer(4, GL_FLOAT, 0, colors);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+class GLDrawTextureItem : public GLSceneItem {
+	int textureId;
+	int dstx0;
+	int dsty0;
+	int dstx1;
+	int dsty1;
+	float srcx0;
+	float srcy0;
+	float srcx1;
+	float srcy1;
+	lUInt32 color;
+public:
+	GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color)
+	: textureId(_textureId),
+	  dstx0(_dstx0), dsty0(_dsty0),
+	  dstx1(_dstx1), dsty1(_dsty1),
+	  srcx0(_srcx0), srcy0(_srcy0),
+	  srcx1(_srcx1), srcy1(_srcy1),
+	  color(_color)
+	{
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+    virtual void draw() {
+    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+    	GLfloat colors[6 * 4];
+    	LVGLFillColor(color, colors, 6);
+    	glActiveTexture(GL_TEXTURE0);
+    	glEnable(GL_TEXTURE_2D);
+    	glEnableClientState(GL_VERTEX_ARRAY);
+    	//glEnableClientState(GL_COLOR_ARRAY);
+    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    	glVertexPointer(3, GL_FLOAT, 0, vertices);
+    	//glColorPointer(4, GL_FLOAT, 0, colors);
+    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	//glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisable(GL_TEXTURE_2D);
-}
+    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    	//glDisableClientState(GL_COLOR_ARRAY);
+    	glDisableClientState(GL_VERTEX_ARRAY);
+    	glDisable(GL_TEXTURE_2D);
+    }
+};
+
+//void LVGLDrawTexture(int textureId, int dstx0, int dsty0, int dstx1, int dsty1, float srcx0, float srcy0, float srcx1, float srcy1, lUInt32 color) {
+//	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+//	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+//	GLfloat colors[6 * 4];
+//	LVGLFillColor(color, colors, 6);
+//	glActiveTexture(GL_TEXTURE0);
+//	glEnable(GL_TEXTURE_2D);
+//	glEnableClientState(GL_VERTEX_ARRAY);
+//	//glEnableClientState(GL_COLOR_ARRAY);
+//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+//	glVertexPointer(3, GL_FLOAT, 0, vertices);
+//	//glColorPointer(4, GL_FLOAT, 0, colors);
+//	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+//
+//	glDrawArrays(GL_TRIANGLES, 0, 6);
+//
+//	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+//	//glDisableClientState(GL_COLOR_ARRAY);
+//	glDisableClientState(GL_VERTEX_ARRAY);
+//	glDisable(GL_TEXTURE_2D);
+//}
 
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
@@ -257,11 +302,8 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (_textureBuf && _textureId != 0) {
-			glbuf->beforeDrawing();
-
-			LVGLDrawTexture(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF);
-
-			glbuf->afterDrawing();
+			if (glbuf->_scene)
+				glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF));
 		} else {
 			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
 		}
@@ -276,11 +318,8 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
 	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(src);
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
-			beforeDrawing();
-
-			LVGLDrawTexture(glbuf->_textureId, x, _dy - y - dy, x + dx, _dy - y, 0, 0, glbuf->_dx / (float)glbuf->_tdx, glbuf->_dy / (float)glbuf->_tdy, 0xFFFFFF);
-
-			afterDrawing();
+			if (_scene)
+				_scene->add(new GLDrawTextureItem(glbuf->_textureId, x, _dy - y - dy, x + dx, _dy - y, 0, 0, glbuf->_dx / (float)glbuf->_tdx, glbuf->_dy / (float)glbuf->_tdy, 0xFFFFFF));
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
@@ -316,36 +355,17 @@ void GLDrawBuf::createFramebuffer()
 		if (checkError("createFramebuffer glGenTextures")) return;
 		glGenFramebuffersOES(1, &_framebufferId);
 		if (checkError("createFramebuffer glGenFramebuffersOES")) return;
-		//glGenRenderbuffersOES(1, &_renderbufferId);
-		//if (checkError("createFramebuffer glGenRenderbuffersOES")) return;
-		// Bind
 		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
 		if (checkError("createFramebuffer glBindFramebuffer")) return;
-
-//		glBindRenderbufferOES(GL_RENDERBUFFER_OES, _renderbufferId);
-//		if (checkError("createFramebuffer glBindRenderbuffer")) return;
 
 		glBindTexture(GL_TEXTURE_2D, _textureId);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
 		checkError("glTexImage2D");
 
-		//glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_RGBA8_OES, _tdx, _tdy);
-
-		//glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, _renderbufferId);
-
-		//if (checkError("createFramebuffer glBindTexture")) return;
-		//glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT, width, height);
-		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		//if (checkError("createFramebuffer glPixelStorei")) return;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-		//		if (_bpp == 16)
-//			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565_OES, _tdx, _tdy, 0, GL_RGB565_OES, GL_UNSIGNED_BYTE, NULL);
-//		else
-//			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _tdx, _tdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
 		checkError("glFramebufferTexture2DOES");
@@ -355,7 +375,6 @@ void GLDrawBuf::createFramebuffer()
 		}
 		glClearColor(0.5f, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
-//		if (checkError("createFramebuffer glTexImage2D")) return;
 	}
 }
 
@@ -367,10 +386,6 @@ void GLDrawBuf::deleteFramebuffer()
 			glDeleteTextures(1, &_textureId);
 			checkError("deleteFramebuffer - glDeleteTextures");
 		}
-//		if (_renderbufferId != 0) {
-//			glDeleteRenderbuffersOES(1, &_framebufferId);
-//			checkError("deleteFramebuffer - glDeleteRenderbuffer");
-//		}
 		if (_framebufferId != 0) {
 			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
 			glDeleteFramebuffersOES(1, &_framebufferId);
@@ -378,7 +393,6 @@ void GLDrawBuf::deleteFramebuffer()
 		}
 		_textureId = 0;
 		_framebufferId = 0;
-		//_rendeerbufferId = 0;
 	}
 }
 
