@@ -43,8 +43,19 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
 	int width = _font->getTextWidth(_text.c_str(), _text.length());
-	_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
-	_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + _font->getHeight();
+	if (_width == FILL_PARENT)
+		_measuredWidth = baseWidth;
+	else if (_width != WRAP_CONTENT)
+		_measuredWidth = _width;
+	else
+		_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
+	int height = _font->getHeight();
+	if (_height == FILL_PARENT)
+		_measuredHeight = baseHeight;
+	else if (_height != WRAP_CONTENT)
+		_measuredHeight = _height;
+	else
+		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + height;
 }
 
 /// updates widget position based on specified rectangle
@@ -56,10 +67,12 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 }
 /// draws widget with its children to specified surface
 void CRUITextWidget::draw(LVDrawBuf * buf) {
+	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
 	rc.shrinkBy(_margin);
 	rc.shrinkBy(_padding);
+	buf->SetClipRect(&rc);
 	_font->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
             '?');

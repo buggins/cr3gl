@@ -39,6 +39,7 @@ protected:
 	int _measuredHeight;
 	CRUIWidget * _parent;
 	CRUIImageRef _background;
+	bool _layoutRequested;
 public:
 
 	enum {
@@ -57,7 +58,21 @@ public:
 	/// returns parent widget pointer, NULL if it's top level widget
 	CRUIWidget * getParent() { return _parent; }
 
+	CRUIImageRef getBackground() {
+		if (!_background.isNull())
+			return _background;
+		if (_parent)
+			return _parent->getBackground();
+		return CRUIImageRef();
+	}
 	CRUIWidget * setBackground(CRUIImageRef background) { _background = background; return this; }
+	CRUIWidget * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
+
+	virtual void requestLayout(bool updateParent = true) {
+		_layoutRequested = true;
+		if (updateParent && _parent)
+			_parent->requestLayout(true);
+	}
 
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
@@ -74,14 +89,16 @@ public:
 class CRUITextWidget : public CRUIWidget {
 protected:
 	lString16 _text;
-	bool _multiline;
+	int _maxLines;
 	LVFontRef _font;
 	lUInt32 _textColor;
 public:
-	virtual CRUITextWidget * setTextColor(lUInt32 color) { _textColor = color; return this; }
-	virtual CRUITextWidget * setText(lString16 text) { _text = text; return this; }
-	virtual CRUITextWidget * setFont(LVFontRef font) { _font = font; return this; }
-	CRUITextWidget(lString16 text, bool multiline = false) : _text(text), _multiline(multiline), _textColor(0) {}
+	virtual CRUITextWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
+	virtual CRUITextWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
+	virtual CRUITextWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
+	virtual CRUITextWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
+
+	CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines), _textColor(0) {}
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
