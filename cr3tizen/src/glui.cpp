@@ -8,7 +8,7 @@
 
 #include "glui.h"
 
-CRUIWidget::CRUIWidget() : _layoutWidth(FILL_PARENT), _layoutHeight(WRAP_CONTENT), _measuredWidth(0), _measuredHeight(0), _parent(NULL)
+CRUIWidget::CRUIWidget() : _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT), _measuredWidth(0), _measuredHeight(0), _parent(NULL)
 {
 
 }
@@ -136,6 +136,80 @@ void CRUIVerticalLayout::layout(int left, int top, int right, int bottom) {
 }
 /// draws widget with its children to specified surface
 void CRUIVerticalLayout::draw(LVDrawBuf * buf) {
+	LVDrawStateSaver saver(*buf);
+	CRUIWidget::draw(buf);
+	lvRect rc = _pos;
+	rc.shrinkBy(_margin);
+	rc.shrinkBy(_padding);
+	buf->SetClipRect(&rc);
+	for (int i=0; i<getChildCount(); i++) {
+		getChild(i)->draw(buf);
+	}
+}
+
+
+//======================================================================================
+// Horizontal Layout
+/// measure dimensions
+void CRUIHorizontalLayout::measure(int baseWidth, int baseHeight) {
+	int maxw = baseWidth - (_margin.left + _margin.right + _padding.left + _padding.right);
+	int maxh = baseHeight - (_margin.top + _margin.bottom + _padding.top + _padding.bottom);
+	int biggesth = 0;
+	int totalw = 0;
+
+	for (int i=0; i<getChildCount(); i++) {
+		CRUIWidget * child = getChild(i);
+		child->measure(maxw, maxh);
+		totalw += child->getMeasuredWidth();
+		if (biggesth < child->getMeasuredHeight())
+			biggesth = child->getMeasuredHeight();
+	}
+	if (biggesth > maxh)
+		biggesth = maxh;
+	if (totalw > maxw)
+		totalw = maxw;
+
+	if (_layoutWidth == FILL_PARENT)
+		_measuredWidth = baseWidth;
+	else if (_layoutWidth != WRAP_CONTENT)
+		_measuredWidth = _layoutWidth;
+	else
+		_measuredWidth = totalw + (_margin.left + _margin.right + _padding.left + _padding.right);
+	if (_measuredWidth > baseWidth)
+		_measuredWidth = baseWidth;
+
+	if (_layoutHeight == FILL_PARENT)
+		_measuredHeight = baseHeight;
+	else if (_layoutHeight != WRAP_CONTENT)
+		_measuredHeight = _layoutHeight;
+	else
+		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + biggesth;
+
+	if (_measuredHeight > baseHeight)
+		_measuredHeight = baseHeight;
+}
+
+/// updates widget position based on specified rectangle
+void CRUIHorizontalLayout::layout(int left, int top, int right, int bottom) {
+	_pos.left = left;
+	_pos.top = top;
+	_pos.right = right;
+	_pos.bottom = bottom;
+	lvRect clientRc = _pos;
+	clientRc.shrinkBy(_margin);
+	clientRc.shrinkBy(_padding);
+	lvRect childRc = clientRc;
+	int x = childRc.left;
+	for (int i=0; i<getChildCount(); i++) {
+		CRUIWidget * child = getChild(i);
+		childRc.left = x;
+		childRc.right = x + child->getMeasuredWidth();
+		child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
+		x = childRc.right;
+	}
+}
+/// draws widget with its children to specified surface
+void CRUIHorizontalLayout::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;

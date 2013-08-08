@@ -147,7 +147,7 @@ GlRendererTemplate::Draw(void)
 
 
 	LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+	CRUIWidget * layout = new CRUIVerticalLayout();
 	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
 	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
 	text->setFont(bigfont);
@@ -163,6 +163,18 @@ GlRendererTemplate::Draw(void)
 	//text->setBa
 	layout->measure(400, 500);
 	layout->layout(50, 50, 50 + layout->getMeasuredWidth(), 50 + layout->getMeasuredHeight());
+	layout->draw(&buf);
+
+	font = fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+	layout = new CRUIHorizontalLayout();
+	layout->setPadding(4)->setMargin(10)->setBackground(0xE0C0E0);
+	layout->addChild((new CRUITextWidget(lString16(L"Horizontal")))->setFont(font)->setBackground(0xFF80FF)->setPadding(3)->setMargin(3));
+	layout->addChild((new CRUITextWidget(lString16(L"Layout")))->setFont(font)->setBackground(0xC0FFC0)->setPadding(3)->setMargin(3));
+	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
+	layout->addChild((new CRUITextWidget(lString16(L"Last item")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
+	//text->setBa
+	layout->measure(500, 500);
+	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 550 + layout->getMeasuredHeight());
 	layout->draw(&buf);
 
 
