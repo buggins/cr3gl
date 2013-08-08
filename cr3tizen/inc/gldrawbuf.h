@@ -158,30 +158,29 @@ class GLImageCacheItem {
 	GLImageCachePage * _page;
 public:
 	GLImageCachePage * getPage() { return _page; }
-	void * _objectPtr;
+	CacheableObject * _objectPtr;
 	// image size
 	int _dx;
 	int _dy;
 	int _x0;
 	int _y0;
-	GLImageCacheItem(GLImageCachePage * page, void * obj) : _page(page), _objectPtr(obj) {}
+	GLImageCacheItem(GLImageCachePage * page, CacheableObject * obj) : _page(page), _objectPtr(obj) {}
 };
 
-
-class GLImageCache {
-	LVHashTable<void*,GLImageCacheItem*> _map;
+class GLImageCache : public CacheObjectListener {
+	LVHashTable<CacheableObject*,GLImageCacheItem*> _map;
 	LVPtrVector<GLImageCachePage> _pages;
 	GLImageCachePage * _activePage;
 	void removePage(GLImageCachePage * page);
 public:
-	GLImageCache() : _map(1024), _activePage(0) { }
-	~GLImageCache() { clear(); }
-	GLImageCacheItem * get(void * obj);
+	GLImageCache();
+	virtual ~GLImageCache();
+	GLImageCacheItem * get(CacheableObject * obj);
 	GLImageCacheItem * set(LVImageSourceRef img);
 	GLImageCacheItem * set(LVDrawBuf * img);
 	void clear();
-	void drawItem(void * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip);
-	void onCachedObjectDeleted(void * obj);
+	void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip);
+	virtual void onCachedObjectDeleted(CacheableObject * obj);
 };
 
 
@@ -190,5 +189,6 @@ void LVGLFillColor(lUInt32 color, float * buf, int count);
 // converts color from CoolReader format and calls glColor4f
 void LVGLSetColor(lUInt32 color);
 
+extern GLImageCache * glImageCache;
 
 #endif /* GLDRAWBUF_H_ */

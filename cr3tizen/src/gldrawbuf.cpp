@@ -28,6 +28,13 @@ static bool checkError(const char * context) {
 	return false;
 }
 
+GLImageCache * glImageCache = NULL;
+
+/// object deletion listener callback function type
+static void onObjectDestroyedCallback(CacheObjectListener * pcache, CacheableObject * pobject) {
+	if (glImageCache == pcache)
+		glImageCache->onCachedObjectDeleted(pobject);
+}
 
 class GLImageCachePage {
 	GLImageCache * _cache;
@@ -93,7 +100,7 @@ public:
 	    	}
 	    }
 	}
-	GLImageCacheItem * reserveSpace(void * obj, int width, int height) {
+	GLImageCacheItem * reserveSpace(CacheableObject * obj, int width, int height) {
 		GLImageCacheItem * cacheItem = new GLImageCacheItem(this, obj);
 		if (_closed)
 			return NULL;
@@ -139,6 +146,7 @@ public:
 				updateTexture();
 			return NULL;
 		}
+		img->setOnObjectDestroyedCallback(onObjectDestroyedCallback, _cache);
 		_drawbuf->Draw(img, cacheItem->_x0, cacheItem->_y0, cacheItem->_dx, cacheItem->_dy, false);
 		invertAlpha(cacheItem);
 		_needUpdateTexture = true;
@@ -148,6 +156,7 @@ public:
 		GLImageCacheItem * cacheItem = reserveSpace(buf, buf->GetWidth(), buf->GetHeight());
 		if (cacheItem == NULL)
 			return NULL;
+		buf->setOnObjectDestroyedCallback(onObjectDestroyedCallback, _cache);
 		buf->DrawTo(_drawbuf, cacheItem->_x0, cacheItem->_y0, 0, NULL);
 		invertAlpha(cacheItem);
 		_needUpdateTexture = true;
@@ -216,7 +225,7 @@ public:
 // GLImageCache
 
 #define GL_IMAGE_CACHE_PAGE_SIZE 1024
-GLImageCacheItem * GLImageCache::get(void * obj) {
+GLImageCacheItem * GLImageCache::get(CacheableObject * obj) {
 	GLImageCacheItem * res = _map.get(obj);
 	return res;
 }
@@ -268,7 +277,7 @@ GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
 	return res;
 }
 
-void GLImageCache::drawItem(void * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip)
+void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip)
 {
 	GLImageCacheItem* item = get(obj);
 	if (item) {
@@ -276,9 +285,18 @@ void GLImageCache::drawItem(void * obj, int x, int y, int dx, int dy, lUInt32 co
 	}
 }
 
+GLImageCache::GLImageCache() : _map(1024), _activePage(0)
+{
+	glImageCache = this;
+}
+GLImageCache::~GLImageCache() {
+	clear();
+	glImageCache = NULL;
+}
+
 void GLImageCache::clear() {
-	LVHashTable<void*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
-	LVHashTable<void*,GLImageCacheItem*>::pair * p;
+	LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
+	LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * p;
 	for (;;) {
 		p = iter.next();
 		if (!p)
@@ -289,7 +307,7 @@ void GLImageCache::clear() {
 	_pages.clear();
 }
 
-void GLImageCache::onCachedObjectDeleted(void * obj) {
+void GLImageCache::onCachedObjectDeleted(CacheableObject * obj) {
 	GLImageCacheItem* item = get(obj);
 	if (item) {
 		int itemsLeft = item->getPage()->deleteItem(item);
