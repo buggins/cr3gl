@@ -74,17 +74,41 @@ void GLDrawBuf::GetClipRect( lvRect * clipRect )
 {
 	*clipRect = _clipRect;
 }
+
+//class ClipRectItem : public GLSceneItem {
+//	lvRect _rc;
+//public:
+//	ClipRectItem(int left, int top, int right, int bottom) {
+//		_rc.left = left;
+//		_rc.right = right;
+//		_rc.top = top;
+//		_rc.bottom = bottom;
+//	}
+//	virtual void draw() {
+//		//glViewport(_rc.left, _rc.top, _rc.width(), _rc.height());
+//	}
+//};
+
 /// sets clip rect
 void GLDrawBuf::SetClipRect( const lvRect * clipRect )
 {
+	bool changed = false;
 	if (clipRect) {
-		_clipRect = *clipRect;
+		if (_clipRect != *clipRect) {
+			_clipRect = *clipRect;
+			changed = true;
+		}
 	} else {
-		_clipRect.left = 0;
-		_clipRect.top = 0;
-		_clipRect.right = _dx;
-		_clipRect.bottom = _dy;
+		if (_clipRect.left != 0 || _clipRect.top != 0 || _clipRect.right != _dx || _clipRect.bottom != _dy) {
+			_clipRect.left = 0;
+			_clipRect.top = 0;
+			_clipRect.right = _dx;
+			_clipRect.bottom = _dy;
+			changed = true;
+		}
 	}
+//	if (_scene)
+//		_scene->add(new ClipRectItem(_clipRect.left, GetHeight() - _clipRect.bottom, _clipRect.right, GetHeight() - _clipRect.top));
 }
 /// set to true for drawing in Paged mode, false for Scroll mode
 void GLDrawBuf::setHidePartialGlyphs( bool hide )

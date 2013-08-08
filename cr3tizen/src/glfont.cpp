@@ -518,11 +518,19 @@ public:
 					continue;
 				if ( (item && !isHyphen) || i>=len-1 ) { // avoid soft hyphens inside text string
 					int w = item->width + (kerning >> 6);
-					scene->add(new GLCharGlyphItem(item,
-							x + (kerning>>6) + item->originX,
-							glbuf->GetHeight() - (y + _baseline - item->originY),
-							color));
-
+					lvRect rc;
+					rc.left = x + (kerning>>6) + item->originX;
+					rc.top = (y + _baseline - item->originY);
+					rc.right = rc.left + item->dx;
+					rc.bottom = rc.top + item->dy;
+//					clip.top = glbuf->GetHeight() - clip.top;
+//					clip.bottom = glbuf->GetHeight() - clip.bottom;
+					if (clip.intersects(rc)) {
+						scene->add(new GLCharGlyphItem(item,
+								rc.left,
+								glbuf->GetHeight() - rc.top,
+								color));
+					}
 					x  += w + letter_spacing;
 					previous = ch;
 				}
