@@ -71,8 +71,8 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
 	rc.shrinkBy(_margin);
-	rc.shrinkBy(_padding);
 	buf->SetClipRect(&rc);
+	rc.shrinkBy(_padding);
 	_font->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
             '?');
@@ -136,8 +136,12 @@ void CRUIVerticalLayout::layout(int left, int top, int right, int bottom) {
 }
 /// draws widget with its children to specified surface
 void CRUIVerticalLayout::draw(LVDrawBuf * buf) {
-	CRUIWidget::draw(buf);
 	LVDrawStateSaver saver(*buf);
+	CRUIWidget::draw(buf);
+	lvRect rc = _pos;
+	rc.shrinkBy(_margin);
+	rc.shrinkBy(_padding);
+	buf->SetClipRect(&rc);
 	for (int i=0; i<getChildCount(); i++) {
 		getChild(i)->draw(buf);
 	}

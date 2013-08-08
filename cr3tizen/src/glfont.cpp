@@ -100,7 +100,7 @@ public:
 	    	drawbuf = NULL;
 	    }
 	}
-	void drawItem(GLGlyphCacheItem * item, int x, int y, lUInt32 color) {
+	void drawItem(GLGlyphCacheItem * item, int x, int y, lUInt32 color, lvRect * clip) {
 		if (needUpdateTexture)
 			updateTexture();
 		if (textureId != 0) {
@@ -113,6 +113,18 @@ public:
 			float srcy0 = item->y0;
 			float srcx1 = item->x1;
 			float srcy1 = item->y1;
+			if (clip) {
+				// correct clipping
+				float txpp = 1 / 1024.0f; // texture coordinates per pixel
+				dstx0 += clip->left;
+				srcx0 += clip->left * txpp;
+				dstx1 -= clip->right;
+				srcx1 -= clip->right * txpp;
+				dsty0 -= clip->top;
+				srcy0 += clip->top * txpp;
+				dsty1 += clip->bottom;
+				srcy1 -= clip->bottom * txpp;
+			}
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
@@ -184,8 +196,8 @@ public:
 	}
 };
 
-void GLGlyphCacheItem::draw(int x, int y, lUInt32 color) {
-	page->drawItem(this, x, y, color);
+void GLGlyphCacheItem::draw(int x, int y, lUInt32 color, lvRect * clip) {
+	page->drawItem(this, x, y, color, clip);
 }
 
 //============================================================================================
@@ -331,15 +343,38 @@ class GLCharGlyphItem : public GLSceneItem {
 	int x;
 	int y;
 	lUInt32 color;
+	lvRect * clip;
 public:
-	GLCharGlyphItem(GLGlyphCacheItem * _item, int _x, int _y, lUInt32 _color)
-	: item(_item), x(_x), y(_y), color(_color)
+	GLCharGlyphItem(GLGlyphCacheItem * _item, int _x, int _y, lUInt32 _color, lvRect * _clip)
+	: item(_item), x(_x), y(_y), color(_color), clip(_clip)
 	{
 	}
 	virtual void draw() {
-		item->draw(x, y, color);
+		item->draw(x, y, color, clip);
+	}
+	virtual ~GLCharGlyphItem() {
+		if (clip)
+			delete clip;
 	}
 };
+
+/// returns non-NULL pointer to trimming values for 4 sides of rc, if clipping is necessary
+lvRect * calcClipping(lvRect & rc, lvRect & cliprc) {
+	if (rc.intersects(cliprc) && !cliprc.isRectInside(rc)) {
+		lvRect * res = new lvRect();
+		if (cliprc.left > rc.left)
+			res->left = cliprc.left - rc.left;
+		if (cliprc.top > rc.top)
+			res->top = cliprc.top - rc.top;
+		if (rc.right > cliprc.right)
+			res->right = rc.right - cliprc.right;
+		if (rc.bottom > cliprc.bottom)
+			res->bottom = rc.bottom - cliprc.bottom;
+		return res;
+	} else {
+		return NULL;
+	}
+}
 
 /** \brief base class for fonts
 
@@ -526,10 +561,13 @@ public:
 //					clip.top = glbuf->GetHeight() - clip.top;
 //					clip.bottom = glbuf->GetHeight() - clip.bottom;
 					if (clip.intersects(rc)) {
+						lvRect * clipInfo = NULL;
+						if (!clip.isRectInside(rc))
+							clipInfo = calcClipping(rc, clip);
 						scene->add(new GLCharGlyphItem(item,
 								rc.left,
 								glbuf->GetHeight() - rc.top,
-								color));
+								color, clipInfo));
 					}
 					x  += w + letter_spacing;
 					previous = ch;

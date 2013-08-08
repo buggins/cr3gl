@@ -8,6 +8,7 @@
 #ifndef GLFONT_H_
 #define GLFONT_H_
 
+#include <lvtypes.h>
 #include <lvfntman.h>
 #include <lvhashtable.h>
 
@@ -31,7 +32,7 @@ struct GLGlyphCacheItem {
 	float y1;
 	GLFont * font;
 	GLGlyphCachePage * page;
-	void draw(int x, int y, lUInt32 color);
+	void draw(int x, int y, lUInt32 color, lvRect * clip);
 };
 
 
