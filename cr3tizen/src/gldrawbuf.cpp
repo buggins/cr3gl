@@ -7,6 +7,7 @@
 
 #include "gldrawbuf.h"
 #include <glext.h>
+#include <lvhashtable.h>
 
 
 #define MIN_TEX_SIZE 64
@@ -28,6 +29,255 @@ static bool checkError(const char * context) {
 }
 
 
+class GLImageCachePage;
+class GLImageCache;
+
+class GLImageCacheItem {
+	GLImageCachePage * _page;
+public:
+	void * _objectPtr;
+	// image size
+	int _dx;
+	int _dy;
+	int _x0;
+	int _y0;
+	GLImageCacheItem(GLImageCachePage * page, void * obj) : _page(page), _objectPtr(obj) {}
+};
+
+class GLImageCachePage {
+	GLImageCache * _cache;
+	int _tdx;
+	int _tdy;
+	LVColorDrawBuf * _drawbuf;
+	int _currentLine;
+	int _nextLine;
+	int _x;
+	bool _closed;
+	bool _needUpdateTexture;
+	GLuint _textureId;
+public:
+	GLImageCachePage(GLImageCache * cache, int dx, int dy) : _cache(cache), _drawbuf(NULL), _currentLine(0), _nextLine(0), _x(0), _closed(false), _needUpdateTexture(false), _textureId(0) {
+		_tdx = nearestPOT(dx);
+		_tdy = nearestPOT(dy);
+	}
+	virtual ~GLImageCachePage() {
+		if (_drawbuf)
+			delete _drawbuf;
+		if (_textureId != 0)
+			glDeleteTextures(1, &_textureId);
+	}
+	void updateTexture() {
+		if (_drawbuf == NULL)
+			return; // no draw buffer!!!
+	    if (_textureId == 0) {
+	    	CRLog::debug("updateTexture - new texture");
+			glGenTextures(1, &_textureId);
+			if (glGetError() != GL_NO_ERROR)
+				return;
+	    }
+    	CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
+	    glBindTexture(GL_TEXTURE_2D, _textureId);
+	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, _drawbuf->GetScanLine(0));
+	    checkError("updateTexture - glTexImage2D");
+	    if (glGetError() != GL_NO_ERROR) {
+	        glDeleteTextures(1, &_textureId);
+	        return;
+	    }
+	    _needUpdateTexture = false;
+	    if (_closed) {
+	    	delete _drawbuf;
+	    	_drawbuf = NULL;
+	    }
+	}
+	void invertAlpha(GLImageCacheItem * item) {
+		int x0 = item->_x0;
+		int y0 = item->_y0;
+		int x1 = x0 + item->_dx;
+		int y1 = y0 + item->_dy;
+	    for (int y = y0; y < y1; y++) {
+	    	lUInt32 * row = (lUInt32 *)_drawbuf->GetScanLine(y);
+	    	for (int x = x0; x < x1; x++) {
+	    		row[x] ^= 0xFF000000;
+	    	}
+	    }
+	}
+	GLImageCacheItem * reserveSpace(void * obj, int width, int height) {
+		GLImageCacheItem * cacheItem = new GLImageCacheItem(this, obj);
+		if (_closed)
+			return NULL;
+
+		// next line if necessary
+		if (_x + width > _tdx) {
+			// move to next line
+			_currentLine = _nextLine;
+			_x = 0;
+		}
+		// check if no room left for glyph height
+		if (_currentLine + height > _tdy) {
+			_closed = true;
+			return NULL;
+		}
+		cacheItem->_dx = width;
+		cacheItem->_dy = height;
+		cacheItem->_x0 = _x;
+		cacheItem->_y0 = _currentLine;
+		if (height && width) {
+			if (_nextLine < _currentLine + height)
+				_nextLine = _currentLine + height;
+			if (!_drawbuf) {
+				_drawbuf = new LVColorDrawBuf(_tdx, _tdy, 32);
+				_drawbuf->SetBackgroundColor(0x000000);
+				_drawbuf->SetTextColor(0xFFFFFF);
+				_drawbuf->Clear(0xFF000000);
+			}
+			_x += width;
+			_needUpdateTexture = true;
+		}
+		return cacheItem;
+	}
+	GLImageCacheItem * addItem(LVImageSourceRef img) {
+		GLImageCacheItem * cacheItem = reserveSpace(img.get(), img->GetWidth(), img->GetHeight());
+		if (cacheItem == NULL) {
+			if (_closed && _needUpdateTexture)
+				updateTexture();
+			return NULL;
+		}
+		_drawbuf->Draw(img, cacheItem->_x0, cacheItem->_y0, cacheItem->_dx, cacheItem->_dy, false);
+		invertAlpha(cacheItem);
+		_needUpdateTexture = true;
+		return cacheItem;
+	}
+	GLImageCacheItem * addItem(LVDrawBuf * buf) {
+		GLImageCacheItem * cacheItem = reserveSpace(buf, buf->GetWidth(), buf->GetHeight());
+		if (cacheItem == NULL)
+			return NULL;
+		buf->DrawTo(_drawbuf, cacheItem->_x0, cacheItem->_y0, 0, NULL);
+		invertAlpha(cacheItem);
+		_needUpdateTexture = true;
+		return cacheItem;
+	}
+	void drawItem(GLImageCacheItem * item, int x, int y, lUInt32 color, lvRect * clip) {
+		if (_needUpdateTexture)
+			updateTexture();
+		if (_textureId != 0) {
+			//CRLog::trace("drawing character at %d,%d", x, y);
+			float dstx0 = x;
+			float dsty0 = y;
+			float dstx1 = x + (item->_dx);
+			float dsty1 = y - (item->_dy);
+			float txppx = 1 / (float)_tdx;
+			float txppy = 1 / (float)_tdy;
+			float srcx0 = item->_x0 * txppx;
+			float srcy0 = item->_y0 * txppy;
+			float srcx1 = (item->_x0 + item->_dx) * txppx;
+			float srcy1 = (item->_y0 + item->_dy) * txppy;
+			if (clip) {
+				// correct clipping
+				float txpp = 1 / 1024.0f; // texture coordinates per pixel
+				dstx0 += clip->left;
+				srcx0 += clip->left * txpp;
+				dstx1 -= clip->right;
+				srcx1 -= clip->right * txpp;
+				dsty0 -= clip->top;
+				srcy0 += clip->top * txpp;
+				dsty1 += clip->bottom;
+				srcy1 -= clip->bottom * txpp;
+			}
+	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+
+	    	LVGLSetColor(color);
+	    	glActiveTexture(GL_TEXTURE0);
+	    	glEnable(GL_TEXTURE_2D);
+	    	glBindTexture(GL_TEXTURE_2D, _textureId);
+
+	    	glEnable(GL_BLEND);
+	    	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	    	glEnableClientState(GL_VERTEX_ARRAY);
+	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+
+	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	    	glDisableClientState(GL_VERTEX_ARRAY);
+	    	glDisable(GL_TEXTURE_2D);
+	    	glDisable(GL_BLEND);
+		}
+	}
+	void close() {
+		_closed = true;
+		if (_needUpdateTexture)
+			updateTexture();
+	}
+};
+
+#define GL_IMAGE_CACHE_PAGE_SIZE 1024
+class GLImageCache {
+	LVHashTable<void*,GLImageCacheItem*> _map;
+	LVPtrVector<GLImageCachePage> _pages;
+	GLImageCachePage * _activePage;
+public:
+	GLImageCacheItem * get(void * obj) {
+		GLImageCacheItem * res = _map.get(obj);
+		return res;
+	}
+	GLImageCacheItem * set(LVImageSourceRef img) {
+		GLImageCacheItem * res = NULL;
+		if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+			// trying to reuse common page for small images
+			if (_activePage == NULL) {
+				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+				_pages.add(_activePage);
+			}
+			res = _activePage->addItem(img);
+			if (!res) {
+				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+				_pages.add(_activePage);
+				res = _activePage->addItem(img);
+			}
+		} else {
+			// use separate page for big image
+			GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
+			_pages.add(page);
+			res = page->addItem(img);
+			page->close();
+		}
+		_map.set(img.get(), res);
+		return res;
+	}
+	GLImageCacheItem * set(LVDrawBuf * img) {
+		GLImageCacheItem * res = NULL;
+		if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+			// trying to reuse common page for small images
+			if (_activePage == NULL) {
+				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+				_pages.add(_activePage);
+			}
+			res = _activePage->addItem(img);
+			if (!res) {
+				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+				_pages.add(_activePage);
+				res = _activePage->addItem(img);
+			}
+		} else {
+			// use separate page for big image
+			GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
+			_pages.add(page);
+			res = page->addItem(img);
+			page->close();
+		}
+		_map.set(img, res);
+		return res;
+	}
+};
 
 /// rotates buffer contents by specified angle
 void GLDrawBuf::Rotate( cr_rotate_angle_t angle ) {
