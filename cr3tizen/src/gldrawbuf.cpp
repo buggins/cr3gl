@@ -29,21 +29,6 @@ static bool checkError(const char * context) {
 }
 
 
-class GLImageCachePage;
-class GLImageCache;
-
-class GLImageCacheItem {
-	GLImageCachePage * _page;
-public:
-	void * _objectPtr;
-	// image size
-	int _dx;
-	int _dy;
-	int _x0;
-	int _y0;
-	GLImageCacheItem(GLImageCachePage * page, void * obj) : _page(page), _objectPtr(obj) {}
-};
-
 class GLImageCachePage {
 	GLImageCache * _cache;
 	int _tdx;
@@ -55,10 +40,12 @@ class GLImageCachePage {
 	bool _closed;
 	bool _needUpdateTexture;
 	GLuint _textureId;
+	int _itemCount;
 public:
 	GLImageCachePage(GLImageCache * cache, int dx, int dy) : _cache(cache), _drawbuf(NULL), _currentLine(0), _nextLine(0), _x(0), _closed(false), _needUpdateTexture(false), _textureId(0) {
 		_tdx = nearestPOT(dx);
 		_tdy = nearestPOT(dy);
+		_itemCount = 0;
 	}
 	virtual ~GLImageCachePage() {
 		if (_drawbuf)
@@ -138,7 +125,12 @@ public:
 			_x += width;
 			_needUpdateTexture = true;
 		}
+		_itemCount++;
 		return cacheItem;
+	}
+	int deleteItem(GLImageCacheItem* item) {
+		_itemCount--;
+		return _itemCount;
 	}
 	GLImageCacheItem * addItem(LVImageSourceRef img) {
 		GLImageCacheItem * cacheItem = reserveSpace(img.get(), img->GetWidth(), img->GetHeight());
@@ -161,7 +153,7 @@ public:
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
-	void drawItem(GLImageCacheItem * item, int x, int y, lUInt32 color, lvRect * clip) {
+	void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, lUInt32 color, lUInt32 options, lvRect * clip) {
 		if (_needUpdateTexture)
 			updateTexture();
 		if (_textureId != 0) {
@@ -219,65 +211,103 @@ public:
 	}
 };
 
+
+//=======================================================================
+// GLImageCache
+
 #define GL_IMAGE_CACHE_PAGE_SIZE 1024
-class GLImageCache {
-	LVHashTable<void*,GLImageCacheItem*> _map;
-	LVPtrVector<GLImageCachePage> _pages;
-	GLImageCachePage * _activePage;
-public:
-	GLImageCacheItem * get(void * obj) {
-		GLImageCacheItem * res = _map.get(obj);
-		return res;
-	}
-	GLImageCacheItem * set(LVImageSourceRef img) {
-		GLImageCacheItem * res = NULL;
-		if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
-			// trying to reuse common page for small images
-			if (_activePage == NULL) {
-				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
-				_pages.add(_activePage);
-			}
+GLImageCacheItem * GLImageCache::get(void * obj) {
+	GLImageCacheItem * res = _map.get(obj);
+	return res;
+}
+
+GLImageCacheItem * GLImageCache::set(LVImageSourceRef img) {
+	GLImageCacheItem * res = NULL;
+	if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() <= GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+		// trying to reuse common page for small images
+		if (_activePage)
 			res = _activePage->addItem(img);
-			if (!res) {
-				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
-				_pages.add(_activePage);
-				res = _activePage->addItem(img);
-			}
-		} else {
-			// use separate page for big image
-			GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
-			_pages.add(page);
-			res = page->addItem(img);
-			page->close();
-		}
-		_map.set(img.get(), res);
-		return res;
-	}
-	GLImageCacheItem * set(LVDrawBuf * img) {
-		GLImageCacheItem * res = NULL;
-		if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
-			// trying to reuse common page for small images
-			if (_activePage == NULL) {
-				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
-				_pages.add(_activePage);
-			}
+		if (!res) {
+			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+			_pages.add(_activePage);
 			res = _activePage->addItem(img);
-			if (!res) {
-				_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
-				_pages.add(_activePage);
-				res = _activePage->addItem(img);
-			}
-		} else {
-			// use separate page for big image
-			GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
-			_pages.add(page);
-			res = page->addItem(img);
-			page->close();
 		}
-		_map.set(img, res);
-		return res;
+	} else {
+		// use separate page for big image
+		GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
+		_pages.add(page);
+		res = page->addItem(img);
+		page->close();
 	}
-};
+	_map.set(img.get(), res);
+	return res;
+}
+
+GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
+	GLImageCacheItem * res = NULL;
+	if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+		// trying to reuse common page for small images
+		if (_activePage == NULL) {
+			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+			_pages.add(_activePage);
+		}
+		res = _activePage->addItem(img);
+		if (!res) {
+			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+			_pages.add(_activePage);
+			res = _activePage->addItem(img);
+		}
+	} else {
+		// use separate page for big image
+		GLImageCachePage * page = new GLImageCachePage(this, img->GetWidth(), img->GetHeight());
+		_pages.add(page);
+		res = page->addItem(img);
+		page->close();
+	}
+	_map.set(img, res);
+	return res;
+}
+
+void GLImageCache::drawItem(void * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip)
+{
+	GLImageCacheItem* item = get(obj);
+	if (item) {
+		item->getPage()->drawItem(item, x, y, dx, dy, color, options, clip);
+	}
+}
+
+void GLImageCache::clear() {
+	LVHashTable<void*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
+	LVHashTable<void*,GLImageCacheItem*>::pair * p;
+	for (;;) {
+		p = iter.next();
+		if (!p)
+			break;
+		delete p->value;
+	}
+	_map.clear();
+	_pages.clear();
+}
+
+void GLImageCache::onCachedObjectDeleted(void * obj) {
+	GLImageCacheItem* item = get(obj);
+	if (item) {
+		int itemsLeft = item->getPage()->deleteItem(item);
+		if (itemsLeft <= 0)
+			removePage(item->getPage());
+		_map.remove(obj);
+		delete item;
+	}
+}
+
+void GLImageCache::removePage(GLImageCachePage * page) {
+	if (_activePage == page)
+		_activePage = NULL;
+	page = _pages.remove(page);
+	if (page)
+		delete page;
+}
+
 
 /// rotates buffer contents by specified angle
 void GLDrawBuf::Rotate( cr_rotate_angle_t angle ) {

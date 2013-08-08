@@ -9,6 +9,8 @@
 #define GLDRAWBUF_H_
 
 #include <lvdrawbuf.h>
+#include <lvhashtable.h>
+#include <lvptrvec.h>
 #include <gl.h>
 
 #include "glscene.h"
@@ -148,6 +150,38 @@ public:
 
     /// virtual destructor
     virtual ~GLDrawBuf();
+};
+
+class GLImageCachePage;
+
+class GLImageCacheItem {
+	GLImageCachePage * _page;
+public:
+	GLImageCachePage * getPage() { return _page; }
+	void * _objectPtr;
+	// image size
+	int _dx;
+	int _dy;
+	int _x0;
+	int _y0;
+	GLImageCacheItem(GLImageCachePage * page, void * obj) : _page(page), _objectPtr(obj) {}
+};
+
+
+class GLImageCache {
+	LVHashTable<void*,GLImageCacheItem*> _map;
+	LVPtrVector<GLImageCachePage> _pages;
+	GLImageCachePage * _activePage;
+	void removePage(GLImageCachePage * page);
+public:
+	GLImageCache() : _map(1024), _activePage(0) { }
+	~GLImageCache() { clear(); }
+	GLImageCacheItem * get(void * obj);
+	GLImageCacheItem * set(LVImageSourceRef img);
+	GLImageCacheItem * set(LVDrawBuf * img);
+	void clear();
+	void drawItem(void * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip);
+	void onCachedObjectDeleted(void * obj);
 };
 
 

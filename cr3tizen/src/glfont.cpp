@@ -215,6 +215,7 @@ void GLGlyphCache::clear() {
 	}
 	_map.clear();
 }
+
 void GLGlyphCache::clearFontGlyphs(GLFont * font) {
 	LVHashTable<lUInt64, GLGlyphCacheItem*>::iterator iter = _map.forwardIterator();
 	LVArray<lUInt64> keysForRemove(256, 0);
