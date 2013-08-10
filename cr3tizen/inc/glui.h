@@ -57,6 +57,7 @@ namespace CRUI {
 		FONT_SIZE_MEDIUM = 3,
 		FONT_SIZE_LARGE = 4,
 		FONT_SIZE_XLARGE = 5,
+		FONT_USE_PARENT = 6,
 	};
 };
 
@@ -73,6 +74,12 @@ protected:
 	CRUIStyle * _parentStyle;
 	lUInt8 _stateMask;
 	lUInt8 _stateValue;
+	lvRect _margin;
+	lvRect _padding;
+	int _minWidth;
+	int _maxWidth;
+	int _minHeight;
+	int _maxHeight;
 	LVPtrVector<CRUIStyle, true> _substyles;
 	/// checks if state filter matches specified state
 	virtual bool matchState(lUInt8 stateValue);
@@ -88,6 +95,20 @@ public:
 	virtual const lString8 & styleId() const { return _styleId; }
 
 	virtual void setStateFilter(lUInt8 mask, lUInt8 value) { _stateMask = mask; _stateValue = value; }
+
+	CRUIStyle * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
+	CRUIStyle * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
+	CRUIStyle * setMinWidth(int v) { _minWidth = v; return this; }
+	CRUIStyle * setMaxWidth(int v) { _maxWidth = v; return this; }
+	CRUIStyle * setMinHeight(int v) { _minHeight = v; return this; }
+	CRUIStyle * setMaxHeight(int v) { _maxHeight = v; return this; }
+	const lvRect & getPadding() { return _padding; }
+	const lvRect & getMargin() { return _margin; }
+	virtual int getMinHeight();
+	virtual int getMaxHeight();
+	virtual int getMaxWidth();
+	virtual int getMinWidth();
+
 	virtual CRUIStyle * setFontSize(lUInt8 fontSize) { _fontSize = fontSize; return this; }
 	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
 	virtual CRUIStyle * setTextColor(lUInt32 color) { _textColor = color; return this; }
@@ -149,12 +170,20 @@ public:
 	int getLayoutWidth() { return _layoutWidth; }
 	int getLayoutHeight() { return _layoutHeight; }
 	CRUIWidget * setLayoutParams(int width, int height) { _layoutWidth = width; _layoutHeight = height; return this; }
+
 	CRUIWidget * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
 	CRUIWidget * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
 	CRUIWidget * setMinWidth(int v) { _minWidth = v; return this; }
 	CRUIWidget * setMaxWidth(int v) { _maxWidth = v; return this; }
 	CRUIWidget * setMinHeight(int v) { _minHeight = v; return this; }
 	CRUIWidget * setMaxHeight(int v) { _maxHeight = v; return this; }
+
+	virtual const lvRect & getPadding();
+	virtual const lvRect & getMargin();
+	virtual int getMinHeight();
+	virtual int getMaxHeight();
+	virtual int getMaxWidth();
+	virtual int getMinWidth();
 
 	CRUIWidget * setStyle(lString8 styleId) { _styleId = styleId; return this; }
 	CRUIStyle * getStyle();

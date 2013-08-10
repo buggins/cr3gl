@@ -79,7 +79,12 @@ CRUIStyle * CRUITheme::find(const lString8 &id) {
 }
 
 
-CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 stateValue) : _theme(theme), _styleId(id), _fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL), _stateMask(stateMask), _stateValue(stateValue) {
+CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 stateValue) :
+		_theme(theme), _styleId(id),
+		_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL),
+		_stateMask(stateMask), _stateValue(stateValue),
+		_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED)
+{
 
 }
 
@@ -120,6 +125,23 @@ CRUIStyle * CRUIStyle::find(const lString8 &id) {
 	return NULL;
 }
 
+int CRUIStyle::getMinHeight()
+{
+	return _minHeight;
+}
+int CRUIStyle::getMaxHeight()
+{
+	return _maxHeight;
+}
+int CRUIStyle::getMaxWidth()
+{
+	return _maxWidth;
+}
+int CRUIStyle::getMinWidth()
+{
+	return _minWidth;
+}
+
 CRUIImageRef CRUIStyle::getBackground() {
 	if (!_background.isNull())
 		return _background;
@@ -147,7 +169,7 @@ lUInt32 CRUIStyle::getTextColor() {
 }
 
 
-CRUIWidget::CRUIWidget() : _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
+CRUIWidget::CRUIWidget() : _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
 	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
 	_measuredWidth(0), _measuredHeight(0),
 	_parent(NULL), _fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR)
@@ -161,26 +183,32 @@ CRUIWidget::~CRUIWidget() {
 
 /// measure dimensions
 void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height) {
+	lvRect padding = getPadding();
+	lvRect margin = getMargin();
+	int minWidth = getMinWidth();
+	int maxWidth = getMaxWidth();
+	int minHeight = getMinHeight();
+	int maxHeight = getMaxHeight();
 	if (_layoutWidth == FILL_PARENT && baseWidth != UNSPECIFIED)
 		_measuredWidth = baseWidth;
 	else if (_layoutWidth != WRAP_CONTENT)
 		_measuredWidth = _layoutWidth;
 	else
-		_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
+		_measuredWidth = margin.left + margin.right + padding.left + padding.right + width;
 	if (_layoutHeight == FILL_PARENT && baseHeight != UNSPECIFIED)
 		_measuredHeight = baseHeight;
 	else if (_layoutHeight != WRAP_CONTENT)
 		_measuredHeight = _layoutHeight;
 	else
-		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + height;
-	if (_minWidth != UNSPECIFIED && _measuredWidth < _minWidth)
-		_measuredWidth = _minWidth;
-	if (_maxWidth != UNSPECIFIED && _measuredWidth > _maxWidth)
-		_measuredWidth = _maxWidth;
-	if (_minHeight != UNSPECIFIED && _measuredHeight < _minHeight)
-		_measuredHeight = _minHeight;
-	if (_maxHeight != UNSPECIFIED && _measuredHeight > _maxHeight)
-		_measuredHeight = _maxHeight;
+		_measuredHeight = margin.top + margin.bottom + padding.top + padding.bottom + height;
+	if (minWidth != UNSPECIFIED && _measuredWidth < minWidth)
+		_measuredWidth = minWidth;
+	if (maxWidth != UNSPECIFIED && _measuredWidth > maxWidth)
+		_measuredWidth = maxWidth;
+	if (minHeight != UNSPECIFIED && _measuredHeight < minHeight)
+		_measuredHeight = minHeight;
+	if (maxHeight != UNSPECIFIED && _measuredHeight > maxHeight)
+		_measuredHeight = maxHeight;
 	if (baseWidth != UNSPECIFIED && _measuredWidth > baseWidth)
 		_measuredWidth = baseWidth;
 	if (baseHeight != UNSPECIFIED && _measuredHeight > baseHeight)
@@ -189,6 +217,52 @@ void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height
 
 CRUIStyle * CRUIWidget::getStyle() {
 	return currentTheme->find(_styleId);
+}
+
+const lvRect & CRUIWidget::getPadding() {
+	if (_padding.left != UNSPECIFIED)
+		return _padding;
+	else
+		return getStyle()->getPadding();
+}
+
+const lvRect & CRUIWidget::getMargin() {
+	if (_margin.left != UNSPECIFIED)
+		return _margin;
+	else
+		return getStyle()->getMargin();
+}
+
+int CRUIWidget::getMinHeight()
+{
+	if (_minHeight != UNSPECIFIED)
+		return _minHeight;
+	else
+		return getStyle()->getMinHeight();
+}
+
+int CRUIWidget::getMaxHeight()
+{
+	if (_maxHeight != UNSPECIFIED)
+		return _maxHeight;
+	else
+		return getStyle()->getMaxHeight();
+}
+
+int CRUIWidget::getMaxWidth()
+{
+	if (_maxWidth != UNSPECIFIED)
+		return _maxWidth;
+	else
+		return getStyle()->getMaxWidth();
+}
+
+int CRUIWidget::getMinWidth()
+{
+	if (_minWidth != UNSPECIFIED)
+		return _minWidth;
+	else
+		return getStyle()->getMinWidth();
 }
 
 CRUIImageRef CRUIWidget::getBackground() {
@@ -200,7 +274,10 @@ CRUIImageRef CRUIWidget::getBackground() {
 LVFontRef CRUIWidget::getFont() {
 	if (!_font.isNull())
 		return _font;
-	if (_fontSize != FONT_SIZE_UNSPECIFIED)
+	if (_fontSize == FONT_USE_PARENT) {
+		if (_parent)
+			return _parent->getFont();
+	} else if (_fontSize != FONT_SIZE_UNSPECIFIED)
 		return currentTheme->getFontForSize(_fontSize);
 	return getStyle()->getFont();
 }
@@ -229,7 +306,7 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
 	CRUIImageRef background = getBackground();
 	if (!background.isNull()) {
 		lvRect rc = _pos;
-		rc.shrinkBy(_margin);
+		rc.shrinkBy(getMargin());
 		background->draw(buf, rc);
 	}
 }
@@ -254,9 +331,9 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
-	rc.shrinkBy(_margin);
+	rc.shrinkBy(getMargin());
 	buf->SetClipRect(&rc);
-	rc.shrinkBy(_padding);
+	rc.shrinkBy(getPadding());
 	buf->SetTextColor(getTextColor());
 	getFont()->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
@@ -286,9 +363,9 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
-	rc.shrinkBy(_margin);
+	rc.shrinkBy(getMargin());
 	buf->SetClipRect(&rc);
-	rc.shrinkBy(_padding);
+	rc.shrinkBy(getPadding());
 	if (!_image.isNull())
 		_image->draw(buf, rc);
 }
@@ -300,8 +377,10 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 // Vertical Layout
 /// measure dimensions
 void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
-	int maxw = baseWidth - (_margin.left + _margin.right + _padding.left + _padding.right);
-	int maxh = baseHeight - (_margin.top + _margin.bottom + _padding.top + _padding.bottom);
+	lvRect padding = getPadding();
+	lvRect margin = getMargin();
+	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
+	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
 	if (_isVertical) {
 		int biggestw = 0;
 		int totalh = 0;
@@ -344,8 +423,8 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 	_pos.right = right;
 	_pos.bottom = bottom;
 	lvRect clientRc = _pos;
-	clientRc.shrinkBy(_margin);
-	clientRc.shrinkBy(_padding);
+	clientRc.shrinkBy(getMargin());
+	clientRc.shrinkBy(getPadding());
 	lvRect childRc = clientRc;
 	if (_isVertical) {
 		int y = childRc.top;
