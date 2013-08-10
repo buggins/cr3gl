@@ -36,6 +36,12 @@ static void onObjectDestroyedCallback(CacheObjectListener * pcache, CacheableObj
 		glImageCache->onCachedObjectDeleted(pobject);
 }
 
+void LVGLCreateImageCache() {
+	if (glImageCache != NULL)
+		delete glImageCache;
+	glImageCache = new GLImageCache();
+}
+
 class GLImageCachePage {
 	GLImageCache * _cache;
 	int _tdx;
@@ -169,8 +175,8 @@ public:
 			//CRLog::trace("drawing character at %d,%d", x, y);
 			float dstx0 = x;
 			float dsty0 = y;
-			float dstx1 = x + (item->_dx);
-			float dsty1 = y - (item->_dy);
+			float dstx1 = x + dx;
+			float dsty1 = y - dy;
 			float txppx = 1 / (float)_tdx;
 			float txppy = 1 / (float)_tdy;
 			float srcx0 = item->_x0 * txppx;
@@ -179,15 +185,16 @@ public:
 			float srcy1 = (item->_y0 + item->_dy) * txppy;
 			if (clip) {
 				// correct clipping
-				float txpp = 1 / 1024.0f; // texture coordinates per pixel
+				float xscale = item->_dx / (float)dx;
+				float yscale = item->_dy / (float)dy;
 				dstx0 += clip->left;
-				srcx0 += clip->left * txpp;
+				srcx0 += clip->left * txppx * xscale;
 				dstx1 -= clip->right;
-				srcx1 -= clip->right * txpp;
+				srcx1 -= clip->right * txppx * xscale;
 				dsty0 -= clip->top;
-				srcy0 += clip->top * txpp;
+				srcy0 += clip->top * txppy * yscale;
 				dsty1 += clip->bottom;
-				srcy1 -= clip->bottom * txpp;
+				srcy1 -= clip->bottom * txppy * yscale;
 			}
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
@@ -562,10 +569,53 @@ void GLDrawBuf::Draw( int x, int y, const lUInt8 * bitmap, int width, int height
 	CRLog::error("GLDrawBuf::Draw(bitmap) is not implemented");
 }
 
+
+class GLDrawImageSceneItem : public GLSceneItem {
+	LVImageSource * img;
+	int x;
+	int y;
+	int width;
+	int height;
+	lUInt32 color;
+	lUInt32 options;
+	lvRect * clip;
+public:
+	virtual void draw() {
+		if (glImageCache)
+			glImageCache->drawItem(img, x, y, width, height, color, options, clip);
+	}
+	GLDrawImageSceneItem(LVImageSource * _img, int _x, int _y, int _width, int _height, lUInt32 _color, lUInt32 _options, lvRect * _clip)
+	: img(_img), x(_x), y(_y), width(_width), height(_height), color(_color), options(_options), clip(_clip)
+	{
+
+	}
+	virtual ~GLDrawImageSceneItem() {
+		if (clip)
+			delete clip;
+	}
+};
+
 /// draws image
 void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height, bool dither)
 {
-	CRLog::error("GLDrawBuf::Draw(img) is not implemented");
+	if (width <= 0 || height <= 0)
+		return;
+	GLImageCacheItem * item = glImageCache->get(img.get());
+	if (item == NULL)
+		item = glImageCache->set(img);
+	if (item != NULL) {
+		lvRect cliprect;
+		GetClipRect(&cliprect);
+		lvRect rc;
+		rc.left = x;
+		rc.top = y;
+		rc.right = x + width;
+		rc.bottom = y + height;
+		if (!rc.intersects(cliprect))
+			return; // out of bounds
+		lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
+		LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0xFFFFFF, 0, clip));
+	}
 }
 
 class GLDrawTextureItem : public GLSceneItem {

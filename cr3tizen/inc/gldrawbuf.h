@@ -189,6 +189,9 @@ void LVGLFillColor(lUInt32 color, float * buf, int count);
 // converts color from CoolReader format and calls glColor4f
 void LVGLSetColor(lUInt32 color);
 
+/// creates OpenGL based image cache
+void LVGLCreateImageCache();
+
 extern GLImageCache * glImageCache;
 
 #endif /* GLDRAWBUF_H_ */

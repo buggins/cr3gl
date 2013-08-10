@@ -8,7 +8,7 @@
 #ifndef CR3TIZEN_H_
 #define CR3TIZEN_H_
 
-void LVInitCoolReaderTizen();
+void LVInitCoolReaderTizen(const wchar_t * resourceDir);
 void LVSetTizenLogger();
 
 

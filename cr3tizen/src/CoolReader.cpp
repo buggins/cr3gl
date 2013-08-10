@@ -11,6 +11,7 @@
 
 #include "glfont.h"
 #include "cr3tizen.h"
+#include "lvstring.h"
 
 using namespace Tizen::App;
 using namespace Tizen::Base;
@@ -20,7 +21,7 @@ using namespace Tizen::Ui::Controls;
 
 CoolReaderApp::CoolReaderApp(void)
 {
-	LVInitCoolReaderTizen();
+	LVInitCoolReaderTizen(GetAppResourcePath().GetPointer());
 }
 
 CoolReaderApp::~CoolReaderApp(void)

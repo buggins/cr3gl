@@ -27,6 +27,16 @@ public:
 	virtual ~CRUISolidFillImage() { }
 };
 
+class CRUIBitmapImage : public CRUIImage {
+	LVImageSourceRef _src;
+public:
+	virtual int originalWidth() { return _src->GetWidth(); }
+	virtual int originalHeight() { return _src->GetHeight(); }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect) { buf->Draw(_src, rect.left, rect.top, originalWidth(), originalHeight(), false); }
+	CRUIBitmapImage(LVImageSourceRef img) : _src(img) { }
+	virtual ~CRUIBitmapImage() { }
+};
+
 /// base class for all UI elements
 class CRUIWidget {
 protected:
@@ -121,6 +131,12 @@ protected:
 	CRUIImageRef _image;
 public:
 	CRUIImageWidget(CRUIImageRef image) : _image(image) { }
+	/// measure dimensions
+	virtual void measure(int baseWidth, int baseHeight);
+	/// updates widget position based on specified rectangle
+	virtual void layout(int left, int top, int right, int bottom);
+	/// draws widget with its children to specified surface
+	virtual void draw(LVDrawBuf * buf);
 };
 
 class CRUIContainerWidget : public CRUIWidget {
@@ -155,5 +171,18 @@ public:
 	/// draws widget with its children to specified surface
 	virtual void draw(LVDrawBuf * buf);
 };
+
+class CRResourceResolver {
+	lString8Collection _dirList;
+	lString16 resourceToFileName(const char * res);
+public:
+	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList) { }
+	LVImageSourceRef getImageSource(const char * name);
+	CRUIImageRef getIcon(const char * name);
+	virtual ~CRResourceResolver() {}
+};
+
+extern CRResourceResolver * resourceResolver;
+void LVCreateResourceResolver(lString8Collection & dirList);
 
 #endif /* GLUI_H_ */

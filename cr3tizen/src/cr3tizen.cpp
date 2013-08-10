@@ -10,6 +10,7 @@
 #include "lvstring.h"
 #include "glfont.h"
 #include "gldrawbuf.h"
+#include "glui.h"
 
 
 class CRTizenLogger : public CRLog
@@ -48,7 +49,7 @@ void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
 }
 
-void LVInitCoolReaderTizen() {
+void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
@@ -58,4 +59,8 @@ void LVInitCoolReaderTizen() {
 	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansRegular.ttf"));
 	fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
 	fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
+	lString8Collection dirs;
+	dirs.add(UnicodeToUtf8(resourceDir));
+	LVCreateResourceResolver(dirs);
+	LVGLCreateImageCache();
 }

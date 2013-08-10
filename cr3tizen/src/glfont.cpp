@@ -359,24 +359,6 @@ public:
 	}
 };
 
-/// returns non-NULL pointer to trimming values for 4 sides of rc, if clipping is necessary
-lvRect * calcClipping(lvRect & rc, lvRect & cliprc) {
-	if (rc.intersects(cliprc) && !cliprc.isRectInside(rc)) {
-		lvRect * res = new lvRect();
-		if (cliprc.left > rc.left)
-			res->left = cliprc.left - rc.left;
-		if (cliprc.top > rc.top)
-			res->top = cliprc.top - rc.top;
-		if (rc.right > cliprc.right)
-			res->right = rc.right - cliprc.right;
-		if (rc.bottom > cliprc.bottom)
-			res->bottom = rc.bottom - cliprc.bottom;
-		return res;
-	} else {
-		return NULL;
-	}
-}
-
 /** \brief base class for fonts
 
     implements single interface for font of any engine
@@ -564,7 +546,7 @@ public:
 					if (clip.intersects(rc)) {
 						lvRect * clipInfo = NULL;
 						if (!clip.isRectInside(rc))
-							clipInfo = calcClipping(rc, clip);
+							clipInfo = rc.clipBy(clip);
 						scene->add(new GLCharGlyphItem(item,
 								rc.left,
 								glbuf->GetHeight() - rc.top,

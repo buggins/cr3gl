@@ -172,6 +172,8 @@ GlRendererTemplate::Draw(void)
 	layout->addChild((new CRUITextWidget(lString16(L"Layout")))->setFont(font)->setBackground(0xC0FFC0)->setPadding(3)->setMargin(3));
 	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
 	layout->addChild((new CRUITextWidget(lString16(L"Last item")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
+	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("screen-density-xhigh/cancel.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFFF));
+	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("screen-density-xhigh/t.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFC0));
 	//text->setBa
 	layout->measure(500, 500);
 	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 550 + layout->getMeasuredHeight());
