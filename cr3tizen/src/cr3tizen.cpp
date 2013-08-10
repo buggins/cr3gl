@@ -63,4 +63,15 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	dirs.add(UnicodeToUtf8(resourceDir));
 	LVCreateResourceResolver(dirs);
 	LVGLCreateImageCache();
+
+	currentTheme = new CRUITheme(lString8("BLACK"));
+	currentTheme->setTextColor(0x000000);
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(20, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(26, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(34, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	CRUIStyle * buttonStyle = currentTheme->addSubstyle(lString8("BUTTON"));
+	buttonStyle->setBackground(0xC0C0C0);
+	buttonStyle->setFontSize(CRUI::FONT_SIZE_LARGE);
 }
