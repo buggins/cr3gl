@@ -45,17 +45,29 @@ protected:
 	lvRect _padding;
 	int _layoutWidth;
 	int _layoutHeight;
+	int _minWidth;
+	int _maxWidth;
+	int _minHeight;
+	int _maxHeight;
 	int _measuredWidth;
 	int _measuredHeight;
 	CRUIWidget * _parent;
 	CRUIImageRef _background;
 	bool _layoutRequested;
+
+	/// measure dimensions
+	virtual void defMeasure(int baseWidth, int baseHeight, int contentWidth, int contentHeight);
+
 public:
 	int getLayoutWidth() { return _layoutWidth; }
 	int getLayoutHeight() { return _layoutHeight; }
 	CRUIWidget * setLayoutParams(int width, int height) { _layoutWidth = width; _layoutHeight = height; return this; }
 	CRUIWidget * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
 	CRUIWidget * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
+	CRUIWidget * setMinWidth(int v) { _minWidth = v; return this; }
+	CRUIWidget * setMaxWidth(int v) { _maxWidth = v; return this; }
+	CRUIWidget * setMinHeight(int v) { _minHeight = v; return this; }
+	CRUIWidget * setMaxHeight(int v) { _maxHeight = v; return this; }
 
 	virtual CRUIWidget * setTextColor(lUInt32 color) { return this; }
 	virtual CRUIWidget * setText(lString16 text) { return this; }
@@ -63,7 +75,8 @@ public:
 
 	enum {
 		FILL_PARENT  = 0x40000000,
-		WRAP_CONTENT = 0x20000000
+		WRAP_CONTENT = 0x20000000,
+		UNSPECIFIED  = 0x10000000
 	};
 
 

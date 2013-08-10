@@ -8,7 +8,10 @@
 
 #include "glui.h"
 
-CRUIWidget::CRUIWidget() : _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT), _measuredWidth(0), _measuredHeight(0), _parent(NULL)
+CRUIWidget::CRUIWidget() : _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
+	_measuredWidth(0), _measuredHeight(0),
+	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
+	_parent(NULL)
 {
 
 }
@@ -18,9 +21,36 @@ CRUIWidget::~CRUIWidget() {
 }
 
 /// measure dimensions
+void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height) {
+	if (_layoutWidth == FILL_PARENT && baseWidth != UNSPECIFIED)
+		_measuredWidth = baseWidth;
+	else if (_layoutWidth != WRAP_CONTENT)
+		_measuredWidth = _layoutWidth;
+	else
+		_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
+	if (_layoutHeight == FILL_PARENT && baseHeight != UNSPECIFIED)
+		_measuredHeight = baseHeight;
+	else if (_layoutHeight != WRAP_CONTENT)
+		_measuredHeight = _layoutHeight;
+	else
+		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + height;
+	if (_minWidth != UNSPECIFIED && _measuredWidth < _minWidth)
+		_measuredWidth = _minWidth;
+	if (_maxWidth != UNSPECIFIED && _measuredWidth > _maxWidth)
+		_measuredWidth = _maxWidth;
+	if (_minHeight != UNSPECIFIED && _measuredHeight < _minHeight)
+		_measuredHeight = _minHeight;
+	if (_maxHeight != UNSPECIFIED && _measuredHeight > _maxHeight)
+		_measuredHeight = _maxHeight;
+	if (baseWidth != UNSPECIFIED && _measuredWidth > baseWidth)
+		_measuredWidth = baseWidth;
+	if (baseHeight != UNSPECIFIED && _measuredHeight > baseHeight)
+		_measuredHeight = baseHeight;
+}
+
+/// measure dimensions
 void CRUIWidget::measure(int baseWidth, int baseHeight) {
-	_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right;
-	_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom;
+	defMeasure(baseWidth, baseHeight, 0, 0);
 }
 
 /// updates widget position based on specified rectangle
@@ -43,19 +73,8 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
 	int width = _font->getTextWidth(_text.c_str(), _text.length());
-	if (_layoutWidth == FILL_PARENT)
-		_measuredWidth = baseWidth;
-	else if (_layoutWidth != WRAP_CONTENT)
-		_measuredWidth = _layoutWidth;
-	else
-		_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
 	int height = _font->getHeight();
-	if (_layoutHeight == FILL_PARENT)
-		_measuredHeight = baseHeight;
-	else if (_layoutHeight != WRAP_CONTENT)
-		_measuredHeight = _layoutHeight;
-	else
-		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + height;
+	defMeasure(baseWidth, baseHeight, width, height);
 }
 
 /// updates widget position based on specified rectangle
@@ -86,18 +105,7 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 void CRUIImageWidget::measure(int baseWidth, int baseHeight) {
 	int width = !_image ? 0 : _image->originalWidth();
 	int height = !_image ? 0 : _image->originalHeight();
-	if (_layoutWidth == FILL_PARENT)
-		_measuredWidth = baseWidth;
-	else if (_layoutWidth != WRAP_CONTENT)
-		_measuredWidth = _layoutWidth;
-	else
-		_measuredWidth = _margin.left + _margin.right + _padding.left + _padding.right + width;
-	if (_layoutHeight == FILL_PARENT)
-		_measuredHeight = baseHeight;
-	else if (_layoutHeight != WRAP_CONTENT)
-		_measuredHeight = _layoutHeight;
-	else
-		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + height;
+	defMeasure(baseWidth, baseHeight, width, height);
 }
 
 /// updates widget position based on specified rectangle
@@ -141,20 +149,7 @@ void CRUIVerticalLayout::measure(int baseWidth, int baseHeight) {
 		biggestw = maxw;
 	if (totalh > maxh)
 		totalh = maxh;
-	if (_layoutWidth == FILL_PARENT)
-		_measuredWidth = baseWidth;
-	else if (_layoutWidth != WRAP_CONTENT)
-		_measuredWidth = _layoutWidth;
-	else
-		_measuredWidth = biggestw + (_margin.left + _margin.right + _padding.left + _padding.right);
-	if (_measuredWidth > baseWidth)
-		_measuredWidth = baseWidth;
-	if (_layoutHeight == FILL_PARENT)
-		_measuredHeight = baseHeight;
-	else if (_layoutHeight != WRAP_CONTENT)
-		_measuredHeight = _layoutHeight;
-	else
-		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + totalh;
+	defMeasure(baseWidth, baseHeight, biggestw, totalh);
 }
 
 /// updates widget position based on specified rectangle
@@ -214,25 +209,7 @@ void CRUIHorizontalLayout::measure(int baseWidth, int baseHeight) {
 		biggesth = maxh;
 	if (totalw > maxw)
 		totalw = maxw;
-
-	if (_layoutWidth == FILL_PARENT)
-		_measuredWidth = baseWidth;
-	else if (_layoutWidth != WRAP_CONTENT)
-		_measuredWidth = _layoutWidth;
-	else
-		_measuredWidth = totalw + (_margin.left + _margin.right + _padding.left + _padding.right);
-	if (_measuredWidth > baseWidth)
-		_measuredWidth = baseWidth;
-
-	if (_layoutHeight == FILL_PARENT)
-		_measuredHeight = baseHeight;
-	else if (_layoutHeight != WRAP_CONTENT)
-		_measuredHeight = _layoutHeight;
-	else
-		_measuredHeight = _margin.top + _margin.bottom + _padding.top + _padding.bottom + biggesth;
-
-	if (_measuredHeight > baseHeight)
-		_measuredHeight = baseHeight;
+	defMeasure(baseWidth, baseHeight, totalw, biggesth);
 }
 
 /// updates widget position based on specified rectangle
