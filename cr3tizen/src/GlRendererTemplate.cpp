@@ -2,7 +2,7 @@
 #include "gldrawbuf.h"
 #include "glfont.h"
 #include <crengine.h>
-#include "glui.h"
+#include "crui.h"
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);

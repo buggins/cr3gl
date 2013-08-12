@@ -10,7 +10,7 @@
 #include "lvstring.h"
 #include "glfont.h"
 #include "gldrawbuf.h"
-#include "glui.h"
+#include "crui.h"
 
 
 class CRTizenLogger : public CRLog
