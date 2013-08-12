@@ -15,6 +15,7 @@
 class CRUIWidget {
 protected:
 	lString8 _styleId;
+	lUInt32 _state;
 	lvRect _pos;
 	lvRect _margin;
 	lvRect _padding;
@@ -41,6 +42,10 @@ public:
 	CRUIWidget();
 	virtual ~CRUIWidget();
 
+
+	lUInt32 getState() { return _state; }
+	CRUIWidget * setState(lUInt32 state) { _state = state; return this; }
+
 	int getLayoutWidth() { return _layoutWidth; }
 	int getLayoutHeight() { return _layoutHeight; }
 	CRUIWidget * setLayoutParams(int width, int height) { _layoutWidth = width; _layoutHeight = height; return this; }
@@ -60,7 +65,7 @@ public:
 	virtual int getMinWidth();
 
 	CRUIWidget * setStyle(lString8 styleId) { _styleId = styleId; return this; }
-	CRUIStyle * getStyle();
+	CRUIStyle * getStyle(bool forState = false);
 
 	virtual CRUIWidget * setText(lString16 text) { return this; }
 

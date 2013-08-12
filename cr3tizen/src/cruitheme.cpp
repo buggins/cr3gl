@@ -65,7 +65,8 @@ CRUIStyle * CRUITheme::setFontForSize(lUInt8 size, LVFontRef font) {
 
 void CRUITheme::registerStyle(CRUIStyle * style)
 {
-	_map.set(style->styleId(), style);
+	if (!style->styleId().empty() && _map.get(style->styleId()) == NULL)
+		_map.set(style->styleId(), style);
 }
 
 CRUIStyle * CRUITheme::find(const lString8 &id) {
@@ -189,7 +190,16 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 			LVAppendPathDelimiter(dir);
 			lString16 fn = dir + path;
 			if (LVFileExists(fn)) {
+				//CRLog::debug("found resource file %s", LCSTR(fn));
 				return fn;
+			}
+			//CRLog::debug("file %s not found", LCSTR(fn));
+			if (fn.endsWith(".9") || (!fn.endsWith(".png") && !fn.endsWith(".jpeg") && !fn.endsWith(".jpg"))) {
+				fn += L".png";
+				if (LVFileExists(fn)) {
+					//CRLog::debug("found resource file %s", LCSTR(fn));
+					return fn;
+				}
 			}
 		}
 	}
@@ -199,8 +209,11 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	LVImageSourceRef res;
 	lString16 path = resourceToFileName(name);
-	if (path.empty())
+	if (path.empty()) {
+		CRLog::error("Resource not found: %s", name);
 		return res;
+	}
+	CRLog::debug("loading image from file %s", LCSTR(path));
 	LVStreamRef stream = LVOpenFileStream(path.c_str(), LVOM_READ);
 	if (!stream.isNull())
 		res = LVCreateStreamImageSource(stream);

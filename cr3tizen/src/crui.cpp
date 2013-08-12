@@ -13,7 +13,7 @@ using namespace CRUI;
 
 
 
-CRUIWidget::CRUIWidget() : _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
+CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
 	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
 	_measuredWidth(0), _measuredHeight(0),
 	_parent(NULL), _fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR)
@@ -59,8 +59,13 @@ void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height
 		_measuredHeight = baseHeight;
 }
 
-CRUIStyle * CRUIWidget::getStyle() {
-	return currentTheme->find(_styleId);
+CRUIStyle * CRUIWidget::getStyle(bool forState) {
+	CRUIStyle * res = currentTheme->find(_styleId);
+	if (!res)
+		return NULL;
+	if (forState && getState())
+		res = res->find(getState());
+	return res;
 }
 
 const lvRect & CRUIWidget::getPadding() {
@@ -112,7 +117,7 @@ int CRUIWidget::getMinWidth()
 CRUIImageRef CRUIWidget::getBackground() {
 	if (!_background.isNull())
 		return _background;
-	return getStyle()->getBackground();
+	return getStyle(true)->getBackground();
 }
 
 LVFontRef CRUIWidget::getFont() {
@@ -129,7 +134,7 @@ LVFontRef CRUIWidget::getFont() {
 lUInt32 CRUIWidget::getTextColor() {
 	if (_textColor != PARENT_COLOR)
 		return _textColor;
-	return getStyle()->getTextColor();
+	return getStyle(true)->getTextColor();
 }
 
 /// measure dimensions
@@ -210,8 +215,13 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	rc.shrinkBy(getMargin());
 	buf->SetClipRect(&rc);
 	rc.shrinkBy(getPadding());
-	if (!_image.isNull())
+	if (!_image.isNull()) {
+		// scale
+		rc.right = rc.left + _image->originalWidth();
+		rc.bottom = rc.top + _image->originalHeight();
+		// draw
 		_image->draw(buf, rc);
+	}
 }
 
 

@@ -10,6 +10,8 @@
 
 #include <crengine.h>
 
+
+
 class CRUIImage {
 public:
 	virtual int originalWidth() { return 1; }
@@ -32,7 +34,7 @@ class CRUIBitmapImage : public CRUIImage {
 public:
 	virtual int originalWidth() { return _src->GetWidth(); }
 	virtual int originalHeight() { return _src->GetHeight(); }
-	virtual void draw(LVDrawBuf * buf, lvRect & rect) { buf->Draw(_src, rect.left, rect.top, originalWidth(), originalHeight(), false); }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect) { buf->Draw(_src, rect.left, rect.top, rect.width(), rect.height(), false); }
 	CRUIBitmapImage(LVImageSourceRef img) : _src(img) { }
 	virtual ~CRUIBitmapImage() { }
 };
@@ -61,6 +63,20 @@ namespace CRUI {
 	};
 };
 
+class CRResourceResolver {
+	lString8Collection _dirList;
+	lString16 resourceToFileName(const char * res);
+public:
+	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList) { }
+	LVImageSourceRef getImageSource(const char * name);
+	CRUIImageRef getIcon(const char * name);
+	virtual ~CRResourceResolver() {}
+};
+
+extern CRResourceResolver * resourceResolver;
+void LVCreateResourceResolver(lString8Collection & dirList);
+
+
 class CRUITheme;
 
 class CRUIStyle {
@@ -88,6 +104,12 @@ public:
 	virtual ~CRUIStyle();
 	virtual CRUITheme * getTheme() { return _theme; }
 	virtual CRUIStyle * addSubstyle(lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
+	virtual CRUIStyle * addSubstyle(const char * id) {
+		return addSubstyle(lString8(id), 0, 0);
+	}
+	virtual CRUIStyle * addSubstyle(lUInt8 stateMask, lUInt8 stateValue) {
+		return addSubstyle(lString8::empty_str, stateMask, stateValue);
+	}
 	/// try finding substyle for state, return this style if matching substyle is not found
 	virtual CRUIStyle * find(lUInt8 stateValue);
 	/// try to find style by id starting from this style, then substyles recursively, return NULL if not found
@@ -113,6 +135,7 @@ public:
 	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
 	virtual CRUIStyle * setTextColor(lUInt32 color) { _textColor = color; return this; }
 	virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
+	virtual CRUIStyle * setBackground(const char * imgname) { _background = resourceResolver->getIcon(imgname); return this; }
 	virtual CRUIStyle * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
 	virtual CRUIImageRef getBackground();
 	virtual lUInt8 getFontSize() { return _fontSize; }
@@ -140,18 +163,6 @@ extern CRUITheme * currentTheme;
 
 
 
-class CRResourceResolver {
-	lString8Collection _dirList;
-	lString16 resourceToFileName(const char * res);
-public:
-	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList) { }
-	LVImageSourceRef getImageSource(const char * name);
-	CRUIImageRef getIcon(const char * name);
-	virtual ~CRResourceResolver() {}
-};
-
-extern CRResourceResolver * resourceResolver;
-void LVCreateResourceResolver(lString8Collection & dirList);
 
 
 #endif /* CRUITHEME_H_ */

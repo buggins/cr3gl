@@ -12,6 +12,7 @@
 #include "gldrawbuf.h"
 #include "crui.h"
 
+using namespace CRUI;
 
 class CRTizenLogger : public CRLog
 {
@@ -60,7 +61,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
 	fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 	lString8Collection dirs;
-	dirs.add(UnicodeToUtf8(resourceDir));
+	//dirs.add(UnicodeToUtf8(resourceDir));
+	dirs.add(UnicodeToUtf8(resourceDir) + "screen-density-xhigh");
 	LVCreateResourceResolver(dirs);
 	LVGLCreateImageCache();
 
@@ -72,6 +74,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(34, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	CRUIStyle * buttonStyle = currentTheme->addSubstyle(lString8("BUTTON"));
-	buttonStyle->setBackground(0xC0C0C0);
-	buttonStyle->setFontSize(CRUI::FONT_SIZE_LARGE);
+	buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
+	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");
+	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
+	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setTextColor(0x80000000);
 }

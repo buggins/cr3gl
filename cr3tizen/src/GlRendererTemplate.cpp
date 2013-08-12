@@ -4,6 +4,8 @@
 #include <crengine.h>
 #include "crui.h"
 
+using namespace CRUI;
+
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
 const GLfloat ZERO = GLfloat( 0.0f);
@@ -161,7 +163,9 @@ GlRendererTemplate::Draw(void)
 	layout->addChild(text);
 	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
 	layout->addChild((new CRUITextWidget(lString16(L"Line number 7")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
-	layout->addChild((new CRUIButton(lString16("Button text"), resourceResolver->getIcon("screen-density-xhigh/cancel.png"))));
+	layout->addChild((new CRUIButton(lString16("Pressed button"), resourceResolver->getIcon("cancel")))->setState(STATE_PRESSED));
+	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
+	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
 	//text->setBa
 	layout->measure(400, 500);
 	layout->layout(50, 50, 50 + layout->getMeasuredWidth(), 50 + layout->getMeasuredHeight());
@@ -175,12 +179,12 @@ GlRendererTemplate::Draw(void)
 	layout->addChild((new CRUITextWidget(lString16(L"Layout")))->setFont(font)->setBackground(0xC0FFC0)->setPadding(3)->setMargin(3));
 	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
 	layout->addChild((new CRUITextWidget(lString16(L"Last item")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
-	//layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("screen-density-xhigh/cancel.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFFF));
-	layout->addChild((new CRUIButton(lString16("Button text"), resourceResolver->getIcon("screen-density-xhigh/cancel.png"), true)));
-	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("screen-density-xhigh/t.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFC0));
+	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("cancel")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFFF));
+//	layout->addChild((new CRUIButton(lString16("Button text"), resourceResolver->getIcon("cancel"), true)));
+//	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("t.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFC0));
 	//text->setBa
-	layout->measure(500, 500);
-	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 550 + layout->getMeasuredHeight());
+	layout->measure(500, 600);
+	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 650 + layout->getMeasuredHeight());
 	layout->draw(&buf);
 
 
