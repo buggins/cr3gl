@@ -613,6 +613,8 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		rc.bottom = y + height;
 		if (!rc.intersects(cliprect))
 			return; // out of bounds
+		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
+		// TODO: support 9patch
 		lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
 		LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0xFFFFFF, 0, clip));
 	}
