@@ -10,12 +10,23 @@
 
 #include <crengine.h>
 
-
+struct CR9PatchInfo {
+	lUInt16 stretchX0;
+	lUInt16 stretchX1;
+	lUInt16 stretchY0;
+	lUInt16 stretchY1;
+	lUInt16 paddingX0;
+	lUInt16 paddingX1;
+	lUInt16 paddingY0;
+	lUInt16 paddingY1;
+	CR9PatchInfo() : stretchX0(0), stretchX1(0), stretchY0(0), stretchY1(0), paddingX0(0), paddingX1(0), paddingY0(0), paddingY1(0) {}
+};
 
 class CRUIImage {
 public:
 	virtual int originalWidth() { return 1; }
 	virtual int originalHeight() { return 1; }
+	virtual const CR9PatchInfo * getNinePatchInfo() { return NULL; }
 	virtual void draw(LVDrawBuf * buf, lvRect & rect) = 0;
 	virtual ~CRUIImage() { }
 };
@@ -31,12 +42,14 @@ public:
 
 class CRUIBitmapImage : public CRUIImage {
 	LVImageSourceRef _src;
+	CR9PatchInfo * _ninePatch;
 public:
-	virtual int originalWidth() { return _src->GetWidth(); }
-	virtual int originalHeight() { return _src->GetHeight(); }
-	virtual void draw(LVDrawBuf * buf, lvRect & rect) { buf->Draw(_src, rect.left, rect.top, rect.width(), rect.height(), false); }
-	CRUIBitmapImage(LVImageSourceRef img) : _src(img) { }
-	virtual ~CRUIBitmapImage() { }
+	virtual const CR9PatchInfo * getNinePatchInfo() { return _ninePatch; }
+	virtual int originalWidth() { return _src->GetWidth() - (_ninePatch ? 2 : 0); }
+	virtual int originalHeight() { return _src->GetHeight() - (_ninePatch ? 2 : 0); }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect);
+	CRUIBitmapImage(LVImageSourceRef img, bool ninePatch = false);
+	virtual ~CRUIBitmapImage() { if (_ninePatch) delete _ninePatch; }
 };
 
 namespace CRUI {

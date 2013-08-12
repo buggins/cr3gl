@@ -167,6 +167,64 @@ lUInt32 CRUIStyle::getTextColor() {
 }
 
 
+void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect) {
+	buf->Draw(_src, rect.left, rect.top, rect.width(), rect.height(), false);
+}
+
+class CRNinePatchDecoder : public LVImageDecoderCallback
+{
+	int _dx;
+	int _dy;
+	CR9PatchInfo * _info;
+public:
+	CRNinePatchDecoder(int dx, int dy, CR9PatchInfo * info) : _dx(dx), _dy(dy), _info(info) {
+		_info->stretchY0 = 0xFFFF;
+		_info->paddingY0 = 0xFFFF;
+	}
+    virtual ~CRNinePatchDecoder() { }
+    virtual void OnStartDecode( LVImageSource * obj ) {}
+    bool isUsedPixel(lUInt32 pixel) {
+    	return (pixel == 0x000000); // black
+    }
+    void decodeHLine(lUInt32 * line, lUInt16 & x0, lUInt16 & x1) {
+    	bool foundUsed = false;
+    	for (int x = 0; x < _dx; x++) {
+    		if (isUsedPixel(line[x])) {
+    			if (!foundUsed) {
+    				x0 = x;
+        			foundUsed = true;
+    			}
+    			x1 = x + 1;
+    		}
+    	}
+    }
+    void decodeVLine(lUInt32 pixel, int y, lUInt16 & y0, lUInt16 & y1) {
+    	if (isUsedPixel(pixel)) {
+    		if (y0 == 0xFFFF)
+    			y0 = y;
+    		y1 = y + 1;
+    	}
+    }
+    virtual bool OnLineDecoded( LVImageSource * obj, int y, lUInt32 * data ) {
+    	if (y == 0) {
+    		decodeHLine(data, _info->stretchX0, _info->stretchX1);
+    	} else if (y == _dy - 1) {
+    		decodeHLine(data, _info->paddingX0, _info->paddingX1);
+    	} else {
+    		decodeVLine(data[0], y, _info->stretchY0, _info->stretchY1);
+    		decodeVLine(data[_dx - 1], y, _info->paddingY0, _info->paddingY1);
+    	}
+    }
+    virtual void OnEndDecode( LVImageSource * obj, bool errors ) {}
+};
+
+CRUIBitmapImage::CRUIBitmapImage(LVImageSourceRef img, bool ninePatch) : _src(img), _ninePatch(NULL) {
+	if (ninePatch) {
+		_ninePatch = new CR9PatchInfo();
+		CRNinePatchDecoder decoder(_src->GetWidth(), _src->GetHeight(), _ninePatch);
+		_src->Decode(&decoder);
+	}
+}
 
 
 //============================================================================
