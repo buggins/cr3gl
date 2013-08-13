@@ -189,6 +189,7 @@ protected:
 	CRUITextWidget * _label;
 public:
 	CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
+	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
 };
 
 

@@ -150,10 +150,14 @@ GlRendererTemplate::Draw(void)
 
 	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 	CRUIWidget * layout = new CRUIVerticalLayout();
-	CRUIButton * button = new CRUIButton(lString16(L"Test btn"));
+	CRUIButton * button = new CRUIButton(lString16(L"Normal with icon"), "cancel");
 	layout->addChild(button);
-	button = new CRUIButton(lString16(L"BTN2"));
-	layout->addChild(button);
+	button = new CRUIButton(lString16(L"Pressed"));
+	layout->addChild(button->setState(STATE_PRESSED));
+	button = new CRUIButton(lString16(L"Focused"));
+	layout->addChild(button->setState(STATE_FOCUSED));
+	button = new CRUIButton(lString16(L"Disabled"));
+	layout->addChild(button->setState(STATE_DISABLED));
 //	layout->setFont(font);
 //	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
 //	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));

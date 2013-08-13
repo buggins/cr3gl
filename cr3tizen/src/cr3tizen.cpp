@@ -75,7 +75,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	CRUIStyle * buttonStyle = currentTheme->addSubstyle(lString8("BUTTON"));
 	//keyboard_key_feedback_background.9
-	buttonStyle->setBackground("editbox_background_focus_yellow.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
+	buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
 	//buttonStyle->setBackground("keyboard_key_feedback_background.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
 	//buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
 	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");

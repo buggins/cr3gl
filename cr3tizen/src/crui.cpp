@@ -357,6 +357,18 @@ void CRUIContainerWidget::draw(LVDrawBuf * buf) {
 }
 
 
+CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
+	CRUIImageRef image = resourceResolver->getIcon(imageRes);
+	_styleId = "BUTTON";
+	if (!image.isNull()) {
+		_icon = new CRUIImageWidget(image);
+		addChild(_icon);
+	}
+	if (!text.empty()) {
+		_label = new CRUITextWidget(text);
+		addChild(_label);
+	}
+}
 
 CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 : CRUILinearLayout(vertical), _icon(NULL), _label(NULL)
