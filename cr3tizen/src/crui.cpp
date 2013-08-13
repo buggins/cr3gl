@@ -212,6 +212,13 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	buf->SetClipRect(&rc);
 	applyPadding(rc);
 	buf->SetTextColor(getTextColor());
+	int width = getFont()->getTextWidth(_text.c_str(), _text.length());
+	int height = getFont()->getHeight();
+	int extraw = rc.width() - width;
+	int extrah = rc.height() - height;
+	// center vertical
+	if (extrah > 0)
+		rc.top += extrah / 2;
 	getFont()->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
             '?');
@@ -358,7 +365,13 @@ void CRUIContainerWidget::draw(LVDrawBuf * buf) {
 
 
 CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
-	CRUIImageRef image = resourceResolver->getIcon(imageRes);
+	CRUIImageRef image;
+	if (imageRes && imageRes[0])
+		image = resourceResolver->getIcon(imageRes);
+	init(text, image, vertical);
+}
+
+void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	_styleId = "BUTTON";
 	if (!image.isNull()) {
 		_icon = new CRUIImageWidget(image);
@@ -366,6 +379,20 @@ CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : C
 	}
 	if (!text.empty()) {
 		_label = new CRUITextWidget(text);
+		if (!image.isNull()) {
+			lvRect padding;
+			getPadding(padding);
+			lvRect lblPadding;
+			_label->getPadding(lblPadding);
+			if (vertical) {
+				if (!lblPadding.top)
+					lblPadding.top = padding.top * 2 / 3;
+			} else {
+				if (!lblPadding.left)
+					lblPadding.left = padding.left * 2 / 3;
+			}
+			_label->setPadding(lblPadding);
+		}
 		addChild(_label);
 	}
 }
@@ -373,15 +400,7 @@ CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : C
 CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 : CRUILinearLayout(vertical), _icon(NULL), _label(NULL)
 {
-	_styleId = "BUTTON";
-	if (!image.isNull()) {
-		_icon = new CRUIImageWidget(image);
-		addChild(_icon);
-	}
-	if (!text.empty()) {
-		_label = new CRUITextWidget(text);
-		addChild(_label);
-	}
+	init(text, image, vertical);
 }
 
 

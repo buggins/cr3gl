@@ -141,7 +141,7 @@ GlRendererTemplate::Draw(void)
 	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
 	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
 //	buf.FillRect(0, 0, 500, 10, 0x000000FF);
-//	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
+	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
 //	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
 //	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
 	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);

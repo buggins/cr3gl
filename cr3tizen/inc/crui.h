@@ -52,6 +52,8 @@ public:
 
 	CRUIWidget * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
 	CRUIWidget * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
+	CRUIWidget * setPadding(const lvRect & rc) { _padding = rc; return this; }
+	CRUIWidget * setMargin(const lvRect & rc) { _margin = rc; return this; }
 	CRUIWidget * setMinWidth(int v) { _minWidth = v; return this; }
 	CRUIWidget * setMaxWidth(int v) { _maxWidth = v; return this; }
 	CRUIWidget * setMinHeight(int v) { _minHeight = v; return this; }
@@ -187,6 +189,7 @@ class CRUIButton : public CRUILinearLayout {
 protected:
 	CRUIImageWidget * _icon;
 	CRUITextWidget * _label;
+	void init(lString16 text, CRUIImageRef image, bool vertical);
 public:
 	CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
 	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
