@@ -47,7 +47,7 @@ namespace CRUI {
 		PARENT_COLOR = 0xFFAAAAAA,
 	};
 	enum {
-		STATE_ENABLED = 1,
+		STATE_DISABLED = 1,
 		STATE_FOCUSED = 2,
 		STATE_PRESSED = 4,
 	};

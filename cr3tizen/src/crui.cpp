@@ -27,7 +27,8 @@ CRUIWidget::~CRUIWidget() {
 
 /// measure dimensions
 void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height) {
-	lvRect padding = getPadding();
+	lvRect padding;
+	getPadding(padding);
 	lvRect margin = getMargin();
 	int minWidth = getMinWidth();
 	int maxWidth = getMaxWidth();
@@ -66,6 +67,33 @@ CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	if (forState && getState())
 		res = res->find(getState());
 	return res;
+}
+
+void CRUIWidget::getMargin(lvRect & rc) {
+	rc = getMargin();
+}
+void CRUIWidget::getPadding(lvRect & rc) {
+	rc = getPadding();
+	CRUIImageRef bg = getBackground();
+	if (!bg.isNull()) {
+		if (bg->getNinePatchInfo())
+			bg->getNinePatchInfo()->applyPadding(rc);
+	}
+}
+
+void CRUIWidget::applyPadding(lvRect & rc)
+{
+	lvRect padding = getPadding();
+	CRUIImageRef bg = getBackground();
+	if (!bg.isNull()) {
+		if (bg->getNinePatchInfo())
+			bg->getNinePatchInfo()->applyPadding(padding);
+	}
+	rc.shrinkBy(padding);
+}
+void CRUIWidget::applyMargin(lvRect & rc)
+{
+	rc.shrinkBy(getMargin());
 }
 
 const lvRect & CRUIWidget::getPadding() {
@@ -155,7 +183,7 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
 	CRUIImageRef background = getBackground();
 	if (!background.isNull()) {
 		lvRect rc = _pos;
-		rc.shrinkBy(getMargin());
+		applyMargin(rc);
 		background->draw(buf, rc);
 	}
 }
@@ -180,9 +208,9 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
-	rc.shrinkBy(getMargin());
+	applyMargin(rc);
 	buf->SetClipRect(&rc);
-	rc.shrinkBy(getPadding());
+	applyPadding(rc);
 	buf->SetTextColor(getTextColor());
 	getFont()->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
@@ -212,9 +240,9 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
-	rc.shrinkBy(getMargin());
+	applyMargin(rc);
 	buf->SetClipRect(&rc);
-	rc.shrinkBy(getPadding());
+	applyPadding(rc);
 	if (!_image.isNull()) {
 		// scale
 		rc.right = rc.left + _image->originalWidth();
@@ -231,7 +259,8 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 // Vertical Layout
 /// measure dimensions
 void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
-	lvRect padding = getPadding();
+	lvRect padding;
+	getPadding(padding);
 	lvRect margin = getMargin();
 	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
 	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
@@ -277,8 +306,8 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 	_pos.right = right;
 	_pos.bottom = bottom;
 	lvRect clientRc = _pos;
-	clientRc.shrinkBy(getMargin());
-	clientRc.shrinkBy(getPadding());
+	applyMargin(clientRc);
+	applyPadding(clientRc);
 	lvRect childRc = clientRc;
 	if (_isVertical) {
 		int y = childRc.top;
@@ -319,9 +348,9 @@ void CRUIContainerWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
 	lvRect rc = _pos;
-	rc.shrinkBy(_margin);
-	rc.shrinkBy(_padding);
+	applyMargin(rc);
 	buf->SetClipRect(&rc);
+	applyPadding(rc);
 	for (int i=0; i<getChildCount(); i++) {
 		getChild(i)->draw(buf);
 	}

@@ -99,37 +99,37 @@ GlRendererTemplate::Draw(void)
 
 
 	LVFontRef font = fontMan->GetFont(24, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	GLDrawBuf backbuf(300, 400, 32, true);
-	backbuf.beforeDrawing();
-	backbuf.SetBackgroundColor(0x000000);
-	backbuf.Clear(0x4040C0);
-	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
-	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
-	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
-	backbuf.FillRect(50, 50, 270, 200, 0x0080FF00);
-	backbuf.FillRect(0, 0, 500, 10, 0x00ffffff);
-	backbuf.SetTextColor(0xFFFF00);
-	font->DrawTextString(&backbuf, 5, 5,
-            L"Hello Tizen - testing text", 26,
-            '?');
-	backbuf.SetTextColor(0x0080FF);
-	font->DrawTextString(&backbuf, 45, 45,
-            L"Hello Tizen - testing text", 26,
-            '?');
-	font = fontMan->GetFont(32, 400, true, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	backbuf.SetTextColor(0xFF0000);
-	font->DrawTextString(&backbuf, 45, 145,
-            L"Red text", 8,
-            '?');
-	backbuf.SetTextColor(0x00FF00);
-	font->DrawTextString(&backbuf, 45, 185,
-            L"Green text", 10,
-            '?');
-	backbuf.SetTextColor(0x0000FF);
-	font->DrawTextString(&backbuf, 45, 225,
-            L"Blue text", 9,
-            '?');
-	backbuf.afterDrawing();
+//	GLDrawBuf backbuf(300, 400, 32, true);
+//	backbuf.beforeDrawing();
+//	backbuf.SetBackgroundColor(0x000000);
+//	backbuf.Clear(0x4040C0);
+//	backbuf.FillRect(10, 10, 200, 200, 0x0055aa55);
+//	backbuf.FillRect(100, 120, 250, 300, 0x80aa55aa);
+//	backbuf.FillRect(0, 0, 100, 100, 0x0055ff55);
+//	backbuf.FillRect(50, 50, 270, 200, 0x0080FF00);
+//	backbuf.FillRect(0, 0, 500, 10, 0x00ffffff);
+//	backbuf.SetTextColor(0xFFFF00);
+//	font->DrawTextString(&backbuf, 5, 5,
+//            L"Hello Tizen - testing text", 26,
+//            '?');
+//	backbuf.SetTextColor(0x0080FF);
+//	font->DrawTextString(&backbuf, 45, 45,
+//            L"Hello Tizen - testing text", 26,
+//            '?');
+//	font = fontMan->GetFont(32, 400, true, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+//	backbuf.SetTextColor(0xFF0000);
+//	font->DrawTextString(&backbuf, 45, 145,
+//            L"Red text", 8,
+//            '?');
+//	backbuf.SetTextColor(0x00FF00);
+//	font->DrawTextString(&backbuf, 45, 185,
+//            L"Green text", 10,
+//            '?');
+//	backbuf.SetTextColor(0x0000FF);
+//	font->DrawTextString(&backbuf, 45, 225,
+//            L"Blue text", 9,
+//            '?');
+//	backbuf.afterDrawing();
 
 //	glClearColor(0.5f, 0.5f, 0.7f, 1);
 //	glClear(GL_COLOR_BUFFER_BIT);
@@ -140,52 +140,56 @@ GlRendererTemplate::Draw(void)
 
 	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
 	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
-	buf.FillRect(0, 0, 500, 10, 0x000000FF);
-	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
-	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
-	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
+//	buf.FillRect(0, 0, 500, 10, 0x000000FF);
+//	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
+//	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
+//	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
 	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
 	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
 
 
-	LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 	CRUIWidget * layout = new CRUIVerticalLayout();
-	layout->setFont(font);
-	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
-	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
-	text->setFont(bigfont);
-	text->setBackground(0xFFFFFF);
-	layout->addChild(text);
-	text = new CRUITextWidget(lString16(L"Second line"));
-	text->setFont(font);
-	text->setBackground(0xD0E0E0);
-	text->setMargin(14)->setPadding(16);
-	layout->addChild(text);
-	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
-	layout->addChild((new CRUITextWidget(lString16(L"Line number 7")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
-	layout->addChild((new CRUIButton(lString16("Pressed button"), resourceResolver->getIcon("cancel")))->setState(STATE_PRESSED));
-	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
-	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
-	//text->setBa
+	CRUIButton * button = new CRUIButton(lString16(L"Test btn"));
+	layout->addChild(button);
+	button = new CRUIButton(lString16(L"BTN2"));
+	layout->addChild(button);
+//	layout->setFont(font);
+//	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
+//	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
+//	text->setFont(bigfont);
+//	text->setBackground(0xFFFFFF);
+//	layout->addChild(text);
+//	text = new CRUITextWidget(lString16(L"Second line"));
+//	text->setFont(font);
+//	text->setBackground(0xD0E0E0);
+//	text->setMargin(14)->setPadding(16);
+//	layout->addChild(text);
+//	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
+//	layout->addChild((new CRUITextWidget(lString16(L"Line number 7")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
+//	layout->addChild((new CRUIButton(lString16("Pressed button"), resourceResolver->getIcon("cancel")))->setState(STATE_PRESSED));
+//	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
+//	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
+//	//text->setBa
 	layout->measure(400, 500);
 	layout->layout(50, 50, 50 + layout->getMeasuredWidth(), 50 + layout->getMeasuredHeight());
 	layout->draw(&buf);
-
-	font = fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	layout = new CRUIHorizontalLayout();
-	layout->setFont(font);
-	layout->setPadding(4)->setMargin(10)->setBackground(0xE0C0E0);
-	layout->addChild((new CRUITextWidget(lString16(L"Horizontal")))->setFont(font)->setBackground(0xFF80FF)->setPadding(3)->setMargin(3));
-	layout->addChild((new CRUITextWidget(lString16(L"Layout")))->setFont(font)->setBackground(0xC0FFC0)->setPadding(3)->setMargin(3));
-	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
-	layout->addChild((new CRUITextWidget(lString16(L"Last item")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
-	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("cancel")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFFF));
-//	layout->addChild((new CRUIButton(lString16("Button text"), resourceResolver->getIcon("cancel"), true)));
-//	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("t.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFC0));
-	//text->setBa
-	layout->measure(500, 600);
-	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 650 + layout->getMeasuredHeight());
-	layout->draw(&buf);
+//
+//	font = fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+//	layout = new CRUIHorizontalLayout();
+//	layout->setFont(font);
+//	layout->setPadding(4)->setMargin(10)->setBackground(0xE0C0E0);
+//	layout->addChild((new CRUITextWidget(lString16(L"Horizontal")))->setFont(font)->setBackground(0xFF80FF)->setPadding(3)->setMargin(3));
+//	layout->addChild((new CRUITextWidget(lString16(L"Layout")))->setFont(font)->setBackground(0xC0FFC0)->setPadding(3)->setMargin(3));
+//	layout->addChild((new CRUITextWidget(lString16(L"Third line")))->setFont(font)->setBackground(0x4080FF)->setPadding(10));
+//	layout->addChild((new CRUITextWidget(lString16(L"Last item")))->setFont(font)->setBackground(0x40FF80)->setPadding(10));
+//	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("cancel")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFFF));
+////	layout->addChild((new CRUIButton(lString16("Button text"), resourceResolver->getIcon("cancel"), true)));
+////	layout->addChild((new CRUIImageWidget(resourceResolver->getIcon("t.png")))->setPadding(10)->setMargin(10)->setBackground(0xFFFFC0));
+//	//text->setBa
+//	layout->measure(500, 600);
+//	layout->layout(50, 550, 50 + layout->getMeasuredWidth(), 650 + layout->getMeasuredHeight());
+//	layout->draw(&buf);
 
 
 	buf.afterDrawing();

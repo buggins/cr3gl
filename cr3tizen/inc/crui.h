@@ -57,6 +57,10 @@ public:
 	CRUIWidget * setMinHeight(int v) { _minHeight = v; return this; }
 	CRUIWidget * setMaxHeight(int v) { _maxHeight = v; return this; }
 
+	virtual void getMargin(lvRect & rc);
+	virtual void getPadding(lvRect & rc);
+	virtual void applyPadding(lvRect & rc);
+	virtual void applyMargin(lvRect & rc);
 	virtual const lvRect & getPadding();
 	virtual const lvRect & getMargin();
 	virtual int getMinHeight();

@@ -102,7 +102,11 @@ public:
 	    for (int y = y0; y < y1; y++) {
 	    	lUInt32 * row = (lUInt32 *)_drawbuf->GetScanLine(y);
 	    	for (int x = x0; x < x1; x++) {
-	    		row[x] ^= 0xFF000000;
+	    		lUInt32 cl = row[x];
+	    		cl ^= 0xFF000000;
+	    		lUInt32 r = (cl & 0x00FF0000) >> 16;
+	    		lUInt32 b = (cl & 0x000000FF) << 16;
+	    		row[x] = (cl & 0xFF00FF00) | r | b;
 	    	}
 	    }
 	}

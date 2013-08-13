@@ -227,8 +227,14 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	LVStreamRef stream = LVOpenFileStream(path.c_str(), LVOM_READ);
 	if (!stream.isNull())
 		res = LVCreateStreamImageSource(stream);
-	if (!res.isNull() && res->GetWidth() > 0 && res->GetHeight() > 0)
+	if (!res.isNull() && res->GetWidth() > 0 && res->GetHeight() > 0) {
+		if (path.pos(".9.") >= 0) {
+			if (!res->DetectNinePatch()) {
+				CRLog::error("NinePatch detection failed for %s", name);
+			}
+		}
 		return res;
+	}
 	return LVImageSourceRef();
 }
 
