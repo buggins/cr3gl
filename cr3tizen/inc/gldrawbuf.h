@@ -179,7 +179,7 @@ public:
 	GLImageCacheItem * set(LVImageSourceRef img);
 	GLImageCacheItem * set(LVDrawBuf * img);
 	void clear();
-	void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip);
+	void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip);
 	virtual void onCachedObjectDeleted(CacheableObject * obj);
 };
 

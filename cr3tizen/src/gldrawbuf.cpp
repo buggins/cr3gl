@@ -168,7 +168,7 @@ public:
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
-	void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, lUInt32 color, lUInt32 options, lvRect * clip) {
+	void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip) {
 		if (_needUpdateTexture)
 			updateTexture();
 		if (_textureId != 0) {
@@ -179,10 +179,10 @@ public:
 			float dsty1 = y - dy;
 			float txppx = 1 / (float)_tdx;
 			float txppy = 1 / (float)_tdy;
-			float srcx0 = item->_x0 * txppx;
-			float srcy0 = item->_y0 * txppy;
-			float srcx1 = (item->_x0 + item->_dx) * txppx;
-			float srcy1 = (item->_y0 + item->_dy) * txppy;
+			float srcx0 = (item->_x0 + srcx) * txppx;
+			float srcy0 = (item->_y0 + srcy) * txppy;
+			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
+			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
 			if (clip) {
 				// correct clipping
 				float xscale = item->_dx / (float)dx;
@@ -284,11 +284,11 @@ GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
 	return res;
 }
 
-void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, lUInt32 color, int options, lvRect * clip)
+void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip)
 {
 	GLImageCacheItem* item = get(obj);
 	if (item) {
-		item->getPage()->drawItem(item, x, y, dx, dy, color, options, clip);
+		item->getPage()->drawItem(item, x, y, dx, dy, srcx, srcy, srcdx, srcdy, color, options, clip);
 	}
 }
 
@@ -576,16 +576,22 @@ class GLDrawImageSceneItem : public GLSceneItem {
 	int y;
 	int width;
 	int height;
+	int srcx;
+	int srcy;
+	int srcwidth;
+	int srcheight;
 	lUInt32 color;
 	lUInt32 options;
 	lvRect * clip;
 public:
 	virtual void draw() {
 		if (glImageCache)
-			glImageCache->drawItem(img, x, y, width, height, color, options, clip);
+			glImageCache->drawItem(img, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip);
 	}
-	GLDrawImageSceneItem(LVImageSource * _img, int _x, int _y, int _width, int _height, lUInt32 _color, lUInt32 _options, lvRect * _clip)
-	: img(_img), x(_x), y(_y), width(_width), height(_height), color(_color), options(_options), clip(_clip)
+	GLDrawImageSceneItem(LVImageSource * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip)
+	: img(_img), x(_x), y(_y), width(_width), height(_height),
+	  srcx(_srcx), srcy(_srcy), srcwidth(_srcw), srcheight(_srch),
+	  color(_color), options(_options), clip(_clip)
 	{
 
 	}
@@ -614,9 +620,24 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		if (!rc.intersects(cliprect))
 			return; // out of bounds
 		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
-		// TODO: support 9patch
-		lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-		LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0xFFFFFF, 0, clip));
+		if (!ninePatch) {
+			lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
+			LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip));
+		} else {
+			lvRect srcitems[9];
+			lvRect dstitems[9];
+			lvRect src(1, 1, img->GetWidth()-1, img->GetHeight() - 1);
+			ninePatch->calcRectangles(rc, src, dstitems, srcitems);
+			for (int i=0; i<9; i++) {
+				if (srcitems[i].isEmpty() || dstitems[i].isEmpty())
+					continue; // empty
+				if (!dstitems[i].intersects(cliprect))
+					continue; // out of bounds
+				// visible
+				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
+				LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), 0xFFFFFF, 0, clip));
+			}
+		}
 	}
 }
 
