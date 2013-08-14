@@ -68,7 +68,7 @@ GlRendererTemplate::GlRendererTemplate(void)
 			addItem(L"List item 3")->addItem(L"List item 4")->addItem(L"List item 5")->addItem(L"List item 6")->
 			addItem(L"List item 7")->addItem(L"List item 7")->addItem(L"List item 9")->addItem(L"List item 10");
 	CRUIListWidget * list = new CRUIListWidget(true, adapter);
-	list->setBackground(resourceResolver->getIcon("tx_wood_dark_v3.jpg", true));
+	list->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
 	list->setPadding(5);
 	//list->setScrollOffset(10);
 	layout->addChild(list);

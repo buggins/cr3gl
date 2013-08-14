@@ -11,6 +11,57 @@
 #include <crengine.h>
 #include "cruitheme.h"
 
+class CRUIWidget;
+
+enum {
+	ACTION_DOWN,
+	ACTION_MOVE,
+	ACTION_UP,
+	ACTION_FOCUS_OUT,
+	ACTION_FOCUS_IN,
+	ACTION_CANCEL,
+};
+
+class CRUIMotionEventItem {
+	friend class CRUIEventManager;
+	int _pointerId;
+	int _action;
+	int _x;
+	int _y;
+	CRUIWidget * _widget;
+	void setWidget(CRUIWidget * widget) { _widget = widget; }
+public:
+	CRUIMotionEventItem(int pointerId, int action, int x, int y, CRUIWidget * widget = NULL)
+	: _pointerId(pointerId), _action(action), _x(x), _y(y), _widget(widget) {
+		//
+	}
+	int getX() const { return _x; }
+	int getY() const { return _y; }
+	int getAction() const { return _action; }
+	int getPointerId() const { return _pointerId; }
+	CRUIWidget * getWidget() const { return _widget; }
+};
+
+class CRUIMotionEvent {
+	friend class CRUIEventManager;
+	LVPtrVector<CRUIMotionEventItem> _data;
+	void addEvent(CRUIMotionEventItem * event) { _data.add(event); }
+public:
+	int count() const { return _data.length(); }
+	const CRUIMotionEventItem * operator[] (int index) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
+	int getX(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
+	int getY(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
+	int getAction(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
+	int getPointerId(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
+	/// find pointer index by pointer id, returns -1 if not found
+	int findPointerId(int pointerId);
+};
+
+class CRUIOnTouchEventListener {
+public:
+	virtual bool onTouch(CRUIWidget * widget, const CRUIMotionEvent * event) = 0;
+};
+
 /// base class for all UI elements
 class CRUIWidget {
 protected:
@@ -35,6 +86,7 @@ protected:
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
 	lUInt32 _align;
+	CRUIOnTouchEventListener * _onTouchListener;
 
 	/// measure dimensions
 	virtual void defMeasure(int baseWidth, int baseHeight, int contentWidth, int contentHeight);
@@ -48,6 +100,10 @@ public:
 	CRUIWidget();
 	virtual ~CRUIWidget();
 
+	/// motion event handler, returns true if it handled event
+	virtual bool onTouchEvent(const CRUIMotionEvent * event);
+	virtual CRUIOnTouchEventListener * setOnTouchListener(CRUIOnTouchEventListener * listener);
+	virtual CRUIOnTouchEventListener * getOnTouchListener() { return _onTouchListener; }
 	virtual lvPoint getTileOffset() const { return lvPoint(); }
 	const lString8 & getId() { return _id; }
 	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }

@@ -11,6 +11,12 @@
 using namespace CRUI;
 
 
+int CRUIMotionEvent::findPointerId(int pointerId) {
+	for (int i=0; i<_data.length(); i++)
+		if (_data[i]->getPointerId() == pointerId)
+			return i;
+	return -1;
+}
 
 
 CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
@@ -90,6 +96,20 @@ CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	if (forState && getState())
 		res = res->find(getState());
 	return res;
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
+	if (_onTouchListener != NULL)
+		return _onTouchListener->onTouch(this, event);
+	return false;
+}
+
+CRUIOnTouchEventListener * CRUIWidget::setOnTouchListener(CRUIOnTouchEventListener * listener)
+{
+	CRUIOnTouchEventListener * old = _onTouchListener;
+	_onTouchListener = listener;
+	return old;
 }
 
 lUInt32 CRUIWidget::getAlign()
