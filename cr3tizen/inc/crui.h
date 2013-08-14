@@ -33,9 +33,12 @@ protected:
 	LVFontRef _font;
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
+	lUInt32 _align;
 
 	/// measure dimensions
 	virtual void defMeasure(int baseWidth, int baseHeight, int contentWidth, int contentHeight);
+	/// correct rectangle bounds according to alignment
+	virtual void applyAlign(lvRect & rc, int contentWidth, int contentHeight);
 
 public:
 
@@ -45,6 +48,11 @@ public:
 
 	lUInt32 getState() { return _state; }
 	CRUIWidget * setState(lUInt32 state) { _state = state; return this; }
+
+	virtual lUInt32 getAlign();
+	virtual lUInt32 getHAlign() { return getAlign() & CRUI::ALIGN_MASK_HORIZONTAL; }
+	virtual lUInt32 getVAlign() { return getAlign() & CRUI::ALIGN_MASK_VERTICAL; }
+	virtual CRUIWidget * setAlign(lUInt32 align) { _align = align; return this; }
 
 	int getLayoutWidth() { return _layoutWidth; }
 	int getLayoutHeight() { return _layoutHeight; }

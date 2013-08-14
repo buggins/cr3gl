@@ -91,6 +91,8 @@ bool
 GlRendererTemplate::Draw(void)
 {
 	CRLog::debug("GlRendererTemplate::Draw is called");
+	glClearColor(0.7f, 0.7f, 0.7f, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	GLDrawBuf pagebuf(300, 400, 32, true);
 	pagebuf.beforeDrawing();
@@ -158,6 +160,8 @@ GlRendererTemplate::Draw(void)
 	layout->addChild(button->setState(STATE_FOCUSED));
 	button = new CRUIButton(lString16(L"Disabled"));
 	layout->addChild(button->setState(STATE_DISABLED));
+	button = new CRUIButton(lString16(L"Vertical"), "cancel", true);
+	layout->addChild(button);
 //	layout->setFont(font);
 //	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
 //	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));

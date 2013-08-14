@@ -61,6 +61,20 @@ namespace CRUI {
 		FONT_SIZE_XLARGE = 5,
 		FONT_USE_PARENT = 6,
 	};
+
+	enum {
+		ALIGN_UNSPECIFIED = 0,
+		ALIGN_LEFT = 1,
+		ALIGN_HCENTER = 2,
+		ALIGN_RIGHT = 3,
+		ALIGN_TOP = 0x10,
+		ALIGN_VCENTER = 0x20,
+		ALIGN_BOTTOM = 0x30,
+		ALIGN_CENTER = ALIGN_HCENTER | ALIGN_VCENTER,
+		ALIGN_TOP_LEFT = ALIGN_TOP | ALIGN_LEFT,
+		ALIGN_MASK_VERTICAL = 0xF0, // mask
+		ALIGN_MASK_HORIZONTAL = 0x0F, // mask
+	};
 };
 
 class CRResourceResolver {
@@ -96,6 +110,7 @@ protected:
 	int _maxWidth;
 	int _minHeight;
 	int _maxHeight;
+	lUInt32 _align;
 	LVPtrVector<CRUIStyle, true> _substyles;
 	/// checks if state filter matches specified state
 	virtual bool matchState(lUInt8 stateValue);
@@ -141,6 +156,8 @@ public:
 	virtual lUInt8 getFontSize() { return _fontSize; }
 	virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();
+	virtual lUInt32 getAlign() { return _align; }
+	virtual CRUIStyle * setAlign(lUInt32 align) { _align = align; return this; }
 };
 
 class CRUITheme : public CRUIStyle {

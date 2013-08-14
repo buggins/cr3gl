@@ -25,8 +25,30 @@ CRUIWidget::~CRUIWidget() {
 
 }
 
+void CRUIWidget::applyAlign(lvRect & rc, int contentWidth, int contentHeight)
+{
+	int extraw = rc.width() - contentWidth;
+	int extrah = rc.height() - contentHeight;
+	// center vertical
+	lUInt32 valign = getVAlign();
+	lUInt32 halign = getHAlign();
+	if (extrah > 0) {
+		if (valign == ALIGN_VCENTER)
+			rc.top += extrah / 2;
+		if (valign == ALIGN_BOTTOM)
+			rc.top += extrah;
+	}
+	if (extraw > 0) {
+		if (halign == ALIGN_RIGHT)
+			rc.left += extraw;
+		if (halign == ALIGN_HCENTER)
+			rc.left += extraw / 2;
+	}
+}
+
 /// measure dimensions
-void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height) {
+void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height)
+{
 	lvRect padding;
 	getPadding(padding);
 	lvRect margin = getMargin();
@@ -67,6 +89,23 @@ CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	if (forState && getState())
 		res = res->find(getState());
 	return res;
+}
+
+lUInt32 CRUIWidget::getAlign()
+{
+	lUInt32 valign = _align & ALIGN_MASK_VERTICAL;
+	lUInt32 halign = _align & ALIGN_MASK_HORIZONTAL;
+	CRUIStyle * style = getStyle(false);
+	lUInt32 salign = 0;
+	if (style)
+		salign = style->getAlign();
+	if (halign == ALIGN_UNSPECIFIED) {
+		halign = salign & ALIGN_MASK_HORIZONTAL;
+	}
+	if (valign == ALIGN_UNSPECIFIED) {
+		valign = salign & ALIGN_MASK_VERTICAL;
+	}
+	return halign | valign;
 }
 
 void CRUIWidget::getMargin(lvRect & rc) {
@@ -214,11 +253,7 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	buf->SetTextColor(getTextColor());
 	int width = getFont()->getTextWidth(_text.c_str(), _text.length());
 	int height = getFont()->getHeight();
-	int extraw = rc.width() - width;
-	int extrah = rc.height() - height;
-	// center vertical
-	if (extrah > 0)
-		rc.top += extrah / 2;
+	applyAlign(rc, width, height);
 	getFont()->DrawTextString(buf, rc.left, rc.top,
             _text.c_str(), _text.length(),
             '?');
@@ -251,7 +286,8 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	buf->SetClipRect(&rc);
 	applyPadding(rc);
 	if (!_image.isNull()) {
-		// scale
+		applyAlign(rc, _image->originalWidth(), _image->originalHeight());
+		// don't scale
 		rc.right = rc.left + _image->originalWidth();
 		rc.bottom = rc.top + _image->originalHeight();
 		// draw
@@ -375,10 +411,18 @@ void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	_styleId = "BUTTON";
 	if (!image.isNull()) {
 		_icon = new CRUIImageWidget(image);
+		if (vertical)
+			_icon->setAlign(ALIGN_HCENTER | ALIGN_TOP);
+		else
+			_icon->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
 		addChild(_icon);
 	}
 	if (!text.empty()) {
 		_label = new CRUITextWidget(text);
+		if (vertical)
+			_label->setAlign(ALIGN_TOP | ALIGN_HCENTER);
+		else
+			_label->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
 		if (!image.isNull()) {
 			lvRect padding;
 			getPadding(padding);
