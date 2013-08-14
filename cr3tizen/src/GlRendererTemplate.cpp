@@ -70,6 +70,7 @@ GlRendererTemplate::GlRendererTemplate(void)
 	CRUIListWidget * list = new CRUIListWidget(true, adapter);
 	list->setBackground(resourceResolver->getIcon("tx_wood_dark_v3.jpg", true));
 	list->setPadding(5);
+	//list->setScrollOffset(10);
 	layout->addChild(list);
 	_widget = layout;
 }

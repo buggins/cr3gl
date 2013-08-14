@@ -253,6 +253,7 @@ public:
 		return this;
 	}
 	virtual int getScrollOffset() { return _scrollOffset; }
+	virtual void setScrollOffset(int offset) { _scrollOffset = offset; }
 	virtual CRUIWidget * getItemWidget(int index) { return _adapter != NULL ? _adapter->getItemWidget(this, index) : 0; }
 	virtual int getItemCount() { return _adapter != NULL ? _adapter->getItemCount(this) : 0; }
 	CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);

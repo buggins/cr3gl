@@ -222,7 +222,7 @@ bool CRUIWidget::setClipRect(LVDrawBuf * buf, lvRect & rc) {
 	lvRect clip;
 	buf->GetClipRect(&clip);
 	lvRect rc2 = rc;
-	rc2.intersect(rc);
+	rc2.intersect(clip);
 	buf->SetClipRect(&rc2);
 	return !rc2.isEmpty();
 }
@@ -587,8 +587,8 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	applyPadding(rc);
 	setClipRect(buf, rc);
+	applyPadding(rc);
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
 		CRUIWidget * item = getItemWidget(i);
 		if (!item)
