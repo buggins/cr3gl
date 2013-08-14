@@ -16,6 +16,7 @@ CRUITheme * currentTheme = NULL;
 CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100)
 {
 	_theme = this;
+	_align = ALIGN_LEFT | ALIGN_TOP;
 }
 
 LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
@@ -168,12 +169,36 @@ lUInt32 CRUIStyle::getTextColor() {
 }
 
 
-void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect) {
-	buf->Draw(_src, rect.left, rect.top, rect.width(), rect.height(), false);
+void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {
+	if (_tiled) {
+		int w = originalWidth();
+		int h = originalHeight();
+		if (w <= 0 || h <= 0)
+			return;
+		xoffset %= w;
+		yoffset %= h;
+		xoffset = (w - xoffset) % w;
+		yoffset = (h - yoffset) % h;
+		if (xoffset)
+			xoffset = w - xoffset;
+		if (yoffset)
+			yoffset = h - yoffset;
+		lvRect rc2;
+		for (int y = rect.top - yoffset; y < rect.bottom; y += h) {
+			rc2.top = y;
+			rc2.bottom = y + h;
+			for (int x = rect.left - xoffset; x < rect.right; x += w) {
+				rc2.left = x;
+				rc2.right = x + w;
+				buf->Draw(_src, rc2.left, rc2.top, w, h, false);
+			}
+		}
+	} else {
+		buf->Draw(_src, rect.left, rect.top, rect.width(), rect.height(), false);
+	}
 }
 
-
-CRUIBitmapImage::CRUIBitmapImage(LVImageSourceRef img, bool ninePatch) : _src(img) {
+CRUIBitmapImage::CRUIBitmapImage(LVImageSourceRef img, bool ninePatch, bool tiled) : _src(img), _tiled(tiled) {
 	if (ninePatch) {
 		img->DetectNinePatch();
 	}
@@ -239,10 +264,10 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	return LVImageSourceRef();
 }
 
-CRUIImageRef CRResourceResolver::getIcon(const char * name) {
+CRUIImageRef CRResourceResolver::getIcon(const char * name, bool tiled) {
 	LVImageSourceRef src = getImageSource(name);
 	if (!src.isNull())
-		return CRUIImageRef(new CRUIBitmapImage(src));
+		return CRUIImageRef(new CRUIBitmapImage(src, src->GetNinePatchInfo() != NULL, tiled));
 	return CRUIImageRef();
 }
 

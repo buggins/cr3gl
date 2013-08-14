@@ -15,7 +15,8 @@ public:
 	virtual int originalWidth() { return 1; }
 	virtual int originalHeight() { return 1; }
 	virtual const CR9PatchInfo * getNinePatchInfo() { return NULL; }
-	virtual void draw(LVDrawBuf * buf, lvRect & rect) = 0;
+	virtual bool isTiled() { return false; }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) = 0;
 	virtual ~CRUIImage() { }
 };
 typedef LVRef<CRUIImage> CRUIImageRef;
@@ -23,19 +24,22 @@ typedef LVRef<CRUIImage> CRUIImageRef;
 class CRUISolidFillImage : public CRUIImage {
 	lUInt32 _color;
 public:
-	virtual void draw(LVDrawBuf * buf, lvRect & rect) { buf->FillRect(rect, _color); }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) { buf->FillRect(rect, _color); }
 	CRUISolidFillImage(lUInt32 color) : _color(color) { }
 	virtual ~CRUISolidFillImage() { }
 };
 
 class CRUIBitmapImage : public CRUIImage {
+protected:
 	LVImageSourceRef _src;
+	bool _tiled;
 public:
 	virtual const CR9PatchInfo * getNinePatchInfo() { return _src->GetNinePatchInfo(); }
 	virtual int originalWidth() { return _src->GetWidth() - (_src->GetNinePatchInfo() ? 2 : 0); }
 	virtual int originalHeight() { return _src->GetHeight() - (_src->GetNinePatchInfo() ? 2 : 0); }
-	virtual void draw(LVDrawBuf * buf, lvRect & rect);
-	CRUIBitmapImage(LVImageSourceRef img, bool ninePatch = false);
+	virtual bool isTiled() { return _tiled; }
+	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0);
+	CRUIBitmapImage(LVImageSourceRef img, bool ninePatch = false, bool tiled = false);
 	virtual ~CRUIBitmapImage() { }
 };
 
@@ -75,6 +79,7 @@ namespace CRUI {
 		ALIGN_MASK_VERTICAL = 0xF0, // mask
 		ALIGN_MASK_HORIZONTAL = 0x0F, // mask
 	};
+
 };
 
 class CRResourceResolver {
@@ -83,7 +88,7 @@ class CRResourceResolver {
 public:
 	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList) { }
 	LVImageSourceRef getImageSource(const char * name);
-	CRUIImageRef getIcon(const char * name);
+	CRUIImageRef getIcon(const char * name, bool tiled= false);
 	virtual ~CRResourceResolver() {}
 };
 
