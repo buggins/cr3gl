@@ -218,12 +218,23 @@ void CRUIWidget::layout(int left, int top, int right, int bottom) {
 	_pos.bottom = bottom;
 }
 
+bool CRUIWidget::setClipRect(LVDrawBuf * buf, lvRect & rc) {
+	lvRect clip;
+	buf->GetClipRect(&clip);
+	lvRect rc2 = rc;
+	rc2.intersect(rc);
+	buf->SetClipRect(&rc2);
+	return !rc2.isEmpty();
+}
+
 /// draws widget with its children to specified surface
 void CRUIWidget::draw(LVDrawBuf * buf) {
 	CRUIImageRef background = getBackground();
 	if (!background.isNull()) {
+		LVDrawStateSaver saver(*buf);
 		lvRect rc = _pos;
 		applyMargin(rc);
+		setClipRect(buf, rc);
 		if (background->isTiled()) {
 			lvPoint offset = getTileOffset();
 			background->draw(buf, rc, offset.x, offset.y);
@@ -270,11 +281,11 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUITextWidget::draw(LVDrawBuf * buf) {
-	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
+	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	buf->SetClipRect(&rc);
+	setClipRect(buf, rc);
 	applyPadding(rc);
 	buf->SetTextColor(getTextColor());
 	int width = getFont()->getTextWidth(_text.c_str(), _text.length());
@@ -305,11 +316,11 @@ void CRUIImageWidget::layout(int left, int top, int right, int bottom) {
 }
 /// draws widget with its children to specified surface
 void CRUIImageWidget::draw(LVDrawBuf * buf) {
-	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
+	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	buf->SetClipRect(&rc);
+	setClipRect(buf, rc);
 	applyPadding(rc);
 	if (!_image.isNull()) {
 		applyAlign(rc, _image->originalWidth(), _image->originalHeight());
@@ -414,11 +425,11 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUIContainerWidget::draw(LVDrawBuf * buf) {
-	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
+	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	buf->SetClipRect(&rc);
+	setClipRect(buf, rc);
 	applyPadding(rc);
 	for (int i=0; i<getChildCount(); i++) {
 		getChild(i)->draw(buf);
@@ -547,10 +558,10 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			lvPoint sz = _itemSizes[i];
 			childRc.top = y;
 			childRc.bottom = y + sz.y;
-			if (childRc.top > clientRc.bottom)
-				childRc.top = clientRc.bottom;
-			if (childRc.bottom > clientRc.bottom)
-				childRc.bottom = clientRc.bottom;
+//			if (childRc.top > clientRc.bottom)
+//				childRc.top = clientRc.bottom;
+//			if (childRc.bottom > clientRc.bottom)
+//				childRc.bottom = clientRc.bottom;
 			_itemRects.add(childRc);
 			y = childRc.bottom;
 		}
@@ -560,10 +571,10 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			lvPoint sz = _itemSizes[i];
 			childRc.left = x;
 			childRc.right = x + sz.x;
-			if (childRc.left > clientRc.right)
-				childRc.left = clientRc.right;
-			if (childRc.right > clientRc.right)
-				childRc.right = clientRc.right;
+//			if (childRc.left > clientRc.right)
+//				childRc.left = clientRc.right;
+//			if (childRc.right > clientRc.right)
+//				childRc.right = clientRc.right;
 			_itemRects.add(childRc);
 			x = childRc.right;
 		}
@@ -572,23 +583,23 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUIListWidget::draw(LVDrawBuf * buf) {
-	LVDrawStateSaver saver(*buf);
 	CRUIWidget::draw(buf);
+	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	buf->SetClipRect(&rc);
 	applyPadding(rc);
+	setClipRect(buf, rc);
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
 		CRUIWidget * item = getItemWidget(i);
 		if (!item)
 			continue;
 		lvRect childRc = _itemRects[i];
 		if (_vertical) {
-			childRc.top += _scrollOffset;
-			childRc.bottom += _scrollOffset;
+			childRc.top -= _scrollOffset;
+			childRc.bottom -= _scrollOffset;
 		} else {
-			childRc.left += _scrollOffset;
-			childRc.right += _scrollOffset;
+			childRc.left -= _scrollOffset;
+			childRc.right -= _scrollOffset;
 		}
 		if (rc.intersects(childRc)) {
 			item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);

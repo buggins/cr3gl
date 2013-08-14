@@ -41,6 +41,8 @@ protected:
 	/// correct rectangle bounds according to alignment
 	virtual void applyAlign(lvRect & rc, int contentWidth, int contentHeight);
 
+	bool setClipRect(LVDrawBuf * buf, lvRect & rc);
+
 public:
 
 	CRUIWidget();

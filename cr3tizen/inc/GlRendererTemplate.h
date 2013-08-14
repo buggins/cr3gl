@@ -9,12 +9,14 @@
 #include <FGraphics.h>
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
+#include "crui.h"
 
 class LVDocView;
 class GlRendererTemplate :
 	public Tizen::Graphics::Opengl::IGlRenderer
 {
 		LVDocView * _docview;
+		CRUIWidget * _widget;
 public:
 	GlRendererTemplate(void);
 	~GlRendererTemplate(void);

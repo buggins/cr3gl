@@ -50,6 +50,28 @@ GlRendererTemplate::GlRendererTemplate(void)
 	_docview = new LVDocView(32);
 	_docview->Resize(300, 400);
 	_docview->createDefaultDocument(lString16(L"Test document"), lString16(L"Just testing if GL rendering is working ok"));
+	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+	CRUIWidget * layout = new CRUIVerticalLayout();
+	CRUIButton * button = new CRUIButton(lString16(L"Normal with icon"), "cancel");
+	layout->addChild(button);
+	button = new CRUIButton(lString16(L"Pressed"));
+	layout->addChild(button->setState(STATE_PRESSED));
+	button = new CRUIButton(lString16(L"Focused"));
+	layout->addChild(button->setState(STATE_FOCUSED));
+	button = new CRUIButton(lString16(L"Disabled"));
+	layout->addChild(button->setState(STATE_DISABLED));
+	button = new CRUIButton(lString16(L"Vertical"), "cancel", true);
+	layout->addChild(button);
+
+	CRUIStringListAdapter * adapter = new CRUIStringListAdapter();
+	adapter->addItem(L"List item 1")->addItem(L"List item 2")->
+			addItem(L"List item 3")->addItem(L"List item 4")->addItem(L"List item 5")->addItem(L"List item 6")->
+			addItem(L"List item 7")->addItem(L"List item 7")->addItem(L"List item 9")->addItem(L"List item 10");
+	CRUIListWidget * list = new CRUIListWidget(true, adapter);
+	list->setBackground(resourceResolver->getIcon("tx_wood_dark_v3.jpg", true));
+	list->setPadding(5);
+	layout->addChild(list);
+	_widget = layout;
 }
 
 GlRendererTemplate::~GlRendererTemplate(void)
@@ -150,26 +172,6 @@ GlRendererTemplate::Draw(void)
 	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
 
 
-	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	CRUIWidget * layout = new CRUIVerticalLayout();
-	CRUIButton * button = new CRUIButton(lString16(L"Normal with icon"), "cancel");
-	layout->addChild(button);
-	button = new CRUIButton(lString16(L"Pressed"));
-	layout->addChild(button->setState(STATE_PRESSED));
-	button = new CRUIButton(lString16(L"Focused"));
-	layout->addChild(button->setState(STATE_FOCUSED));
-	button = new CRUIButton(lString16(L"Disabled"));
-	layout->addChild(button->setState(STATE_DISABLED));
-	button = new CRUIButton(lString16(L"Vertical"), "cancel", true);
-	layout->addChild(button);
-
-	CRUIStringListAdapter * adapter = new CRUIStringListAdapter();
-	adapter->addItem(L"List item 1")->addItem(L"List item 2")->
-			addItem(L"List item 3")->addItem(L"List item 4")->addItem(L"List item 5")->addItem(L"List item 6")->
-			addItem(L"List item 7")->addItem(L"List item 7")->addItem(L"List item 9")->addItem(L"List item 10");
-	CRUIListWidget * list = new CRUIListWidget(true, adapter);
-	list->setBackground(resourceResolver->getIcon("tx_wood_dark_v3.jpg", true));
-	layout->addChild(list);
 //	layout->setFont(font);
 //	layout->setPadding(4)->setMargin(10)->setBackground(0xC0C0C0);
 //	CRUITextWidget * text = new CRUITextWidget(lString16(L"Testing CR UI - text item"));
@@ -187,9 +189,9 @@ GlRendererTemplate::Draw(void)
 //	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
 //	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
 //	//text->setBa
-	layout->measure(400, 700);
-	layout->layout(50, 50, 50 + layout->getMeasuredWidth(), 50 + layout->getMeasuredHeight());
-	layout->draw(&buf);
+	_widget->measure(400, 700);
+	_widget->layout(50, 50, 50 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
+	_widget->draw(&buf);
 //
 //	font = fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 //	layout = new CRUIHorizontalLayout();
