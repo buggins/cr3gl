@@ -204,13 +204,19 @@ public:
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
 	    	LVGLSetColor(color);
+	    	//glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	    	//glDisable(GL_LIGHTING);
 	    	glActiveTexture(GL_TEXTURE0);
 	    	glEnable(GL_TEXTURE_2D);
 	    	glBindTexture(GL_TEXTURE_2D, _textureId);
 
 	    	glEnable(GL_BLEND);
-	    	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	    	//GL_SRC_ALPHA
+	    	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	    	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	    	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
+	    	glDisableClientState(GL_COLOR_ARRAY);
 	    	glEnableClientState(GL_VERTEX_ARRAY);
 	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
