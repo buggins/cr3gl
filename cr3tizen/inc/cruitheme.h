@@ -116,6 +116,8 @@ protected:
 	int _minHeight;
 	int _maxHeight;
 	lUInt32 _align;
+	CRUIImageRef _listDelimiterHorizontal;
+	CRUIImageRef _listDelimiterVertical;
 	LVPtrVector<CRUIStyle, true> _substyles;
 	/// checks if state filter matches specified state
 	virtual bool matchState(lUInt8 stateValue);
@@ -157,6 +159,10 @@ public:
 	virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
 	virtual CRUIStyle * setBackground(const char * imgname) { _background = resourceResolver->getIcon(imgname); return this; }
 	virtual CRUIStyle * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
+	virtual CRUIStyle * setListDelimiterHorizontal(CRUIImageRef img) { _listDelimiterHorizontal = img; return this; }
+	virtual CRUIStyle *  setListDelimiterVertical(CRUIImageRef img) { _listDelimiterVertical = img; return this; }
+	virtual CRUIImageRef getListDelimiterHorizontal();
+	virtual CRUIImageRef getListDelimiterVertical();
 	virtual CRUIImageRef getBackground();
 	virtual lUInt8 getFontSize() { return _fontSize; }
 	virtual LVFontRef getFont();

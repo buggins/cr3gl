@@ -73,6 +73,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(26, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(34, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_dark_v3.png"));
 	CRUIStyle * buttonStyle = currentTheme->addSubstyle(lString8("BUTTON"));
 	//keyboard_key_feedback_background.9
 	buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);

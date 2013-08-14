@@ -502,6 +502,17 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
 	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
 	_itemSizes.clear();
+	CRUIImageRef delimiter;
+	int delimiterSize = 0;
+	if (isVertical()) {
+		delimiter = getStyle()->getListDelimiterVertical();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalHeight();
+	} else {
+		delimiter = getStyle()->getListDelimiterHorizontal();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalWidth();
+	}
 	if (_vertical) {
 		int biggestw = 0;
 		int totalh = 0;
@@ -514,6 +525,8 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			if (biggestw < sz.x)
 				biggestw = sz.x;
 			_itemSizes.add(sz);
+			if (i < getItemCount() - 1)
+				totalh += delimiterSize;
 		}
 		if (biggestw > maxw)
 			biggestw = maxw;
@@ -532,6 +545,8 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			if (biggesth < sz.y)
 				biggesth = sz.y;
 			_itemSizes.add(sz);
+			if (i < getItemCount() - 1)
+				totalw += delimiterSize;
 		}
 		if (biggesth > maxh)
 			biggesth = maxh;
@@ -552,6 +567,17 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	applyPadding(clientRc);
 	lvRect childRc = clientRc;
 	_itemRects.clear();
+	CRUIImageRef delimiter;
+	int delimiterSize = 0;
+	if (isVertical()) {
+		delimiter = getStyle()->getListDelimiterVertical();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalHeight();
+	} else {
+		delimiter = getStyle()->getListDelimiterHorizontal();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalWidth();
+	}
 	if (_vertical) {
 		int y = childRc.top;
 		for (int i=0; i<getItemCount() && i < _itemSizes.length(); i++) {
@@ -564,10 +590,11 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 //				childRc.bottom = clientRc.bottom;
 			_itemRects.add(childRc);
 			y = childRc.bottom;
+			y += delimiterSize;
 		}
 	} else {
 		int x = childRc.left;
-		for (int i=0; i<getItemCount() && i < _itemSizes.length(); i++) {
+		for (int i=0; i < getItemCount() && i < _itemSizes.length(); i++) {
 			lvPoint sz = _itemSizes[i];
 			childRc.left = x;
 			childRc.right = x + sz.x;
@@ -577,6 +604,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 //				childRc.right = clientRc.right;
 			_itemRects.add(childRc);
 			x = childRc.right;
+			x += delimiterSize;
 		}
 	}
 }
@@ -589,22 +617,42 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
+	CRUIImageRef delimiter;
+	int delimiterSize = 0;
+	if (isVertical()) {
+		delimiter = getStyle()->getListDelimiterVertical();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalHeight();
+	} else {
+		delimiter = getStyle()->getListDelimiterHorizontal();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalWidth();
+	}
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
 		CRUIWidget * item = getItemWidget(i);
 		if (!item)
 			continue;
 		lvRect childRc = _itemRects[i];
+		lvRect delimiterRc;
 		if (_vertical) {
 			childRc.top -= _scrollOffset;
 			childRc.bottom -= _scrollOffset;
+			delimiterRc = childRc;
+			delimiterRc.top = childRc.bottom;
+			delimiterRc.bottom = delimiterRc.top + delimiterSize;
 		} else {
 			childRc.left -= _scrollOffset;
 			childRc.right -= _scrollOffset;
+			delimiterRc = childRc;
+			delimiterRc.left = childRc.right;
+			delimiterRc.right = delimiterRc.left + delimiterSize;
 		}
 		if (rc.intersects(childRc)) {
 			item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->draw(buf);
 		}
+		if (delimiterSize && i < getItemCount() - 1 && rc.intersects(delimiterRc))
+			delimiter->draw(buf, delimiterRc);
 	}
 	_scrollOffset++;
 }
