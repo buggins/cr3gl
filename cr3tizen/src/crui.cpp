@@ -227,6 +227,26 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
 	}
 }
 
+CRUIWidget * CRUIWidget::childById(const lString8 & id) {
+	if (_id == id)
+		return this;
+	for (int i = 0; i < getChildCount(); i++) {
+		CRUIWidget * item = getChild(i)->childById(id);
+		if (item)
+			return item;
+	}
+	return NULL;
+}
+
+CRUIWidget * CRUIWidget::childById(const char * id) {
+	return childById(lString8(id));
+}
+
+
+
+
+//=================================================================================
+
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
 	int width = getFont()->getTextWidth(_text.c_str(), _text.length());

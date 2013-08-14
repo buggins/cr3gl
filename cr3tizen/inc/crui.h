@@ -14,6 +14,7 @@
 /// base class for all UI elements
 class CRUIWidget {
 protected:
+	lString8 _id;
 	lString8 _styleId;
 	lUInt32 _state;
 	lvRect _pos;
@@ -45,7 +46,8 @@ public:
 	CRUIWidget();
 	virtual ~CRUIWidget();
 
-
+	const lString8 & getId() { return _id; }
+	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }
 	lUInt32 getState() { return _state; }
 	CRUIWidget * setState(lUInt32 state) { _state = state; return this; }
 
@@ -95,6 +97,8 @@ public:
 
 
 	virtual int getChildCount() { return 0; }
+	virtual CRUIWidget * childById(const lString8 & id);
+	virtual CRUIWidget * childById(const char * id);
 	virtual CRUIWidget * getChild(int index) { return NULL; }
 	virtual CRUIWidget * addChild(CRUIWidget * child) { return NULL; }
 	virtual CRUIWidget * removeChild(int index) { return NULL; }
