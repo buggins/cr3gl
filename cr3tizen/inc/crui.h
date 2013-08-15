@@ -45,6 +45,7 @@ public:
 	int getStartY() const { return _startY; }
 	lUInt64 getEventTimestamp() const { return _ts; }
 	lUInt64 getDownEventTimestamp() const { return _downTs; }
+	lUInt64 getDownDuration() const { return _ts - _downTs; }
 	int getAction() const { return _action; }
 	lUInt64 getPointerId() const { return _pointerId; }
 	CRUIWidget * getWidget() const { return _widget; }
@@ -67,6 +68,7 @@ public:
 	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
 	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }
 	int getAction(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
+	lUInt64 getDownDuration() const { return index >= 0 && index<_data.length() ? _data[index]->getDownDuration() : 0; }
 	lUInt64 getPointerId(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
 	CRUIWidget * getWidget(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getWidget() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found
@@ -88,6 +90,18 @@ class CRUIOnTouchEventListener {
 public:
 	virtual bool onTouch(CRUIWidget * widget, const CRUIMotionEvent * event) = 0;
 	virtual ~CRUIOnTouchEventListener() {}
+};
+
+class CRUIOnClickListener {
+public:
+	virtual bool onClick(CRUIWidget * widget) = 0;
+	virtual ~CRUIOnClickListener() {}
+};
+
+class CRUIOnLongClickListener {
+public:
+	virtual bool onLongClick(CRUIWidget * widget) = 0;
+	virtual ~CRUIOnLongClickListener() {}
 };
 
 /// base class for all UI elements
@@ -115,6 +129,8 @@ protected:
 	lUInt32 _textColor;
 	lUInt32 _align;
 	CRUIOnTouchEventListener * _onTouchListener;
+	CRUIOnClickListener * _onClickListener;
+	CRUIOnLongClickListener * _onLongClickListener;
 
 	/// measure dimensions
 	virtual void defMeasure(int baseWidth, int baseHeight, int contentWidth, int contentHeight);
@@ -132,10 +148,22 @@ public:
 	virtual bool isPointInside(int x, int y);
 	/// returns true if widget is child of this
 	virtual bool isChild(CRUIWidget * widget);
+
 	/// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
+	/// click handler, returns true if it handled event
+	virtual bool onClickEvent();
+	/// long click handler, returns true if it handled event
+	virtual bool onLongClickEvent();
+
 	virtual CRUIOnTouchEventListener * setOnTouchListener(CRUIOnTouchEventListener * listener);
 	virtual CRUIOnTouchEventListener * getOnTouchListener() { return _onTouchListener; }
+	virtual CRUIOnClickListener * setOnClickListener(CRUIOnClickListener * listener);
+	virtual CRUIOnClickListener * getOnClickListener() { return _onClickListener; }
+	virtual CRUIOnLongClickListener * setOnClickListener(CRUIOnLongClickListener * listener);
+	virtual CRUIOnLongClickListener * getOnClickListener() { return _onLongClickListener; }
+
+
 	virtual lvPoint getTileOffset() const { return lvPoint(); }
 	const lString8 & getId() { return _id; }
 	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }

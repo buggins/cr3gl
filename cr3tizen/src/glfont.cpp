@@ -72,12 +72,12 @@ public:
 		if (drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (textureId == 0) {
-	    	CRLog::debug("updateTexture - new texture");
+	    	CRLog::debug("GLGlyphCache updateTexture - new texture");
 			glGenTextures(1, &textureId);
 			if (glGetError() != GL_NO_ERROR)
 				return;
 	    }
-    	CRLog::debug("updateTexture - setting image %dx%d", drawbuf->GetWidth(), drawbuf->GetHeight());
+    	//CRLog::debug("updateTexture - setting image %dx%d", drawbuf->GetWidth(), drawbuf->GetHeight());
 	    glBindTexture(GL_TEXTURE_2D, textureId);
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -178,6 +178,7 @@ public:
 		cacheItem->font = font;
 		// draw glyph to buffer, if non empty
 		if (glyph->bmp_height && glyph->bmp_width) {
+			//CRLog::trace("Creating new character %d for font %08x", (int)glyph->ch, (lUInt32)font);
 			if (nextLine < currentLine + glyph->bmp_height)
 				nextLine = currentLine + glyph->bmp_height;
 			if (!drawbuf) {

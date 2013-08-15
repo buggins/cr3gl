@@ -80,7 +80,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 		}
 	} else {
 		if (!pointInside && action == ACTION_MOVE) { // moving outside - already sent FOCUS_OUT with response true, no tracking, now just ignore
-			CRLog::trace("MOVE outside of bounds - ignoring");
+			//CRLog::trace("MOVE outside of bounds - ignoring");
 			return false;
 		}
 	}
@@ -110,7 +110,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 		return dispatchTouchEvent(widget, event);
 	}
 	if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
-		CRLog::trace("Skipping non-down event without widget");
+		//CRLog::trace("Skipping non-down event without widget");
 		return false;
 	}
 	//CRLog::trace("No widget: dispatching using tree");
@@ -124,7 +124,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_measuredWidth(0), _measuredHeight(0),
 	_parent(NULL), _fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
 	_align(0),
-	_onTouchListener(NULL)
+	_onTouchListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
 {
 
 }
@@ -224,10 +224,41 @@ bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	return false;
 }
 
+/// click handler, returns true if it handled event
+bool CRUIWidget::onClickEvent()
+{
+	if (_onClickListener != NULL)
+		return _onClickListener->onTouch(this);
+	return false;
+}
+
+/// long click handler, returns true if it handled event
+bool CRUIWidget::onLongClickEvent()
+{
+	if (_onLongClickListener != NULL)
+		return _onLongClickListener->onLongClick(this);
+	return false;
+}
+
+
 CRUIOnTouchEventListener * CRUIWidget::setOnTouchListener(CRUIOnTouchEventListener * listener)
 {
 	CRUIOnTouchEventListener * old = _onTouchListener;
 	_onTouchListener = listener;
+	return old;
+}
+
+CRUIOnClickListener * CRUIWidget::setOnClickListener(CRUIOnClickListener * listener)
+{
+	CRUIOnClickListener * old = _onClickListener;
+	_onClickListener = listener;
+	return old;
+}
+
+CRUIOnLongClickListener * CRUIWidget::setOnLongClickListener(CRUIOnLongClickListener * listener)
+{
+	CRUIOnLongClickListener * old = _onLongClickListener;
+	_onLongClickListener = listener;
 	return old;
 }
 
@@ -626,32 +657,36 @@ CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
-	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+	//CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	switch (action) {
 	case ACTION_DOWN:
 		setState(STATE_PRESSED, STATE_PRESSED);
-		CRLog::trace("button DOWN");
+		//CRLog::trace("button DOWN");
 		break;
 	case ACTION_UP:
 		setState(0, STATE_PRESSED);
+		bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+		if (isLong && onLongClickEvent())
+			return true;
+		onClickEvent();
 		// fire onclick
-		CRLog::trace("button UP");
+		//CRLog::trace("button UP");
 		break;
 	case ACTION_FOCUS_IN:
 		setState(STATE_PRESSED, STATE_PRESSED);
-		CRLog::trace("button FOCUS IN");
+		//CRLog::trace("button FOCUS IN");
 		break;
 	case ACTION_FOCUS_OUT:
 		setState(0, STATE_PRESSED);
-		CRLog::trace("button FOCUS OUT");
+		//CRLog::trace("button FOCUS OUT");
 		break;
 	case ACTION_CANCEL:
 		setState(0, STATE_PRESSED);
-		CRLog::trace("button CANCEL");
+		//CRLog::trace("button CANCEL");
 		break;
 	case ACTION_MOVE:
 		// ignore
-		CRLog::trace("button MOVE");
+		//CRLog::trace("button MOVE");
 		break;
 	default:
 		return CRUIWidget::onTouchEvent(event);

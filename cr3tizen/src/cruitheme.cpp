@@ -258,7 +258,10 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 }
 
 LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
-	LVImageSourceRef res;
+	lString8 name8(name);
+	LVImageSourceRef res = _imageSourceMap.get(name8);
+	if (!res.isNull())
+		return res;
 	lString16 path = resourceToFileName(name);
 	if (path.empty()) {
 		CRLog::error("Resource not found: %s", name);
@@ -274,15 +277,25 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 				CRLog::error("NinePatch detection failed for %s", name);
 			}
 		}
+		_imageSourceMap.set(name8, res);
 		return res;
 	}
 	return LVImageSourceRef();
 }
 
 CRUIImageRef CRResourceResolver::getIcon(const char * name, bool tiled) {
+	lString8 name8(name);
+	if (tiled)
+		name8 += "-tiled";
+	CRUIImageRef res = _iconMap.get(name8);
+	if (!res.isNull())
+		return res;
 	LVImageSourceRef src = getImageSource(name);
-	if (!src.isNull())
-		return CRUIImageRef(new CRUIBitmapImage(src, src->GetNinePatchInfo() != NULL, tiled));
+	if (!src.isNull()) {
+		res = CRUIImageRef(new CRUIBitmapImage(src, src->GetNinePatchInfo() != NULL, tiled));
+		_iconMap.set(name8, res);
+		return res;
+	}
 	return CRUIImageRef();
 }
 
