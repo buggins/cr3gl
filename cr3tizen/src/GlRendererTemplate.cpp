@@ -66,14 +66,25 @@ GlRendererTemplate::GlRendererTemplate(void)
 	layout->addChild(button);
 
 	CRUIStringListAdapter * adapter = new CRUIStringListAdapter();
-	adapter->addItem(L"List item 1")->addItem(L"List item 2")->
-			addItem(L"List item 3")->addItem(L"List item 4")->addItem(L"List item 5")->addItem(L"List item 6")->
-			addItem(L"List item 7")->addItem(L"List item 7")->addItem(L"List item 9")->addItem(L"List item 10");
-	CRUIListWidget * list = new CRUIListWidget(true, adapter);
+	adapter->addItem(L"item 1")->addItem(L"item 2")->
+			addItem(L"item 3")->addItem(L"item 4")->addItem(L"item 5")->addItem(L"item 6")->
+			addItem(L"item 7")->addItem(L"item 8")->addItem(L"item 9")->addItem(L"item 10");
+	CRUIListWidget * list = new CRUIListWidget(false, adapter);
 	list->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
-	list->setPadding(5);
+	list->setPadding(5)->setMargin(5);
 	//list->setScrollOffset(10);
 	layout->addChild(list);
+
+	adapter = new CRUIStringListAdapter();
+	adapter->addItem(L"item 1")->addItem(L"item 2")->
+			addItem(L"item 3")->addItem(L"Very long item 4")->addItem(L"item 5")->addItem(L"item 6")->
+			addItem(L"item 7")->addItem(L"item 8")->addItem(L"item 9")->addItem(L"item 10");
+	list = new CRUIListWidget(true, adapter);
+	list->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
+	list->setPadding(5)->setMargin(5);
+	//list->setScrollOffset(10);
+	layout->addChild(list);
+
 	_widget = layout;
 	_eventManager->setRootWidget(_widget);
 }

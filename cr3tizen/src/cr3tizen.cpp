@@ -74,8 +74,9 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(26, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(34, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+
 	currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
-	CRUIStyle * buttonStyle = currentTheme->addSubstyle(lString8("BUTTON"));
+	CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
 	//keyboard_key_feedback_background.9
 	buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
 	//buttonStyle->setBackground("keyboard_key_feedback_background.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
@@ -83,6 +84,11 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");
 	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
 	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
+	CRUIStyle * listItemStyle = currentTheme->addSubstyle("LIST_ITEM");
+	listItemStyle->setMargin(0)->setPadding(7);
+	listItemStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0x40C0C080);
+	listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
 }
 
 

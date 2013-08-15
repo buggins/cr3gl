@@ -128,8 +128,8 @@ public:
 	virtual ~CRUIStyle();
 	virtual CRUITheme * getTheme() { return _theme; }
 	virtual CRUIStyle * addSubstyle(lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
-	virtual CRUIStyle * addSubstyle(const char * id) {
-		return addSubstyle(lString8(id), 0, 0);
+	virtual CRUIStyle * addSubstyle(const char * id = NULL, lUInt8 stateMask = 0, lUInt8 stateValue = 0) {
+		return addSubstyle(lString8(id), stateMask, stateValue);
 	}
 	virtual CRUIStyle * addSubstyle(lUInt8 stateMask, lUInt8 stateValue) {
 		return addSubstyle(lString8::empty_str, stateMask, stateValue);

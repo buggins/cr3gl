@@ -10,6 +10,7 @@
 using namespace CRUI;
 
 #define NO_DRAG (-1234567)
+#define MAX_EXTRA_DRAG 20
 //===================================================================================================
 // List
 
@@ -19,6 +20,19 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
   _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG)
 {
 
+}
+
+void CRUIListWidget::setScrollOffset(int offset) {
+	int oldOffset = _scrollOffset;
+	bool isDragging = _dragStartOffset != NO_DRAG;
+	int delta = isDragging ? MAX_EXTRA_DRAG : 0;
+	_scrollOffset = offset;
+	if (_scrollOffset > _maxScrollOffset + delta)
+		_scrollOffset = _maxScrollOffset + delta;
+	if (_scrollOffset < - delta)
+		_scrollOffset = - delta;
+	if (_scrollOffset != oldOffset)
+		invalidate();
 }
 
 /// measure dimensions
@@ -264,21 +278,18 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			_selectedItem = -1;
 			invalidate();
 			_dragStartOffset = NO_DRAG;
+			setScrollOffset(_scrollOffset);
 			bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
 //			if (isLong && onLongClickEvent())
 //				return true;
 //			onClickEvent();
-			if (_scrollOffset < 0)
-				_scrollOffset = 0;
-			if (_scrollOffset > _maxScrollOffset)
-				_scrollOffset = _maxScrollOffset;
 		}
 		// fire onclick
 		//CRLog::trace("button UP");
 		break;
 	case ACTION_FOCUS_IN:
 		if (isDragging)
-			_scrollOffset = _dragStartOffset - delta;
+			setScrollOffset(_dragStartOffset - delta);
 		else
 			_selectedItem = index;
 		invalidate();
@@ -286,7 +297,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		break;
 	case ACTION_FOCUS_OUT:
 		if (isDragging)
-			_scrollOffset = _dragStartOffset - delta;
+			setScrollOffset(_dragStartOffset - delta);
 		else
 			_selectedItem = -1;
 		invalidate();
@@ -296,22 +307,17 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	case ACTION_CANCEL:
 		_selectedItem = -1;
 		_dragStartOffset = NO_DRAG;
-		if (_scrollOffset < 0)
-			_scrollOffset = 0;
-		if (_scrollOffset > _maxScrollOffset)
-			_scrollOffset = _maxScrollOffset;
-		invalidate();
+		setScrollOffset(_scrollOffset);
 		//CRLog::trace("button CANCEL");
 		break;
 	case ACTION_MOVE:
 		if (!isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
 			_selectedItem = -1;
 			_dragStartOffset = _scrollOffset;
-			_scrollOffset = _dragStartOffset - delta;
+			setScrollOffset(_dragStartOffset - delta);
 		} else if (isDragging) {
-			_scrollOffset = _dragStartOffset - delta;
+			setScrollOffset(_dragStartOffset - delta);
 		}
-		invalidate();
 		// ignore
 		//CRLog::trace("button MOVE");
 		break;
@@ -327,6 +333,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 CRUIStringListAdapter::CRUIStringListAdapter() {
 	_widget = new CRUITextWidget(lString16::empty_str);
+	_widget->setStyle(lString8("LIST_ITEM"));
 }
 CRUIStringListAdapter::~CRUIStringListAdapter() {
 	if (_widget) delete _widget;
