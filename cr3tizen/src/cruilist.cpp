@@ -17,9 +17,22 @@ using namespace CRUI;
 CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
 : _vertical(vertical), _adapter(adapter),
   _ownAdapter(false), _scrollOffset(0),
-  _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG)
+  _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG),
+  _onItemClickListener(NULL), _onItemLongClickListener(NULL)
 {
 
+}
+
+bool CRUIListWidget::onItemClickEvent(int itemIndex) {
+	if (_onItemClickListener)
+		return _onItemClickListener->onListItemClick(this, itemIndex);
+	return false;
+}
+
+bool CRUIListWidget::onItemLongClickEvent(int itemIndex) {
+	if (_onItemLongClickListener)
+		return _onItemLongClickListener->onListItemLongClick(this, itemIndex);
+	return false;
 }
 
 void CRUIListWidget::setScrollOffset(int offset) {
@@ -275,14 +288,17 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		break;
 	case ACTION_UP:
 		{
+			int itemIndex = _selectedItem;
 			_selectedItem = -1;
 			invalidate();
 			_dragStartOffset = NO_DRAG;
 			setScrollOffset(_scrollOffset);
-			bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
-//			if (isLong && onLongClickEvent())
-//				return true;
-//			onClickEvent();
+			if (itemIndex != -1) {
+				bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+				if (isLong && onItemLongClickEvent(itemIndex))
+					return true;
+				onItemClickEvent(itemIndex);
+			}
 		}
 		// fire onclick
 		//CRLog::trace("button UP");

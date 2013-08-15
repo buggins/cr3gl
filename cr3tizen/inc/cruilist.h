@@ -47,6 +47,8 @@ protected:
 	int _topItem;
 	int _selectedItem;
 	int _dragStartOffset;
+	CRUIOnListItemClickListener * _onItemClickListener;
+	CRUIOnListItemLongClickListener * _onItemLongClickListener;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
 public:
@@ -61,6 +63,14 @@ public:
 		requestLayout();
 		return this;
 	}
+
+	virtual CRUIOnListItemClickListener * getOnItemClickListener() { return _onItemClickListener; }
+	virtual CRUIOnListItemLongClickListener * getOnItemLongClickListener() { return _onItemLongClickListener; }
+	virtual CRUIOnListItemClickListener * setOnItemClickListener(CRUIOnListItemClickListener * listener) { CRUIOnListItemClickListener * old = _onItemClickListener; _onItemClickListener = listener; return old; }
+	virtual CRUIOnListItemLongClickListener * setOnItemLongClickListener(CRUIOnListItemLongClickListener * listener) { CRUIOnListItemLongClickListener * old = _onItemLongClickListener; _onItemLongClickListener = listener; return old; }
+	virtual bool onItemClickEvent(int itemIndex);
+	virtual bool onItemLongClickEvent(int itemIndex);
+
 	virtual int getScrollOffset() { return _scrollOffset; }
 	virtual void setScrollOffset(int offset);
 	virtual CRUIWidget * getItemWidget(int index) { return _adapter != NULL ? _adapter->getItemWidget(this, index) : 0; }

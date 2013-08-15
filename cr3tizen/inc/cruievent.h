@@ -106,6 +106,19 @@ public:
 	virtual ~CRUIOnLongClickListener() {}
 };
 
+class CRUIListWidget;
+class CRUIOnListItemClickListener {
+public:
+	virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) = 0;
+	virtual ~CRUIOnListItemClickListener() {}
+};
+
+class CRUIOnListItemLongClickListener {
+public:
+	virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) = 0;
+	virtual ~CRUIOnListItemLongClickListener() {}
+};
+
 
 
 #endif /* CRUIEVENT_H_ */
