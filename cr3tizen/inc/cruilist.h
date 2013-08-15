@@ -18,6 +18,7 @@ class CRUIListAdapter {
 public:
 	virtual int getItemCount(CRUIListWidget * list) = 0;
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) = 0;
+	virtual bool isEnabled(int index) { return true; }
 	virtual ~CRUIListAdapter() {}
 };
 
@@ -42,21 +43,29 @@ protected:
 	CRUIListAdapter * _adapter;
 	bool _ownAdapter;
 	int _scrollOffset;
+	int _maxScrollOffset;
 	int _topItem;
+	int _selectedItem;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
 public:
+	CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
+	int itemFromPoint(int x, int y);
+	virtual void setSelectedItem(int item) { _selectedItem = item; invalidate(); }
+	virtual int getSelectedItem() { return _selectedItem; }
 	virtual bool isVertical() { return _vertical; }
 	virtual CRUIListWidget * setAdapter(CRUIListAdapter * adapter, bool deleteOnWidgetDestroy = false) {
 		_adapter = adapter;
 		_ownAdapter = deleteOnWidgetDestroy;
+		requestLayout();
 		return this;
 	}
 	virtual int getScrollOffset() { return _scrollOffset; }
 	virtual void setScrollOffset(int offset) { _scrollOffset = offset; }
 	virtual CRUIWidget * getItemWidget(int index) { return _adapter != NULL ? _adapter->getItemWidget(this, index) : 0; }
 	virtual int getItemCount() { return _adapter != NULL ? _adapter->getItemCount(this) : 0; }
-	CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
+	/// motion event handler, returns true if it handled event
+	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle

@@ -339,4 +339,6 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
 	needLayout = false;
 	needRedraw = false;
 	checkUpdateOptions(widget, needLayout, needRedraw);
+	if (needLayout)
+		needRedraw = true;
 }

@@ -12,7 +12,7 @@ using namespace CRUI;
 //===================================================================================================
 // List
 
-CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter) : _vertical(vertical), _adapter(adapter), _ownAdapter(false), _scrollOffset(0), _topItem(0) {
+CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter) : _vertical(vertical), _adapter(adapter), _ownAdapter(false), _scrollOffset(0), _maxScrollOffset(0), _topItem(0), _selectedItem(-1) {
 
 }
 
@@ -86,6 +86,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	_pos.bottom = bottom;
 	lvRect clientRc = _pos;
 	applyMargin(clientRc);
+	int winsize = isVertical() ? clientRc.height() : clientRc.width();
 	applyPadding(clientRc);
 	lvRect childRc = clientRc;
 	_itemRects.clear();
@@ -112,8 +113,10 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 //				childRc.bottom = clientRc.bottom;
 			_itemRects.add(childRc);
 			y = childRc.bottom;
-			y += delimiterSize;
+			if (i < getItemCount() - 1)
+				y += delimiterSize;
 		}
+		_maxScrollOffset = y - winsize > 0 ? y - winsize : 0;
 	} else {
 		int x = childRc.left;
 		for (int i=0; i < getItemCount() && i < _itemSizes.length(); i++) {
@@ -126,14 +129,18 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 //				childRc.right = clientRc.right;
 			_itemRects.add(childRc);
 			x = childRc.right;
-			x += delimiterSize;
+			if (i < getItemCount() - 1)
+				x += delimiterSize;
 		}
+		_maxScrollOffset = x - winsize > 0 ? x - winsize : 0;
 	}
 }
 
 /// draws widget with its children to specified surface
 void CRUIListWidget::draw(LVDrawBuf * buf) {
 	CRUIWidget::draw(buf);
+	if (!_adapter)
+		return;
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
@@ -151,7 +158,11 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 			delimiterSize = delimiter->originalWidth();
 	}
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
+		bool selected = _selectedItem == i;
+		bool enabled = _adapter->isEnabled(i);
 		CRUIWidget * item = getItemWidget(i);
+		item->setState(selected ? STATE_FOCUSED : 0, STATE_FOCUSED);
+		item->setState(!enabled ? STATE_DISABLED : 0, STATE_DISABLED);
 		if (!item)
 			continue;
 		lvRect childRc = _itemRects[i];
@@ -188,6 +199,92 @@ lvPoint CRUIListWidget::getTileOffset() const {
 	return res;
 }
 
+int CRUIListWidget::itemFromPoint(int x, int y) {
+	CRUIImageRef delimiter;
+	int delimiterSize = 0;
+	if (isVertical()) {
+		delimiter = getStyle()->getListDelimiterVertical();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalHeight();
+	} else {
+		delimiter = getStyle()->getListDelimiterHorizontal();
+		if (!delimiter.isNull())
+			delimiterSize = delimiter->originalWidth();
+	}
+	lvPoint pt(x,y);
+	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
+		lvRect childRc = _itemRects[i];
+		lvRect delimiterRc;
+		if (_vertical) {
+			childRc.top -= _scrollOffset;
+			childRc.bottom -= _scrollOffset;
+			delimiterRc = childRc;
+			delimiterRc.top = childRc.bottom;
+			delimiterRc.bottom = delimiterRc.top + delimiterSize;
+		} else {
+			childRc.left -= _scrollOffset;
+			childRc.right -= _scrollOffset;
+			delimiterRc = childRc;
+			delimiterRc.left = childRc.right;
+			delimiterRc.right = delimiterRc.left + delimiterSize;
+		}
+		if (childRc.isPointInside(pt) || delimiterRc.isPointInside(pt))
+			return i;
+	}
+	return -1;
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
+	int action = event->getAction();
+	//CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+	int index = itemFromPoint(event->getX(), event->getY());
+	switch (action) {
+	case ACTION_DOWN:
+		_selectedItem = index;
+		invalidate();
+		//CRLog::trace("button DOWN");
+		break;
+	case ACTION_UP:
+		{
+			_selectedItem = -1;
+			invalidate();
+			bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+//			if (isLong && onLongClickEvent())
+//				return true;
+//			onClickEvent();
+		}
+		// fire onclick
+		//CRLog::trace("button UP");
+		break;
+	case ACTION_FOCUS_IN:
+		_selectedItem = index;
+		invalidate();
+		//CRLog::trace("button FOCUS IN");
+		break;
+	case ACTION_FOCUS_OUT:
+		_selectedItem = -1;
+		invalidate();
+		//CRLog::trace("button FOCUS OUT");
+		break;
+	case ACTION_CANCEL:
+		_selectedItem = -1;
+		invalidate();
+		//CRLog::trace("button CANCEL");
+		break;
+	case ACTION_MOVE:
+		// ignore
+		//CRLog::trace("button MOVE");
+		break;
+	default:
+		return CRUIWidget::onTouchEvent(event);
+	}
+	return true;
+}
+
+
+
+//===================================================================================================
 
 CRUIStringListAdapter::CRUIStringListAdapter() {
 	_widget = new CRUITextWidget(lString16::empty_str);
