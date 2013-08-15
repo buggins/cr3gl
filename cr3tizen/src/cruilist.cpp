@@ -9,10 +9,15 @@
 
 using namespace CRUI;
 
+#define NO_DRAG (-1234567)
 //===================================================================================================
 // List
 
-CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter) : _vertical(vertical), _adapter(adapter), _ownAdapter(false), _scrollOffset(0), _maxScrollOffset(0), _topItem(0), _selectedItem(-1) {
+CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
+: _vertical(vertical), _adapter(adapter),
+  _ownAdapter(false), _scrollOffset(0),
+  _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG)
+{
 
 }
 
@@ -86,8 +91,8 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	_pos.bottom = bottom;
 	lvRect clientRc = _pos;
 	applyMargin(clientRc);
-	int winsize = isVertical() ? clientRc.height() : clientRc.width();
 	applyPadding(clientRc);
+	int winsize = isVertical() ? clientRc.height() : clientRc.width();
 	lvRect childRc = clientRc;
 	_itemRects.clear();
 	CRUIImageRef delimiter;
@@ -103,6 +108,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	}
 	if (_vertical) {
 		int y = childRc.top;
+		int y0 = y;
 		for (int i=0; i<getItemCount() && i < _itemSizes.length(); i++) {
 			lvPoint sz = _itemSizes[i];
 			childRc.top = y;
@@ -116,9 +122,10 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			if (i < getItemCount() - 1)
 				y += delimiterSize;
 		}
-		_maxScrollOffset = y - winsize > 0 ? y - winsize : 0;
+		_maxScrollOffset = y - y0 - winsize > 0 ? y - y0 - winsize : 0;
 	} else {
 		int x = childRc.left;
+		int x0 = x;
 		for (int i=0; i < getItemCount() && i < _itemSizes.length(); i++) {
 			lvPoint sz = _itemSizes[i];
 			childRc.left = x;
@@ -132,7 +139,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			if (i < getItemCount() - 1)
 				x += delimiterSize;
 		}
-		_maxScrollOffset = x - winsize > 0 ? x - winsize : 0;
+		_maxScrollOffset = x - x0 - winsize > 0 ? x - winsize : 0;
 	}
 }
 
@@ -187,7 +194,7 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 		if (delimiterSize && i < getItemCount() - 1 && rc.intersects(delimiterRc))
 			delimiter->draw(buf, delimiterRc);
 	}
-	_scrollOffset++;
+	//_scrollOffset++;
 }
 
 lvPoint CRUIListWidget::getTileOffset() const {
@@ -234,11 +241,18 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 	return -1;
 }
 
+#define DRAG_THRESHOLD 5
+
 /// motion event handler, returns true if it handled event
 bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
 	//CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	int index = itemFromPoint(event->getX(), event->getY());
+	int dx = event->getX() - event->getStartX();
+	int dy = event->getY() - event->getStartY();
+	int delta = isVertical() ? dy : dx;
+	bool isDragging = _dragStartOffset != NO_DRAG;
+	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
 	switch (action) {
 	case ACTION_DOWN:
 		_selectedItem = index;
@@ -249,30 +263,55 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		{
 			_selectedItem = -1;
 			invalidate();
+			_dragStartOffset = NO_DRAG;
 			bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
 //			if (isLong && onLongClickEvent())
 //				return true;
 //			onClickEvent();
+			if (_scrollOffset < 0)
+				_scrollOffset = 0;
+			if (_scrollOffset > _maxScrollOffset)
+				_scrollOffset = _maxScrollOffset;
 		}
 		// fire onclick
 		//CRLog::trace("button UP");
 		break;
 	case ACTION_FOCUS_IN:
-		_selectedItem = index;
+		if (isDragging)
+			_scrollOffset = _dragStartOffset - delta;
+		else
+			_selectedItem = index;
 		invalidate();
 		//CRLog::trace("button FOCUS IN");
 		break;
 	case ACTION_FOCUS_OUT:
-		_selectedItem = -1;
+		if (isDragging)
+			_scrollOffset = _dragStartOffset - delta;
+		else
+			_selectedItem = -1;
 		invalidate();
+		return false; // to continue tracking
 		//CRLog::trace("button FOCUS OUT");
 		break;
 	case ACTION_CANCEL:
 		_selectedItem = -1;
+		_dragStartOffset = NO_DRAG;
+		if (_scrollOffset < 0)
+			_scrollOffset = 0;
+		if (_scrollOffset > _maxScrollOffset)
+			_scrollOffset = _maxScrollOffset;
 		invalidate();
 		//CRLog::trace("button CANCEL");
 		break;
 	case ACTION_MOVE:
+		if (!isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
+			_selectedItem = -1;
+			_dragStartOffset = _scrollOffset;
+			_scrollOffset = _dragStartOffset - delta;
+		} else if (isDragging) {
+			_scrollOffset = _dragStartOffset - delta;
+		}
+		invalidate();
 		// ignore
 		//CRLog::trace("button MOVE");
 		break;

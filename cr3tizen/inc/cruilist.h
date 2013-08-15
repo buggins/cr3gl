@@ -46,6 +46,7 @@ protected:
 	int _maxScrollOffset;
 	int _topItem;
 	int _selectedItem;
+	int _dragStartOffset;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
 public:
