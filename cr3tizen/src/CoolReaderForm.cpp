@@ -75,4 +75,3 @@ CoolReaderForm::OnFormBackRequested(Tizen::Ui::Controls::Form& source)
 	pApp->Terminate();
 }
 
-

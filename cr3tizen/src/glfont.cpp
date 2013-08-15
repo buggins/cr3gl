@@ -523,7 +523,8 @@ public:
 				}
 				int kerning = 0;
 	#if (ALLOW_KERNING==1)
-				kerning = _base->getKerning(previous, ch, def_char);
+				if (use_kerning)
+					kerning = _base->getKerningOffset(previous, ch, def_char);
 	#endif
 				GLGlyphCacheItem * item = cache->get(ch, this);
 				if (!item) {

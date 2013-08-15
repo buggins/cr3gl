@@ -79,6 +79,7 @@ CoolReaderApp::OnAppInitialized(void)
 
 	__renderer = new GlRendererTemplate();
 	__player->SetIGlRenderer(__renderer);
+	pCoolReaderFrame->AddTouchEventListener(*__renderer->getEventAdapter());
 
 	return true;
 }

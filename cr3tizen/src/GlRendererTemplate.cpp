@@ -47,6 +47,8 @@ GlRendererTemplate::GlRendererTemplate(void)
 	, __controlHeight(0)
 	, __angle(0)
 {
+	_eventManager = new CRUIEventManager();
+	_eventAdapter = new CRUIEventAdapter(_eventManager);
 	_docview = new LVDocView(32);
 	_docview->Resize(300, 400);
 	_docview->createDefaultDocument(lString16(L"Test document"), lString16(L"Just testing if GL rendering is working ok"));
@@ -73,6 +75,7 @@ GlRendererTemplate::GlRendererTemplate(void)
 	//list->setScrollOffset(10);
 	layout->addChild(list);
 	_widget = layout;
+	_eventManager->setRootWidget(_widget);
 }
 
 GlRendererTemplate::~GlRendererTemplate(void)

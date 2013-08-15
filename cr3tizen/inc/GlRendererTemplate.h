@@ -10,6 +10,7 @@
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
 #include "crui.h"
+#include "cr3tizen.h"
 
 class LVDocView;
 class GlRendererTemplate :
@@ -17,9 +18,14 @@ class GlRendererTemplate :
 {
 		LVDocView * _docview;
 		CRUIWidget * _widget;
+		CRUIEventManager * _eventManager;
+		CRUIEventAdapter * _eventAdapter;
 public:
+
 	GlRendererTemplate(void);
 	~GlRendererTemplate(void);
+
+	CRUIEventAdapter * getEventAdapter() { return _eventAdapter; }
 
 	virtual bool InitializeGl(void);
 	virtual bool TerminateGl(void);

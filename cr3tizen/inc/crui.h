@@ -14,7 +14,7 @@
 class CRUIWidget;
 
 enum {
-	ACTION_DOWN,
+	ACTION_DOWN = 1,
 	ACTION_MOVE,
 	ACTION_UP,
 	ACTION_FOCUS_OUT,
@@ -24,27 +24,37 @@ enum {
 
 class CRUIMotionEventItem {
 	friend class CRUIEventManager;
-	int _pointerId;
+	friend class CRUIEventAdapter;
+	lUInt64 _pointerId;
 	int _action;
 	int _x;
 	int _y;
+	int _startX;
+	int _startY;
+	lUInt64 _ts;
+	lUInt64 _downTs;
 	CRUIWidget * _widget;
 	void setWidget(CRUIWidget * widget) { _widget = widget; }
 public:
-	CRUIMotionEventItem(int pointerId, int action, int x, int y, CRUIWidget * widget = NULL)
-	: _pointerId(pointerId), _action(action), _x(x), _y(y), _widget(widget) {
+	CRUIMotionEventItem(lUInt64 pointerId, int action, int x, int y, int startX, int startY, lUInt64 ts, lUInt64 downTs, CRUIWidget * widget = NULL)
+	: _pointerId(pointerId), _action(action), _x(x), _y(y), _startX(startX), _startY(startY), _ts(ts), _downTs(downTs), _widget(widget) {
 		//
 	}
 	int getX() const { return _x; }
 	int getY() const { return _y; }
+	int getStartX() const { return _startX; }
+	int getStartY() const { return _startY; }
+	lUInt64 getEventTimestamp() const { return _ts; }
+	lUInt64 getDownEventTimestamp() const { return _downTs; }
 	int getAction() const { return _action; }
-	int getPointerId() const { return _pointerId; }
+	lUInt64 getPointerId() const { return _pointerId; }
 	CRUIWidget * getWidget() const { return _widget; }
 };
 
 class CRUIMotionEvent {
 	friend class CRUIEventManager;
-	LVPtrVector<CRUIMotionEventItem> _data;
+	friend class CRUIEventAdapter;
+	LVPtrVector<CRUIMotionEventItem, false> _data;
 	void addEvent(CRUIMotionEventItem * event) { _data.add(event); }
 public:
 	int count() const { return _data.length(); }
@@ -52,14 +62,25 @@ public:
 	int getX(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
 	int getY(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
 	int getAction(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
-	int getPointerId(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
+	lUInt64 getPointerId(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found
 	int findPointerId(int pointerId);
+};
+
+class CRUIEventManager {
+protected:
+	CRUIWidget * _rootWidget;
+	CRUIMotionEventItem * _lastTouchEvent;
+public:
+	CRUIEventManager();
+	void setRootWidget(CRUIWidget * rootWidget) { _rootWidget = rootWidget; }
+	bool dispatchTouchEvent(CRUIMotionEvent * event);
 };
 
 class CRUIOnTouchEventListener {
 public:
 	virtual bool onTouch(CRUIWidget * widget, const CRUIMotionEvent * event) = 0;
+	virtual ~CRUIOnTouchEventListener() {}
 };
 
 /// base class for all UI elements

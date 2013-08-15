@@ -19,6 +19,21 @@ int CRUIMotionEvent::findPointerId(int pointerId) {
 }
 
 
+
+CRUIEventManager::CRUIEventManager() : _rootWidget(NULL), _lastTouchEvent(NULL) {
+
+}
+
+bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
+	if (_rootWidget == NULL) {
+		CRLog::error("Cannot dispatch touch event: no root widget");
+		return false;
+	}
+	return true;
+}
+
+
+
 CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED), _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
 	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
 	_measuredWidth(0), _measuredHeight(0),

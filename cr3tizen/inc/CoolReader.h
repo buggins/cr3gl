@@ -75,7 +75,7 @@ public:
 
 private:
 	Tizen::Graphics::Opengl::GlPlayer* __player;
-	Tizen::Graphics::Opengl::IGlRenderer* __renderer;
+	GlRendererTemplate* __renderer; // Tizen::Graphics::Opengl::IGlRenderer
 };
 
 #endif // _COOLREADER_H_

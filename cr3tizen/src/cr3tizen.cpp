@@ -11,6 +11,7 @@
 #include "glfont.h"
 #include "gldrawbuf.h"
 #include "crui.h"
+#include <sys/time.h>
 
 using namespace CRUI;
 
@@ -83,3 +84,123 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
 	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
 }
+
+
+
+CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager)
+{
+
+}
+
+using namespace Tizen::Ui;
+
+int CRUIEventAdapter::findPointer(lUInt64 id) {
+	for (int i=0; i<_activePointers.length(); i++)
+		if (_activePointers[i]->getPointerId() == id)
+			return i;
+	return -1;
+}
+
+lUInt64 GetCurrentTimeMillis() {
+#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
+	timeval ts;
+	gettimeofday(&ts, NULL);
+	return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
+#else
+	#error * You should define GetCurrentTimeMillis() *
+#endif
+}
+
+void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	int x = touchInfo.GetCurrentPosition().x;
+	int y = touchInfo.GetCurrentPosition().y;
+	unsigned long pointId = touchInfo.GetPointId();
+//	int startX = touchInfo.GetStartPosition().x;
+//	int starty = touchInfo.GetStartPosition().y;
+	int status = touchInfo.GetTouchStatus();
+	int action = 0;
+	switch (status) {
+	case TOUCH_PRESSED: //The touch pressed event type
+		action = ACTION_DOWN; break;
+	case TOUCH_LONG_PRESSED: //The touch long pressed event type
+		//action = ACTION_DOWN; ignore
+		break;
+	case TOUCH_RELEASED: //The touch released event type
+		action = ACTION_UP; break;
+	case TOUCH_MOVED: //The touch moved event type
+		action = ACTION_MOVE; break;
+	case TOUCH_DOUBLE_PRESSED: //The touch double pressed event type
+		//action = ACTION_DOWN; // ignore
+		break;
+	case TOUCH_FOCUS_IN: //The touch focus-in event type
+		action = ACTION_FOCUS_IN; break;
+	case TOUCH_FOCUS_OUT: //The touch focus-out event type
+		action = ACTION_FOCUS_OUT; break;
+	case TOUCH_CANCELED: //The touch canceled event type
+		action = ACTION_CANCEL; break;
+	}
+	if (action) {
+		int index = findPointer(pointId);
+		CRUIMotionEventItem * lastItem = index >= 0 ? _activePointers[index] : NULL;
+		bool isLast = (action == ACTION_CANCEL || action == ACTION_UP);
+		bool isFirst = (action == ACTION_DOWN);
+		if (!lastItem && !isFirst) {
+			CRLog::warn("Ignoring unexpected touch event %d with id%lld", action, pointId);
+			return;
+		}
+		lUInt64 ts = GetCurrentTimeMillis();
+		lUInt64 downTs = lastItem != NULL ? lastItem->getDownEventTimestamp() : ts;
+		int startX = lastItem != NULL ? lastItem->getStartX() : x;
+		int startY = lastItem != NULL ? lastItem->getStartY() : y;
+		CRUIMotionEventItem * item = new CRUIMotionEventItem(pointId, action, x, y, startX, startY, ts, downTs);
+		if (index >= 0) {
+			if (!isLast)
+				_activePointers.set(index, item);
+			else
+				_activePointers.remove(index);
+		} else {
+			if (!isLast)
+				_activePointers.add(item);
+		}
+		CRUIMotionEvent * event = new CRUIMotionEvent();
+		event->addEvent(item);
+		for (int i=0; i<_activePointers.length(); i++) {
+			if (_activePointers[i] != item)
+				event->addEvent(_activePointers[i]);
+		}
+		_eventManager->dispatchTouchEvent(event);
+		delete event;
+	}
+}
+
+void  CRUIEventAdapter::OnTouchCanceled (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+
+void  CRUIEventAdapter::OnTouchFocusIn (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+
+void  CRUIEventAdapter::OnTouchFocusOut (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+
+void  CRUIEventAdapter::OnTouchMoved (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+
+void  CRUIEventAdapter::OnTouchPressed (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+
+void  CRUIEventAdapter::OnTouchReleased (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
+{
+	dispatchTouchEvent(touchInfo);
+}
+

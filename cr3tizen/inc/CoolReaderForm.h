@@ -25,6 +25,7 @@ public:
 	virtual void OnFormBackRequested(Tizen::Ui::Controls::Form& source);
 	virtual void OnActionPerformed(const Tizen::Ui::Control& source, int actionId);
 
+
 protected:
 	static const int ID_BUTTON_OK = 101;
 };
