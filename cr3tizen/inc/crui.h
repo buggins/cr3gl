@@ -140,7 +140,9 @@ public:
 	const lString8 & getId() { return _id; }
 	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }
 	lUInt32 getState() { return _state; }
+	lUInt32 getState(lUInt32 mask) { return _state & mask; }
 	CRUIWidget * setState(lUInt32 state) { _state = state; return this; }
+	CRUIWidget * setState(lUInt32 state, lUInt32 mask) { _state = (_state & ~mask) | (state & mask); return this; }
 
 	virtual lUInt32 getAlign();
 	virtual lUInt32 getHAlign() { return getAlign() & CRUI::ALIGN_MASK_HORIZONTAL; }
@@ -294,6 +296,8 @@ protected:
 	CRUITextWidget * _label;
 	void init(lString16 text, CRUIImageRef image, bool vertical);
 public:
+	/// motion event handler, returns true if it handled event
+	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
 	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
 };

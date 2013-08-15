@@ -110,7 +110,8 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
 	_measuredWidth(0), _measuredHeight(0),
 	_parent(NULL), _fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
-	_align(0)
+	_align(0),
+	_onTouchListener(NULL)
 {
 
 }
@@ -609,6 +610,32 @@ CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 	init(text, image, vertical);
 }
 
+/// motion event handler, returns true if it handled event
+bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
+	int action = event->getAction();
+	switch (action) {
+	case ACTION_DOWN:
+		setState(STATE_PRESSED, STATE_PRESSED);
+		break;
+	case ACTION_UP:
+		setState(STATE_PRESSED, 0);
+		// fire onclick
+		break;
+	case ACTION_FOCUS_IN:
+		setState(STATE_PRESSED, STATE_PRESSED);
+		break;
+	case ACTION_FOCUS_OUT:
+		setState(STATE_PRESSED, 0);
+		break;
+	case ACTION_CANCEL:
+		setState(STATE_PRESSED, 0);
+		break;
+	case ACTION_MOVE:
+		// ignore
+		break;
+	}
+	return true;
+}
 
 
 

@@ -5,7 +5,7 @@ using namespace Tizen::Base;
 using namespace Tizen::Ui;
 using namespace Tizen::Ui::Controls;
 
-CoolReaderFrame::CoolReaderFrame(void)
+CoolReaderFrame::CoolReaderFrame(void)// : _pCoolReaderForm(NULL)
 {
 }
 
@@ -19,17 +19,17 @@ CoolReaderFrame::OnInitializing(void)
 	result r = E_SUCCESS;
 
 	// Create a form
-	CoolReaderForm* pCoolReaderForm = new CoolReaderForm();
-	pCoolReaderForm->Initialize();
+	CoolReaderForm* _pCoolReaderForm = new CoolReaderForm();
+	_pCoolReaderForm->Initialize();
 
 	// Add the form to the frame
-	AddControl(pCoolReaderForm);
+	AddControl(_pCoolReaderForm);
 
 	// Set the current form
-	SetCurrentForm(pCoolReaderForm);
+	SetCurrentForm(_pCoolReaderForm);
 
 	// Draw the form
-	pCoolReaderForm->Invalidate(true);
+	_pCoolReaderForm->Invalidate(true);
 
 	// TODO: Add your initialization code here
 
