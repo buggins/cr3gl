@@ -327,3 +327,16 @@ CRUIWidget * CRUIWidget::childById(const char * id) {
 }
 
 
+static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw) {
+	if (widget->isLayoutRequested())
+		needLayout = true;
+	if (widget->isDrawRequested())
+		needRedraw = true;
+	for (int i = 0; i < widget->getChildCount(); i++)
+		checkUpdateOptions(widget->getChild(i), needLayout, needRedraw);
+}
+void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw) {
+	needLayout = false;
+	needRedraw = false;
+	checkUpdateOptions(widget, needLayout, needRedraw);
+}

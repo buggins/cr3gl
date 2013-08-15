@@ -44,19 +44,19 @@ public:
 };
 
 namespace CRUI {
-	enum {
+	enum CRUILayoutOption {
 		FILL_PARENT  = 0x40000000,
 		WRAP_CONTENT = 0x20000000,
 		UNSPECIFIED  = 0x10000000,
 		PARENT_COLOR = 0xFFAAAAAA,
 	};
-	enum {
+	enum CRUIWidgetState {
 		STATE_DISABLED = 1,
 		STATE_FOCUSED = 2,
 		STATE_PRESSED = 4,
 	};
 	// font sizes
-	enum {
+	enum CRUIFontSizeOption {
 		FONT_SIZE_UNSPECIFIED = 0,
 		FONT_SIZE_XSMALL = 1,
 		FONT_SIZE_SMALL = 2,
@@ -66,7 +66,7 @@ namespace CRUI {
 		FONT_USE_PARENT = 6,
 	};
 
-	enum {
+	enum CRUIAlignmentOption {
 		ALIGN_UNSPECIFIED = 0,
 		ALIGN_LEFT = 1,
 		ALIGN_HCENTER = 2,
@@ -189,10 +189,6 @@ public:
 };
 
 extern CRUITheme * currentTheme;
-
-
-
-
 
 
 #endif /* CRUITHEME_H_ */

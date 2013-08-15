@@ -193,9 +193,16 @@ GlRendererTemplate::Draw(void)
 //	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
 //	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
 //	//text->setBa
-	_widget->measure(400, 700);
-	_widget->layout(50, 50, 50 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
-	_widget->draw(&buf);
+	bool needLayout, needDraw;
+	CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+	_widget->invalidate();
+	if (needLayout) {
+		_widget->measure(400, 700);
+		_widget->layout(50, 50, 50 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
+	}
+	if (needDraw) {
+		_widget->draw(&buf);
+	}
 //
 //	font = fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 //	layout = new CRUIHorizontalLayout();

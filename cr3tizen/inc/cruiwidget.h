@@ -159,6 +159,7 @@ public:
 	virtual void draw(LVDrawBuf * buf);
 };
 
-
+/// will set needLayout to true if any widget in tree starting from specified requires layout, set needRedraw if any widget is invalidated
+void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw);
 
 #endif /* CRUIWIDGET_H_ */
