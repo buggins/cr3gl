@@ -6,7 +6,7 @@
  */
 
 #include "cruievent.h"
-#include "crui.h"
+#include "cruiwidget.h"
 
 using namespace CRUI;
 
