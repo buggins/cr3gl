@@ -70,12 +70,12 @@ public:
 		if (_drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (_textureId == 0) {
-	    	CRLog::debug("updateTexture - new texture");
+	    	//CRLog::debug("updateTexture - new texture");
 			glGenTextures(1, &_textureId);
 			if (glGetError() != GL_NO_ERROR)
 				return;
 	    }
-    	CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
+    	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
 	    glBindTexture(GL_TEXTURE_2D, _textureId);
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -776,7 +776,7 @@ void GLDrawBuf::createFramebuffer()
 {
 	if (_textureBuf) {
 		// generate IDs
-		CRLog::debug("GLDrawBuf::createFramebuffer %dx%d", _tdx, _tdy);
+		//CRLog::debug("GLDrawBuf::createFramebuffer %dx%d", _tdx, _tdy);
 		glGenTextures(1, &_textureId);
 		if (checkError("createFramebuffer glGenTextures")) return;
 		glGenFramebuffersOES(1, &_framebufferId);
@@ -807,7 +807,7 @@ void GLDrawBuf::createFramebuffer()
 void GLDrawBuf::deleteFramebuffer()
 {
 	if (_textureBuf) {
-		CRLog::debug("GLDrawBuf::deleteFramebuffer");
+		//CRLog::debug("GLDrawBuf::deleteFramebuffer");
 		if (_textureId != 0) {
 			glDeleteTextures(1, &_textureId);
 			checkError("deleteFramebuffer - glDeleteTextures");
@@ -829,7 +829,7 @@ void GLDrawBuf::beforeDrawing()
 			if (_textureId == 0 || _framebufferId == 0) {
 				createFramebuffer();
 			}
-			CRLog::debug("Setting render to texture");
+			//CRLog::debug("Setting render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
@@ -859,7 +859,7 @@ void GLDrawBuf::afterDrawing()
 		}
 		if (_textureBuf) {
 			//bind the base framebuffer
-			CRLog::debug("Finished render to texture");
+			//CRLog::debug("Finished render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
 		}

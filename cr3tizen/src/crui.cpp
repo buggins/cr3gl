@@ -51,13 +51,16 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 		for (int i=0; i<widget->getChildCount(); i++) {
 			CRUIWidget * child = widget->getChild(i);
 			if (dispatchTouchEvent(child, event)) {
-				if (action == ACTION_DOWN)
-					event->setWidget(widget);
+				if (action == ACTION_DOWN) {
+					//CRLog::trace("setting widget on DOWN");
+					event->setWidget(child);
+				}
 				return true;
 			}
 		}
 	}
 	bool oldIsOutside = event->get()->isOutside();
+	//CRLog::trace("Old pointInside=%s  new pointInside=%s", (!oldIsOutside ? "yes" : "no"), (pointInside ? "yes" : "no"));
 	if (action == ACTION_UP && !pointInside) {
 		// if UP is outside of control - change to CANCEL
 		event->changeAction(ACTION_CANCEL);
@@ -76,11 +79,14 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 			action = ACTION_FOCUS_IN;
 		}
 	} else {
-		if (!pointInside && action == ACTION_MOVE) // moving outside - already sent FOCUS_OUT with response true, no tracking, now just ignore
+		if (!pointInside && action == ACTION_MOVE) { // moving outside - already sent FOCUS_OUT with response true, no tracking, now just ignore
+			CRLog::trace("MOVE outside of bounds - ignoring");
 			return false;
+		}
 	}
+	//CRLog::trace("calling widget->onTouchEvent");
 	bool res = widget->onTouchEvent(event);
-	if (!res && action == ACTION_FOCUS_OUT) // if FOCUS_OUT returned true - stop tracking movements outside
+	if (res && action == ACTION_FOCUS_OUT) // if FOCUS_OUT returned true - stop tracking movements outside
 		event->_data[0]->_isOutside = true;
 	if (pointInside)
 		event->_data[0]->_isOutside = false;
@@ -92,15 +98,22 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 		CRLog::error("Cannot dispatch touch event: no root widget");
 		return false;
 	}
+	//CRLog::trace("Touch event %d (%d,%d) %s", event->getAction(), event->getX(), event->getY(), (event->getWidget() ? "[widget]" : ""));
 	CRUIWidget * widget = event->getWidget();
 	if (widget) {
 		// event is tracked by widget
-		if (!_rootWidget->isChild(widget))
+		if (!_rootWidget->isChild(widget)) {
+			//CRLog::trace("Widget is not a child of root - skipping event");
 			return false;
+		}
+		//CRLog::trace("Dispatching event directly to widget");
 		return dispatchTouchEvent(widget, event);
 	}
-	if (event->getAction() != ACTION_DOWN) // skip non tracked event - only DOWN allowed
+	if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
+		CRLog::trace("Skipping non-down event without widget");
 		return false;
+	}
+	//CRLog::trace("No widget: dispatching using tree");
 	return dispatchTouchEvent(_rootWidget, event);
 }
 
@@ -613,26 +626,35 @@ CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
+	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	switch (action) {
 	case ACTION_DOWN:
 		setState(STATE_PRESSED, STATE_PRESSED);
+		CRLog::trace("button DOWN");
 		break;
 	case ACTION_UP:
-		setState(STATE_PRESSED, 0);
+		setState(0, STATE_PRESSED);
 		// fire onclick
+		CRLog::trace("button UP");
 		break;
 	case ACTION_FOCUS_IN:
 		setState(STATE_PRESSED, STATE_PRESSED);
+		CRLog::trace("button FOCUS IN");
 		break;
 	case ACTION_FOCUS_OUT:
-		setState(STATE_PRESSED, 0);
+		setState(0, STATE_PRESSED);
+		CRLog::trace("button FOCUS OUT");
 		break;
 	case ACTION_CANCEL:
-		setState(STATE_PRESSED, 0);
+		setState(0, STATE_PRESSED);
+		CRLog::trace("button CANCEL");
 		break;
 	case ACTION_MOVE:
 		// ignore
+		CRLog::trace("button MOVE");
 		break;
+	default:
+		return CRUIWidget::onTouchEvent(event);
 	}
 	return true;
 }

@@ -116,7 +116,7 @@ GlRendererTemplate::TerminateGl(void)
 bool
 GlRendererTemplate::Draw(void)
 {
-	CRLog::debug("GlRendererTemplate::Draw is called");
+	//CRLog::debug("GlRendererTemplate::Draw is called");
 	glClearColor(0.7f, 0.7f, 0.7f, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
