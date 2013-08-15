@@ -150,10 +150,7 @@ void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touch
 			return;
 		}
 		lUInt64 ts = GetCurrentTimeMillis();
-		lUInt64 downTs = lastItem != NULL ? lastItem->getDownEventTimestamp() : ts;
-		int startX = lastItem != NULL ? lastItem->getStartX() : x;
-		int startY = lastItem != NULL ? lastItem->getStartY() : y;
-		CRUIMotionEventItem * item = new CRUIMotionEventItem(pointId, action, x, y, startX, startY, ts, downTs);
+		CRUIMotionEventItem * item = new CRUIMotionEventItem(lastItem, pointId, action, x, y, ts);
 		if (index >= 0) {
 			if (!isLast)
 				_activePointers.set(index, item);

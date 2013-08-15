@@ -25,6 +25,7 @@ enum {
 class CRUIMotionEventItem {
 	friend class CRUIEventManager;
 	friend class CRUIEventAdapter;
+	friend class CRUIMotionEvent;
 	lUInt64 _pointerId;
 	int _action;
 	int _x;
@@ -33,13 +34,11 @@ class CRUIMotionEventItem {
 	int _startY;
 	lUInt64 _ts;
 	lUInt64 _downTs;
+	bool _isOutside;
 	CRUIWidget * _widget;
 	void setWidget(CRUIWidget * widget) { _widget = widget; }
 public:
-	CRUIMotionEventItem(lUInt64 pointerId, int action, int x, int y, int startX, int startY, lUInt64 ts, lUInt64 downTs, CRUIWidget * widget = NULL)
-	: _pointerId(pointerId), _action(action), _x(x), _y(y), _startX(startX), _startY(startY), _ts(ts), _downTs(downTs), _widget(widget) {
-		//
-	}
+	CRUIMotionEventItem(const CRUIMotionEventItem * previous, lUInt64 pointerId, int action, int x, int y, lUInt64 ts);
 	int getX() const { return _x; }
 	int getY() const { return _y; }
 	int getStartX() const { return _startX; }
@@ -49,6 +48,7 @@ public:
 	int getAction() const { return _action; }
 	lUInt64 getPointerId() const { return _pointerId; }
 	CRUIWidget * getWidget() const { return _widget; }
+	bool isOutside() const { return _isOutside; }
 };
 
 class CRUIMotionEvent {
@@ -56,13 +56,19 @@ class CRUIMotionEvent {
 	friend class CRUIEventAdapter;
 	LVPtrVector<CRUIMotionEventItem, false> _data;
 	void addEvent(CRUIMotionEventItem * event) { _data.add(event); }
+	void setWidget(CRUIWidget * widget) { _data[0]->setWidget(widget); }
+	void changeAction(int newAction) { _data[0]->_action = newAction; }
 public:
 	int count() const { return _data.length(); }
 	const CRUIMotionEventItem * operator[] (int index) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
-	int getX(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
-	int getY(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
-	int getAction(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
-	lUInt64 getPointerId(int index) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
+	const CRUIMotionEventItem * get(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
+	int getX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
+	int getY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
+	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
+	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }
+	int getAction(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
+	lUInt64 getPointerId(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
+	CRUIWidget * getWidget(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getWidget() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found
 	int findPointerId(int pointerId);
 };
@@ -71,6 +77,7 @@ class CRUIEventManager {
 protected:
 	CRUIWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
+	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
 public:
 	CRUIEventManager();
 	void setRootWidget(CRUIWidget * rootWidget) { _rootWidget = rootWidget; }
@@ -121,6 +128,10 @@ public:
 	CRUIWidget();
 	virtual ~CRUIWidget();
 
+	/// returns true if point is inside control (excluding margins)
+	virtual bool isPointInside(int x, int y);
+	/// returns true if widget is child of this
+	virtual bool isChild(CRUIWidget * widget);
 	/// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	virtual CRUIOnTouchEventListener * setOnTouchListener(CRUIOnTouchEventListener * listener);
