@@ -133,6 +133,9 @@ int SQLiteDB::executeUpdate(const char * sql) {
 	SQLiteStatement stmt(this);
 	if (stmt.prepare(sql))
 		return -1;
+	int res = stmt.step();
+	if (res != DB_DONE)
+		return -1;
 	return stmt.rowsAffected();
 }
 

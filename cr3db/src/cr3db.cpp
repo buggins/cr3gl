@@ -48,9 +48,24 @@ DBString & DBString::operator = (const char * s) {
 	return *this;
 }
 
+bool DBString::operator == (const DBString & s) const {
+	if (!str && !s)
+		return true;
+	if (!str || !s)
+		return false;
+	return strcmp(str, s.str) == 0;
+}
+
+bool DBString::operator == (const char * s) const {
+	if (!str && !s)
+		return true;
+	if (!str || !s)
+		return false;
+	return strcmp(str, s) == 0;
+}
 
 
-#define DB_VERSION 20
+#define DB_VERSION 21
 
 /// creates/upgrades DB schema
 bool CRBookDB::updateSchema()
@@ -59,7 +74,9 @@ bool CRBookDB::updateSchema()
 	bool err = false;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS author ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
-			"name VARCHAR NOT NULL COLLATE NOCASE"
+			"name VARCHAR NOT NULL COLLATE NOCASE,"
+			"file_as VARCHAR NULL COLLATE NOCASE,"
+			"aliased_author_fk INTEGER NULL REFERENCES author(id)"
 			")") >= 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
             "author_name_index ON author (name) ") >= 0 || err;
@@ -138,6 +155,8 @@ bool CRBookDB::updateSchema()
 				"id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"name VARCHAR NOT NULL COLLATE NOCASE, "
 				"url VARCHAR NOT NULL COLLATE NOCASE, "
+				"login VARCHAR NOT NULL COLLATE NOCASE, "
+				"password VARCHAR NOT NULL COLLATE NOCASE, "
 				"last_usage INTEGER DEFAULT 0"
 				")") >= 0 || err;
 //	if (currentVersion < 7) {
@@ -151,6 +170,14 @@ bool CRBookDB::updateSchema()
 		err = !_db.addColumnIfNotExists("opds_catalog", "last_usage", "ALTER TABLE opds_catalog ADD COLUMN last_usage INTEGER DEFAULT 0") || err;
 	if (currentVersion < 16)
 		err = !_db.addColumnIfNotExists("bookmark", "time_elapsed", "ALTER TABLE bookmark ADD COLUMN time_elapsed INTEGER DEFAULT 0") || err;
+
+	// CR new UI updates (since version 21)
+	if (currentVersion < 21) {
+		err = !_db.addColumnIfNotExists("author", "file_as", "ALTER TABLE author ADD COLUMN file_as VARCHAR NULL COLLATE NOCASE") || err;
+		err = !_db.addColumnIfNotExists("author", "aliased_author_fk", "ALTER TABLE author ADD COLUMN aliased_author_fk INTEGER NULL REFERENCES author(id)") || err;
+		err = !_db.addColumnIfNotExists("opds_catalog", "login", "ALTER TABLE opds_catalog ADD COLUMN login VARCHAR NULL COLLATE NOCASE") || err;
+		err = !_db.addColumnIfNotExists("opds_catalog", "password", "ALTER TABLE opds_catalog ADD COLUMN password VARCHAR NULL COLLATE NOCASE") || err;
+	}
 
 	//==============================================================
 	// add more updates above this line
