@@ -75,6 +75,7 @@ class BookDBSeries : public BookDBEntity {
 public:
 	DBString name;
 	BookDBSeries() {}
+	BookDBSeries(const char * _name) : name(_name) {}
 	BookDBSeries(const BookDBSeries & v) {
 		id = v.id;
 		name = v.name;
@@ -99,6 +100,7 @@ class BookDBFolder : public BookDBEntity {
 public:
 	DBString name;
 	BookDBFolder() {}
+	BookDBFolder(const char * _name) : name(_name) {}
 	BookDBFolder(const BookDBFolder & v) {
 		id = v.id;
 		name = v.name;
@@ -321,6 +323,9 @@ public:
 	bool updateSchema();
 	/// read DB content to caches
 	bool fillCaches();
+
+	bool saveSeries(BookDBSeries * item);
+	bool saveFolder(BookDBFolder * folder);
 };
 
 

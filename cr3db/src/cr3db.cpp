@@ -214,7 +214,6 @@ int CRBookDB::open(const char * pathname) {
 bool CRBookDB::fillCaches() {
 	if (!isOpened())
 		return false;
-	SQLiteStatement stmt(&_db);
 	bool err = false;
 	_seriesCache.clear();
 	_folderCache.clear();
@@ -222,6 +221,7 @@ bool CRBookDB::fillCaches() {
 	int seriesCount = 0;
 	int folderCount = 0;
 	int authorCount = 0;
+	SQLiteStatement stmt(&_db);
 	err = stmt.prepare("select id, name from series;") != 0 || err;
 	while (stmt.step() == DB_ROW) {
 		BookDBSeries * item = new BookDBSeries();
@@ -252,7 +252,60 @@ bool CRBookDB::fillCaches() {
 	return !err;
 }
 
+bool CRBookDB::saveSeries(BookDBSeries * item) {
+	BookDBSeries * byId = NULL;
+	BookDBSeries * byName = NULL;
+	if (item->id)
+		byId = _seriesCache.get(item->id);
+	byName = _seriesCache.get(item->name);
+	if (byId && *byId == *item)
+		return true;
+	if (byName) {
+		item->id = byName->id;
+		return true;
+	}
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	err = stmt.prepare("INSERT INTO series (name) VALUES (?);") != 0 || err;
+	if (!err) {
+		stmt.bindText(1, item->name.get(), item->name.length());
+		err = stmt.step() == DB_DONE || err;
+		if (!err) {
+			item->id = stmt.lastInsertId();
+			BookDBSeries * cacheItem = item->clone();
+			_seriesCache.put(cacheItem);
+		}
+	}
+	return !err;
+}
 
+
+bool CRBookDB::saveFolder(BookDBFolder * item) {
+	BookDBFolder * byId = NULL;
+	BookDBFolder * byName = NULL;
+	if (item->id)
+		byId = _folderCache.get(item->id);
+	byName = _folderCache.get(item->name);
+	if (byId && *byId == *item)
+		return true;
+	if (byName) {
+		item->id = byName->id;
+		return true;
+	}
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	err = stmt.prepare("INSERT INTO folder (name) VALUES (?);") != 0 || err;
+	if (!err) {
+		stmt.bindText(1, item->name.get(), item->name.length());
+		err = stmt.step() == DB_DONE || err;
+		if (!err) {
+			item->id = stmt.lastInsertId();
+			BookDBFolder * cacheItem = item->clone();
+			_folderCache.put(cacheItem);
+		}
+	}
+	return !err;
+}
 
 
 
