@@ -15,7 +15,7 @@
 #include <FUiControls.h>
 #include <crui.h>
 
-void LVInitCoolReaderTizen(const wchar_t * resourceDir);
+void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir);
 void LVSetTizenLogger();
 
 class CRUIEventAdapter : public Tizen::Ui::ITouchEventListener {

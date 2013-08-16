@@ -21,7 +21,7 @@ using namespace Tizen::Ui::Controls;
 
 CoolReaderApp::CoolReaderApp(void)
 {
-	LVInitCoolReaderTizen(GetAppResourcePath().GetPointer());
+	LVInitCoolReaderTizen(GetAppResourcePath().GetPointer(), GetAppDataPath().GetPointer());
 }
 
 CoolReaderApp::~CoolReaderApp(void)

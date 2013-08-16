@@ -11,6 +11,7 @@
 #include "glfont.h"
 #include "gldrawbuf.h"
 #include "crui.h"
+#include "cr3db.h"
 #include <sys/time.h>
 
 using namespace CRUI;
@@ -51,7 +52,9 @@ void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
 }
 
-void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
+CRBookDB * bookDB = NULL;
+
+void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
@@ -66,6 +69,15 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir) {
 	dirs.add(UnicodeToUtf8(resourceDir) + "screen-density-xhigh");
 	LVCreateResourceResolver(dirs);
 	LVGLCreateImageCache();
+
+	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite";
+	bookDB = new CRBookDB();
+	if (bookDB->open(dbFile.c_str()))
+		CRLog::error("Error while opening DB file");
+	if (!bookDB->updateSchema())
+		CRLog::error("Error while updating DB schema");
+	if (!bookDB->fillCaches())
+		CRLog::error("Error while filling caches");
 
 	currentTheme = new CRUITheme(lString8("BLACK"));
 	currentTheme->setTextColor(0x000000);

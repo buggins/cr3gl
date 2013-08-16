@@ -87,21 +87,21 @@ bool CRBookDB::updateSchema()
 			"name VARCHAR NOT NULL COLLATE NOCASE,"
 			"file_as VARCHAR NULL COLLATE NOCASE,"
 			"aliased_author_fk INTEGER NULL REFERENCES author(id)"
-			")") >= 0 || err;
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-            "author_name_index ON author (name) ") >= 0 || err;
+            "author_name_index ON author (name);") < 0 || err;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS series ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			"name VARCHAR NOT NULL COLLATE NOCASE"
-			")") >= 0 || err;
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-	        "series_name_index ON series (name) ") >= 0 || err;
+	        "series_name_index ON series (name) ;") < 0 || err;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS folder ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			"name VARCHAR NOT NULL"
-			")") >= 0 || err;
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"folder_name_index ON folder (name) ") >= 0 || err;
+			"folder_name_index ON folder (name);") < 0 || err;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS book ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			"pathname VARCHAR NOT NULL,"
@@ -118,26 +118,26 @@ bool CRBookDB::updateSchema()
 			"last_access_time INTEGER, "
 			"flags INTEGER DEFAULT 0, "
 			"language VARCHAR DEFAULT NULL"
-			")");
+			");");
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"book_folder_index ON book (folder_fk) ") >= 0 || err;
+			"book_folder_index ON book (folder_fk);") < 0 || err;
 	err = _db.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS "
-			"book_pathname_index ON book (pathname) ") >= 0 || err;
+			"book_pathname_index ON book (pathname);") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"book_filename_index ON book (filename) ") >= 0 || err;
+			"book_filename_index ON book (filename);") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"book_title_index ON book (title) ") >= 0 || err;
+			"book_title_index ON book (title);") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"book_last_access_time_index ON book (last_access_time) ") >= 0 || err;
+			"book_last_access_time_index ON book (last_access_time) ;") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"book_title_index ON book (title) ") >= 0 || err;
+			"book_title_index ON book (title) ;") < 0 || err;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS book_author ("
 			"book_fk INTEGER NOT NULL REFERENCES book (id),"
 			"author_fk INTEGER NOT NULL REFERENCES author (id),"
 			"PRIMARY KEY (book_fk, author_fk)"
-			")") >= 0 || err;
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS "
-			"author_book_index ON book_author (author_fk, book_fk) ");
+			"author_book_index ON book_author (author_fk, book_fk) ;");
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS bookmark ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			"book_fk INTEGER NOT NULL REFERENCES book (id),"
@@ -151,15 +151,15 @@ bool CRBookDB::updateSchema()
 			"pos_text VARCHAR,"
 			"comment_text VARCHAR, "
 			"time_elapsed INTEGER DEFAULT 0"
-			")") >= 0 || err;
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
-			"bookmark_book_index ON bookmark (book_fk) ") >= 0 || err;
+			"bookmark_book_index ON bookmark (book_fk) ;") < 0 || err;
 
 	// ====================================================================
 	if ( currentVersion<1 )
-		err = !_db.addColumnIfNotExists("bookmark", "shortcut", "ALTER TABLE bookmark ADD COLUMN shortcut INTEGER DEFAULT 0") || err;
+		err = !_db.addColumnIfNotExists("bookmark", "shortcut", "ALTER TABLE bookmark ADD COLUMN shortcut INTEGER DEFAULT 0;") || err;
 	if ( currentVersion<4 )
-		err = !_db.addColumnIfNotExists("book", "flags", "ALTER TABLE book ADD COLUMN flags INTEGER DEFAULT 0") || err;
+		err = !_db.addColumnIfNotExists("book", "flags", "ALTER TABLE book ADD COLUMN flags INTEGER DEFAULT 0;") || err;
 	if ( currentVersion<6 )
 		err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS opds_catalog ("
 				"id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -168,25 +168,25 @@ bool CRBookDB::updateSchema()
 				"login VARCHAR NOT NULL COLLATE NOCASE, "
 				"password VARCHAR NOT NULL COLLATE NOCASE, "
 				"last_usage INTEGER DEFAULT 0"
-				")") >= 0 || err;
+				");") < 0 || err;
 //	if (currentVersion < 7) {
 //		addOPDSCatalogs(DEF_OPDS_URLS1);
 //	}
 //	if (currentVersion < 8)
 //		addOPDSCatalogs(DEF_OPDS_URLS2);
 	if (currentVersion < 13)
-		err = !_db.addColumnIfNotExists("book", "language", "ALTER TABLE book ADD COLUMN language VARCHAR DEFAULT NULL") || err;
+		err = !_db.addColumnIfNotExists("book", "language", "ALTER TABLE book ADD COLUMN language VARCHAR DEFAULT NULL;") || err;
 	if (currentVersion < 15)
-		err = !_db.addColumnIfNotExists("opds_catalog", "last_usage", "ALTER TABLE opds_catalog ADD COLUMN last_usage INTEGER DEFAULT 0") || err;
+		err = !_db.addColumnIfNotExists("opds_catalog", "last_usage", "ALTER TABLE opds_catalog ADD COLUMN last_usage INTEGER DEFAULT 0;") || err;
 	if (currentVersion < 16)
-		err = !_db.addColumnIfNotExists("bookmark", "time_elapsed", "ALTER TABLE bookmark ADD COLUMN time_elapsed INTEGER DEFAULT 0") || err;
+		err = !_db.addColumnIfNotExists("bookmark", "time_elapsed", "ALTER TABLE bookmark ADD COLUMN time_elapsed INTEGER DEFAULT 0;") || err;
 
 	// CR new UI updates (since version 21)
 	if (currentVersion < 21) {
-		err = !_db.addColumnIfNotExists("author", "file_as", "ALTER TABLE author ADD COLUMN file_as VARCHAR NULL COLLATE NOCASE") || err;
-		err = !_db.addColumnIfNotExists("author", "aliased_author_fk", "ALTER TABLE author ADD COLUMN aliased_author_fk INTEGER NULL REFERENCES author(id)") || err;
-		err = !_db.addColumnIfNotExists("opds_catalog", "login", "ALTER TABLE opds_catalog ADD COLUMN login VARCHAR NULL COLLATE NOCASE") || err;
-		err = !_db.addColumnIfNotExists("opds_catalog", "password", "ALTER TABLE opds_catalog ADD COLUMN password VARCHAR NULL COLLATE NOCASE") || err;
+		err = !_db.addColumnIfNotExists("author", "file_as", "ALTER TABLE author ADD COLUMN file_as VARCHAR NULL COLLATE NOCASE;") || err;
+		err = !_db.addColumnIfNotExists("author", "aliased_author_fk", "ALTER TABLE author ADD COLUMN aliased_author_fk INTEGER NULL REFERENCES author(id);") || err;
+		err = !_db.addColumnIfNotExists("opds_catalog", "login", "ALTER TABLE opds_catalog ADD COLUMN login VARCHAR NULL COLLATE NOCASE;") || err;
+		err = !_db.addColumnIfNotExists("opds_catalog", "password", "ALTER TABLE opds_catalog ADD COLUMN password VARCHAR NULL COLLATE NOCASE;") || err;
 	}
 
 	//==============================================================
@@ -202,6 +202,59 @@ bool CRBookDB::updateSchema()
 
 	return !err;
 }
+
+/// open database file; returns 0 on success, error code otherwise
+int CRBookDB::open(const char * pathname) {
+	CRLog::info("Opening database %s", pathname);
+	int res = _db.open(pathname, false);
+	return res;
+}
+
+/// read DB content to caches
+bool CRBookDB::fillCaches() {
+	if (!isOpened())
+		return false;
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	_seriesCache.clear();
+	_folderCache.clear();
+	_authorCache.clear();
+	int seriesCount = 0;
+	int folderCount = 0;
+	int authorCount = 0;
+	err = stmt.prepare("select id, name from series;") != 0 || err;
+	while (stmt.step() == DB_ROW) {
+		BookDBSeries * item = new BookDBSeries();
+		item->id = stmt.getInt(0);
+		item->name = stmt.getText(1);
+		_seriesCache.put(item);
+		seriesCount++;
+	}
+	err = stmt.prepare("select id, name from folder;") != 0 || err;
+	while (stmt.step() == DB_ROW) {
+		BookDBFolder * item = new BookDBFolder();
+		item->id = stmt.getInt(0);
+		item->name = stmt.getText(1);
+		_folderCache.put(item);
+		folderCount++;
+	}
+	err = stmt.prepare("select id, name, file_as, aliased_author_fk from author;") != 0 || err;
+	while (stmt.step() == DB_ROW) {
+		BookDBAuthor * item = new BookDBAuthor();
+		item->id = stmt.getInt(0);
+		item->name = stmt.getText(1);
+		item->fileAs = stmt.getText(2);
+		item->aliasedAuthorId = stmt.getInt64(3);
+		_authorCache.put(item);
+		authorCount++;
+	}
+	CRLog::info("DB::fillCaches - %d authors, %d series, %d folders read", authorCount, seriesCount, folderCount);
+	return !err;
+}
+
+
+
+
 
 
 BookDBAuthor * BookDBAuthorCache::get(lInt64 key) {

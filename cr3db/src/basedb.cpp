@@ -75,7 +75,7 @@ static bool columnNamePresentInCreateTable(const char * createTable, const char 
 		return false;
 	char charBefore = pos[-1];
 	char charAfter = pos[len];
-	return isalnum(charBefore) && !isalnum(charAfter);
+	return !isalnum(charBefore) && !isalnum(charAfter);
 }
 
 /// returns true if column exists in table
@@ -90,6 +90,7 @@ bool SQLiteDB::columnExists(const char * tableName, const char * columnName) {
 	if (stmt.step() != DB_ROW)
 		return false;
 	const char * createTable = stmt.getText(0);
+	//CRLog::trace("%s", createTable);
 	return columnNamePresentInCreateTable(createTable, columnName);
 }
 
@@ -106,7 +107,7 @@ int SQLiteDB::getVersion() {
 	if (!isOpened())
 		return -1;
 	SQLiteStatement stmt(this);
-	if (stmt.prepare("PRAGMA user_version"))
+	if (stmt.prepare("PRAGMA user_version;"))
 		return -1;
 	if (stmt.step() == DB_ROW)
 		return stmt.getInt(0);
@@ -150,8 +151,11 @@ SQLiteStatement::~SQLiteStatement() {
 /// prepares query; returns 0 if no error
 int SQLiteStatement::prepare(const char * sql) {
 	close();
-	if (!_db || !sql)
+	if (!_db || !sql || !sql[0])
 		return -1;
+	if (sql[strlen(sql) - 1] != ';') {
+		CRLog::error("No semicolon at end of statement %s", sql);
+	}
 	int res = sqlite3_prepare_v2(
 	  _db->getHandle(),            /* Database handle */
 	  sql,       /* SQL statement, UTF-8 encoded */
@@ -215,7 +219,7 @@ int SQLiteStatement::step() {
 	if (!isOpened())
 		return -1;
 	int res = sqlite3_step(_stmt);
-	if (res) {
+	if (res != DB_OK && res != DB_ROW && res != DB_DONE) {
 		CRLog::error("SQLite Error %d while executing step() on statement %s", res, _sql);
 	} else {
 		if (!_firstStepExecuted) {

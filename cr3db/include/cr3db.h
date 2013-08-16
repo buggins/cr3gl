@@ -268,13 +268,15 @@ class CRBookDB {
 	BookDBFolderCache _folderCache;
 public:
 	/// open database file; returns 0 on success, error code otherwise
-	int open(const char * pathname, bool readOnly) { return _db.open(pathname, readOnly); }
+	int open(const char * pathname);
 	/// closes DB
 	int close() { return _db.close(); }
 	/// returns true if DB is opened
 	bool isOpened() { return _db.isOpened(); }
 	/// creates/upgrades DB schema
 	bool updateSchema();
+	/// read DB content to caches
+	bool fillCaches();
 };
 
 
