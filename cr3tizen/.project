@@ -9,6 +9,10 @@
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
 			<arguments>
 				<dictionary>
+					<key>?children?</key>
+					<value>?name?=outputEntries\|?children?=?name?=entry\\\\\\\|\\\|?name?=entry\\\\\\\|\\\|?name?=entry\\\\\\\|\\\|\||</value>
+				</dictionary>
+				<dictionary>
 					<key>?name?</key>
 					<value></value>
 				</dictionary>
@@ -90,6 +94,11 @@
 			<name>cr3</name>
 			<type>2</type>
 			<location>C:/projects/coolreader/cr3</location>
+		</link>
+		<link>
+			<name>cr3db</name>
+			<type>2</type>
+			<location>C:/projects/coolreader/cr3gp/cr3db</location>
 		</link>
 		<link>
 			<name>cr3gl</name>

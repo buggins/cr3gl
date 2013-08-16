@@ -13,7 +13,7 @@
 #include <FSystem.h>
 #include <FUi.h>
 #include <FUiControls.h>
-#include "crui.h"
+#include <crui.h>
 
 void LVInitCoolReaderTizen(const wchar_t * resourceDir);
 void LVSetTizenLogger();

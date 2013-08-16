@@ -9,7 +9,7 @@
 #include <FGraphics.h>
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
-#include "crui.h"
+#include <crui.h>
 #include "cr3tizen.h"
 
 class LVDocView;
