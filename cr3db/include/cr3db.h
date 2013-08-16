@@ -18,11 +18,16 @@ class DBString {
 public:
 	DBString() : str(NULL) { }
 	DBString(const char * s);
+	DBString(const DBString & s);
 	void clear();
 	int length() const;
 	char operator[] (int index) const;
 	DBString & operator = (const char * s);
 	DBString & operator = (const DBString & s);
+	DBString & operator += (const char * s);
+	DBString & operator += (const DBString & s) { return operator += (s.get()); }
+	DBString & operator << (const DBString & s) { return operator += (s.get()); }
+	DBString & operator << (const char * s) { return operator += (s); }
 	bool operator == (const DBString & s) const;
 	bool operator == (const char * s) const;
 	bool operator !() const { return !str; }
@@ -45,6 +50,7 @@ public:
 	DBString fileAs;
 	lInt64 aliasedAuthorId;
 	BookDBAuthor() : aliasedAuthorId(0) {}
+	BookDBAuthor(const char * _name) : name(_name), aliasedAuthorId(0) {}
 	BookDBAuthor(const BookDBAuthor & v) {
 		id = v.id;
 		name = v.name;
@@ -100,7 +106,7 @@ class BookDBFolder : public BookDBEntity {
 public:
 	DBString name;
 	BookDBFolder() {}
-	BookDBFolder(const char * _name) : name(_name) {}
+	BookDBFolder(const char * _name) : name(_name) { }
 	BookDBFolder(const BookDBFolder & v) {
 		id = v.id;
 		name = v.name;
@@ -122,22 +128,6 @@ public:
 };
 
 class BookDBBook : public BookDBEntity {
-	bool equalAuthors(const LVPtrVector<BookDBAuthor> & v2) const {
-		if (authors.length() != v2.length())
-			return false;
-		for (int i = 0; i < authors.length(); i++) {
-			bool found = false;
-			for (int j = 0; j < v2.length(); j++) {
-				if (*authors[i] == *v2[i]) {
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				return false;
-		}
-		return true;
-	}
 public:
 	DBString pathname; // "pathname VARCHAR NOT NULL,"
 	LVAutoPtr<BookDBFolder> folder; //"folder_fk INTEGER REFERENCES folder (id),"
@@ -173,6 +163,7 @@ public:
 		for (int i=0; i<v.authors.length(); i++)
 			authors.add(v.authors[i]->clone());
 	}
+
 	~BookDBBook() {
 	}
 	BookDBBook & operator = (const BookDBBook & v) {
@@ -194,22 +185,47 @@ public:
 			authors.add(v.authors[i]->clone());
 		return *this;
 	}
-	bool operator == (const BookDBBook & v) const {
+	bool equalAuthors(const BookDBBook & v2) const {
+		if (authors.length() != v2.authors.length())
+			return false;
+		for (int i = 0; i < authors.length(); i++) {
+			bool found = false;
+			for (int j = 0; j < v2.authors.length(); j++) {
+				if (*authors[i] == *v2.authors[i]) {
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				return false;
+		}
+		return true;
+	}
+	bool equalFolders(const BookDBBook & v) const {
+		return *folder == *v.folder;
+	}
+	bool equalSeries(const BookDBBook & v) const {
+		return *series == *v.series;
+	}
+	bool equalFields(const BookDBBook & v) const {
 		return id == v.id &&
 				pathname == v.pathname &&
 				filename == v.filename &&
 				arcname == v.arcname &&
 				title == v.title &&
-				*folder == *v.folder &&
-				*series == *v.series &&
 				seriesNumber == v.seriesNumber &&
 				format == v.format &&
 				filesize == v.filesize &&
 				arcsize == v.arcsize &&
 				createTime == v.createTime &&
 				lastAccessTime == v.lastAccessTime &&
-				flags == v.flags &&
-				equalAuthors(v.authors);
+				flags == v.flags;
+	}
+	bool operator == (const BookDBBook & v) const {
+		return equalFields(v) &&
+				equalFolders(v) &&
+				equalSeries(v) &&
+				equalAuthors(v);
 	}
 	BookDBBook * clone() const { return new BookDBBook(*this); }
 };
@@ -326,8 +342,8 @@ public:
 
 	bool saveSeries(BookDBSeries * item);
 	bool saveFolder(BookDBFolder * folder);
+	bool saveAuthor(BookDBAuthor * author);
 };
-
 
 
 #endif /* CR3DB_H_ */

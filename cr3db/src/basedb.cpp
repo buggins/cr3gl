@@ -331,11 +331,13 @@ int SQLiteStatement::bindInt64(int index, lInt64 value) {
 /// set utf-8 text string to parameter
 int SQLiteStatement::bindText(int index, const char * str, int len) {
 	if (checkParameterIndexError(index)) return -1;
+	CRLog::trace("bindText called for (%d, %s)", index, str);
 	if (!str)
 		return bindNull(index);
 	char * copy = (char *) malloc(len + 1);
 	memcpy(copy, str, len);
 	copy[len] = 0;
+	CRLog::trace("bindText(%d, %s)", index, copy);
 	return sqlite3_bind_text(_stmt, index, copy, len, free);
 }
 

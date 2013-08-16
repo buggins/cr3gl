@@ -12,6 +12,7 @@
 #include "gldrawbuf.h"
 #include "crui.h"
 #include "cr3db.h"
+#include <lvhashtable.h>
 #include <sys/time.h>
 
 using namespace CRUI;
@@ -70,7 +71,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVCreateResourceResolver(dirs);
 	LVGLCreateImageCache();
 
-	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite";
+
+	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite11";
 	bookDB = new CRBookDB();
 	if (bookDB->open(dbFile.c_str()))
 		CRLog::error("Error while opening DB file");
@@ -78,6 +80,22 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 		CRLog::error("Error while updating DB schema");
 	if (!bookDB->fillCaches())
 		CRLog::error("Error while filling caches");
+	BookDBFolder * folder0 = new BookDBFolder("folder0");
+
+//	LVHashTable<DBString, BookDBFolder *> map(1000);
+//	DBString key = "folder0";
+//	map.set(key, folder0);
+//	//map.set(folder0->name, folder0);
+//	CRLog::trace("item %s by key %s; removing...", map.get(key) ? "found" : "not found", key.get());
+//	map.remove(key);
+//	CRLog::trace("after removal: item %s by key %s ... %s", map.get(key) ? "found" : "not found", key.get(), folder0->name.get());
+
+	bookDB->saveFolder(folder0);
+	bookDB->saveFolder(new BookDBFolder("folder1"));
+	bookDB->saveFolder(new BookDBFolder("folder2"));
+	bookDB->saveSeries(new BookDBSeries("series name"));
+	bookDB->saveAuthor(new BookDBAuthor("Basil Pupkin"));
+
 
 	currentTheme = new CRUITheme(lString8("BLACK"));
 	currentTheme->setTextColor(0x000000);
