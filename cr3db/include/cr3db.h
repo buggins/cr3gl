@@ -11,6 +11,7 @@
 #include "basedb.h"
 #include "lvhashtable.h"
 #include "lvptrvec.h"
+#include "lvref.h"
 
 class DBString {
 	char * str;
@@ -58,11 +59,16 @@ public:
 		return *this;
 	}
 	bool operator == (const BookDBAuthor & v) const {
+		if (this == NULL && &v == NULL)
+			return true;
+		if (this == NULL || &v == NULL)
+			return false;
 		return id == v.id &&
 				name == v.name &&
 				fileAs == v.fileAs &&
 				aliasedAuthorId == v.aliasedAuthorId;
 	}
+	BookDBAuthor * clone() const { return new BookDBAuthor(*this); }
 };
 
 class BookDBSeries : public BookDBEntity {
@@ -79,9 +85,14 @@ public:
 		return *this;
 	}
 	bool operator == (const BookDBSeries & v) const {
+		if (this == NULL && &v == NULL)
+			return true;
+		if (this == NULL || &v == NULL)
+			return false;
 		return id == v.id &&
 				name == v.name;
 	}
+	BookDBSeries * clone() const { return new BookDBSeries(*this); }
 };
 
 class BookDBFolder : public BookDBEntity {
@@ -98,19 +109,40 @@ public:
 		return *this;
 	}
 	bool operator == (const BookDBFolder & v) const {
+		if (this == NULL && &v == NULL)
+			return true;
+		if (this == NULL || &v == NULL)
+			return false;
 		return id == v.id &&
 				name == v.name;
 	}
+	BookDBFolder * clone() const { return new BookDBFolder(*this); }
 };
 
 class BookDBBook : public BookDBEntity {
+	bool equalAuthors(const LVPtrVector<BookDBAuthor> & v2) const {
+		if (authors.length() != v2.length())
+			return false;
+		for (int i = 0; i < authors.length(); i++) {
+			bool found = false;
+			for (int j = 0; j < v2.length(); j++) {
+				if (*authors[i] == *v2[i]) {
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				return false;
+		}
+		return true;
+	}
 public:
 	DBString pathname; // "pathname VARCHAR NOT NULL,"
-	lInt64 folderId; //"folder_fk INTEGER REFERENCES folder (id),"
+	LVAutoPtr<BookDBFolder> folder; //"folder_fk INTEGER REFERENCES folder (id),"
 	DBString filename; //"filename VARCHAR NOT NULL,"
 	DBString arcname; //"arcname VARCHAR,"
 	DBString title; //"title VARCHAR COLLATE NOCASE,"
-	DBString seriesId; //"series_fk INTEGER REFERENCES series (id),"
+	LVAutoPtr<BookDBSeries> series; //"series_fk INTEGER REFERENCES series (id),"
 	int seriesNumber; //"series_number INTEGER,"
 	int format; //"format INTEGER,"
 	int filesize; //"filesize INTEGER,"
@@ -119,14 +151,16 @@ public:
 	lInt64 lastAccessTime; //"last_access_time INTEGER, "
 	int flags; // "flags INTEGER DEFAULT 0, "
 	DBString language; // "language VARCHAR DEFAULT NULL"
-	BookDBBook() : folderId(0), seriesNumber(0), format(0), filesize(0), arcsize(0), createTime(0), lastAccessTime(0), flags(0) {}
+	LVPtrVector<BookDBAuthor> authors;
+	BookDBBook() : seriesNumber(0), format(0), filesize(0), arcsize(0), createTime(0), lastAccessTime(0), flags(0) {}
 	BookDBBook(const BookDBBook & v) {
 		id = v.id;
+		folder = v.folder.get() ? v.folder->clone() : NULL;
 		pathname = v.pathname;
 		filename = v.filename;
 		arcname = v.arcname;
 		title = v.title;
-		seriesId = v.seriesId;
+		series = v.series.get() ? v.series->clone() : NULL;
 		seriesNumber = v.seriesNumber;
 		format = v.format;
 		filesize = v.filesize;
@@ -134,14 +168,19 @@ public:
 		createTime = v.createTime;
 		lastAccessTime = v.lastAccessTime;
 		flags = v.flags;
+		for (int i=0; i<v.authors.length(); i++)
+			authors.add(v.authors[i]->clone());
+	}
+	~BookDBBook() {
 	}
 	BookDBBook & operator = (const BookDBBook & v) {
 		id = v.id;
+		folder = v.folder.get() ? v.folder->clone() : NULL;
+		series = v.series.get() ? v.series->clone() : NULL;
 		pathname = v.pathname;
 		filename = v.filename;
 		arcname = v.arcname;
 		title = v.title;
-		seriesId = v.seriesId;
 		seriesNumber = v.seriesNumber;
 		format = v.format;
 		filesize = v.filesize;
@@ -149,6 +188,8 @@ public:
 		createTime = v.createTime;
 		lastAccessTime = v.lastAccessTime;
 		flags = v.flags;
+		for (int i=0; i<v.authors.length(); i++)
+			authors.add(v.authors[i]->clone());
 		return *this;
 	}
 	bool operator == (const BookDBBook & v) const {
@@ -157,15 +198,18 @@ public:
 				filename == v.filename &&
 				arcname == v.arcname &&
 				title == v.title &&
-				seriesId == v.seriesId &&
+				*folder == *v.folder &&
+				*series == *v.series &&
 				seriesNumber == v.seriesNumber &&
 				format == v.format &&
 				filesize == v.filesize &&
 				arcsize == v.arcsize &&
 				createTime == v.createTime &&
 				lastAccessTime == v.lastAccessTime &&
-				flags == v.flags;
+				flags == v.flags &&
+				equalAuthors(v.authors);
 	}
+	BookDBBook * clone() const { return new BookDBBook(*this); }
 };
 
 class BookDBBookmark : public BookDBEntity {
