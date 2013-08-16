@@ -91,6 +91,16 @@
 			<type>2</type>
 			<location>C:/projects/coolreader/cr3</location>
 		</link>
+		<link>
+			<name>cr3gl</name>
+			<type>2</type>
+			<location>C:/projects/coolreader/cr3gp/cr3gl</location>
+		</link>
+		<link>
+			<name>cr3ui</name>
+			<type>2</type>
+			<location>C:/projects/coolreader/cr3gp/cr3ui</location>
+		</link>
 	</linkedResources>
 	<filteredResources>
 		<filter>

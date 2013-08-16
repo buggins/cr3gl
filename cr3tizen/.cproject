@@ -54,6 +54,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libjpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.2108200958" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -261,17 +262,20 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/crengine/include"/>
-						<entry excluding="minigzip.c|example.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/zlib"/>
-						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libpng"/>
-						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="saveas.c|xml.c|startup.c|riscos.c|postscript.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|imgtrans.c|icons.c|fonts_r.c|fmt_text.c|drawfile.c|draw.c|dib2sprt.c|dib2eps.c|Unix-only|Win32-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
 						<entry excluding="src/chm_http.c|src/test_chmLib.c|src/extract_chmLib.c|src/enumdir_chmLib.c|src/enum_chmLib.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/chmlib"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
+						<entry excluding="saveas.c|xml.c|startup.c|riscos.c|postscript.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|imgtrans.c|icons.c|fonts_r.c|fmt_text.c|drawfile.c|draw.c|dib2sprt.c|dib2eps.c|Unix-only|Win32-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/libpng"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="src/raster/ftraster.c|src/base/ftutil.c|src/base/fttrigon.c|src/base/ftstream.c|src/base/ftsnames.c|src/base/ftrfork.c|src/base/ftoutln.c|src/base/ftobjs.c|src/base/ftgloadr.c|src/base/ftcalc.c|src/base/ftadvanc.c|src/base/ftmac.c|src/tools|src/type42/t42parse.c|src/type42/t42objs.c|src/type42/t42drivr.c|src/type1/t1parse.c|src/type1/t1objs.c|src/type1/t1load.c|src/type1/t1gload.c|src/type1/t1driver.c|src/type1/t1afm.c|src/truetype/ttsubpix.c|src/truetype/ttpload.c|src/truetype/ttpic.c|src/truetype/ttobjs.c|src/truetype/ttinterp.c|src/truetype/ttgxvar.c|src/truetype/ttgload.c|src/truetype/ttdriver.c|src/smooth/ftspic.c|src/smooth/ftsmooth.c|src/smooth/ftgrays.c|src/sfnt/ttsbit0.c|src/sfnt/ttsbit.c|src/sfnt/ttpost.c|src/sfnt/ttmtx.c|src/sfnt/ttload.c|src/sfnt/ttkern.c|src/sfnt/ttcmap.c|src/sfnt/ttbdf.c|src/sfnt/sfobjs.c|src/sfnt/sfntpic.c|src/sfnt/sfdriver.c|src/sfnt/pngshim.c|src/raster/rastpic.c|src/raster/ftrend1.c|src/psnames/pspic.c|src/psnames/psmodule.c|src/pshinter/pshrec.c|src/pshinter/pshpic.c|src/pshinter/pshmod.c|src/pshinter/pshglob.c|src/pshinter/pshalgo.c|src/psaux/t1decode.c|src/psaux/t1cmap.c|src/psaux/psobjs.c|src/psaux/psconv.c|src/psaux/psauxmod.c|src/psaux/afmparse.c|src/pfr/pfrsbit.c|src/pfr/pfrobjs.c|src/pfr/pfrload.c|src/pfr/pfrgload.c|src/pfr/pfrdrivr.c|src/pfr/pfrcmap.c|src/pcf/pcfutil.c|src/pcf/pcfread.c|src/pcf/pcfdrivr.c|src/otvalid/otvmod.c|src/otvalid/otvmath.c|src/otvalid/otvjstf.c|src/otvalid/otvgsub.c|src/otvalid/otvgpos.c|src/otvalid/otvgdef.c|src/otvalid/otvcommn.c|src/otvalid/otvbase.c|src/lzw/ftzopen.c|src/gxvalid/gxvtrak.c|src/gxvalid/gxvprop.c|src/gxvalid/gxvopbd.c|src/gxvalid/gxvmorx5.c|src/gxvalid/gxvmorx4.c|src/gxvalid/gxvmorx2.c|src/gxvalid/gxvmorx1.c|src/gxvalid/gxvmorx0.c|src/gxvalid/gxvmorx.c|src/gxvalid/gxvmort5.c|src/gxvalid/gxvmort4.c|src/gxvalid/gxvmort2.c|src/gxvalid/gxvmort1.c|src/gxvalid/gxvmort0.c|src/gxvalid/gxvmort.c|src/gxvalid/gxvmod.c|src/gxvalid/gxvlcar.c|src/gxvalid/gxvkern.c|src/gxvalid/gxvjust.c|src/gxvalid/gxvfgen.c|src/gxvalid/gxvfeat.c|src/gxvalid/gxvcommn.c|src/gxvalid/gxvbsln.c|src/cid/cidriver.c|src/cid/cidparse.c|src/cid/cidobjs.c|src/cid/cidload.c|src/cid/cidgload.c|src/cff/cffpic.c|src/cff/cffparse.c|src/cff/cffobjs.c|src/cff/cffload.c|src/cff/cffgload.c|src/cff/cffdrivr.c|src/cff/cffcmap.c|src/cff/cf2stack.c|src/cff/cf2read.c|src/cff/cf2intrp.c|src/cff/cf2hints.c|src/cff/cf2ft.c|src/cff/cf2font.c|src/cff/cf2error.c|src/cff/cf2blues.c|src/cff/cf2arrst.c|src/cache/ftcsbits.c|src/cache/ftcmru.c|src/cache/ftcmanag.c|src/cache/ftcimage.c|src/cache/ftcglyph.c|src/cache/ftccmap.c|src/cache/ftccache.c|src/cache/ftcbasic.c|src/bdf/bdflib.c|src/bdf/bdfdrivr.c|src/autofit/afwarp.c|src/autofit/afpic.c|src/autofit/afmodule.c|src/autofit/afloader.c|src/autofit/aflatin2.c|src/autofit/aflatin.c|src/autofit/afindic.c|src/autofit/afhints.c|src/autofit/afglobal.c|src/autofit/afdummy.c|src/autofit/afcjk.c|src/autofit/afangles.c|objs|docs|devel|builds|src/gzip/zutil.c|src/gzip/infutil.c|src/gzip/inftrees.c|src/gzip/inflate.c|src/gzip/infcodes.c|src/gzip/infblock.c|src/gzip/adler32.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/freetype"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry excluding="minigzip.c|example.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/thirdparty/zlib"/>
+						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="cr3/crengine/src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -328,11 +332,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libjpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.817095641" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.2022135154" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option id="gnu.cpp.compiler.option.preprocessor.def.2022135154" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_DEBUG"/>
 									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
 									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
@@ -531,9 +536,12 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -591,6 +599,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1126231" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_DEBUG"/>
@@ -606,6 +615,7 @@
 									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
 									<listOptionValue builtIn="false" value="_LINUX=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="_USE_DA_"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.848228997" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -806,9 +816,12 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
