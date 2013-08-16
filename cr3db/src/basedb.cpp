@@ -127,50 +127,112 @@ int SQLiteStatement::step() {
 	return res;
 }
 
+
+bool SQLiteStatement::checkColumnIndexError(int index) {
+	if (!isOpened()) {
+		CRLog::error("SQLite - trying to read from closed statement");
+		return true;
+	}
+	if (!_firstStepExecuted) {
+		CRLog::error("SQLite - trying to read from non-executed statement");
+		return true;
+	}
+	if (index < 0 || index >= _columnCount) {
+		CRLog::error("SQLite - column index %d is out of bounds");
+		return true;
+	}
+	return false;
+}
+
+bool SQLiteStatement::checkParameterIndexError(int index) {
+
+}
+
 /// return number of bytes in contents of column with specified index
 int SQLiteStatement::getColumnBytes(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return 0;
+	if (checkColumnIndexError(index)) return 0;
 	return sqlite3_column_bytes(_stmt, index);
 }
 
 /// return column type
 int SQLiteStatement::getColumnType(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return 0;
+	if (checkColumnIndexError(index)) return 0;
 	return sqlite3_column_type(_stmt, index);
 }
 
 /// return column blob data pointer
 const unsigned char * SQLiteStatement::getBlob(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return NULL;
+	if (checkColumnIndexError(index)) return NULL;
 	return (const unsigned char *)sqlite3_column_blob(_stmt, index);
 }
 
 /// return column as double
 double SQLiteStatement::getDouble(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return 0;
+	if (checkColumnIndexError(index)) return 0;
 	return sqlite3_column_double(_stmt, index);
 }
 
 /// return column value as int
 int SQLiteStatement::getInt(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return 0;
+	if (checkColumnIndexError(index)) return 0;
 	return sqlite3_column_int(_stmt, index);
 }
 
 /// return column value as 64 bit int
 lInt64 SQLiteStatement::getInt64(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return 0;
+	if (checkColumnIndexError(index)) return 0;
 	return sqlite3_column_int64(_stmt, index);
 }
 /// return column value text pointer
 const char * SQLiteStatement::getText(int index)
 {
-	if (!isOpened() || !_firstStepExecuted || index < 0 || index >= _columnCount) return NULL;
+	if (checkColumnIndexError(index)) return NULL;
 	return (const char *)sqlite3_column_blob(_stmt, index);
+}
+
+
+
+/// set NULL to parameter
+int SQLiteStatement::bindNull(int index) {
+	if (checkParameterIndexError(index)) return -1;
+	return sqlite3_bind_null(_stmt, index);
+}
+
+/// set int to parameter
+int SQLiteStatement::bindInt(int index, int value) {
+	if (checkParameterIndexError(index)) return -1;
+	return sqlite3_bind_int(_stmt, index, value);
+}
+
+/// set 64-bit int to parameter
+int SQLiteStatement::bindInt64(int index, lInt64 value) {
+	if (checkParameterIndexError(index)) return -1;
+	return sqlite3_bind_int64(_stmt, index, value);
+}
+
+/// set utf-8 text string to parameter
+int SQLiteStatement::bindText(int index, const char * str, int len) {
+	if (checkParameterIndexError(index)) return -1;
+	if (!str)
+		return bindNull(index);
+	char * copy = (char *) malloc(len + 1);
+	memcpy(copy, str, len);
+	copy[len] = 0;
+	return sqlite3_bind_text(_stmt, index, copy, len, free);
+}
+
+/// set blob value to parameter
+int SQLiteStatement::bindBlob(int index, const void * data, int len) {
+	if (checkParameterIndexError(index)) return -1;
+	if (!data)
+		return bindNull(index);
+	char * copy = (char *) malloc(len);
+	memcpy(copy, data, len);
+	return sqlite3_bind_blob(_stmt, index, copy, len, free);
 }

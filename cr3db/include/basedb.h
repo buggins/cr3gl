@@ -46,6 +46,8 @@ protected:
 	const char * _sql;
 	bool _firstStepExecuted;
 	int _columnCount;
+	bool checkColumnIndexError(int index);
+	bool checkParameterIndexError(int index);
 public:
 	SQLiteStatement(SQLiteDB * db) : _db(db), _stmt(NULL), _sql(NULL), _firstStepExecuted(false), _columnCount(0) { }
 	const char * getQuery() { return _sql; }
@@ -61,7 +63,19 @@ public:
 	/// closes prepared query and frees all resources
 	int close();
 
-	/// column reading
+	/// parameter binding (1-based index!!!)
+	/// set NULL to parameter
+	int bindNull(int index);
+	/// set int to parameter
+	int bindInt(int index, int value);
+	/// set 64-bit int to parameter
+	int bindInt64(int index, lInt64 value);
+	/// set utf-8 text string to parameter
+	int bindText(int index, const char * str, int len);
+	/// set blob value to parameter
+	int bindBlob(int index, const void * data, int len);
+
+	/// column reading (0-based index!!!)
 	/// returns column count
 	int getColumnCount() { return _columnCount; }
 	/// return number of bytes in contents of column with specified index
