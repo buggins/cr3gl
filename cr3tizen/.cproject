@@ -48,22 +48,26 @@
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1131499144" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3gl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3ui/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.2108200958" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -104,22 +108,27 @@
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.346971201" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3gl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3ui/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.1791055272" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -181,8 +190,10 @@
 									<listOptionValue builtIn="false" value="-lalut"/>
 									<listOptionValue builtIn="false" value="-lopenal"/>
 								</option>
-								<option id="gnu.cpp.link.option.paths.1398353058" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths"/>
-								<option id="gnu.cpp.link.option.libs.1646639379" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs"/>
+								<option id="gnu.cpp.link.option.paths.1398353058" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="gnu.cpp.link.option.libs.1646639379" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.363181718" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -190,22 +201,23 @@
 							</tool>
 							<tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1488346665" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1563732458" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3gl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3ui/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.762385612" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -220,18 +232,18 @@
 							<tool id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1024659406" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.1166358193">
 								<option id="gnu.cpp.compiler.option.include.paths.1600689182" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../crengine/cr3/crengine/include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.1839164078" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.726910389" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
@@ -255,18 +267,18 @@
 							<tool id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1107047920" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.1328350759">
 								<option id="gnu.c.compiler.option.include.paths.686863215" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../crengine/cr3/crengine/include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.355739446" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.802448668" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
@@ -292,18 +304,18 @@
 							<tool id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.107054136" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1488346665">
 								<option id="gnu.both.asm.option.include.paths.58825108" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../crengine/cr3/crengine/include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
 									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/CoolReader/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.524253583" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -390,6 +402,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3gl/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3ui/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.817095641" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -438,6 +451,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.2119239366" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -485,7 +499,9 @@
 								<option id="gnu.cpp.link.option.paths.2005635586" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 								</option>
-								<option id="gnu.cpp.link.option.libs.1087927488" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
+								<option id="gnu.cpp.link.option.libs.1087927488" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1233663886" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -496,6 +512,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1686531665" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -666,6 +683,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3gl/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3ui/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1126231" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_DEBUG"/>
@@ -716,6 +734,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.188296196" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_USE_DA_"/>
@@ -766,6 +785,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.1531187306" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="daprobe"/>
+									<listOptionValue builtIn="false" value="dl"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.794065505" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library/da/x86&quot;"/>
@@ -781,6 +801,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crengine/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3/crengine/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader/inc}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1553439913" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
