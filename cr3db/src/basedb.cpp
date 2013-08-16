@@ -9,6 +9,7 @@
 #include <sqlite3.h>
 #include <lvstring.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 SQLiteDB::~SQLiteDB() {
 	close();
@@ -92,6 +93,14 @@ bool SQLiteDB::columnExists(const char * tableName, const char * columnName) {
 	return columnNamePresentInCreateTable(createTable, columnName);
 }
 
+/// checks if column present, adds if no such column; returns true if success, false if any error
+bool SQLiteDB::addColumnIfNotExists(const char * table, const char * columnName, const char * alterTableSql) {
+	if (columnExists(table, columnName))
+		return true;
+	int res = executeUpdate(alterTableSql);
+	return res >= 0;
+}
+
 /// gets database schema version
 int SQLiteDB::getVersion() {
 	if (!isOpened())
@@ -116,6 +125,16 @@ void SQLiteDB::setVersion(int version) {
 	stmt.step();
 }
 
+
+/// runs update, returns number of affected rows; -1 if error
+int SQLiteDB::executeUpdate(const char * sql) {
+	if (!isOpened())
+		return -1;
+	SQLiteStatement stmt(this);
+	if (stmt.prepare(sql))
+		return -1;
+	return stmt.rowsAffected();
+}
 
 //=================================================================================================
 // statement
@@ -322,5 +341,6 @@ int SQLiteStatement::bindBlob(int index, const void * data, int len) {
 	memcpy(copy, data, len);
 	return sqlite3_bind_blob(_stmt, index, copy, len, free);
 }
+
 
 

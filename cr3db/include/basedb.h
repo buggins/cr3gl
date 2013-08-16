@@ -57,6 +57,11 @@ public:
 	bool tableExists(const char * tableName);
 	/// returns true if column exists in table
 	bool columnExists(const char * tableName, const char * columnName);
+	/// runs update, returns number of affected rows; -1 if error
+	int executeUpdate(const char * sql);
+
+	/// checks if column present, adds if no such column; returns true if success, false if any error
+	bool addColumnIfNotExists(const char * table, const char * columnName, const char * alterTableSql);
 
 	/// gets database schema version
 	int getVersion();
@@ -130,5 +135,6 @@ public:
 
 
 };
+
 
 #endif /* BASEDB_H_ */
