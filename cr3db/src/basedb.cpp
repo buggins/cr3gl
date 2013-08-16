@@ -8,6 +8,7 @@
 #include "basedb.h"
 #include <sqlite3.h>
 #include <lvstring.h>
+#include <ctype.h>
 
 SQLiteDB::~SQLiteDB() {
 	close();
@@ -48,6 +49,71 @@ lInt64 SQLiteDB::lastInsertId() {
 	if (!isOpened())
 		return 0;
 	return sqlite3_last_insert_rowid(_db);
+}
+
+/// returns true if table exists
+bool SQLiteDB::tableExists(const char * tableName) {
+	if (!isOpened())
+		return false;
+	char sql[512];
+	sprintf(sql, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='%s';", tableName);
+	SQLiteStatement stmt(this);
+	if (stmt.prepare(sql))
+		return false;
+	if (stmt.step() != DB_ROW)
+		return false;
+	return stmt.getInt(0) > 0;
+}
+
+static bool columnNamePresentInCreateTable(const char * createTable, const char * columnName) {
+	if (!createTable || !columnName)
+		return false;
+	int len = strlen(columnName);
+	const char * pos = strstr(createTable, columnName);
+	if (!pos)
+		return false;
+	char charBefore = pos[-1];
+	char charAfter = pos[len];
+	return isalnum(charBefore) && !isalnum(charAfter);
+}
+
+/// returns true if column exists in table
+bool SQLiteDB::columnExists(const char * tableName, const char * columnName) {
+	if (!isOpened())
+		return false;
+	char sql[512];
+	sprintf(sql, "SELECT sql FROM sqlite_master WHERE type='table' AND name='%s';", tableName);
+	SQLiteStatement stmt(this);
+	if (stmt.prepare(sql))
+		return false;
+	if (stmt.step() != DB_ROW)
+		return false;
+	const char * createTable = stmt.getText(0);
+	return columnNamePresentInCreateTable(createTable, columnName);
+}
+
+/// gets database schema version
+int SQLiteDB::getVersion() {
+	if (!isOpened())
+		return -1;
+	SQLiteStatement stmt(this);
+	if (stmt.prepare("PRAGMA user_version"))
+		return -1;
+	if (stmt.step() == DB_ROW)
+		return stmt.getInt(0);
+	return -1;
+}
+
+/// sets database schema version
+void SQLiteDB::setVersion(int version) {
+	if (!isOpened())
+		return;
+	SQLiteStatement stmt(this);
+	char sql[64];
+	sprintf(sql, "PRAGMA user_version = %d;", version);
+	if (stmt.prepare(sql))
+		return;
+	stmt.step();
 }
 
 
@@ -150,14 +216,22 @@ bool SQLiteStatement::checkColumnIndexError(int index) {
 		return true;
 	}
 	if (index < 0 || index >= _columnCount) {
-		CRLog::error("SQLite - column index %d is out of bounds");
+		CRLog::error("SQLite - column index %d is out of bounds 0..%d", _columnCount - 1);
 		return true;
 	}
 	return false;
 }
 
 bool SQLiteStatement::checkParameterIndexError(int index) {
-
+	if (!isOpened()) {
+		CRLog::error("SQLite - trying to access closed statement");
+		return true;
+	}
+	if (index < 1 || index > _parameterCount) {
+		CRLog::error("SQLite - parameter index %d is out of bounds 1..%d", _parameterCount);
+		return true;
+	}
+	return false;
 }
 
 /// return number of bytes in contents of column with specified index
