@@ -64,6 +64,16 @@ bool DBString::operator == (const char * s) const {
 	return strcmp(str, s) == 0;
 }
 
+lUInt32 getHash(const DBString & s) {
+	if (!s)
+		return 0;
+	lUInt32 value = 1253;
+	int len = s.length();
+	const char * str = s.get();
+	for (int i = 0; i < len; i++)
+		value = value * 31 + str[i];
+	return value;
+}
 
 #define DB_VERSION 21
 
@@ -192,3 +202,110 @@ bool CRBookDB::updateSchema()
 
 	return !err;
 }
+
+
+BookDBAuthor * BookDBAuthorCache::get(lInt64 key) {
+	return _byId.get(key);
+}
+
+BookDBAuthor * BookDBAuthorCache::get(const DBString & name) {
+	return _byName.get(name);
+}
+
+void BookDBAuthorCache::put(BookDBAuthor * item) {
+	BookDBAuthor * oldById = _byId.get(item->id);
+	if (oldById == item) { // already the same item
+		return;
+	}
+	if (oldById) {
+		_byId.remove(item->id);
+		_byName.remove(oldById->name);
+		delete oldById;
+	}
+	_byId.set(item->id, item);
+	_byName.set(item->name, item);
+}
+
+void BookDBAuthorCache::clear() {
+	LVPtrVector<BookDBAuthor> items;
+	LVHashTable<lUInt64, BookDBAuthor *>::iterator iter = _byId.forwardIterator();
+	for (;;) {
+		LVHashTable<lUInt64, BookDBAuthor *>::pair * item = iter.next();
+		if (!item)
+			break;
+		items.add(item->value);
+	}
+}
+
+
+
+BookDBSeries * BookDBSeriesCache::get(lInt64 key) {
+	return _byId.get(key);
+}
+
+BookDBSeries * BookDBSeriesCache::get(const DBString & name) {
+	return _byName.get(name);
+}
+
+void BookDBSeriesCache::put(BookDBSeries * item) {
+	BookDBSeries * oldById = _byId.get(item->id);
+	if (oldById == item) { // already the same item
+		return;
+	}
+	if (oldById) {
+		_byId.remove(item->id);
+		_byName.remove(oldById->name);
+		delete oldById;
+	}
+	_byId.set(item->id, item);
+	_byName.set(item->name, item);
+}
+
+void BookDBSeriesCache::clear() {
+	LVPtrVector<BookDBSeries> items;
+	LVHashTable<lUInt64, BookDBSeries *>::iterator iter = _byId.forwardIterator();
+	for (;;) {
+		LVHashTable<lUInt64, BookDBSeries *>::pair * item = iter.next();
+		if (!item)
+			break;
+		items.add(item->value);
+	}
+}
+
+
+
+
+
+BookDBFolder * BookDBFolderCache::get(lInt64 key) {
+	return _byId.get(key);
+}
+
+BookDBFolder * BookDBFolderCache::get(const DBString & name) {
+	return _byName.get(name);
+}
+
+void BookDBFolderCache::put(BookDBFolder * item) {
+	BookDBFolder * oldById = _byId.get(item->id);
+	if (oldById == item) { // already the same item
+		return;
+	}
+	if (oldById) {
+		_byId.remove(item->id);
+		_byName.remove(oldById->name);
+		delete oldById;
+	}
+	_byId.set(item->id, item);
+	_byName.set(item->name, item);
+}
+
+void BookDBFolderCache::clear() {
+	LVPtrVector<BookDBFolder> items;
+	LVHashTable<lUInt64, BookDBFolder *>::iterator iter = _byId.forwardIterator();
+	for (;;) {
+		LVHashTable<lUInt64, BookDBFolder *>::pair * item = iter.next();
+		if (!item)
+			break;
+		items.add(item->value);
+	}
+}
+

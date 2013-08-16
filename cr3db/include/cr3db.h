@@ -9,6 +9,8 @@
 #define CR3DB_H_
 
 #include "basedb.h"
+#include "lvhashtable.h"
+#include "lvptrvec.h"
 
 class DBString {
 	char * str;
@@ -23,21 +25,11 @@ public:
 	bool operator == (const DBString & s) const;
 	bool operator == (const char * s) const;
 	bool operator !() const { return !str; }
+	const char * get() const { return str; }
 	~DBString();
 };
+lUInt32 getHash(const DBString & s);
 
-class CRBookDB {
-	SQLiteDB _db;
-public:
-	/// open database file; returns 0 on success, error code otherwise
-	int open(const char * pathname, bool readOnly) { return _db.open(pathname, readOnly); }
-	/// closes DB
-	int close() { return _db.close(); }
-	/// returns true if DB is opened
-	bool isOpened() { return _db.isOpened(); }
-	/// creates/upgrades DB schema
-	bool updateSchema();
-};
 
 class BookDBEntity {
 public:
@@ -231,6 +223,60 @@ public:
 				timeElapsed == v.timeElapsed;
 	}
 };
+
+class BookDBAuthorCache {
+	LVHashTable<lUInt64, BookDBAuthor *> _byId;
+	LVHashTable<DBString, BookDBAuthor *> _byName;
+public:
+	BookDBAuthorCache() : _byId(1000), _byName(1000) {}
+	BookDBAuthor * get(lInt64 key);
+	BookDBAuthor * get(const DBString & name);
+	void put(BookDBAuthor * item);
+	void clear();
+	~BookDBAuthorCache() { clear(); }
+};
+
+class BookDBSeriesCache {
+	LVHashTable<lUInt64, BookDBSeries *> _byId;
+	LVHashTable<DBString, BookDBSeries *> _byName;
+public:
+	BookDBSeriesCache() : _byId(1000), _byName(1000) {}
+	BookDBSeries * get(lInt64 key);
+	BookDBSeries * get(const DBString & name);
+	void put(BookDBSeries * item);
+	void clear();
+	~BookDBSeriesCache() { clear(); }
+};
+
+class BookDBFolderCache {
+	LVHashTable<lUInt64, BookDBFolder *> _byId;
+	LVHashTable<DBString, BookDBFolder *> _byName;
+public:
+	BookDBFolderCache() : _byId(1000), _byName(1000) {}
+	BookDBFolder * get(lInt64 key);
+	BookDBFolder * get(const DBString & name);
+	void put(BookDBFolder * item);
+	void clear();
+	~BookDBFolderCache() { clear(); }
+};
+
+
+class CRBookDB {
+	SQLiteDB _db;
+	BookDBSeriesCache _seriesCache;
+	BookDBAuthorCache _authorCache;
+	BookDBFolderCache _folderCache;
+public:
+	/// open database file; returns 0 on success, error code otherwise
+	int open(const char * pathname, bool readOnly) { return _db.open(pathname, readOnly); }
+	/// closes DB
+	int close() { return _db.close(); }
+	/// returns true if DB is opened
+	bool isOpened() { return _db.isOpened(); }
+	/// creates/upgrades DB schema
+	bool updateSchema();
+};
+
 
 
 #endif /* CR3DB_H_ */
