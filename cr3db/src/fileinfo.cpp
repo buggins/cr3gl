@@ -43,10 +43,34 @@ int LVDocFormatFromExtension(lString16 &pathName) {
 	return UNKNOWN_FORMAT;
 }
 
+static int find(const LVPtrVector<CRDirEntry> & entries, const lString8 & pathname) {
+	for (int i = 0; i<entries.length(); i++) {
+		if (!entries[i]->isDirectory() && entries[i]->getPathName() == pathname)
+			return i;
+	}
+	return -1;
+}
+
+static bool splitArcName(const lString8 & pathname, lString8 & arcname, lString8 & fname) {
+	int p = pathname.pos("@/");
+	if (p > 0) {
+		arcname = pathname.substr(0, p);
+		fname = pathname.substr(p + 2);
+		return true;
+	}
+	return false;
+}
+
+bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
+	return false;
+}
+
 bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 	LVContainerRef dir = LVOpenDirectory(Utf8ToUnicode(path).c_str(), NULL);
 	if (!dir)
 		return false;
+	lString8Collection forLoad;
+	lString8Collection forParse;
 	for (int i = 0; i < dir->GetObjectCount(); i++) {
 		const LVContainerItemInfo * item = dir->GetObjectInfo(i);
 		lString16 pathName = (lString16(dir->GetName()) + item->GetName());
@@ -80,6 +104,7 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 						// single book inside archive
 						CRFileItem * book = new CRFileItem(foundItem, true);
 						entries.add(book);
+						forLoad.add(foundItem);
 					} else if (knownFiles > 1) {
 						// several known files in archive
 						CRDirItem * subdir = new CRDirItem(pathName8, true);
@@ -94,6 +119,57 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			// try as normal file
 			CRFileItem * book = new CRFileItem(pathName8, false);
 			entries.add(book);
+			forLoad.add(pathName8);
+		}
+	}
+	LVPtrVector<BookDBBook> loaded;
+	LVPtrVector<BookDBBook> forSave;
+	bookDB->loadBooks(forLoad, loaded, forParse);
+	for (int i = 0; i<loaded.length(); i++) {
+		lString8 fn = lString8(loaded[i]->pathname.c_str());
+		int found = find(entries, fn);
+		if (found >= 0) {
+			entries[found]->setBook(loaded[i]->clone());
+			entries[found]->setParsed(true);
+		}
+	}
+	for (int i = 0; i<forParse.length(); i++) {
+		lString8 pathName = forParse[i];
+		lString8 arcname;
+		lString8 fname;
+		LVContainerRef arc;
+		LVStreamRef stream;
+		if (splitArcName(pathName, arcname, fname)) {
+			stream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+			arc = LVOpenArchieve(stream);
+			if (!arc.isNull()) {
+				stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+			} else {
+				stream = NULL;
+			}
+		} else {
+			stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
+		}
+		if (!stream.isNull()) {
+			// read properties
+			BookDBBook * book = new BookDBBook();
+			if (LVParseBookProperties(stream, book)) {
+				forSave.add(book);
+			} else {
+				// cannot parse properties
+				delete book;
+			}
+		}
+	}
+	if (forSave.length()) {
+		bookDB->saveBooks(forSave);
+		for (int i = 0; i < forSave.length(); i++) {
+			lString8 fn = lString8(forSave[i]->pathname.c_str());
+			int found = find(entries, fn);
+			if (found >= 0) {
+				entries[found]->setBook(forSave[i]->clone());
+				entries[found]->setParsed(true);
+			}
 		}
 	}
 	return true;
