@@ -123,34 +123,32 @@ public:
 	LVPtrVector<BookDBAuthor> authors;
 	BookDBBook() : seriesNumber(0), format(0), filesize(0), arcsize(0), createTime(0), lastAccessTime(0), flags(0) {}
 	BookDBBook(const BookDBBook & v) {
-		id = v.id;
-		folder = v.folder.get() ? v.folder->clone() : NULL;
-		pathname = v.pathname;
-		filename = v.filename;
-		arcname = v.arcname;
-		title = v.title;
-		series = v.series.get() ? v.series->clone() : NULL;
-		seriesNumber = v.seriesNumber;
-		format = v.format;
-		filesize = v.filesize;
-		arcsize = v.arcsize;
-		createTime = v.createTime;
-		lastAccessTime = v.lastAccessTime;
-		flags = v.flags;
-		for (int i=0; i<v.authors.length(); i++)
-			authors.add(v.authors[i]->clone());
+		assignFields(v);
+		assignFolder(v);
+		assignSeries(v);
+		assignAuthors(v);
 	}
 
 	~BookDBBook() {
 	}
-	BookDBBook & operator = (const BookDBBook & v) {
-		id = v.id;
-		folder = v.folder.get() ? v.folder->clone() : NULL;
+	bool hasAuthor(BookDBAuthor * author);
+	void assignSeries(const BookDBBook & v) {
 		series = v.series.get() ? v.series->clone() : NULL;
-		pathname = v.pathname;
-		filename = v.filename;
-		arcname = v.arcname;
-		title = v.title;
+	}
+	void assignFolder(const BookDBBook & v) {
+		folder = v.folder.get() ? v.folder->clone() : NULL;
+	}
+	void assignAuthors(const BookDBBook & v) {
+		authors.clear();
+		for (int i=0; i<v.authors.length(); i++)
+			authors.add(v.authors[i]->clone());
+	}
+	void assignFields(const BookDBBook & v) {
+		id = v.id;
+		if (pathname != v.pathname) pathname = v.pathname;
+		if (filename != v.filename) filename = v.filename;
+		if (arcname != v.arcname) arcname = v.arcname;
+		if (title != v.title) title = v.title;
 		seriesNumber = v.seriesNumber;
 		format = v.format;
 		filesize = v.filesize;
@@ -158,8 +156,12 @@ public:
 		createTime = v.createTime;
 		lastAccessTime = v.lastAccessTime;
 		flags = v.flags;
-		for (int i=0; i<v.authors.length(); i++)
-			authors.add(v.authors[i]->clone());
+	}
+	BookDBBook & operator = (const BookDBBook & v) {
+		assignFields(v);
+		assignFolder(v);
+		assignSeries(v);
+		assignAuthors(v);
 		return *this;
 	}
 	bool equalAuthors(const BookDBBook & v2) const {
@@ -306,11 +308,17 @@ class BookDBBookCache {
 	struct Item {
 		BookDBBook * book;
 		Item * next;
+		Item * prev;
+		Item(BookDBBook * _book) : book(_book), next(NULL), prev(NULL) {}
 	};
+	LVHashTable<lUInt64, Item *> _byId;
+	LVHashTable<DBString, Item *> _byName;
 	Item * head;
 	int count;
+	void moveToHead(Item * item);
+	void remove(Item * item);
 public:
-	BookDBBookCache() : head(NULL), count(0) {}
+	BookDBBookCache() : _byId(1000), _byName(1000), head(NULL), count(0) {}
 	BookDBBook * get(lInt64 key);
 	BookDBBook * get(const DBString & path);
 	void put(BookDBBook * item);
@@ -326,6 +334,8 @@ class CRBookDB {
 	BookDBFolderCache _folderCache;
 	BookDBBookCache _bookCache;
 	BookDBBook * loadBookToCache(lInt64 id);
+	bool updateBook(BookDBBook * book, BookDBBook * fromCache);
+	bool insertBook(BookDBBook * book);
 public:
 	/// open database file; returns 0 on success, error code otherwise
 	int open(const char * pathname);

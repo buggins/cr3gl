@@ -34,7 +34,7 @@ enum {
 	DB_ROW = 100,
 };
 
-#define USE_LSTRING8_FOR_DB 1
+#define USE_LSTRING8_FOR_DB 0
 
 
 #if USE_LSTRING8_FOR_DB == 1
@@ -135,6 +135,8 @@ public:
 	int bindNull(int index);
 	/// set int to parameter
 	int bindInt(int index, int value);
+	/// set 64-bit int to parameter, NULL if value==0
+	int bindKey(int index, lInt64 key) { return key ? bindInt64(index, key) : bindNull(index); }
 	/// set 64-bit int to parameter
 	int bindInt64(int index, lInt64 value);
 	/// set utf-8 text string to parameter
