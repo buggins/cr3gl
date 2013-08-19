@@ -11,6 +11,97 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#if USE_LSTRING8_FOR_DB != 1
+DBString::DBString(const char * s)
+{
+	//CRLog::trace("DBString(%s)", s);
+	str = s ? strdup(s) : NULL;
+	//CRLog::trace("DBString(%s) - duplicated", s);
+}
+
+DBString::DBString(const DBString & s) {
+	str = s.str ? strdup(s.str) : NULL;
+}
+
+DBString::~DBString()
+{
+	if (str)
+		free(str);
+}
+
+void DBString::clear() {
+	if (str)
+		free(str);
+	str = NULL;
+}
+
+int DBString::length() const {
+	return str ? strlen(str) : 0;
+}
+
+char DBString::operator[] (int index) const {
+	int len = length();
+	if (index < 0 || index <= len)
+		return 0;
+	return str[index];
+}
+
+DBString & DBString::operator = (const DBString & s) {
+	clear();
+	str = s.str ? strdup(s.str) : NULL;
+	return *this;
+}
+
+DBString & DBString::operator = (const char * s) {
+	clear();
+	str = s ? strdup(s) : NULL;
+	return *this;
+}
+
+DBString & DBString::operator += (const char * s) {
+	int thislength = length();
+	int slength = s ? strlen(s) : 0;
+	if (slength == 0)
+		return *this;
+	if (thislength == 0) {
+		*this = s;
+	} else {
+		char * buf = (char *)malloc(thislength + slength + 1);
+		memcpy(buf, str, thislength);
+		memcpy(buf + thislength, s, slength + 1);
+		*this = buf;
+	}
+	return *this;
+}
+
+bool DBString::operator == (const DBString & s) const {
+	if (!str && !s)
+		return true;
+	if (!str || !s)
+		return false;
+	return strcmp(str, s.str) == 0;
+}
+
+bool DBString::operator == (const char * s) const {
+	if (!str && !s)
+		return true;
+	if (!str || !s)
+		return false;
+	return strcmp(str, s) == 0;
+}
+
+lUInt32 getHash(const DBString & s) {
+	if (!s)
+		return 0;
+	lUInt32 value = 1253;
+	int len = s.length();
+	const char * str = s.c_str();
+	for (int i = 0; i < len; i++)
+		value = value * 31 + str[i];
+	return value;
+}
+#endif
+
 SQLiteDB::~SQLiteDB() {
 	close();
 }

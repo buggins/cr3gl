@@ -34,6 +34,39 @@ enum {
 	DB_ROW = 100,
 };
 
+#define USE_LSTRING8_FOR_DB 1
+
+
+#if USE_LSTRING8_FOR_DB == 1
+#include "lvstring.h"
+typedef lString8 DBString;
+#else
+class DBString {
+	char * str;
+public:
+	DBString() : str(NULL) { }
+	DBString(const char * s);
+	DBString(const DBString & s);
+	void clear();
+	int length() const;
+	char operator[] (int index) const;
+	DBString & operator = (const char * s);
+	DBString & operator = (const DBString & s);
+	DBString & operator += (const char * s);
+	DBString & operator += (const DBString & s) { return operator += (s.c_str()); }
+	DBString & operator << (const DBString & s) { return operator += (s.c_str()); }
+	DBString & operator << (const char * s) { return operator += (s); }
+	bool operator == (const DBString & s) const;
+	bool operator != (const DBString & s) const { return !operator == (s); }
+	bool operator == (const char * s) const;
+	bool operator != (const char * s) const { return !operator == (s); }
+	bool operator !() const { return !str; }
+	const char * c_str() const { return str; }
+	~DBString();
+};
+lUInt32 getHash(const DBString & s);
+#endif
+
 class SQLiteDB {
 protected:
 	sqlite3 * _db;
@@ -106,6 +139,8 @@ public:
 	int bindInt64(int index, lInt64 value);
 	/// set utf-8 text string to parameter
 	int bindText(int index, const char * str, int len);
+	/// set utf-8 text string to parameter
+	int bindText(int index, const DBString & str) { return bindText(index, str.c_str(), str.length()); }
 	/// set blob value to parameter
 	int bindBlob(int index, const void * data, int len);
 

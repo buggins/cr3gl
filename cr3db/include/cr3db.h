@@ -13,29 +13,6 @@
 #include "lvptrvec.h"
 #include "lvref.h"
 
-class DBString {
-	char * str;
-public:
-	DBString() : str(NULL) { }
-	DBString(const char * s);
-	DBString(const DBString & s);
-	void clear();
-	int length() const;
-	char operator[] (int index) const;
-	DBString & operator = (const char * s);
-	DBString & operator = (const DBString & s);
-	DBString & operator += (const char * s);
-	DBString & operator += (const DBString & s) { return operator += (s.get()); }
-	DBString & operator << (const DBString & s) { return operator += (s.get()); }
-	DBString & operator << (const char * s) { return operator += (s); }
-	bool operator == (const DBString & s) const;
-	bool operator == (const char * s) const;
-	bool operator !() const { return !str; }
-	const char * get() const { return str; }
-	~DBString();
-};
-lUInt32 getHash(const DBString & s);
-
 
 class BookDBEntity {
 public:
@@ -292,6 +269,7 @@ class BookDBAuthorCache {
 public:
 	BookDBAuthorCache() : _byId(1000), _byName(1000) {}
 	BookDBAuthor * get(lInt64 key);
+	BookDBAuthor * getClone(lInt64 key) { BookDBAuthor * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
 	BookDBAuthor * get(const DBString & name);
 	void put(BookDBAuthor * item);
 	void clear();
@@ -304,6 +282,7 @@ class BookDBSeriesCache {
 public:
 	BookDBSeriesCache() : _byId(1000), _byName(1000) {}
 	BookDBSeries * get(lInt64 key);
+	BookDBSeries * getClone(lInt64 key) { BookDBSeries * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
 	BookDBSeries * get(const DBString & name);
 	void put(BookDBSeries * item);
 	void clear();
@@ -316,10 +295,27 @@ class BookDBFolderCache {
 public:
 	BookDBFolderCache() : _byId(1000), _byName(1000) {}
 	BookDBFolder * get(lInt64 key);
+	BookDBFolder * getClone(lInt64 key) { BookDBFolder * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
 	BookDBFolder * get(const DBString & name);
 	void put(BookDBFolder * item);
 	void clear();
 	~BookDBFolderCache() { clear(); }
+};
+
+class BookDBBookCache {
+	struct Item {
+		BookDBBook * book;
+		Item * next;
+	};
+	Item * head;
+	int count;
+public:
+	BookDBBookCache() : head(NULL), count(0) {}
+	BookDBBook * get(lInt64 key);
+	BookDBBook * get(const DBString & path);
+	void put(BookDBBook * item);
+	void clear();
+	~BookDBBookCache() { clear(); }
 };
 
 
@@ -328,6 +324,8 @@ class CRBookDB {
 	BookDBSeriesCache _seriesCache;
 	BookDBAuthorCache _authorCache;
 	BookDBFolderCache _folderCache;
+	BookDBBookCache _bookCache;
+	BookDBBook * loadBookToCache(lInt64 id);
 public:
 	/// open database file; returns 0 on success, error code otherwise
 	int open(const char * pathname);
@@ -343,6 +341,7 @@ public:
 	bool saveSeries(BookDBSeries * item);
 	bool saveFolder(BookDBFolder * folder);
 	bool saveAuthor(BookDBAuthor * author);
+	bool saveBook(BookDBBook * book);
 };
 
 

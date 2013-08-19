@@ -8,94 +8,6 @@
 #include "cr3db.h"
 #include <lvstring.h>
 
-DBString::DBString(const char * s)
-{
-	//CRLog::trace("DBString(%s)", s);
-	str = s ? strdup(s) : NULL;
-	//CRLog::trace("DBString(%s) - duplicated", s);
-}
-
-DBString::DBString(const DBString & s) {
-	str = s.str ? strdup(s.str) : NULL;
-}
-
-DBString::~DBString()
-{
-	if (str)
-		free(str);
-}
-
-void DBString::clear() {
-	if (str)
-		free(str);
-	str = NULL;
-}
-
-int DBString::length() const {
-	return str ? strlen(str) : 0;
-}
-
-char DBString::operator[] (int index) const {
-	int len = length();
-	if (index < 0 || index <= len)
-		return 0;
-	return str[index];
-}
-
-DBString & DBString::operator = (const DBString & s) {
-	clear();
-	str = s.str ? strdup(s.str) : NULL;
-	return *this;
-}
-
-DBString & DBString::operator = (const char * s) {
-	clear();
-	str = s ? strdup(s) : NULL;
-	return *this;
-}
-
-DBString & DBString::operator += (const char * s) {
-	int thislength = length();
-	int slength = s ? strlen(s) : 0;
-	if (slength == 0)
-		return *this;
-	if (thislength == 0) {
-		*this = s;
-	} else {
-		char * buf = (char *)malloc(thislength + slength + 1);
-		memcpy(buf, str, thislength);
-		memcpy(buf + thislength, s, slength + 1);
-		*this = buf;
-	}
-	return *this;
-}
-
-bool DBString::operator == (const DBString & s) const {
-	if (!str && !s)
-		return true;
-	if (!str || !s)
-		return false;
-	return strcmp(str, s.str) == 0;
-}
-
-bool DBString::operator == (const char * s) const {
-	if (!str && !s)
-		return true;
-	if (!str || !s)
-		return false;
-	return strcmp(str, s) == 0;
-}
-
-lUInt32 getHash(const DBString & s) {
-	if (!s)
-		return 0;
-	lUInt32 value = 1253;
-	int len = s.length();
-	const char * str = s.get();
-	for (int i = 0; i < len; i++)
-		value = value * 31 + str[i];
-	return value;
-}
 
 #define DB_VERSION 21
 
@@ -281,7 +193,7 @@ bool CRBookDB::fillCaches() {
 }
 
 bool CRBookDB::saveSeries(BookDBSeries * item) {
-	CRLog::trace("saveSeries(%s)", item->name.get());
+	CRLog::trace("saveSeries(%s)", item->name.c_str());
 	BookDBSeries * byId = NULL;
 	BookDBSeries * byName = NULL;
 	if (item->id)
@@ -300,8 +212,8 @@ bool CRBookDB::saveSeries(BookDBSeries * item) {
 	} else {
 		err = stmt.prepare("INSERT INTO series (name) VALUES (?);") != 0 || err;
 		if (!err) {
-			CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
-			stmt.bindText(1, item->name.get(), item->name.length());
+			//CRLog::trace("calling bindText(1, %s, %d)", item->name.c_str(), item->name.length());
+			stmt.bindText(1, item->name);
 			err = stmt.step() == DB_DONE || err;
 			if (!err) {
 				item->id = stmt.lastInsertId();
@@ -337,7 +249,7 @@ bool CRBookDB::saveFolder(BookDBFolder * item) {
 		err = stmt.prepare("INSERT INTO folder (name) VALUES (?);") != 0 || err;
 		if (!err) {
 			//CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
-			stmt.bindText(1, item->name.get(), item->name.length());
+			stmt.bindText(1, item->name);
 			err = stmt.step() == DB_DONE || err;
 			if (!err) {
 				item->id = stmt.lastInsertId();
@@ -369,9 +281,9 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 		//CRLog::trace("updating existing author");
 		err = stmt.prepare("UPDATE author SET name = ?, file_as = ?, aliased_author_fk = ? WHERE id = ?") != 0 || err;
 		if (!err) {
-			stmt.bindText(1, item->name.get(), item->name.length());
+			stmt.bindText(1, item->name);
 			if (!item->fileAs)
-				stmt.bindText(2, item->fileAs.get(), item->fileAs.length());
+				stmt.bindText(2, item->fileAs);
 			else
 				stmt.bindNull(2);
 			if (item->aliasedAuthorId)
@@ -389,9 +301,9 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 		//CRLog::trace("inserting new author");
 		err = stmt.prepare("INSERT INTO author (name, file_as, aliased_author_fk) VALUES (?, ?, ?);") != 0 || err;
 		if (!err) {
-			stmt.bindText(1, item->name.get(), item->name.length());
+			stmt.bindText(1, item->name);
 			if (item->fileAs.length() > 0)
-				stmt.bindText(2, item->fileAs.get(), item->fileAs.length());
+				stmt.bindText(2, item->fileAs);
 			else
 				stmt.bindNull(2);
 			if (item->aliasedAuthorId)
@@ -409,6 +321,188 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 	return !err;
 }
 
+BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	stmt.prepare("SELECT id, pathname, folder_fk, filename, arcname, title, series_fk, series_number, format, "
+			"filesize, arcsize, create_time, last_access_time, flags, language"
+			" FROM book WHERE id = ?");
+	stmt.bindInt64(1, id);
+	if (stmt.step() == DB_ROW) {
+		// TODO: use reference from cache, instead of clone
+		BookDBBook * item = new BookDBBook();
+		item->id = stmt.getInt64(0);
+		item->pathname = stmt.getText(1);
+		lInt64 folderId = stmt.getInt64(2);
+		item->filename = stmt.getText(3);
+		item->arcname = stmt.getText(4);
+		item->title = stmt.getText(5);
+		lInt64 seriesId = stmt.getInt64(6);
+		item->seriesNumber = stmt.getInt(7);
+		item->format = stmt.getInt(8);
+		item->filesize = stmt.getInt(9);
+		item->arcsize = stmt.getInt(10);
+		item->createTime = stmt.getInt64(11);
+		item->lastAccessTime = stmt.getInt64(12);
+		item->flags = stmt.getInt(13);
+		item->language = stmt.getText(14);
+		item->folder = _folderCache.getClone(folderId);
+		item->series = _seriesCache.getClone(seriesId);
+		stmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?");
+		stmt.bindInt64(1, id);
+		while (stmt.step() == DB_ROW) {
+			lInt64 authorId = stmt.getInt64(0);
+			BookDBAuthor * author = _authorCache.getClone(authorId);
+			if (author)
+				item->authors.add(author);
+		}
+		_bookCache.put(item);
+		return item;
+	}
+	return NULL;
+}
+
+static void appendUpdateField(lString8 & buf, const char * paramName, int & fieldIndex, int & index) {
+	if (buf.length())
+		buf.append(",");
+	buf.append(paramName);
+	buf.append("=?");
+	fieldIndex = index++;
+}
+
+bool CRBookDB::saveBook(BookDBBook * book) {
+	if (book->id) {
+		BookDBBook * fromCache = _bookCache.get(book->id);
+		if (!fromCache) {
+			fromCache = loadBookToCache(book->id);
+		}
+		if (fromCache) {
+			if (*book == *fromCache)
+				return true; // nothing to save - no changes
+			// there are some changes
+			bool authorsChanged = !book->equalAuthors(*fromCache);
+			bool folderChanged = !book->equalFolders(*fromCache);
+			bool seriesChanged = !book->equalSeries(*fromCache);
+			bool fieldsChanged = !book->equalSeries(*fromCache);
+			int idIndex = -1;
+			int pathnameIndex = -1;
+			int folderIndex = -1;
+			int filenameIndex = -1;
+			int arcnameIndex = -1;
+			int titleIndex = -1;
+			int seriesIndex = -1;
+			int seriesNumberIndex = -1;
+			int formatIndex = -1;
+			int filesizeIndex = -1;
+			int arcsizeIndex = -1;
+			int createTimeIndex = -1;
+			int lastAccessTimeIndex = -1;
+			int flagsIndex = -1;
+			int languageIndex = -1;
+			int index = 1;
+			lString8 buf;
+			if (book->pathname != fromCache->pathname) appendUpdateField(buf, "pathname", pathnameIndex, index);
+			if (book->filename != fromCache->filename) appendUpdateField(buf, "filename", filenameIndex, index);
+			if (book->arcname != fromCache->arcname) appendUpdateField(buf, "arcname", arcnameIndex, index);
+			if (book->title != fromCache->title) appendUpdateField(buf, "title", titleIndex, index);
+			if (book->seriesNumber != fromCache->seriesNumber) appendUpdateField(buf, "series_number", seriesNumberIndex, index);
+			if (book->format != fromCache->format) appendUpdateField(buf, "format", formatIndex, index);
+			if (book->filesize != fromCache->filesize) appendUpdateField(buf, "filesize", filesizeIndex, index);
+			if (book->arcsize != fromCache->arcsize) appendUpdateField(buf, "arcsize", arcsizeIndex, index);
+			if (book->createTime != fromCache->createTime) appendUpdateField(buf, "create_time", createTimeIndex, index);
+			if (book->lastAccessTime != fromCache->lastAccessTime) appendUpdateField(buf, "last_access_time", lastAccessTimeIndex, index);
+			if (book->flags != fromCache->flags) appendUpdateField(buf, "flags", flagsIndex, index);
+			if (book->language != fromCache->language) appendUpdateField(buf, "language", languageIndex, index);
+			// TODO: compare series and folder
+			if (folderChanged) {
+				//if (book->folder != fromCache->folder)
+				appendUpdateField(buf, "folder_fk", folderIndex, index);
+			}
+			if (seriesChanged) {
+				//if (book->series != fromCache->series)
+				appendUpdateField(buf, "series_fk", seriesIndex, index);
+			}
+
+			SQLiteStatement stmt(&_db);
+			bool err = false;
+			lString8 sql("UPDATE book SET ");
+			sql += buf;
+			sql += " WHERE id = ?";
+			stmt.prepare(sql.c_str());
+			stmt.bindInt64(index, book->id);
+			if (pathnameIndex >= 0) stmt.bindText(pathnameIndex, book->pathname);
+			if (filenameIndex >= 0) stmt.bindText(filenameIndex, book->filename);
+			if (arcnameIndex >= 0) stmt.bindText(arcnameIndex, book->arcname);
+			if (titleIndex >= 0) stmt.bindText(titleIndex, book->title);
+			if (seriesNumberIndex >= 0) stmt.bindInt(seriesNumberIndex, book->seriesNumber);
+			if (formatIndex >= 0) stmt.bindInt(formatIndex, book->format);
+			if (filesizeIndex >= 0) stmt.bindInt(filesizeIndex, book->filesize);
+			if (arcsizeIndex >= 0) stmt.bindInt(arcsizeIndex, book->arcsize);
+			if (createTimeIndex >= 0) stmt.bindInt64(createTimeIndex, book->createTime);
+			if (lastAccessTimeIndex >= 0) stmt.bindInt64(lastAccessTimeIndex, book->lastAccessTime);
+			if (flagsIndex >= 0) stmt.bindInt(flagsIndex, book->flags);
+			if (languageIndex >= 0) stmt.bindText(languageIndex, book->language);
+			// todo: proper handle series/folder change
+			//if (folderIndex >= 0) stmt.bindText(folderIndex, book->folder);
+			//if (seriesIndex >= 0) stmt.bindText(seriesIndex, book->series);
+			// TODO: handle authors change
+			if (stmt.step() == DB_DONE) {
+
+				if (authorsChanged) {
+					// TODO: update authors
+				}
+			}
+			return true;
+		}
+	}
+	return true;
+}
+
+BookDBBook * BookDBBookCache::get(lInt64 key) {
+	Item ** p = &head;
+	for (; *p; p = &((*p)->next)) {
+		if ((*p)->book->id == key) {
+			// move to head
+			Item * item = *p;
+			*p = (*p)->next;
+			item->next = head;
+			head = item;
+			return item->book;
+		}
+	}
+	return NULL;
+}
+
+BookDBBook * BookDBBookCache::get(const DBString & path) {
+	Item ** p = &head;
+	for (; *p; p = &((*p)->next)) {
+		if ((*p)->book->pathname == path) {
+			// move to head
+			Item * item = *p;
+			*p = (*p)->next;
+			item->next = head;
+			head = item;
+			return item->book;
+		}
+	}
+	return NULL;
+}
+
+void BookDBBookCache::put(BookDBBook * book) {
+	Item * item = new Item();
+	item->book = book;
+	item->next = head;
+	head = item;
+}
+
+void BookDBBookCache::clear() {
+	while (head) {
+		Item * p = head->next;
+		delete head->book;
+		delete head;
+		head = p;
+	}
+}
 
 BookDBAuthor * BookDBAuthorCache::get(lInt64 key) {
 	return _byId.get(key);
