@@ -12,6 +12,7 @@
 #include "lvhashtable.h"
 #include "lvptrvec.h"
 #include "lvref.h"
+#include "lvstring.h"
 
 
 class BookDBEntity {
@@ -334,6 +335,8 @@ class CRBookDB {
 	BookDBFolderCache _folderCache;
 	BookDBBookCache _bookCache;
 	BookDBBook * loadBookToCache(lInt64 id);
+	BookDBBook * loadBookToCache(const DBString & path);
+	BookDBBook * loadBookToCache(SQLiteStatement & stmt);
 	bool updateBook(BookDBBook * book, BookDBBook * fromCache);
 	bool insertBook(BookDBBook * book);
 public:
@@ -352,7 +355,11 @@ public:
 	bool saveFolder(BookDBFolder * folder);
 	bool saveAuthor(BookDBAuthor * author);
 	bool saveBook(BookDBBook * book);
+
+	bool saveBooks(LVPtrVector<BookDBBook> & books);
+	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
 };
 
+extern CRBookDB * bookDB;
 
 #endif /* CR3DB_H_ */

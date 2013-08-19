@@ -8,6 +8,8 @@
 #include "cr3db.h"
 #include <lvstring.h>
 
+CRBookDB * bookDB = NULL;
+
 
 #define DB_VERSION 21
 
@@ -327,13 +329,8 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 	return !err;
 }
 
-BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
-	SQLiteStatement stmt(&_db);
-	bool err = false;
-	stmt.prepare("SELECT id, pathname, folder_fk, filename, arcname, title, series_fk, series_number, format, "
-			"filesize, arcsize, create_time, last_access_time, flags, language"
-			" FROM book WHERE id = ?;");
-	stmt.bindInt64(1, id);
+
+BookDBBook * CRBookDB::loadBookToCache(SQLiteStatement & stmt) {
 	if (stmt.step() == DB_ROW) {
 		// TODO: use reference from cache, instead of clone
 		BookDBBook * item = new BookDBBook();
@@ -355,7 +352,7 @@ BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
 		item->folder = _folderCache.getClone(folderId);
 		item->series = _seriesCache.getClone(seriesId);
 		stmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?");
-		stmt.bindInt64(1, id);
+		stmt.bindInt64(1, item->id);
 		while (stmt.step() == DB_ROW) {
 			lInt64 authorId = stmt.getInt64(0);
 			BookDBAuthor * author = _authorCache.getClone(authorId);
@@ -366,6 +363,28 @@ BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
 		return item;
 	}
 	return NULL;
+}
+
+#define BOOK_TABLE_ALL_FIELDS \
+				"id, pathname, folder_fk, filename, " \
+				"arcname, title, series_fk, series_number, format, " \
+				"filesize, arcsize, create_time, last_access_time, flags, language"
+BookDBBook * CRBookDB::loadBookToCache(const DBString & path) {
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
+			" FROM book WHERE pathname = ?;");
+	stmt.bindText(1, path);
+	return loadBookToCache(stmt);
+}
+
+BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
+	SQLiteStatement stmt(&_db);
+	bool err = false;
+	stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
+			" FROM book WHERE id = ?;");
+	stmt.bindInt64(1, id);
+	return loadBookToCache(stmt);
 }
 
 static void appendUpdateField(lString8 & buf, const char * paramName, int & fieldIndex, int & index) {
@@ -582,7 +601,39 @@ bool CRBookDB::saveBook(BookDBBook * book) {
 			return updateBook(book, fromCache);
 		}
 	}
+	BookDBBook * fromCache = _bookCache.get(book->pathname);
+	if (fromCache) {
+		*book = *fromCache;
+		return true;
+	}
 	return insertBook(book);
+}
+
+bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
+	bool res = true;
+	for (int i = 0; i<books.length(); i++) {
+		res = saveBook(books[i]) && res;
+	}
+	return res;
+}
+
+bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {
+	for (int i = 0; i<pathnames.length(); i++) {
+		BookDBBook * cached = _bookCache.get(pathnames[i].c_str());
+		if (cached)
+			loaded.add(cached->clone());
+		else {
+			// not found in cache
+			cached = loadBookToCache(pathnames[i].c_str());
+			if (cached)
+				loaded.add(cached->clone());
+			else {
+				// not found
+				notFound.add(pathnames[i]);
+			}
+		}
+	}
+	return true;
 }
 
 BookDBBook * BookDBBookCache::get(lInt64 key) {
