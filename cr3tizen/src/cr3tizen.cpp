@@ -12,6 +12,7 @@
 #include "gldrawbuf.h"
 #include "crui.h"
 #include "cr3db.h"
+#include "fileinfo.h"
 #include <lvhashtable.h>
 #include <sys/time.h>
 
@@ -93,6 +94,10 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	bookDB->saveFolder(new BookDBFolder("folder2"));
 	bookDB->saveSeries(new BookDBSeries("series name"));
 	bookDB->saveAuthor(new BookDBAuthor("Basil Pupkin"));
+
+	lString8 dir("/mnt/ums/Downloads");
+	CRDirCacheItem cachedir(dir, false);
+	cachedir.scan();
 
 
 	currentTheme = new CRUITheme(lString8("BLACK"));

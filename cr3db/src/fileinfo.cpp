@@ -208,10 +208,15 @@ static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
 }
 
 bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
+
+
     if ( DetectEpubFormat( stream ) ) {
         CRLog::trace("GetBookProperties() : epub format detected");
     	return GetEPUBBookProperties(stream, props);
     }
+
+    CRLog::trace("GetBookProperties() : trying to parse as FB2");
+
     // read document
 #if COMPACT_DOM==1
     ldomDocument doc(stream, 0);
@@ -247,10 +252,22 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
 	return true;
 }
 
-bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
+
+bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries);
+
+bool CRDirCacheItem::scan() {
+	CRLog::trace("Scanning directory %s", getPathName().c_str());
+	bool res = LVListDirectory(getPathName(), _entries);
+	setParsed(true);
+	return res;
+}
+
+bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 	LVContainerRef dir = LVOpenDirectory(Utf8ToUnicode(path).c_str(), NULL);
-	if (!dir)
+	if (!dir) {
+		CRLog::error("Failed to list directory %s", path.c_str());
 		return false;
+	}
 	lString8Collection forLoad;
 	lString8Collection forParse;
 	for (int i = 0; i < dir->GetObjectCount(); i++) {
@@ -261,18 +278,25 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			// usual directory
 			CRDirItem * subdir = new CRDirItem(pathName8, false);
 			entries.add(subdir);
+			CRLog::trace("subdir: %s", pathName8.c_str());
 		} else {
 			LVStreamRef stream = dir->OpenStream(item->GetName(), LVOM_READ);
 			if (!stream.isNull()) {
 				LVContainerRef arc = LVOpenArchieve(stream);
 				if (!arc.isNull()) {
+					CRLog::trace("archive: %s", pathName8.c_str());
 					int knownFiles = 0;
 					lString8 foundItem;
 					// is archive
-					for (int i = 0; i < dir->GetObjectCount(); i++) {
-						const LVContainerItemInfo * item = dir->GetObjectInfo(i);
+					for (int i = 0; i < arc->GetObjectCount(); i++) {
+						const LVContainerItemInfo * item = arc->GetObjectInfo(i);
+						if (item->IsContainer())
+							continue;
 						lString16 arcItem = item->GetName();
-						int fmt = LVDocFormatFromExtension(arcItem);
+						CRLog::trace("arc item: %s", LCSTR(arcItem));
+						lString16 lower = arcItem;
+						lower.lowercase();
+						int fmt = LVDocFormatFromExtension(lower);
 						if (fmt) {
 							knownFiles++;
 							if (knownFiles == 1) {
@@ -287,10 +311,12 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 						CRFileItem * book = new CRFileItem(foundItem, true);
 						entries.add(book);
 						forLoad.add(foundItem);
+						CRLog::trace("single archive item: %s", foundItem.c_str());
 					} else if (knownFiles > 1) {
 						// several known files in archive
 						CRDirItem * subdir = new CRDirItem(pathName8, true);
 						entries.add(subdir);
+						CRLog::trace("%d archive items, treat as directory", knownFiles);
 					}
 					continue;
 				}
@@ -302,10 +328,12 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			CRFileItem * book = new CRFileItem(pathName8, false);
 			entries.add(book);
 			forLoad.add(pathName8);
+			CRLog::trace("normal file %s of type %d", pathName8.c_str(), fmt);
 		}
 	}
 	LVPtrVector<BookDBBook> loaded;
 	LVPtrVector<BookDBBook> forSave;
+	CRLog::trace("%d entries for load", forLoad.length());
 	bookDB->loadBooks(forLoad, loaded, forParse);
 	for (int i = 0; i<loaded.length(); i++) {
 		lString8 fn = lString8(loaded[i]->pathname.c_str());
@@ -315,25 +343,33 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			entries[found]->setParsed(true);
 		}
 	}
+	CRLog::trace("%d entries for parse", forParse.length());
 	for (int i = 0; i<forParse.length(); i++) {
 		lString8 pathName = forParse[i];
+		CRLog::trace("going to parse %s", pathName.c_str());
 		lString8 arcname;
 		lString8 fname;
 		lInt64 createTime = 0;
 		LVContainerRef arc;
 		LVStreamRef stream;
+		LVStreamRef arcstream;
 		if (splitArcName(pathName, arcname, fname)) {
+			CRLog::trace("item is from archive");
 		    struct stat fs;
 		    if (!stat(arcname.c_str(), &fs )) {
 		        createTime = fs.st_mtime * (lInt64)1000;
 		    }
-			stream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
-			arc = LVOpenArchieve(stream);
-			if (!arc.isNull()) {
-				stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
-			} else {
-				stream = NULL;
-			}
+		    arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+		    if (!arcstream.isNull()) {
+				CRLog::trace("trying to open archive %s", arcname.c_str());
+				arc = LVOpenArchieve(arcstream);
+				if (!arc.isNull()) {
+					CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
+					stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+				} else {
+					CRLog::error("Failed to open archive %s", arcname.c_str());
+				}
+		    }
 		} else {
 			fname = UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(pathName)));
 			stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
@@ -344,6 +380,7 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 		}
 		if (!stream.isNull()) {
 			// read properties
+			CRLog::trace("parsing book properties for %s", pathName.length());
 			BookDBBook * book = new BookDBBook();
 			book->pathname = pathName.c_str();
 			if (arcname.length()) {
@@ -359,8 +396,11 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 				// cannot parse properties
 				delete book;
 			}
+		} else {
+			CRLog::error("Failed to open item %s", pathName.c_str());
 		}
 	}
+	CRLog::trace("%d entries for save", forSave.length());
 	if (forSave.length()) {
 		bookDB->saveBooks(forSave);
 		for (int i = 0; i < forSave.length(); i++) {
@@ -372,5 +412,6 @@ bool LVListDirectory(lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			}
 		}
 	}
+	CRLog::trace("done scanning of directory");
 	return true;
 }
