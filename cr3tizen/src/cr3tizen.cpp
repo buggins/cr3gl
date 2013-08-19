@@ -53,8 +53,6 @@ void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
 }
 
-CRBookDB * bookDB = NULL;
-
 void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
