@@ -2,6 +2,8 @@
 <projectDescription>
 	<name>cr3gp</name>
 	<comment></comment>
+	<projects>
+	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
@@ -76,6 +78,11 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.tizen.nativecpp.apichecker.core.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
@@ -83,5 +90,6 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>com.qnx.tools.ide.bbt.core.bbtnature</nature>
 		<nature>org.eclipse.cdt.core.ccnature</nature>
+		<nature>org.tizen.nativecpp.apichecker.core.tizenCppNature</nature>
 	</natures>
 </projectDescription>

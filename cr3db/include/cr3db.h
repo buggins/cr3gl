@@ -29,6 +29,7 @@ public:
 	lInt64 aliasedAuthorId;
 	BookDBAuthor() : aliasedAuthorId(0) {}
 	BookDBAuthor(const char * _name) : name(_name), aliasedAuthorId(0) {}
+	BookDBAuthor(const char * _name, const char * _fileAs) : name(_name), fileAs(_fileAs), aliasedAuthorId(0) {}
 	BookDBAuthor(const BookDBAuthor & v) {
 		id = v.id;
 		name = v.name;

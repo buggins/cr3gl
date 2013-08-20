@@ -159,6 +159,7 @@ static bool GetBookProperties(const char *name,  BookProperties * pBookProps)
 }
 #endif
 
+#define CONVERT_STR(x) (x.trim().length() ? LCSTR(x.trim()) : NULL)
 
 static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
 {
@@ -182,31 +183,91 @@ static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
     if ( !doc )
         return false;
 
-    lString16 author = doc->textFromXPath( lString16("package/metadata/creator")).trim();
-    lString16 title = doc->textFromXPath( lString16("package/metadata/title")).trim();
-    lString16 language = doc->textFromXPath( lString16("package/metadata/language")).trim();
-
-    //pBookProps->author = author;
-    pBookProps->title = UnicodeToUtf8(title).c_str();
-    pBookProps->language = UnicodeToUtf8(language).c_str();
-
-    for ( int i=1; i<20; i++ ) {
-        ldomNode * item = doc->nodeFromXPath( lString16("package/metadata/meta[") << fmt::decimal(i) << "]" );
-        if ( !item )
-            break;
-        lString16 name = item->getAttributeValue("name");
-        lString16 content = item->getAttributeValue("content");
-        if (name == "calibre:series")
-        	pBookProps->series = new BookDBSeries(UnicodeToUtf8(content.trim()).c_str());
-        else if (name == "calibre:series_index")
-        	pBookProps->seriesNumber = content.trim().atoi();
+    lString16 fileAs;
+    lString16 author;
+    ldomXPointer metadata = doc->createXPointer(lString16("package/metadata"));
+    if (!metadata.isNull()) {
+    	ldomNode * elem = metadata.getNode();
+    	lString16 creatorId;
+    	for (int i = 0; i<elem->getChildCount(); i++) {
+    		ldomNode * child = elem->getChildNode(i);
+    		lString16 tag = child->getNodeName();
+    		lString16 id = child->getAttributeValue("id");
+			lString16 text = child->getText();
+    		if (tag == "creator") {
+    			if (!author.empty())
+    				pBookProps->authors.add(new BookDBAuthor(CONVERT_STR(author), CONVERT_STR(fileAs)));
+    			author = text;
+    			fileAs.clear();
+    			creatorId = id;
+    		} else if (tag == "meta") {
+        		lString16 property = child->getAttributeValue("property");
+        		lString16 refines = child->getAttributeValue("refines");
+    	        lString16 name = child->getAttributeValue("name");
+    	        lString16 content = child->getAttributeValue("content");
+    			if (property == "file-as" && refines == lString16(L"#") + creatorId)
+    				fileAs = child->getText();
+    			else if (name == "calibre:series")
+    	        	pBookProps->series = new BookDBSeries(CONVERT_STR(content));
+    	        else if (name == "calibre:series_index")
+    	        	pBookProps->seriesNumber = content.trim().atoi();
+    		} else if (tag == "title") {
+    			pBookProps->title = CONVERT_STR(text);
+    		} else if (tag == "language") {
+    			pBookProps->language = CONVERT_STR(text);
+    		}
+    	}
     }
+	if (!author.empty())
+		pBookProps->authors.add(new BookDBAuthor(CONVERT_STR(author), CONVERT_STR(fileAs)));
 
     delete doc;
 
     return true;
 }
 
+void extractFB2Authors( ldomDocument * doc, lString16 delimiter, bool shortMiddleName, BookDBBook * props )
+{
+    if ( delimiter.empty() )
+        delimiter = ", ";
+    lString16 authors;
+    for ( int i=0; i<16; i++) {
+        lString16 path = cs16("/FictionBook/description/title-info/author[") + fmt::decimal(i+1) + "]";
+        ldomXPointer pauthor = doc->createXPointer(path);
+        if ( !pauthor ) {
+            //CRLog::trace( "xpath not found: %s", UnicodeToUtf8(path).c_str() );
+            break;
+        }
+        lString16 firstName = pauthor.relative( L"/first-name" ).getText().trim();
+        lString16 lastName = pauthor.relative( L"/last-name" ).getText().trim();
+        lString16 middleName = pauthor.relative( L"/middle-name" ).getText().trim();
+        lString16 author = firstName;
+        lString16 fileAs = lastName;
+        if ( !author.empty() )
+            author += " ";
+        if ( !middleName.empty() )
+            author += shortMiddleName ? lString16(middleName, 0, 1) + "." : middleName;
+        if ( !lastName.empty() && !author.empty() )
+            author += " ";
+        author += lastName;
+        if (!fileAs.empty()) {
+        	if (!firstName.empty() || !middleName.empty())
+        		fileAs.append(", ");
+        	if (!firstName.empty()) {
+        		fileAs.append(firstName);
+        		if (!middleName.empty())
+        			fileAs.append(" ");
+        	}
+            if ( !middleName.empty() )
+                fileAs += shortMiddleName ? lString16(middleName, 0, 1) + "." : middleName;
+        }
+        if (!author.empty()) {
+        	props->authors.add(new BookDBAuthor(LCSTR(author), LCSTR(fileAs)));
+        }
+    }
+}
+
+// parse FB2 and EPUB properties
 bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
 
 
@@ -231,6 +292,7 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
     LVXMLParser parser( stream, &writer );
     CRLog::trace( "checking format..." );
     if ( !parser.CheckFormat() ) {
+    	// not FB2
         return false;
     }
     CRLog::trace( "parsing..." );
@@ -238,13 +300,14 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
         return false;
     }
     CRLog::trace( "parsed" );
-    lString16 authors = extractDocAuthors( &doc, lString16("|"), false );
+    extractFB2Authors(&doc, lString16("|"), false, props);
     lString16 title = extractDocTitle( &doc );
     lString16 language = extractDocLanguage( &doc );
     int seriesNumber = 0;
     lString16 series = extractDocSeries(&doc, &seriesNumber);
     props->seriesNumber = seriesNumber;
-    props->title = LCSTR(title);
+    if (title.length())
+    	props->title = LCSTR(title);
     //props->author = LCSTR(authors);
     if (series.length())
     	props->series = new BookDBSeries(LCSTR(series));
@@ -253,19 +316,30 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
 }
 
 
-bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries);
+bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries);
 
 bool CRDirCacheItem::scan() {
 	CRLog::trace("Scanning directory %s", getPathName().c_str());
-	bool res = LVListDirectory(getPathName(), _entries);
+	bool res = LVListDirectory(getPathName(), isArchive(), _entries);
 	setParsed(true);
 	return res;
 }
 
-bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries) {
-	LVContainerRef dir = LVOpenDirectory(Utf8ToUnicode(path).c_str(), NULL);
+bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries) {
+	LVContainerRef dir;
+	LVStreamRef arcStream;
+	if (isArchive) {
+		arcStream = LVOpenFileStream(path.c_str(), LVOM_READ);
+		if (arcStream.isNull()) {
+			CRLog::error("LVListDirectory cannot open base archive stream");
+			return false;
+		}
+		dir = LVOpenArchieve(arcStream);
+	} else {
+		dir = LVOpenDirectory(Utf8ToUnicode(path).c_str());
+	}
 	if (!dir) {
-		CRLog::error("Failed to list directory %s", path.c_str());
+		CRLog::error("LVListDirectory - Failed to list %s %s", isArchive ? "archive" : "directory", path.c_str());
 		return false;
 	}
 	lString8Collection forLoad;
@@ -392,6 +466,7 @@ bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 			}
 			book->filename = fname.c_str();
 			book->filesize = (int)stream->GetSize();
+			book->folder = new BookDBFolder(path.c_str());
 			if (LVParseBookProperties(stream, book)) {
 				forSave.add(book);
 			} else {
