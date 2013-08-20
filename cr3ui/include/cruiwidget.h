@@ -35,6 +35,7 @@ protected:
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
 	lUInt32 _align;
+	int _layoutWeight;
 	CRUIOnTouchEventListener * _onTouchListener;
 	CRUIOnClickListener * _onClickListener;
 	CRUIOnLongClickListener * _onLongClickListener;
@@ -85,7 +86,9 @@ public:
 
 	int getLayoutWidth() { return _layoutWidth; }
 	int getLayoutHeight() { return _layoutHeight; }
+	int getLayoutWeight() { return _layoutWeight; }
 	CRUIWidget * setLayoutParams(int width, int height) { _layoutWidth = width; _layoutHeight = height; requestLayout(); return this; }
+	CRUIWidget * setLayoutWeight(int weight) { _layoutWeight = weight; requestLayout(); return this; }
 
 	CRUIWidget * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; requestLayout(); return this; }
 	CRUIWidget * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; requestLayout(); return this; }
@@ -108,6 +111,7 @@ public:
 	virtual int getMinWidth();
 
 	CRUIWidget * setStyle(lString8 styleId) { _styleId = styleId; return this; }
+	CRUIWidget * setStyle(const char * styleId) { _styleId = lString8(styleId); return this; }
 	CRUIStyle * getStyle(bool forState = false);
 
 	virtual CRUIWidget * setText(lString16 text) { return this; }

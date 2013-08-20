@@ -32,6 +32,7 @@ protected:
 	CRUIImageRef _image;
 public:
 	CRUIImageWidget(CRUIImageRef image) : _image(image) { }
+	virtual void setImage(CRUIImageRef image) { _image = image; requestLayout(); }
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle

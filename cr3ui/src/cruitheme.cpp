@@ -66,7 +66,7 @@ CRUIStyle * CRUITheme::setFontForSize(lUInt8 size, LVFontRef font) {
 
 void CRUITheme::registerStyle(CRUIStyle * style)
 {
-	if (!style->styleId().empty() && _map.get(style->styleId()) == NULL)
+	if (!style->styleId().empty() || _map.get(style->styleId()) == NULL)
 		_map.set(style->styleId(), style);
 }
 
@@ -103,6 +103,8 @@ CRUIStyle * CRUIStyle::addSubstyle(lString8 id, lUInt8 stateMask, lUInt8 stateVa
 
 bool CRUIStyle::matchState(lUInt8 stateValue)
 {
+	if (!_stateValue)
+		return false;
 	return (_stateMask & stateValue) == (_stateMask & _stateValue);
 }
 

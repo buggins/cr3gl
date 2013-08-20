@@ -19,7 +19,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_layoutRequested(true),
 	_drawRequested(true),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
-	_align(0),
+	_align(0), _layoutWeight(1),
 	_onTouchListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
 {
 

@@ -22,7 +22,7 @@ int CRUIDeviceInfo::pixelsToMm(int pixels){
 }
 
 int CRUIDeviceInfo::mmToPixels(int mm) {
-	return 25 * mm / dpi;
+	return mm * dpi / 25;
 }
 
 void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {

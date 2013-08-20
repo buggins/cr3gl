@@ -136,7 +136,7 @@ CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
-	//CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	switch (action) {
 	case ACTION_DOWN:
 		setState(STATE_PRESSED, STATE_PRESSED);

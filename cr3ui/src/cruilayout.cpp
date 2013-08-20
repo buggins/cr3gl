@@ -15,16 +15,33 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 	lvRect margin = getMargin();
 	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
 	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
+	int totalWeight = 0;
 	if (_isVertical) {
 		int biggestw = 0;
 		int totalh = 0;
-
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			child->measure(maxw, maxh);
-			totalh += child->getMeasuredHeight();
-			if (biggestw < child->getMeasuredWidth())
-				biggestw = child->getMeasuredWidth();
+			if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
+				totalWeight += child->getLayoutWeight();
+			} else {
+				child->measure(maxw, maxh);
+				totalh += child->getMeasuredHeight();
+				if (biggestw < child->getMeasuredWidth())
+					biggestw = child->getMeasuredWidth();
+			}
+		}
+		int hleft = maxh - totalh;
+		if (totalWeight < 1)
+			totalWeight = 1;
+		for (int i=0; i<getChildCount(); i++) {
+			CRUIWidget * child = getChild(i);
+			if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
+				int h = hleft * child->getLayoutWeight() / totalWeight;
+				child->measure(maxw, h);
+				totalh += child->getMeasuredHeight();
+				if (biggestw < child->getMeasuredWidth())
+					biggestw = child->getMeasuredWidth();
+			}
 		}
 		if (biggestw > maxw)
 			biggestw = maxw;
@@ -37,10 +54,27 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			child->measure(maxw, maxh);
-			totalw += child->getMeasuredWidth();
-			if (biggesth < child->getMeasuredHeight())
-				biggesth = child->getMeasuredHeight();
+			if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
+				totalWeight += child->getLayoutWeight();
+			} else {
+				child->measure(maxw, maxh);
+				totalw += child->getMeasuredWidth();
+				if (biggesth < child->getMeasuredHeight())
+					biggesth = child->getMeasuredHeight();
+			}
+		}
+		int wleft = maxw - totalw;
+		if (totalWeight < 1)
+			totalWeight = 1;
+		for (int i=0; i<getChildCount(); i++) {
+			CRUIWidget * child = getChild(i);
+			if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
+				int w = wleft * child->getLayoutWeight() / totalWeight;
+				child->measure(w, maxh);
+				totalw += child->getMeasuredWidth();
+				if (biggesth < child->getMeasuredHeight())
+					biggesth = child->getMeasuredHeight();
+			}
 		}
 		if (biggesth > maxh)
 			biggesth = maxh;

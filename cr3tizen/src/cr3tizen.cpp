@@ -103,11 +103,11 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 
 	currentTheme = new CRUITheme(lString8("BLACK"));
 	currentTheme->setTextColor(0x000000);
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(20, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(26, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(34, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(44, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(12, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(14, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(22, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(28, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 
 	currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
 	CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
@@ -119,10 +119,18 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
 	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
 
+	buttonStyle = currentTheme->addSubstyle("BUTTON_NOBACKGROUND");
+	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground(0xC0C0C080);
+	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0xE0C0C080);
+	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
 	CRUIStyle * listItemStyle = currentTheme->addSubstyle("LIST_ITEM");
 	listItemStyle->setMargin(0)->setPadding(7);
 	listItemStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0x40C0C080);
 	listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
+	CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
+	homeStyle->setBackground("tx_wood_v3.jpg");
 }
 
 

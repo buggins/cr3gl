@@ -524,6 +524,7 @@ public:
     	GLfloat colors[6 * 4];
     	LVGLFillColor(color, colors, 6);
     	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    	glEnable(GL_BLEND);
     	glEnableClientState(GL_VERTEX_ARRAY);
     	glEnableClientState(GL_COLOR_ARRAY);
     	glVertexPointer(3, GL_FLOAT, 0, vertices);
@@ -533,6 +534,7 @@ public:
 
     	glDisableClientState(GL_COLOR_ARRAY);
     	glDisableClientState(GL_VERTEX_ARRAY);
+    	glDisable(GL_BLEND);
     }
 };
 

@@ -23,14 +23,19 @@ public:
 	CRUINowReadingWidget() : CRUILinearLayout(false) {
 		_coverImage = new CRUISolidFillImage(0xE0E0A0);
 		_cover = new CRUIImageWidget(_coverImage);
-		_cover->setMinWidth(deviceInfo.shortSide / 6);
-		_cover->setMinHeight(deviceInfo.longSide / 6);
+		int coverSize = deviceInfo.shortSide / 4;
+		_cover->setMinWidth(coverSize);
+		_cover->setMinHeight(coverSize * 4 / 3);
+		_cover->setBackground(0xC0808000);
 		addChild(_cover);
 		_layout = new CRUILinearLayout(true);
 		addChild(_layout);
 		_captionLayout = new CRUILinearLayout(false);
-		_menuButton = new CRUIButton(lString16::empty_str, "cancel");
+		_menuButton = new CRUIButton(lString16::empty_str, "moreicon"); //moreicon
+		_menuButton->setStyle("BUTTON_NOBACKGROUND");
 		_caption = new CRUITextWidget(lString16(L"Now reading"));
+		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
+		_caption->setBackground(0xE0404040);
 		_captionLayout->addChild(_caption);
 		_captionLayout->addChild(_menuButton);
 		_layout->addChild(_captionLayout);
@@ -40,25 +45,58 @@ public:
 		_layout->addChild(_title);
 		_layout->addChild(_authors);
 		_layout->addChild(_info);
+		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 	}
 };
 
 class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter {
 	CRUITextWidget * _caption;
 	CRUIListWidget * _list;
+	CRUILinearLayout * _itemWidget;
+	CRUIImageWidget * _itemImage;
+	CRUITextWidget * _textWidget;
 public:
 	CRUIHomeItemListWidget(lString16 caption) : CRUILinearLayout(true) {
 		_caption = new CRUITextWidget(caption);
+		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
+		_caption->setPadding(MM_TO_PX(1));
 		addChild(_caption);
 		_list = new CRUIListWidget(false, this);
+		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+		_list->setBackground(0xE0000000);
+		_caption->setPadding(MM_TO_PX(2));
 		addChild(_list);
+
+		_itemImage = new CRUIImageWidget(CRUIImageRef());
+		_itemImage->setAlign(CRUI::ALIGN_HCENTER | CRUI::ALIGN_TOP);
+		_itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
+
+		_textWidget = new CRUITextWidget(lString16());
+		_textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
+		_textWidget->setFont(currentTheme->getFontForSize(CRUI::FONT_SIZE_XSMALL));
+
+		_itemWidget = new CRUILinearLayout(true);
+		_itemWidget->addChild(_itemImage);
+		_itemWidget->addChild(_textWidget);
 	}
 
 	virtual int getItemCount(CRUIListWidget * list) {
-		return 0;
+		return 20;
+	}
+	virtual lString16 getItemText(int index) {
+		char s[100];
+		sprintf(s, "item%d", index);
+		return lString16(s);
+	}
+	virtual CRUIImageRef getItemIcon(int index) {
+		return resourceResolver->getIcon("cancel");
 	}
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
-		return NULL;
+		CRUIImageRef icon = getItemIcon(index);
+		lString16 text = getItemText(index);
+		_textWidget->setText(text);
+		_itemImage->setImage(icon);
+		return _itemWidget;
 	}
 };
 
@@ -71,14 +109,14 @@ public:
 
 class CRUILibraryWidget : public CRUIHomeItemListWidget {
 public:
-	CRUILibraryWidget() : CRUIHomeItemListWidget(lString16(L"Browse file system")) {
+	CRUILibraryWidget() : CRUIHomeItemListWidget(lString16(L"Library")) {
 
 	}
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIOnlineCatalogsWidget() : CRUIHomeItemListWidget(lString16(L"Browse file system")) {
+	CRUIOnlineCatalogsWidget() : CRUIHomeItemListWidget(lString16(L"Online Catalogs")) {
 
 	}
 };
@@ -107,7 +145,7 @@ CRUIHomeWidget::CRUIHomeWidget() {
 	addChild(_fileSystem);
 	addChild(_library);
 	addChild(_onlineCatalogsList);
-	setBackground(0x808080);
+	setStyle("HOME_WIDGET");
 }
 
 /// measure dimensions
