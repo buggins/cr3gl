@@ -354,18 +354,19 @@ bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 		LVStreamRef stream;
 		LVStreamRef arcstream;
 		if (splitArcName(pathName, arcname, fname)) {
-			CRLog::trace("item is from archive");
+			//CRLog::trace("item is from archive");
 		    struct stat fs;
 		    if (!stat(arcname.c_str(), &fs )) {
 		        createTime = fs.st_mtime * (lInt64)1000;
 		    }
 		    arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
 		    if (!arcstream.isNull()) {
-				CRLog::trace("trying to open archive %s", arcname.c_str());
+				//CRLog::trace("trying to open archive %s", arcname.c_str());
 				arc = LVOpenArchieve(arcstream);
 				if (!arc.isNull()) {
-					CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
+					//CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
 					stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+					//CRLog::error("returned from open stream");
 				} else {
 					CRLog::error("Failed to open archive %s", arcname.c_str());
 				}
@@ -379,8 +380,9 @@ bool LVListDirectory(const lString8 & path, LVPtrVector<CRDirEntry> & entries) {
 		    }
 		}
 		if (!stream.isNull()) {
+			//CRLog::trace("processing stream");
 			// read properties
-			CRLog::trace("parsing book properties for %s", pathName.length());
+			CRLog::trace("parsing book properties for %s", pathName.c_str());
 			BookDBBook * book = new BookDBBook();
 			book->pathname = pathName.c_str();
 			if (arcname.length()) {
