@@ -71,10 +71,12 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	setClipRect(buf, rc);
 	applyPadding(rc);
 	if (!_image.isNull()) {
+		//CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), _image->originalWidth(), _image->originalHeight());
 		applyAlign(rc, _image->originalWidth(), _image->originalHeight());
 		// don't scale
 		rc.right = rc.left + _image->originalWidth();
 		rc.bottom = rc.top + _image->originalHeight();
+		//CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
 		// draw
 		_image->draw(buf, rc);
 	}
@@ -97,7 +99,10 @@ void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	_styleId = "BUTTON";
 	if (!image.isNull()) {
 		_icon = new CRUIImageWidget(image);
-		if (vertical)
+		if (text.empty()) {
+			_icon->setAlign(ALIGN_CENTER);
+			//_icon->setLayoutParams(FILL_PARENT, FILL_PARENT);
+		} else if (vertical)
 			_icon->setAlign(ALIGN_HCENTER | ALIGN_TOP);
 		else
 			_icon->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
@@ -105,7 +110,10 @@ void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	}
 	if (!text.empty()) {
 		_label = new CRUITextWidget(text);
-		if (vertical)
+		if (image.isNull()) {
+			_label->setAlign(ALIGN_CENTER);
+			//_label->setLayoutParams(FILL_PARENT, FILL_PARENT);
+		} else if (vertical)
 			_label->setAlign(ALIGN_TOP | ALIGN_HCENTER);
 		else
 			_label->setAlign(ALIGN_LEFT | ALIGN_VCENTER);

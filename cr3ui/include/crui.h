@@ -24,6 +24,8 @@ struct CRUIDeviceInfo {
 	int minListItemSize;
 	int pixelsToMm(int pixels);
 	int mmToPixels(int mm);
+	int pixelsToPt(int pixels);
+	int ptToPixels(int mm);
 	CRUIDeviceInfo();
 	void setScreenDimensions(int dx, int dy, int dpi);
 };
@@ -32,8 +34,12 @@ extern CRUIDeviceInfo deviceInfo;
 
 // convert pixels to millimeters
 inline int PX_TO_MM(int px) { return deviceInfo.pixelsToMm(px); }
+// convert pixels to millimeters
+inline int PX_TO_PT(int px) { return deviceInfo.pixelsToPt(px); }
 // convert millimeters to pixels
 inline int MM_TO_PX(int mm) { return deviceInfo.mmToPixels(mm); }
+// convert millimeters to pixels
+inline int PT_TO_PX(int mm) { return deviceInfo.ptToPixels(mm); }
 // minimum pixel size of touch UI element
 #define MIN_ITEM_PX (deviceInfo.minListItemSize)
 

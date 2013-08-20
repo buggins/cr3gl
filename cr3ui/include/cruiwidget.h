@@ -117,12 +117,14 @@ public:
 	virtual CRUIWidget * setText(lString16 text) { return this; }
 
 	virtual CRUIWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
+	virtual CRUIWidget * setFontSize(lUInt8 sz) { _fontSize = sz; requestLayout(); return this; }
 	virtual CRUIWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
 	virtual CRUIWidget * setBackground(CRUIImageRef background) { _background = background; requestLayout(); return this; }
 	virtual CRUIWidget * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); requestLayout(); return this; }
 	virtual CRUIImageRef getBackground();
 	virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();
+	virtual lUInt8 getFontSize() { return _fontSize; }
 
 
 

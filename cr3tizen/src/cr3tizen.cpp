@@ -58,6 +58,16 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
+
+	Tizen::Graphics::Dimension phys = Tizen::Graphics::CoordinateSystem::GetPhysicalResolution();
+	Tizen::Graphics::Dimension logical = Tizen::Graphics::CoordinateSystem::GetLogicalResolution();
+	// support
+	int dpi = 316;
+	if (phys.width <= 480)
+		dpi = 207;
+	CRLog::info("Logical resolution: %dx%d  physical resolution %dx%d using dpi=%d", phys.width, phys.height, logical.width, logical.height, dpi);
+	deviceInfo.setScreenDimensions(phys.width, phys.height, dpi);
+
 	InitFontManager(lString8());
 	LVInitGLFontManager(fontMan);
 	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansMeduim.ttf"));
@@ -103,11 +113,11 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 
 	currentTheme = new CRUITheme(lString8("BLACK"));
 	currentTheme->setTextColor(0x000000);
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(12, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(14, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(16, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(22, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(28, 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 
 	currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
 	CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");

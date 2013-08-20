@@ -212,8 +212,8 @@ GlRendererTemplate::Draw(void)
 	_widget->invalidate();
 	if (needLayout) {
 		//CRLog::trace("need layout");
-		_widget->measure(430, 700);
-		_widget->layout(50, 50, 50 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
+		_widget->measure(__controlWidth - 50, __controlHeight - 80);
+		_widget->layout(25, 50, 25 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
 	}
 	if (needDraw) {
 		//CRLog::trace("need draw");

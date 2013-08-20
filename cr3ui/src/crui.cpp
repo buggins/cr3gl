@@ -25,6 +25,15 @@ int CRUIDeviceInfo::mmToPixels(int mm) {
 	return mm * dpi / 25;
 }
 
+// 1" == 72pt
+int CRUIDeviceInfo::pixelsToPt(int pixels) {
+	return 72 * pixels / dpi;
+}
+
+int CRUIDeviceInfo::ptToPixels(int pt) {
+	return pt * dpi / 72;
+}
+
 void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {
 	if (dx < dy) {
 		shortSide = dx;

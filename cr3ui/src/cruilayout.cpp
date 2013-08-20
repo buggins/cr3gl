@@ -99,7 +99,10 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
 			childRc.top = y;
-			childRc.bottom = y + child->getMeasuredHeight();
+			if (i < getChildCount() - 1)
+				childRc.bottom = y + child->getMeasuredHeight();
+			else
+				childRc.bottom = clientRc.bottom;
 			if (childRc.top > clientRc.bottom)
 				childRc.top = clientRc.bottom;
 			if (childRc.bottom > clientRc.bottom)
@@ -112,7 +115,10 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
 			childRc.left = x;
-			childRc.right = x + child->getMeasuredWidth();
+			if (i < getChildCount() - 1)
+				childRc.right = x + child->getMeasuredWidth();
+			else
+				childRc.right = clientRc.right;
 			if (childRc.left > clientRc.right)
 				childRc.left = clientRc.right;
 			if (childRc.right > clientRc.right)
