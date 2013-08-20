@@ -70,95 +70,6 @@ static bool splitArcName(const lString8 & pathname, lString8 & arcname, lString8
 	return false;
 }
 
-#if 0
-static bool GetBookProperties(const char *name,  BookProperties * pBookProps)
-{
-    CRLog::trace("GetBookProperties( %s )", name);
-
-    // check archieve
-    lString16 arcPathName;
-    lString16 arcItemPathName;
-    bool isArchiveFile = LVSplitArcName( lString16(name), arcPathName, arcItemPathName );
-
-    // open stream
-    LVStreamRef stream = LVOpenFileStream( (isArchiveFile ? arcPathName : Utf8ToUnicode(lString8(name))).c_str() , LVOM_READ);
-    if (!stream) {
-        CRLog::error("cannot open file %s", name);
-        return false;
-    }
-
-
-    if ( DetectEpubFormat( stream ) ) {
-        CRLog::trace("GetBookProperties() : epub format detected");
-    	return GetEPUBBookProperties( name, stream, pBookProps );
-    }
-
-    time_t t = (time_t)time(0);
-
-    if ( isArchiveFile ) {
-        int arcsize = (int)stream->GetSize();
-        LVContainerRef container = LVOpenArchieve(stream);
-        if ( container.isNull() ) {
-            CRLog::error( "Cannot read archive contents from %s", LCSTR(arcPathName) );
-            return false;
-        }
-        stream = container->OpenStream(arcItemPathName.c_str(), LVOM_READ);
-        if ( stream.isNull() ) {
-            CRLog::error( "Cannot open archive file item stream %s", LCSTR(lString16(name)) );
-            return false;
-        }
-    }
-    struct stat fs;
-    if ( !stat( name, &fs ) ) {
-        t = fs.st_mtime;
-    }
-
-    // read document
-#if COMPACT_DOM==1
-    ldomDocument doc(stream, 0);
-#else
-    ldomDocument doc;
-#endif
-    ldomDocumentWriter writer(&doc, true);
-    doc.setNodeTypes( fb2_elem_table );
-    doc.setAttributeTypes( fb2_attr_table );
-    doc.setNameSpaceTypes( fb2_ns_table );
-    LVXMLParser parser( stream, &writer );
-    CRLog::trace( "checking format..." );
-    if ( !parser.CheckFormat() ) {
-        return false;
-    }
-    CRLog::trace( "parsing..." );
-    if ( !parser.Parse() ) {
-        return false;
-    }
-    CRLog::trace( "parsed" );
-    #if 0
-        char ofname[512];
-        sprintf(ofname, "%s.xml", name);
-        CRLog::trace("    writing to file %s", ofname);
-        LVStreamRef out = LVOpenFileStream(ofname, LVOM_WRITE);
-        doc.saveToStream(out, "utf16");
-    #endif
-    lString16 authors = extractDocAuthors( &doc, lString16("|"), false );
-    lString16 title = extractDocTitle( &doc );
-    lString16 language = extractDocLanguage( &doc );
-    lString16 series = extractDocSeries( &doc, &pBookProps->seriesNumber );
-#if SERIES_IN_AUTHORS==1
-    if ( !series.empty() )
-        authors << "    " << series;
-#endif
-    pBookProps->title = title;
-    pBookProps->author = authors;
-    pBookProps->series = series;
-    pBookProps->filesize = (long)stream->GetSize();
-    pBookProps->filename = lString16(name);
-    pBookProps->filedate = getDateTimeString( t );
-    pBookProps->language = language;
-    return true;
-}
-#endif
-
 #define CONVERT_STR(x) (x.trim().length() ? LCSTR(x.trim()) : NULL)
 
 static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
@@ -222,6 +133,8 @@ static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
 		pBookProps->authors.add(new BookDBAuthor(CONVERT_STR(author), CONVERT_STR(fileAs)));
 
     delete doc;
+
+    pBookProps->format = EPUB;
 
     return true;
 }
@@ -308,6 +221,7 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
     if (series.length())
     	props->series = new BookDBSeries(LCSTR(series));
     props->language = CONVERT_STR(language);
+    props->format = FB2;
 	return true;
 }
 
@@ -544,7 +458,7 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	CRLog::trace("%d entries for parse", forParse.length());
 	for (int i = 0; i<forParse.length(); i++) {
 		lString8 pathName = forParse[i];
-		lString16 lower = pathName;
+		lString16 lower = Utf8ToUnicode(pathName);
 		lower.lowercase();
 		int fmt = LVDocFormatFromExtension(lower);
 		CRLog::trace("going to parse %s", pathName.c_str());
