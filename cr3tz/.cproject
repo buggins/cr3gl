@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.2110684426">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.2110684426" moduleId="org.eclipse.cdt.core.settings" name="Debug">
@@ -21,7 +19,13 @@
 					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.2110684426." name="/" resourcePath="">
 						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug.1496539250" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.17155735" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
-							<builder autoBuildTarget="all" buildPath="${workspace_loc:/CoolReader3/Debug}" enableAutoBuild="true" id="org.tizen.nativecpp.target.sbi.gnu.builder.1346364927" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecpp.target.sbi.gnu.builder"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/CoolReader3/Debug}" enableAutoBuild="true" id="org.tizen.nativecpp.target.sbi.gnu.builder.1346364927" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecpp.target.sbi.gnu.builder">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Debug"/>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Release"/>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Dynamic Analyzer"/>
+								</outputEntries>
+							</builder>
 							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.945936034" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver"/>
 							<tool command="clang++.exe" id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.681773136" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.689248031" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -43,18 +47,26 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.360140695" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/crengine/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/chmlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/antiword}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/sqlite}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3gl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3ui/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3db/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.259749823" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -73,6 +85,8 @@
 									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
 									<listOptionValue builtIn="false" value="_LINUX=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="DEBUG=1"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
 								</option>
 								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.1401634130" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
 							</tool>
@@ -83,7 +97,12 @@
 								<option id="sbi.gnu.c.compiler.option.1359438790" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
 									<listOptionValue builtIn="false" value="tizen-emulator-2.2.native_llvm31.i386.cpp.app"/>
 								</option>
-								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1281953373" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath"/>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1281953373" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.cpp.1791502728" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.cpp" valueType="stringList">
 									<listOptionValue builtIn="false" value="-target i386-tizen-linux-gnueabi -gcc-toolchain &quot;C:/tools/tizen-sdk/tools/smart-build-interface/../i386-linux-gnueabi-gcc-4.5/&quot; -ccc-gcc-name i386-linux-gnueabi-g++ -march=i386 -Wno-gnu"/>
 									<listOptionValue builtIn="false" value=" -fPIE"/>
@@ -91,13 +110,21 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.933805709" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/freetype/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libpng}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.1876830072" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
@@ -116,6 +143,8 @@
 									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
 									<listOptionValue builtIn="false" value="_LINUX=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
+									<listOptionValue builtIn="false" value="DEBUG=1"/>
+									<listOptionValue builtIn="false" value="TIZEN=1"/>
 								</option>
 								<inputType id="sbi.gnu.c.compiler.tizen.inputType.1197498447" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
 							</tool>
@@ -157,8 +186,9 @@
 									<listOptionValue builtIn="false" value="-lalut"/>
 									<listOptionValue builtIn="false" value="-lopenal"/>
 								</option>
-								<option id="gnu.cpp.link.option.paths.1959876826" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
+								<option id="gnu.cpp.link.option.paths.1959876826" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="gnu.cpp.link.option.libs.1792186981" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1605856800" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -166,7 +196,24 @@
 								</inputType>
 							</tool>
 							<tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1188736068" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.148039127" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
+								<option id="gnu.both.asm.option.include.paths.148039127" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/chmlib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/thirdparty/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/libxml2"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/library"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include"/>
+									<listOptionValue builtIn="false" value="C:/Tools/tizen-sdk/platforms/tizen2.2/rootstraps/tizen-emulator-2.2.native/usr/include/osp"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1511169751" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.1195964613" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler"/>
@@ -176,17 +223,22 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
 						<entry excluding="s32utils.cpp|w32utils.cpp|xutils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="include|src|src/gxvalid/gxvopbd.c|src/gxvalid/gxvfeat.c|src/pfr/pfrsbit.c|src/gxvalid/gxvmorx4.c|src/sfnt/ttpost.c|src/gxvalid/gxvmorx1.c|src/cff/cffgload.c|src/gxvalid/gxvmod.c|src/tools|src/cache/ftcmanag.c|src/bdf/bdfdrivr.c|src/gxvalid/gxvjust.c|src/lzw/ftzopen.c|src/autofit/afangles.c|src/truetype/ttpic.c|src/truetype/ttinterp.c|src/sfnt/ttkern.c|src/gzip/inflate.c|src/otvalid/otvgsub.c|src/type1/t1driver.c|src/bdf/bdflib.c|src/cff/cffobjs.c|src/gxvalid/gxvcommn.c|src/gxvalid/gxvmort.c|src/pshinter/pshrec.c|src/cff/cf2hints.c|src/autofit/afindic.c|src/autofit/aflatin2.c|src/truetype/ttgload.c|src/autofit/afhints.c|src/otvalid/otvmath.c|src/gzip/infcodes.c|src/autofit/afmodule.c|src/base/ftstream.c|src/cache/ftcsbits.c|src/sfnt/pngshim.c|src/base/fttrigon.c|src/gzip/inftrees.c|src/gxvalid/gxvlcar.c|src/cache/ftcglyph.c|src/gxvalid/gxvmort5.c|src/otvalid/otvcommn.c|docs|src/pshinter/pshmod.c|src/otvalid/otvjstf.c|src/pfr/pfrcmap.c|src/psaux/psauxmod.c|src/sfnt/sfdriver.c|src/truetype/ttpload.c|src/base/ftsnames.c|src/sfnt/sfobjs.c|src/psnames/psmodule.c|src/psaux/t1cmap.c|builds|src/gxvalid/gxvmort2.c|src/autofit/afdummy.c|src/raster/ftraster.c|src/type42/t42drivr.c|src/base/ftcalc.c|src/otvalid/otvbase.c|src/pshinter/pshglob.c|src/pfr/pfrdrivr.c|src/autofit/afpic.c|src/psnames/pspic.c|src/smooth/ftgrays.c|src/psaux/psobjs.c|src/raster/ftrend1.c|src/cff/cf2intrp.c|src/cff/cffdrivr.c|src/type42/t42parse.c|src/gxvalid/gxvprop.c|src/autofit/afcjk.c|src/gxvalid/gxvfgen.c|src/type1/t1objs.c|src/cff/cf2stack.c|src/psaux/t1decode.c|src/sfnt/ttcmap.c|src/base/ftadvanc.c|src/cache/ftccache.c|src/cff/cf2read.c|src/cid/cidload.c|src/base/ftutil.c|src/pcf/pcfutil.c|src/type1/t1load.c|src/cache/ftccmap.c|src/base/ftobjs.c|src/pfr/pfrgload.c|src/type1/t1parse.c|src/sfnt/ttmtx.c|src/psaux/afmparse.c|src/gxvalid/gxvkern.c|src/autofit/aflatin.c|src/sfnt/ttbdf.c|src/sfnt/sfntpic.c|src/gxvalid/gxvmort0.c|src/sfnt/ttsbit0.c|src/autofit/afloader.c|src/gxvalid/gxvmorx0.c|src/raster/rastpic.c|src/base/ftmac.c|src/gxvalid/gxvmort4.c|src/base/ftgloadr.c|src/cff/cf2error.c|src/gzip/infutil.c|src/sfnt/ttload.c|src/cid/cidgload.c|src/autofit/afwarp.c|src/pshinter/pshalgo.c|src/cff/cffpic.c|src/cid/cidobjs.c|src/gxvalid/gxvmort1.c|src/otvalid/otvgdef.c|src/gxvalid/gxvmorx5.c|src/gzip/zutil.c|src/cid/cidparse.c|src/cache/ftcimage.c|src/cff/cffload.c|src/gzip/infblock.c|src/cache/ftcmru.c|src/cache/ftcbasic.c|src/sfnt/ttsbit.c|src/gxvalid/gxvtrak.c|src/cff/cf2font.c|src/otvalid/otvgpos.c|src/truetype/ttdriver.c|src/gzip/adler32.c|src/cff/cf2arrst.c|src/truetype/ttsubpix.c|src/autofit/afglobal.c|src/base/ftrfork.c|src/pfr/pfrobjs.c|src/smooth/ftspic.c|src/gxvalid/gxvbsln.c|src/otvalid/otvmod.c|src/pcf/pcfread.c|devel|src/pfr/pfrload.c|src/truetype/ttobjs.c|src/type1/t1gload.c|src/gxvalid/gxvmorx.c|src/psaux/psconv.c|src/truetype/ttgxvar.c|objs|src/cff/cf2blues.c|src/pcf/pcfdrivr.c|src/base/ftoutln.c|src/type42/t42objs.c|src/cff/cf2ft.c|src/cid/cidriver.c|src/type1/t1afm.c|src/pshinter/pshpic.c|src/cff/cffcmap.c|src/cff/cffparse.c|src/gxvalid/gxvmorx2.c|src/smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype"/>
-						<entry excluding="src|src/enumdir_chmLib.c|src/extract_chmLib.c|src/enum_chmLib.c|src/chm_http.c|src/test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib"/>
-						<entry excluding="minigzip.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
+						<entry excluding="gxvalid/gxvopbd.c|gxvalid/gxvfeat.c|pfr/pfrsbit.c|sfnt/ttpost.c|gxvalid/gxvmorx4.c|gxvalid/gxvmorx1.c|gxvalid/gxvmod.c|cff/cffgload.c|tools|cache/ftcmanag.c|src|lzw/ftzopen.c|gxvalid/gxvjust.c|bdf/bdfdrivr.c|autofit/afangles.c|truetype/ttpic.c|truetype/ttinterp.c|sfnt/ttkern.c|gzip/inflate.c|type1/t1driver.c|otvalid/otvgsub.c|bdf/bdflib.c|cff/cffobjs.c|gxvalid/gxvmort.c|gxvalid/gxvcommn.c|pshinter/pshrec.c|cff/cf2hints.c|truetype/ttgload.c|autofit/aflatin2.c|autofit/afindic.c|otvalid/otvmath.c|autofit/afhints.c|autofit/afmodule.c|gzip/infcodes.c|base/ftstream.c|cache/ftcsbits.c|sfnt/pngshim.c|base/fttrigon.c|gxvalid/gxvlcar.c|gzip/inftrees.c|cache/ftcglyph.c|gxvalid/gxvmort5.c|otvalid/otvcommn.c|docs|pshinter/pshmod.c|otvalid/otvjstf.c|sfnt/sfdriver.c|psaux/psauxmod.c|pfr/pfrcmap.c|base/ftsnames.c|truetype/ttpload.c|sfnt/sfobjs.c|psnames/psmodule.c|psaux/t1cmap.c|gxvalid/gxvmort2.c|builds|raster/ftraster.c|autofit/afdummy.c|base/ftcalc.c|type42/t42drivr.c|include|otvalid/otvbase.c|pshinter/pshglob.c|pfr/pfrdrivr.c|autofit/afpic.c|smooth/ftgrays.c|psnames/pspic.c|raster/ftrend1.c|psaux/psobjs.c|cff/cf2intrp.c|type42/t42parse.c|cff/cffdrivr.c|gxvalid/gxvprop.c|gxvalid/gxvfgen.c|autofit/afcjk.c|type1/t1objs.c|psaux/t1decode.c|cff/cf2stack.c|base/ftadvanc.c|sfnt/ttcmap.c|cff/cf2read.c|cache/ftccache.c|base/ftutil.c|cid/cidload.c|pcf/pcfutil.c|type1/t1load.c|base/ftobjs.c|cache/ftccmap.c|type1/t1parse.c|pfr/pfrgload.c|sfnt/ttmtx.c|psaux/afmparse.c|gxvalid/gxvkern.c|sfnt/ttbdf.c|autofit/aflatin.c|sfnt/sfntpic.c|gxvalid/gxvmort0.c|sfnt/ttsbit0.c|base/ftmac.c|raster/rastpic.c|gxvalid/gxvmorx0.c|autofit/afloader.c|base/ftgloadr.c|gxvalid/gxvmort4.c|cff/cf2error.c|gzip/infutil.c|sfnt/ttload.c|cid/cidgload.c|autofit/afwarp.c|pshinter/pshalgo.c|cff/cffpic.c|cid/cidobjs.c|otvalid/otvgdef.c|gxvalid/gxvmort1.c|gxvalid/gxvmorx5.c|gzip/zutil.c|cid/cidparse.c|cff/cffload.c|cache/ftcimage.c|cache/ftcmru.c|gzip/infblock.c|cache/ftcbasic.c|sfnt/ttsbit.c|gxvalid/gxvtrak.c|cff/cf2font.c|otvalid/otvgpos.c|truetype/ttdriver.c|cff/cf2arrst.c|gzip/adler32.c|truetype/ttsubpix.c|autofit/afglobal.c|base/ftrfork.c|pfr/pfrobjs.c|smooth/ftspic.c|otvalid/otvmod.c|gxvalid/gxvbsln.c|pcf/pcfread.c|truetype/ttobjs.c|pfr/pfrload.c|devel|type1/t1gload.c|truetype/ttgxvar.c|psaux/psconv.c|gxvalid/gxvmorx.c|objs|cff/cf2blues.c|pcf/pcfdrivr.c|base/ftoutln.c|type42/t42objs.c|cff/cf2ft.c|type1/t1afm.c|cid/cidriver.c|pshinter/pshpic.c|cff/cffcmap.c|cff/cffparse.c|gxvalid/gxvmorx2.c|smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
+						<entry excluding="pngtest.c|scripts|projects|example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libpng"/>
+						<entry excluding="jpeg2eps.c|Resources|startup.c|drawfile.c|output.c|fmt_text.c|png2eps.c|png2sprt.c|fonts_r.c|imgtrans.c|Win32-only|dib2sprt.c|saveas.c|icons.c|Unix-only|dib2eps.c|postscript.c|main_ros.c|main_u.c|xml.c|Docs|draw.c|jpeg2sprt.c|riscos.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry excluding="enumdir_chmLib.c|extract_chmLib.c|enum_chmLib.c|chm_http.c|test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
+						<entry excluding="example.c|minigzip.c|examples|win32|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -237,7 +289,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/zlib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libpng}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/chmlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/chmlib/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/antiword}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3gl/include}&quot;"/>
@@ -257,7 +309,12 @@
 								<option id="sbi.gnu.c.compiler.option.1305765081" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
 									<listOptionValue builtIn="false" value="tizen-emulator-2.2.native_llvm31.i386.cpp.app"/>
 								</option>
-								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.2060835226" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath"/>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.2060835226" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.cpp.493902312" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.cpp" valueType="stringList">
 									<listOptionValue builtIn="false" value="-target i386-tizen-linux-gnueabi -gcc-toolchain &quot;C:/tools/tizen-sdk/tools/smart-build-interface/../i386-linux-gnueabi-gcc-4.5/&quot; -ccc-gcc-name i386-linux-gnueabi-g++ -march=i386 -Wno-gnu"/>
 									<listOptionValue builtIn="false" value=" -fPIE"/>
@@ -319,6 +376,9 @@
 								<option id="gnu.cpp.link.option.paths.2119083062" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 								</option>
+								<option id="gnu.cpp.link.option.libs.922980430" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1945193090" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -333,19 +393,24 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
 						<entry excluding="s32utils.cpp|w32utils.cpp|xutils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="src|include|src/gxvalid/gxvopbd.c|src/gxvalid/gxvfeat.c|src/pfr/pfrsbit.c|src/gxvalid/gxvmorx4.c|src/sfnt/ttpost.c|src/gxvalid/gxvmorx1.c|src/cff/cffgload.c|src/gxvalid/gxvmod.c|src/tools|src/cache/ftcmanag.c|src/bdf/bdfdrivr.c|src/gxvalid/gxvjust.c|src/lzw/ftzopen.c|src/autofit/afangles.c|src/truetype/ttpic.c|src/truetype/ttinterp.c|src/sfnt/ttkern.c|src/gzip/inflate.c|src/otvalid/otvgsub.c|src/type1/t1driver.c|src/bdf/bdflib.c|src/cff/cffobjs.c|src/gxvalid/gxvcommn.c|src/gxvalid/gxvmort.c|src/pshinter/pshrec.c|src/cff/cf2hints.c|src/autofit/afindic.c|src/autofit/aflatin2.c|src/truetype/ttgload.c|src/autofit/afhints.c|src/otvalid/otvmath.c|src/gzip/infcodes.c|src/autofit/afmodule.c|src/base/ftstream.c|src/cache/ftcsbits.c|src/sfnt/pngshim.c|src/base/fttrigon.c|src/gzip/inftrees.c|src/gxvalid/gxvlcar.c|src/cache/ftcglyph.c|src/gxvalid/gxvmort5.c|src/otvalid/otvcommn.c|docs|src/pshinter/pshmod.c|src/otvalid/otvjstf.c|src/pfr/pfrcmap.c|src/psaux/psauxmod.c|src/sfnt/sfdriver.c|src/truetype/ttpload.c|src/base/ftsnames.c|src/sfnt/sfobjs.c|src/psnames/psmodule.c|src/psaux/t1cmap.c|builds|src/gxvalid/gxvmort2.c|src/autofit/afdummy.c|src/raster/ftraster.c|src/type42/t42drivr.c|src/base/ftcalc.c|src/otvalid/otvbase.c|src/pshinter/pshglob.c|src/pfr/pfrdrivr.c|src/autofit/afpic.c|src/psnames/pspic.c|src/smooth/ftgrays.c|src/psaux/psobjs.c|src/raster/ftrend1.c|src/cff/cf2intrp.c|src/cff/cffdrivr.c|src/type42/t42parse.c|src/gxvalid/gxvprop.c|src/autofit/afcjk.c|src/gxvalid/gxvfgen.c|src/type1/t1objs.c|src/cff/cf2stack.c|src/psaux/t1decode.c|src/sfnt/ttcmap.c|src/base/ftadvanc.c|src/cache/ftccache.c|src/cff/cf2read.c|src/cid/cidload.c|src/base/ftutil.c|src/pcf/pcfutil.c|src/type1/t1load.c|src/cache/ftccmap.c|src/base/ftobjs.c|src/pfr/pfrgload.c|src/type1/t1parse.c|src/sfnt/ttmtx.c|src/psaux/afmparse.c|src/gxvalid/gxvkern.c|src/autofit/aflatin.c|src/sfnt/ttbdf.c|src/sfnt/sfntpic.c|src/gxvalid/gxvmort0.c|src/sfnt/ttsbit0.c|src/autofit/afloader.c|src/gxvalid/gxvmorx0.c|src/raster/rastpic.c|src/base/ftmac.c|src/gxvalid/gxvmort4.c|src/base/ftgloadr.c|src/cff/cf2error.c|src/gzip/infutil.c|src/sfnt/ttload.c|src/cid/cidgload.c|src/autofit/afwarp.c|src/pshinter/pshalgo.c|src/cff/cffpic.c|src/cid/cidobjs.c|src/gxvalid/gxvmort1.c|src/otvalid/otvgdef.c|src/gxvalid/gxvmorx5.c|src/gzip/zutil.c|src/cid/cidparse.c|src/cache/ftcimage.c|src/cff/cffload.c|src/gzip/infblock.c|src/cache/ftcmru.c|src/cache/ftcbasic.c|src/sfnt/ttsbit.c|src/gxvalid/gxvtrak.c|src/cff/cf2font.c|src/otvalid/otvgpos.c|src/truetype/ttdriver.c|src/gzip/adler32.c|src/cff/cf2arrst.c|src/truetype/ttsubpix.c|src/autofit/afglobal.c|src/base/ftrfork.c|src/pfr/pfrobjs.c|src/smooth/ftspic.c|src/gxvalid/gxvbsln.c|src/otvalid/otvmod.c|src/pcf/pcfread.c|devel|src/pfr/pfrload.c|src/truetype/ttobjs.c|src/type1/t1gload.c|src/gxvalid/gxvmorx.c|src/psaux/psconv.c|src/truetype/ttgxvar.c|objs|src/cff/cf2blues.c|src/pcf/pcfdrivr.c|src/base/ftoutln.c|src/type42/t42objs.c|src/cff/cf2ft.c|src/cid/cidriver.c|src/type1/t1afm.c|src/pshinter/pshpic.c|src/cff/cffcmap.c|src/cff/cffparse.c|src/gxvalid/gxvmorx2.c|src/smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype"/>
-						<entry excluding="src|src/enumdir_chmLib.c|src/extract_chmLib.c|src/enum_chmLib.c|src/chm_http.c|src/test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib"/>
-						<entry excluding="minigzip.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
+						<entry excluding="gxvalid/gxvopbd.c|gxvalid/gxvfeat.c|pfr/pfrsbit.c|sfnt/ttpost.c|gxvalid/gxvmorx4.c|gxvalid/gxvmorx1.c|gxvalid/gxvmod.c|cff/cffgload.c|tools|cache/ftcmanag.c|src|lzw/ftzopen.c|gxvalid/gxvjust.c|bdf/bdfdrivr.c|autofit/afangles.c|truetype/ttpic.c|truetype/ttinterp.c|sfnt/ttkern.c|gzip/inflate.c|type1/t1driver.c|otvalid/otvgsub.c|bdf/bdflib.c|cff/cffobjs.c|gxvalid/gxvmort.c|gxvalid/gxvcommn.c|pshinter/pshrec.c|cff/cf2hints.c|truetype/ttgload.c|autofit/aflatin2.c|autofit/afindic.c|otvalid/otvmath.c|autofit/afhints.c|autofit/afmodule.c|gzip/infcodes.c|base/ftstream.c|cache/ftcsbits.c|sfnt/pngshim.c|base/fttrigon.c|gxvalid/gxvlcar.c|gzip/inftrees.c|cache/ftcglyph.c|gxvalid/gxvmort5.c|otvalid/otvcommn.c|docs|pshinter/pshmod.c|otvalid/otvjstf.c|sfnt/sfdriver.c|psaux/psauxmod.c|pfr/pfrcmap.c|base/ftsnames.c|truetype/ttpload.c|sfnt/sfobjs.c|psnames/psmodule.c|psaux/t1cmap.c|gxvalid/gxvmort2.c|builds|raster/ftraster.c|autofit/afdummy.c|base/ftcalc.c|type42/t42drivr.c|include|otvalid/otvbase.c|pshinter/pshglob.c|pfr/pfrdrivr.c|autofit/afpic.c|smooth/ftgrays.c|psnames/pspic.c|raster/ftrend1.c|psaux/psobjs.c|cff/cf2intrp.c|type42/t42parse.c|cff/cffdrivr.c|gxvalid/gxvprop.c|gxvalid/gxvfgen.c|autofit/afcjk.c|type1/t1objs.c|psaux/t1decode.c|cff/cf2stack.c|base/ftadvanc.c|sfnt/ttcmap.c|cff/cf2read.c|cache/ftccache.c|base/ftutil.c|cid/cidload.c|pcf/pcfutil.c|type1/t1load.c|base/ftobjs.c|cache/ftccmap.c|type1/t1parse.c|pfr/pfrgload.c|sfnt/ttmtx.c|psaux/afmparse.c|gxvalid/gxvkern.c|sfnt/ttbdf.c|autofit/aflatin.c|sfnt/sfntpic.c|gxvalid/gxvmort0.c|sfnt/ttsbit0.c|base/ftmac.c|raster/rastpic.c|gxvalid/gxvmorx0.c|autofit/afloader.c|base/ftgloadr.c|gxvalid/gxvmort4.c|cff/cf2error.c|gzip/infutil.c|sfnt/ttload.c|cid/cidgload.c|autofit/afwarp.c|pshinter/pshalgo.c|cff/cffpic.c|cid/cidobjs.c|otvalid/otvgdef.c|gxvalid/gxvmort1.c|gxvalid/gxvmorx5.c|gzip/zutil.c|cid/cidparse.c|cff/cffload.c|cache/ftcimage.c|cache/ftcmru.c|gzip/infblock.c|cache/ftcbasic.c|sfnt/ttsbit.c|gxvalid/gxvtrak.c|cff/cf2font.c|otvalid/otvgpos.c|truetype/ttdriver.c|cff/cf2arrst.c|gzip/adler32.c|truetype/ttsubpix.c|autofit/afglobal.c|base/ftrfork.c|pfr/pfrobjs.c|smooth/ftspic.c|otvalid/otvmod.c|gxvalid/gxvbsln.c|pcf/pcfread.c|truetype/ttobjs.c|pfr/pfrload.c|devel|type1/t1gload.c|truetype/ttgxvar.c|psaux/psconv.c|gxvalid/gxvmorx.c|objs|cff/cf2blues.c|pcf/pcfdrivr.c|base/ftoutln.c|type42/t42objs.c|cff/cf2ft.c|type1/t1afm.c|cid/cidriver.c|pshinter/pshpic.c|cff/cffcmap.c|cff/cffparse.c|gxvalid/gxvmorx2.c|smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
+						<entry excluding="pngtest.c|scripts|projects|example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libpng"/>
+						<entry excluding="jpeg2eps.c|Resources|startup.c|drawfile.c|output.c|fmt_text.c|png2eps.c|png2sprt.c|fonts_r.c|imgtrans.c|Win32-only|dib2sprt.c|saveas.c|icons.c|Unix-only|dib2eps.c|postscript.c|main_ros.c|main_u.c|xml.c|Docs|draw.c|jpeg2sprt.c|riscos.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry excluding="enumdir_chmLib.c|extract_chmLib.c|enum_chmLib.c|chm_http.c|test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
+						<entry excluding="example.c|minigzip.c|examples|win32|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -397,7 +462,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/zlib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libpng}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/libjpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/chmlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/chmlib/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/antiword}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3/thirdparty/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CoolReader3/cr3gl/include}&quot;"/>
@@ -434,7 +499,12 @@
 								<option id="sbi.gnu.c.compiler.option.1706126320" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
 									<listOptionValue builtIn="false" value="tizen-emulator-2.2.native_llvm31.i386.cpp.app"/>
 								</option>
-								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1401887534" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath"/>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1401887534" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\tools\tizen-sdk\library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.cpp.1878499432" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.cpp" valueType="stringList">
 									<listOptionValue builtIn="false" value="-target i386-tizen-linux-gnueabi -gcc-toolchain &quot;C:/tools/tizen-sdk/tools/smart-build-interface/../i386-linux-gnueabi-gcc-4.5/&quot; -ccc-gcc-name i386-linux-gnueabi-g++ -march=i386 -Wno-gnu"/>
 									<listOptionValue builtIn="false" value=" -fPIE"/>
@@ -500,6 +570,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.654236848" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="daprobe"/>
+									<listOptionValue builtIn="false" value="dl"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1885660972" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library/da/x86&quot;"/>
@@ -519,19 +590,24 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libjpeg"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/sqlite"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3db/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3ui/src"/>
 						<entry excluding="s32utils.cpp|w32utils.cpp|xutils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="src|include|src/gxvalid/gxvopbd.c|src/gxvalid/gxvfeat.c|src/pfr/pfrsbit.c|src/gxvalid/gxvmorx4.c|src/sfnt/ttpost.c|src/gxvalid/gxvmorx1.c|src/cff/cffgload.c|src/gxvalid/gxvmod.c|src/tools|src/cache/ftcmanag.c|src/bdf/bdfdrivr.c|src/gxvalid/gxvjust.c|src/lzw/ftzopen.c|src/autofit/afangles.c|src/truetype/ttpic.c|src/truetype/ttinterp.c|src/sfnt/ttkern.c|src/gzip/inflate.c|src/otvalid/otvgsub.c|src/type1/t1driver.c|src/bdf/bdflib.c|src/cff/cffobjs.c|src/gxvalid/gxvcommn.c|src/gxvalid/gxvmort.c|src/pshinter/pshrec.c|src/cff/cf2hints.c|src/autofit/afindic.c|src/autofit/aflatin2.c|src/truetype/ttgload.c|src/autofit/afhints.c|src/otvalid/otvmath.c|src/gzip/infcodes.c|src/autofit/afmodule.c|src/base/ftstream.c|src/cache/ftcsbits.c|src/sfnt/pngshim.c|src/base/fttrigon.c|src/gzip/inftrees.c|src/gxvalid/gxvlcar.c|src/cache/ftcglyph.c|src/gxvalid/gxvmort5.c|src/otvalid/otvcommn.c|docs|src/pshinter/pshmod.c|src/otvalid/otvjstf.c|src/pfr/pfrcmap.c|src/psaux/psauxmod.c|src/sfnt/sfdriver.c|src/truetype/ttpload.c|src/base/ftsnames.c|src/sfnt/sfobjs.c|src/psnames/psmodule.c|src/psaux/t1cmap.c|builds|src/gxvalid/gxvmort2.c|src/autofit/afdummy.c|src/raster/ftraster.c|src/type42/t42drivr.c|src/base/ftcalc.c|src/otvalid/otvbase.c|src/pshinter/pshglob.c|src/pfr/pfrdrivr.c|src/autofit/afpic.c|src/psnames/pspic.c|src/smooth/ftgrays.c|src/psaux/psobjs.c|src/raster/ftrend1.c|src/cff/cf2intrp.c|src/cff/cffdrivr.c|src/type42/t42parse.c|src/gxvalid/gxvprop.c|src/autofit/afcjk.c|src/gxvalid/gxvfgen.c|src/type1/t1objs.c|src/cff/cf2stack.c|src/psaux/t1decode.c|src/sfnt/ttcmap.c|src/base/ftadvanc.c|src/cache/ftccache.c|src/cff/cf2read.c|src/cid/cidload.c|src/base/ftutil.c|src/pcf/pcfutil.c|src/type1/t1load.c|src/cache/ftccmap.c|src/base/ftobjs.c|src/pfr/pfrgload.c|src/type1/t1parse.c|src/sfnt/ttmtx.c|src/psaux/afmparse.c|src/gxvalid/gxvkern.c|src/autofit/aflatin.c|src/sfnt/ttbdf.c|src/sfnt/sfntpic.c|src/gxvalid/gxvmort0.c|src/sfnt/ttsbit0.c|src/autofit/afloader.c|src/gxvalid/gxvmorx0.c|src/raster/rastpic.c|src/base/ftmac.c|src/gxvalid/gxvmort4.c|src/base/ftgloadr.c|src/cff/cf2error.c|src/gzip/infutil.c|src/sfnt/ttload.c|src/cid/cidgload.c|src/autofit/afwarp.c|src/pshinter/pshalgo.c|src/cff/cffpic.c|src/cid/cidobjs.c|src/gxvalid/gxvmort1.c|src/otvalid/otvgdef.c|src/gxvalid/gxvmorx5.c|src/gzip/zutil.c|src/cid/cidparse.c|src/cache/ftcimage.c|src/cff/cffload.c|src/gzip/infblock.c|src/cache/ftcmru.c|src/cache/ftcbasic.c|src/sfnt/ttsbit.c|src/gxvalid/gxvtrak.c|src/cff/cf2font.c|src/otvalid/otvgpos.c|src/truetype/ttdriver.c|src/gzip/adler32.c|src/cff/cf2arrst.c|src/truetype/ttsubpix.c|src/autofit/afglobal.c|src/base/ftrfork.c|src/pfr/pfrobjs.c|src/smooth/ftspic.c|src/gxvalid/gxvbsln.c|src/otvalid/otvmod.c|src/pcf/pcfread.c|devel|src/pfr/pfrload.c|src/truetype/ttobjs.c|src/type1/t1gload.c|src/gxvalid/gxvmorx.c|src/psaux/psconv.c|src/truetype/ttgxvar.c|objs|src/cff/cf2blues.c|src/pcf/pcfdrivr.c|src/base/ftoutln.c|src/type42/t42objs.c|src/cff/cf2ft.c|src/cid/cidriver.c|src/type1/t1afm.c|src/pshinter/pshpic.c|src/cff/cffcmap.c|src/cff/cffparse.c|src/gxvalid/gxvmorx2.c|src/smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype"/>
-						<entry excluding="src|src/enumdir_chmLib.c|src/extract_chmLib.c|src/enum_chmLib.c|src/chm_http.c|src/test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib"/>
-						<entry excluding="minigzip.c|win32|projects|examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
+						<entry excluding="gxvalid/gxvopbd.c|gxvalid/gxvfeat.c|pfr/pfrsbit.c|sfnt/ttpost.c|gxvalid/gxvmorx4.c|gxvalid/gxvmorx1.c|gxvalid/gxvmod.c|cff/cffgload.c|tools|cache/ftcmanag.c|src|lzw/ftzopen.c|gxvalid/gxvjust.c|bdf/bdfdrivr.c|autofit/afangles.c|truetype/ttpic.c|truetype/ttinterp.c|sfnt/ttkern.c|gzip/inflate.c|type1/t1driver.c|otvalid/otvgsub.c|bdf/bdflib.c|cff/cffobjs.c|gxvalid/gxvmort.c|gxvalid/gxvcommn.c|pshinter/pshrec.c|cff/cf2hints.c|truetype/ttgload.c|autofit/aflatin2.c|autofit/afindic.c|otvalid/otvmath.c|autofit/afhints.c|autofit/afmodule.c|gzip/infcodes.c|base/ftstream.c|cache/ftcsbits.c|sfnt/pngshim.c|base/fttrigon.c|gxvalid/gxvlcar.c|gzip/inftrees.c|cache/ftcglyph.c|gxvalid/gxvmort5.c|otvalid/otvcommn.c|docs|pshinter/pshmod.c|otvalid/otvjstf.c|sfnt/sfdriver.c|psaux/psauxmod.c|pfr/pfrcmap.c|base/ftsnames.c|truetype/ttpload.c|sfnt/sfobjs.c|psnames/psmodule.c|psaux/t1cmap.c|gxvalid/gxvmort2.c|builds|raster/ftraster.c|autofit/afdummy.c|base/ftcalc.c|type42/t42drivr.c|include|otvalid/otvbase.c|pshinter/pshglob.c|pfr/pfrdrivr.c|autofit/afpic.c|smooth/ftgrays.c|psnames/pspic.c|raster/ftrend1.c|psaux/psobjs.c|cff/cf2intrp.c|type42/t42parse.c|cff/cffdrivr.c|gxvalid/gxvprop.c|gxvalid/gxvfgen.c|autofit/afcjk.c|type1/t1objs.c|psaux/t1decode.c|cff/cf2stack.c|base/ftadvanc.c|sfnt/ttcmap.c|cff/cf2read.c|cache/ftccache.c|base/ftutil.c|cid/cidload.c|pcf/pcfutil.c|type1/t1load.c|base/ftobjs.c|cache/ftccmap.c|type1/t1parse.c|pfr/pfrgload.c|sfnt/ttmtx.c|psaux/afmparse.c|gxvalid/gxvkern.c|sfnt/ttbdf.c|autofit/aflatin.c|sfnt/sfntpic.c|gxvalid/gxvmort0.c|sfnt/ttsbit0.c|base/ftmac.c|raster/rastpic.c|gxvalid/gxvmorx0.c|autofit/afloader.c|base/ftgloadr.c|gxvalid/gxvmort4.c|cff/cf2error.c|gzip/infutil.c|sfnt/ttload.c|cid/cidgload.c|autofit/afwarp.c|pshinter/pshalgo.c|cff/cffpic.c|cid/cidobjs.c|otvalid/otvgdef.c|gxvalid/gxvmort1.c|gxvalid/gxvmorx5.c|gzip/zutil.c|cid/cidparse.c|cff/cffload.c|cache/ftcimage.c|cache/ftcmru.c|gzip/infblock.c|cache/ftcbasic.c|sfnt/ttsbit.c|gxvalid/gxvtrak.c|cff/cf2font.c|otvalid/otvgpos.c|truetype/ttdriver.c|cff/cf2arrst.c|gzip/adler32.c|truetype/ttsubpix.c|autofit/afglobal.c|base/ftrfork.c|pfr/pfrobjs.c|smooth/ftspic.c|otvalid/otvmod.c|gxvalid/gxvbsln.c|pcf/pcfread.c|truetype/ttobjs.c|pfr/pfrload.c|devel|type1/t1gload.c|truetype/ttgxvar.c|psaux/psconv.c|gxvalid/gxvmorx.c|objs|cff/cf2blues.c|pcf/pcfdrivr.c|base/ftoutln.c|type42/t42objs.c|cff/cf2ft.c|type1/t1afm.c|cid/cidriver.c|pshinter/pshpic.c|cff/cffcmap.c|cff/cffparse.c|gxvalid/gxvmorx2.c|smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/freetype/src"/>
+						<entry excluding="pngtest.c|scripts|projects|example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/libpng"/>
+						<entry excluding="jpeg2eps.c|Resources|startup.c|drawfile.c|output.c|fmt_text.c|png2eps.c|png2sprt.c|fonts_r.c|imgtrans.c|Win32-only|dib2sprt.c|saveas.c|icons.c|Unix-only|dib2eps.c|postscript.c|main_ros.c|main_u.c|xml.c|Docs|draw.c|jpeg2sprt.c|riscos.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/antiword"/>
+						<entry excluding="enumdir_chmLib.c|extract_chmLib.c|enum_chmLib.c|chm_http.c|test_chmLib.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/chmlib/src"/>
+						<entry excluding="example.c|minigzip.c|examples|win32|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/thirdparty/zlib"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
