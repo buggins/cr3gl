@@ -226,10 +226,8 @@ static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
     return true;
 }
 
-void extractFB2Authors( ldomDocument * doc, lString16 delimiter, bool shortMiddleName, BookDBBook * props )
+void extractFB2Authors( ldomDocument * doc, bool shortMiddleName, BookDBBook * props )
 {
-    if ( delimiter.empty() )
-        delimiter = ", ";
     lString16 authors;
     for ( int i=0; i<16; i++) {
         lString16 path = cs16("/FictionBook/description/title-info/author[") + fmt::decimal(i+1) + "]";
@@ -262,7 +260,7 @@ void extractFB2Authors( ldomDocument * doc, lString16 delimiter, bool shortMiddl
                 fileAs += shortMiddleName ? lString16(middleName, 0, 1) + "." : middleName;
         }
         if (!author.empty()) {
-        	props->authors.add(new BookDBAuthor(LCSTR(author), LCSTR(fileAs)));
+        	props->authors.add(new BookDBAuthor(CONVERT_STR(author), CONVERT_STR(fileAs)));
         }
     }
 }
@@ -300,18 +298,16 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
         return false;
     }
     CRLog::trace( "parsed" );
-    extractFB2Authors(&doc, lString16("|"), false, props);
+    extractFB2Authors(&doc, false, props);
     lString16 title = extractDocTitle( &doc );
     lString16 language = extractDocLanguage( &doc );
     int seriesNumber = 0;
     lString16 series = extractDocSeries(&doc, &seriesNumber);
     props->seriesNumber = seriesNumber;
-    if (title.length())
-    	props->title = LCSTR(title);
-    //props->author = LCSTR(authors);
+    props->title = CONVERT_STR(title);
     if (series.length())
     	props->series = new BookDBSeries(LCSTR(series));
-    props->language = LCSTR(language);
+    props->language = CONVERT_STR(language);
 	return true;
 }
 
