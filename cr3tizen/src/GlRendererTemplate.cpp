@@ -52,6 +52,7 @@ GlRendererTemplate::GlRendererTemplate(void)
 	_docview = new LVDocView(32);
 	_docview->Resize(300, 400);
 	_docview->createDefaultDocument(lString16(L"Test document"), lString16(L"Just testing if GL rendering is working ok"));
+#if 0
 	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 	CRUIWidget * layout = new CRUIVerticalLayout();
 	CRUIButton * button = new CRUIButton(lString16(L"Normal with icon"), "cancel");
@@ -86,6 +87,8 @@ GlRendererTemplate::GlRendererTemplate(void)
 	layout->addChild(list);
 
 	_widget = layout;
+#endif
+	_widget = new CRUIHomeWidget();
 	_eventManager->setRootWidget(_widget);
 }
 
