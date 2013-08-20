@@ -54,6 +54,7 @@ public:
 	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0) {}
 	virtual void setParsed(bool parsed) { _scanned = parsed; }
 	virtual bool isParsed() { return _scanned; }
+	bool refresh();
 	bool scan();
 	bool needScan();
 };
@@ -75,9 +76,11 @@ public:
 	~CRDirCache() { clear(); }
 	CRDirCacheItem * find(lString8 pathname);
 	CRDirCacheItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
-	CRDirCacheItem * add(CRDirItem * dir);
+	CRDirCacheItem * getOrAdd(CRDirItem * dir);
+	CRDirCacheItem * getOrAdd(const lString8 & pathname);
 	void clear();
 };
 
+extern CRDirCache * dirCache;
 
 #endif /* FILEINFO_H_ */

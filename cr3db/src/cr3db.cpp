@@ -218,7 +218,7 @@ bool CRBookDB::saveSeries(BookDBSeries * item) {
 		if (!err) {
 			//CRLog::trace("calling bindText(1, %s, %d)", item->name.c_str(), item->name.length());
 			stmt.bindText(1, item->name);
-			err = stmt.step() == DB_DONE || err;
+			err = (stmt.step() != DB_DONE) || err;
 			if (!err) {
 				item->id = stmt.lastInsertId();
 				BookDBSeries * cacheItem = item->clone();
@@ -256,7 +256,7 @@ bool CRBookDB::saveFolder(BookDBFolder * item) {
 		if (!err) {
 			//CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
 			stmt.bindText(1, item->name);
-			err = stmt.step() == DB_DONE || err;
+			err = (stmt.step() != DB_DONE) || err;
 			if (!err) {
 				item->id = stmt.lastInsertId();
 				BookDBFolder * cacheItem = item->clone();
@@ -287,7 +287,7 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 	bool err = false;
 	if (byId) {
 		//CRLog::trace("updating existing author");
-		err = stmt.prepare("UPDATE author SET name = ?, file_as = ?, aliased_author_fk = ? WHERE id = ?") != 0 || err;
+		err = stmt.prepare("UPDATE author SET name = ?, file_as = ?, aliased_author_fk = ? WHERE id = ?;") != 0 || err;
 		if (!err) {
 			stmt.bindText(1, item->name);
 			if (!item->fileAs)
@@ -299,7 +299,7 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 			else
 				stmt.bindNull(3);
 			stmt.bindInt64(4, item->id);
-			err = stmt.step() == DB_DONE || err;
+			err = (stmt.step() != DB_DONE) || err;
 			if (!err) {
 				BookDBAuthor * cacheItem = item->clone();
 				_authorCache.put(cacheItem);
@@ -318,7 +318,7 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 				stmt.bindInt64(3, item->aliasedAuthorId);
 			else
 				stmt.bindNull(3);
-			err = stmt.step() == DB_DONE || err;
+			err = (stmt.step() != DB_DONE) || err;
 			if (!err) {
 				item->id = stmt.lastInsertId();
 				BookDBAuthor * cacheItem = item->clone();
@@ -351,7 +351,7 @@ BookDBBook * CRBookDB::loadBookToCache(SQLiteStatement & stmt) {
 		item->language = stmt.getText(14);
 		item->folder = _folderCache.getClone(folderId);
 		item->series = _seriesCache.getClone(seriesId);
-		stmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?");
+		stmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?;");
 		stmt.bindInt64(1, item->id);
 		while (stmt.step() == DB_ROW) {
 			lInt64 authorId = stmt.getInt64(0);
@@ -573,14 +573,18 @@ bool CRBookDB::insertBook(BookDBBook * book)
 						buf.append(",");
 					sprintf(s, "(%lld,%lld)", book->id, book->authors[i]->id);
 					buf.append(s);
+				} else {
+					CRLog::error("Cannot save author");
 				}
 			}
-			SQLiteStatement stmt(&_db);
-			err = stmt.prepare((lString8("INSERT INTO book_author (book_fk, author_fk) VALUES ") + buf + ";").c_str()) != 0 || err;
-			if (stmt.step() == DB_DONE) {
-
-			} else {
-				CRLog::error("Error while inserting book_author records %s", buf.c_str());
+			if (buf.length()) {
+				SQLiteStatement stmt(&_db);
+				err = stmt.prepare((lString8("INSERT INTO book_author (book_fk, author_fk) VALUES ") + buf + ";").c_str()) != 0 || err;
+				if (stmt.step() == DB_DONE) {
+					// Ok
+				} else {
+					CRLog::error("Error while inserting book_author records %s", buf.c_str());
+				}
 			}
 		}
 	} else {

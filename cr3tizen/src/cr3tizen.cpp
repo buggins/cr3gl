@@ -71,7 +71,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVGLCreateImageCache();
 
 
-	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite11";
+	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite13";
 	bookDB = new CRBookDB();
 	if (bookDB->open(dbFile.c_str()))
 		CRLog::error("Error while opening DB file");
@@ -79,7 +79,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 		CRLog::error("Error while updating DB schema");
 	if (!bookDB->fillCaches())
 		CRLog::error("Error while filling caches");
-	BookDBFolder * folder0 = new BookDBFolder("folder0");
+
+//	BookDBFolder * folder0 = new BookDBFolder("folder0");
 
 //	LVHashTable<DBString, BookDBFolder *> map(1000);
 //	DBString key = "folder0";
@@ -89,16 +90,16 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 //	map.remove(key);
 //	CRLog::trace("after removal: item %s by key %s ... %s", map.get(key) ? "found" : "not found", key.get(), folder0->name.get());
 
-	bookDB->saveFolder(folder0);
-	bookDB->saveFolder(new BookDBFolder("folder1"));
-	bookDB->saveFolder(new BookDBFolder("folder2"));
-	bookDB->saveSeries(new BookDBSeries("series name"));
-	bookDB->saveAuthor(new BookDBAuthor("Basil Pupkin"));
+//	bookDB->saveFolder(folder0);
+//	bookDB->saveFolder(new BookDBFolder("folder1"));
+//	bookDB->saveFolder(new BookDBFolder("folder2"));
+//	bookDB->saveSeries(new BookDBSeries("series name"));
+//	bookDB->saveAuthor(new BookDBAuthor("Basil Pupkin"));
 
+	dirCache = new CRDirCache();
 	lString8 dir("/mnt/ums/Downloads");
-	CRDirCacheItem cachedir(dir, false);
-	cachedir.scan();
-
+	CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
+	cachedir->refresh();
 
 	currentTheme = new CRUITheme(lString8("BLACK"));
 	currentTheme->setTextColor(0x000000);

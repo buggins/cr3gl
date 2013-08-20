@@ -321,10 +321,19 @@ bool CRDirCacheItem::scan() {
 	bool res = LVListDirectory(getPathName(), isArchive(), _entries, hash);
 	setParsed(true);
 	_hash = hash;
+	_scanned = true;
 	return res;
 }
 
+bool CRDirCacheItem::refresh() {
+	if (needScan())
+		return scan();
+	return true;
+}
+
 bool CRDirCacheItem::needScan() {
+	if (!_scanned)
+		return true;
 	lUInt64 hash;
 	bool res = LVCalcDirectoryHash(getPathName(), isArchive(), hash);
 	if (res)
@@ -361,13 +370,34 @@ void CRDirCache::moveToHead(CRDirCache::Item * item) {
 	_head = item;
 }
 
-CRDirCacheItem * CRDirCache::add(CRDirItem * dir) {
+CRDirCacheItem * CRDirCache::getOrAdd(CRDirItem * dir) {
 	CRDirCacheItem * existing = find(dir);
 	if (existing)
 		return existing;
 	CRDirCacheItem * newItem = new CRDirCacheItem(dir);
 	addItem(newItem);
 	return newItem;
+}
+
+static bool isArchive(const lString8 & path) {
+	LVContainerRef dir;
+	LVStreamRef arcStream;
+	arcStream = LVOpenFileStream(path.c_str(), LVOM_READ);
+	if (arcStream.isNull()) {
+		// cannot read file...
+		return false;
+	}
+	dir = LVOpenArchieve(arcStream);
+	if (!dir) {
+		return false;
+	}
+	// Archive!
+	return true;
+}
+
+CRDirCacheItem * CRDirCache::getOrAdd(const lString8 & pathname) {
+	CRDirItem dir(pathname, isArchive(pathname));
+	return getOrAdd(&dir);
 }
 
 CRDirCacheItem * CRDirCache::find(lString8 pathname) {
@@ -451,7 +481,7 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 			if (!stream.isNull()) {
 				LVContainerRef arc = LVOpenArchieve(stream);
 				if (!arc.isNull()) {
-					CRLog::trace("archive: %s", pathName8.c_str());
+					//CRLog::trace("archive: %s", pathName8.c_str());
 					int knownFiles = 0;
 					lString8 foundItem;
 					// is archive
@@ -460,7 +490,7 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 						if (item->IsContainer())
 							continue;
 						lString16 arcItem = item->GetName();
-						CRLog::trace("arc item: %s", LCSTR(arcItem));
+						//CRLog::trace("arc item: %s", LCSTR(arcItem));
 						lString16 lower = arcItem;
 						lower.lowercase();
 						int fmt = LVDocFormatFromExtension(lower);
@@ -478,12 +508,12 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 						CRFileItem * book = new CRFileItem(foundItem, true);
 						entries.add(book);
 						forLoad.add(foundItem);
-						CRLog::trace("single archive item: %s", foundItem.c_str());
+						//CRLog::trace("single archive item: %s", foundItem.c_str());
 					} else if (knownFiles > 1) {
 						// several known files in archive
 						CRDirItem * subdir = new CRDirItem(pathName8, true);
 						entries.add(subdir);
-						CRLog::trace("%d archive items, treat as directory", knownFiles);
+						//CRLog::trace("%d archive items, treat as directory", knownFiles);
 					}
 					continue;
 				}
@@ -495,13 +525,14 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 			CRFileItem * book = new CRFileItem(pathName8, false);
 			entries.add(book);
 			forLoad.add(pathName8);
-			CRLog::trace("normal file %s of type %d", pathName8.c_str(), fmt);
+			//CRLog::trace("normal file %s of type %d", pathName8.c_str(), fmt);
 		}
 	}
 	LVPtrVector<BookDBBook> loaded;
 	LVPtrVector<BookDBBook> forSave;
 	CRLog::trace("%d entries for load", forLoad.length());
 	bookDB->loadBooks(forLoad, loaded, forParse);
+	CRLog::trace("%d entries loaded, %d unknown", loaded.length(), forParse.length());
 	for (int i = 0; i<loaded.length(); i++) {
 		lString8 fn = lString8(loaded[i]->pathname.c_str());
 		int found = find(entries, fn);
@@ -513,6 +544,9 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	CRLog::trace("%d entries for parse", forParse.length());
 	for (int i = 0; i<forParse.length(); i++) {
 		lString8 pathName = forParse[i];
+		lString16 lower = pathName;
+		lower.lowercase();
+		int fmt = LVDocFormatFromExtension(lower);
 		CRLog::trace("going to parse %s", pathName.c_str());
 		lString8 arcname;
 		lString8 fname;
@@ -557,10 +591,12 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 			} else {
 
 			}
+			book->createTime = createTime;
+			book->format = fmt;
 			book->filename = fname.c_str();
 			book->filesize = (int)stream->GetSize();
 			book->folder = new BookDBFolder(path.c_str());
-			if (LVParseBookProperties(stream, book)) {
+			if (LVParseBookProperties(stream, book) || fmt != 0) {
 				forSave.add(book);
 			} else {
 				// cannot parse properties
@@ -585,3 +621,6 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	CRLog::trace("done scanning of directory");
 	return true;
 }
+
+
+CRDirCache * dirCache = NULL;
