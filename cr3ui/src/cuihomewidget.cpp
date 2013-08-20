@@ -31,7 +31,14 @@ public:
 		_layout = new CRUILinearLayout(true);
 		addChild(_layout);
 		_captionLayout = new CRUILinearLayout(false);
-		_menuButton = new CRUIButton(lString16::empty_str, "moreicon"); //moreicon
+		CRUIImageRef img = resourceResolver->getIcon("moreicon");
+		if (img.isNull()) {
+			CRLog::trace("cannot load moreicon image");
+			img = resourceResolver->getIcon("cancel");
+		}
+		if (!img.isNull())
+			CRLog::trace("img size %d x %d", img->originalWidth(), img->originalHeight());
+		_menuButton = new CRUIButton(lString16::empty_str, img); //moreicon
 		_menuButton->setStyle("BUTTON_NOBACKGROUND");
 		_caption = new CRUITextWidget(lString16(L"Now reading"));
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
@@ -59,12 +66,25 @@ public:
 	CRUIHomeItemListWidget(lString16 caption) : CRUILinearLayout(true) {
 		_caption = new CRUITextWidget(caption);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
-		_caption->setPadding(MM_TO_PX(1));
+		_caption->setPadding(3);
+		_caption->setFont(currentTheme->getFontForSize(CRUI::FONT_SIZE_SMALL));
+//		lvRect rc;
+//		_caption->getMargin(rc);
+//		CRLog::trace("list caption margin: %d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom);
+//		_caption->getPadding(rc);
+//		CRLog::trace("list caption padding: %d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom);
+//		CRUIImageRef bg = _caption->getBackground();
+//		const CR9PatchInfo * nine = bg.isNull() ? NULL : bg->getNinePatchInfo();
+//		if (nine) {
+//			rc = nine->padding;
+//			CRLog::trace("list caption nine patch: %d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom);
+//		}
+
 		addChild(_caption);
 		_list = new CRUIListWidget(false, this);
 		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 		_list->setBackground(0xE0000000);
-		_caption->setPadding(MM_TO_PX(2));
+		_list->setPadding(4);
 		addChild(_list);
 
 		_itemImage = new CRUIImageWidget(CRUIImageRef());

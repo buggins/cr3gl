@@ -106,8 +106,6 @@ void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height
 
 CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	CRUIStyle * res = currentTheme->find(_styleId);
-	if (!res)
-		return NULL;
 	if (forState && getState())
 		res = res->find(getState());
 	return res;

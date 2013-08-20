@@ -211,10 +211,12 @@ GlRendererTemplate::Draw(void)
 	CRUICheckUpdateOptions(_widget, needLayout, needDraw);
 	_widget->invalidate();
 	if (needLayout) {
-		_widget->measure(400, 700);
+		//CRLog::trace("need layout");
+		_widget->measure(430, 700);
 		_widget->layout(50, 50, 50 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
 	}
 	if (needDraw) {
+		//CRLog::trace("need draw");
 		_widget->draw(&buf);
 	}
 //

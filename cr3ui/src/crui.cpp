@@ -13,7 +13,7 @@ using namespace CRUI;
 CRUIDeviceInfo deviceInfo;
 
 CRUIDeviceInfo::CRUIDeviceInfo() {
-	setScreenDimensions(600, 800, 160);
+	setScreenDimensions(600, 800, 300);
 }
 
 // 1" == 25.4mm

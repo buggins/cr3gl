@@ -71,6 +71,8 @@ void CRUITheme::registerStyle(CRUIStyle * style)
 }
 
 CRUIStyle * CRUITheme::find(const lString8 &id) {
+	if (id.empty())
+		return this;
 	CRUIStyle * res = _map.get(id);
 	if (res)
 		return res;
@@ -162,7 +164,7 @@ CRUIImageRef CRUIStyle::getListDelimiterVertical() {
 CRUIImageRef CRUIStyle::getBackground() {
 	if (!_background.isNull())
 		return _background;
-	if (_parentStyle)
+	if (_parentStyle && _stateValue)
 		return _parentStyle->getBackground();
 	return CRUIImageRef();
 }
@@ -298,6 +300,7 @@ CRUIImageRef CRResourceResolver::getIcon(const char * name, bool tiled) {
 		_iconMap.set(name8, res);
 		return res;
 	}
+	CRLog::error("failed to load resource %s", name);
 	return CRUIImageRef();
 }
 

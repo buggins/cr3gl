@@ -166,7 +166,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			if (i < getItemCount() - 1)
 				x += delimiterSize;
 		}
-		_maxScrollOffset = x - x0 - winsize > 0 ? x - winsize : 0;
+		_maxScrollOffset = x - x0 - winsize > 0 ? x - x0 - winsize : 0;
 	}
 }
 
@@ -273,18 +273,18 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 /// motion event handler, returns true if it handled event
 bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
-	//CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+	//CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	int index = itemFromPoint(event->getX(), event->getY());
 	int dx = event->getX() - event->getStartX();
 	int dy = event->getY() - event->getStartY();
 	int delta = isVertical() ? dy : dx;
 	bool isDragging = _dragStartOffset != NO_DRAG;
-	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
+	//CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
 	switch (action) {
 	case ACTION_DOWN:
 		_selectedItem = index;
 		invalidate();
-		//CRLog::trace("button DOWN");
+		//CRLog::trace("list DOWN");
 		break;
 	case ACTION_UP:
 		{
@@ -301,7 +301,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			}
 		}
 		// fire onclick
-		//CRLog::trace("button UP");
+		//CRLog::trace("list UP");
 		break;
 	case ACTION_FOCUS_IN:
 		if (isDragging)
@@ -309,7 +309,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		else
 			_selectedItem = index;
 		invalidate();
-		//CRLog::trace("button FOCUS IN");
+		//CRLog::trace("list FOCUS IN");
 		break;
 	case ACTION_FOCUS_OUT:
 		if (isDragging)
@@ -318,13 +318,13 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			_selectedItem = -1;
 		invalidate();
 		return false; // to continue tracking
-		//CRLog::trace("button FOCUS OUT");
+		//CRLog::trace("list FOCUS OUT");
 		break;
 	case ACTION_CANCEL:
 		_selectedItem = -1;
 		_dragStartOffset = NO_DRAG;
 		setScrollOffset(_scrollOffset);
-		//CRLog::trace("button CANCEL");
+		//CRLog::trace("list CANCEL");
 		break;
 	case ACTION_MOVE:
 		if (!isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
@@ -335,7 +335,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			setScrollOffset(_dragStartOffset - delta);
 		}
 		// ignore
-		//CRLog::trace("button MOVE");
+		//CRLog::trace("list MOVE");
 		break;
 	default:
 		return CRUIWidget::onTouchEvent(event);

@@ -53,7 +53,8 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 			if (dispatchTouchEvent(child, event)) {
 				if (action == ACTION_DOWN) {
 					//CRLog::trace("setting widget on DOWN");
-					event->setWidget(child);
+					if (!event->getWidget())
+						event->setWidget(child);
 				}
 				return true;
 			}
@@ -103,14 +104,14 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 	if (widget) {
 		// event is tracked by widget
 		if (!_rootWidget->isChild(widget)) {
-			//CRLog::trace("Widget is not a child of root - skipping event");
+			CRLog::trace("Widget is not a child of root - skipping event");
 			return false;
 		}
 		//CRLog::trace("Dispatching event directly to widget");
 		return dispatchTouchEvent(widget, event);
 	}
 	if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
-		//CRLog::trace("Skipping non-down event without widget");
+		CRLog::trace("Skipping non-down event without widget");
 		return false;
 	}
 	//CRLog::trace("No widget: dispatching using tree");
