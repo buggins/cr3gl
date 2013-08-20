@@ -312,16 +312,111 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
 }
 
 
-bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries);
+bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries, lUInt64 & hash);
+bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash);
 
 bool CRDirCacheItem::scan() {
 	CRLog::trace("Scanning directory %s", getPathName().c_str());
-	bool res = LVListDirectory(getPathName(), isArchive(), _entries);
+	lUInt64 hash;
+	bool res = LVListDirectory(getPathName(), isArchive(), _entries, hash);
 	setParsed(true);
+	_hash = hash;
 	return res;
 }
 
-bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries) {
+bool CRDirCacheItem::needScan() {
+	lUInt64 hash;
+	bool res = LVCalcDirectoryHash(getPathName(), isArchive(), hash);
+	if (res)
+		return hash != _hash;
+	return false;
+}
+
+void CRDirCache::addItem(CRDirCacheItem * dir) {
+	Item * item = new Item(dir);
+	item->next = _head;
+	if (_head)
+		_head->prev = item;
+	_head = item;
+	_byName.set(dir->getPathName(), item);
+}
+
+CRDirCache::Item * CRDirCache::findItem(const lString8 &  pathname) {
+	Item * res = _byName.get(pathname);
+	return res;
+}
+
+void CRDirCache::moveToHead(CRDirCache::Item * item) {
+	if (item == _head)
+		return;
+	// remove from middle of list
+	if (item->prev)
+		item->prev->next = item->next;
+	if (item->next)
+		item->next->prev = item->prev;
+	// insert into head
+	item->next = _head;
+	if (_head)
+		_head->prev = item;
+	_head = item;
+}
+
+CRDirCacheItem * CRDirCache::add(CRDirItem * dir) {
+	CRDirCacheItem * existing = find(dir);
+	if (existing)
+		return existing;
+	CRDirCacheItem * newItem = new CRDirCacheItem(dir);
+	addItem(newItem);
+	return newItem;
+}
+
+CRDirCacheItem * CRDirCache::find(lString8 pathname) {
+	CRDirCache::Item * item = findItem(pathname);
+	if (!item)
+		return NULL;
+	return item->dir;
+}
+
+void CRDirCache::clear() {
+	while (_head) {
+		Item * item = _head;
+		_head = item->next;
+		delete item->dir;
+		delete item;
+	}
+	_byName.clear();
+}
+
+bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash) {
+	hash = 0;
+	LVContainerRef dir;
+	LVStreamRef arcStream;
+	if (isArchive) {
+		arcStream = LVOpenFileStream(path.c_str(), LVOM_READ);
+		if (arcStream.isNull()) {
+			return false;
+		}
+		dir = LVOpenArchieve(arcStream);
+	} else {
+		dir = LVOpenDirectory(Utf8ToUnicode(path).c_str());
+	}
+	if (!dir) {
+		return false;
+	}
+	for (int i = 0; i < dir->GetObjectCount(); i++) {
+		const LVContainerItemInfo * item = dir->GetObjectInfo(i);
+		lString16 pathName = (lString16(dir->GetName()) + item->GetName());
+		if (item->IsContainer()) {
+			hash = hash * 31 + getHash(pathName);
+		} else {
+			hash = hash * 31 + getHash(pathName) + 1826327 * item->GetSize();
+		}
+	}
+	return true;
+}
+
+bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries, lUInt64 & hash) {
+	hash = 0;
 	LVContainerRef dir;
 	LVStreamRef arcStream;
 	if (isArchive) {
@@ -345,11 +440,13 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 		lString16 pathName = (lString16(dir->GetName()) + item->GetName());
 		lString8 pathName8 = UnicodeToUtf8(pathName);
 		if (item->IsContainer()) {
+			hash = hash * 31 + getHash(pathName);
 			// usual directory
 			CRDirItem * subdir = new CRDirItem(pathName8, false);
 			entries.add(subdir);
 			CRLog::trace("subdir: %s", pathName8.c_str());
 		} else {
+			hash = hash * 31 + getHash(pathName) + 1826327 * item->GetSize();
 			LVStreamRef stream = dir->OpenStream(item->GetName(), LVOM_READ);
 			if (!stream.isNull()) {
 				LVContainerRef arc = LVOpenArchieve(stream);

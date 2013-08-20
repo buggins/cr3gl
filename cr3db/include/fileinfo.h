@@ -48,12 +48,35 @@ public:
 class CRDirCacheItem : public CRDirItem {
 	LVPtrVector<CRDirEntry> _entries;
 	bool _scanned;
+	lUInt64 _hash;
 public:
-	CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()) {}
-	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive) {}
+	CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0) {}
+	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0) {}
 	virtual void setParsed(bool parsed) { _scanned = parsed; }
 	virtual bool isParsed() { return _scanned; }
 	bool scan();
+	bool needScan();
+};
+
+class CRDirCache {
+	struct Item {
+		CRDirCacheItem * dir;
+		Item * next;
+		Item * prev;
+		Item(CRDirCacheItem * _dir) : dir(_dir), next(NULL), prev(NULL) { }
+	};
+	Item * _head;
+	LVHashTable<lString8, Item*> _byName;
+	void addItem(CRDirCacheItem * dir);
+	Item * findItem(const lString8 & pathname);
+	void moveToHead(Item * item);
+public:
+	CRDirCache() : _head(NULL), _byName(1000) {}
+	~CRDirCache() { clear(); }
+	CRDirCacheItem * find(lString8 pathname);
+	CRDirCacheItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
+	CRDirCacheItem * add(CRDirItem * dir);
+	void clear();
 };
 
 
