@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AF2CC9D9-B88D-4BA0-82DB-132A58216835}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>crengine</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;CR3_PATCH;FT2_BUILD_LIBRARY=1;DOC_DATA_COMPRESSION_LEVEL=1;DOC_BUFFER_SIZE=0xA00000;ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1;LDOM_USE_OWN_MEM_MAN=0;CR3_ANTIWORD_PATCH=1;ENABLE_ANTIWORD=1;MAX_IMAGE_SCALE_MUL=2;CR_EMULATE_GETTEXT=1;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\glew\include;..\..\..\cr3\thirdparty\chmlib\src;..\..\..\cr3\thirdparty\antiword;..\..\..\cr3\thirdparty\zlib;..\..\..\cr3\thirdparty\libpng;..\..\..\cr3\thirdparty\libjpeg;..\..\..\cr3\thirdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;CR3_PATCH;FT2_BUILD_LIBRARY=1;DOC_DATA_COMPRESSION_LEVEL=1;DOC_BUFFER_SIZE=0xA00000;ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1;LDOM_USE_OWN_MEM_MAN=0;CR3_ANTIWORD_PATCH=1;ENABLE_ANTIWORD=1;MAX_IMAGE_SCALE_MUL=2;CR_EMULATE_GETTEXT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\glew\include;..\..\..\cr3\thirdparty\chmlib\src;..\..\..\cr3\thirdparty\antiword;..\..\..\cr3\thirdparty\zlib;..\..\..\cr3\thirdparty\libpng;..\..\..\cr3\thirdparty\libjpeg;..\..\..\cr3\thirdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cr3\crengine\include\chmfmt.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\cp_stats.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\cr3version.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crengine.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crgl.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\cri18n.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crsetup.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crskin.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crtest.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crtrace.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\crtxtenc.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\cssdef.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\dtddef.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\big5.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\big5_2003.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\cp936ext.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\gb2312.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\gbkext1.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\gbkext2.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\jisx0213.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\encodings\ksc5601.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\epubfmt.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\fb2def.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\gammatbl.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\hist.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\hyphman.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lstridmap.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvarray.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvbmpbuf.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvdocview.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvdrawbuf.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvfnt.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvfntman.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvhashtable.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvimg.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvmemman.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvpagesplitter.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvptrvec.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvref.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvrefcache.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvrend.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvstream.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvstring.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvstsheet.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvstyles.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvtextfm.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvthread.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvtinydom.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvtypes.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\lvxml.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\pdbfmt.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\props.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\rtfcmd.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\rtfimp.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\txtselector.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\wolutil.h" />
+    <ClInclude Include="..\..\..\cr3\crengine\include\wordfmt.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cr3\crengine\src\chmfmt.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\cp_stats.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\crgl.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\cri18n.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\crskin.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\crtest.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\crtxtenc.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\epubfmt.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\hist.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\hyphman.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lstridmap.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvbmpbuf.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvdocview.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvdrawbuf.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvfnt.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvfntman.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvimg.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvmemman.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvpagesplitter.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvrend.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvstream.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvstring.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvstsheet.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvstyles.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvtextfm.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvtinydom.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\lvxml.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\pdbfmt.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\props.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\rtfimp.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\txtselector.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\wolutil.cpp" />
+    <ClCompile Include="..\..\..\cr3\crengine\src\wordfmt.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -54,7 +54,7 @@ bool CRBookDB::updateSchema()
 			"last_access_time INTEGER, "
 			"flags INTEGER DEFAULT 0, "
 			"language VARCHAR DEFAULT NULL"
-			");");
+			");") < 0 || err;
 	err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
 			"book_folder_index ON book (folder_fk);") < 0 || err;
 	err = _db.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS "
@@ -73,7 +73,7 @@ bool CRBookDB::updateSchema()
 			"PRIMARY KEY (book_fk, author_fk)"
 			");") < 0 || err;
 	err = _db.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS "
-			"author_book_index ON book_author (author_fk, book_fk) ;");
+			"author_book_index ON book_author (author_fk, book_fk) ;") < 0 || err;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS bookmark ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			"book_fk INTEGER NOT NULL REFERENCES book (id),"

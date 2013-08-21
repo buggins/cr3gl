@@ -146,13 +146,14 @@ int CRUIStyle::getMinWidth()
 	return _minWidth;
 }
 
-CRUIImageRef CRUIStyle::CRUIStyle::getListDelimiterHorizontal() {
+CRUIImageRef CRUIStyle::getListDelimiterHorizontal() {
 	if (!_listDelimiterHorizontal.isNull())
 		return _listDelimiterHorizontal;
 	if (_parentStyle)
 		return _parentStyle->getListDelimiterHorizontal();
 	return CRUIImageRef();
 }
+
 CRUIImageRef CRUIStyle::getListDelimiterVertical() {
 	if (!_listDelimiterVertical.isNull())
 		return _listDelimiterVertical;

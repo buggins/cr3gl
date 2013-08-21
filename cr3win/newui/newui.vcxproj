@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F6829B1D-31FE-4EAF-BCF3-F2EBC1395D24}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>newui</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;CR3_PATCH;FT2_BUILD_LIBRARY=1;DOC_DATA_COMPRESSION_LEVEL=1;DOC_BUFFER_SIZE=0xA00000;ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1;LDOM_USE_OWN_MEM_MAN=0;CR3_ANTIWORD_PATCH=1;ENABLE_ANTIWORD=1;MAX_IMAGE_SCALE_MUL=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\cr3\thirdparty\sqlite;..\glew\include;..\..\..\cr3\thirdparty\freetype\include;..\..\cr3gl\include;..\..\cr3db\include;..\..\..\cr3\crengine\include;..\..\cr3ui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\cr3db\src\basedb.cpp" />
+    <ClCompile Include="..\..\cr3db\src\cr3db.cpp" />
+    <ClCompile Include="..\..\cr3db\src\fileinfo.cpp" />
+    <ClCompile Include="..\..\cr3gl\src\gldrawbuf.cpp" />
+    <ClCompile Include="..\..\cr3gl\src\glfont.cpp" />
+    <ClCompile Include="..\..\cr3gl\src\glscene.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\crui.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruicontrols.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruievent.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruifolderwidget.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruihomewidget.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruilayout.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruilist.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruireadwidget.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruitheme.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\cruiwidget.cpp" />
+    <ClCompile Include="..\..\cr3ui\src\stringresource.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\cr3db\include\basedb.h" />
+    <ClInclude Include="..\..\cr3db\include\cr3db.h" />
+    <ClInclude Include="..\..\cr3db\include\fileinfo.h" />
+    <ClInclude Include="..\..\cr3gl\include\gldrawbuf.h" />
+    <ClInclude Include="..\..\cr3gl\include\glfont.h" />
+    <ClInclude Include="..\..\cr3gl\include\glscene.h" />
+    <ClInclude Include="..\..\cr3ui\include\crui.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruicontrols.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruievent.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruifolderwidget.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruihomewidget.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruilayout.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruilist.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruireadwidget.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruitheme.h" />
+    <ClInclude Include="..\..\cr3ui\include\cruiwidget.h" />
+    <ClInclude Include="..\..\cr3ui\include\stringresource.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

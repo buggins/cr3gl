@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D48C6899-0498-4B2A-88FE-FE238E55949D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>freetype</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FT2_BUILD_LIBRARY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\cr3\thirdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FT2_BUILD_LIBRARY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\cr3\thirdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\autofit\autofit.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftbase.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftbbox.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftbdf.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftbitmap.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftgasp.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftglyph.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftgxval.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftinit.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftmm.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftotval.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftpatent.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftpfr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftstroke.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftsynth.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftsystem.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\fttype1.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftwinfnt.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\base\ftxf86.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\bdf\bdf.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\cache\ftccache.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\cff\cff.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\cid\type1cid.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\gzip\ftgzip.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\lzw\ftlzw.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\pcf\pcf.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\pfr\pfr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\psaux\psaux.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\pshinter\pshinter.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\psnames\psnames.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\raster\raster.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\sfnt\sfnt.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\smooth\smooth.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\truetype\truetype.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\type1\type1.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\type42\type42.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\freetype\src\winfonts\winfnt.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\config\ftheader.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\config\ftoption.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\freetype.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftadvanc.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftautoh.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftbbox.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftbdf.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftbitmap.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftbzip2.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftcache.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftcffdrv.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftchapters.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftcid.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\fterrdef.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\fterrors.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftgasp.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftglyph.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftgxval.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftgzip.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftimage.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftincrem.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftlist.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftlzw.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftmac.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftmm.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftmodapi.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftmoderr.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftotval.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftoutln.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftpfr.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftrender.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftsizes.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftsnames.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftstroke.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftsynth.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftsystem.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\fttrigon.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftttdrv.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\fttypes.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ftxf86.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\t1tables.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ttnameid.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\tttables.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\tttags.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\freetype\ttunpat.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\freetype\include\ft2build.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

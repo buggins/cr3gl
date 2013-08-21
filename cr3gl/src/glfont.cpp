@@ -4,9 +4,13 @@
  *  Created on: Aug 5, 2013
  *      Author: vlopatin
  */
-
+#ifdef _WIN32
+#include <GL/glew.h>
+#include <GL/wglew.h>
+#else
 #include <gl.h>
 #include <glext.h>
+#endif
 #include <crengine.h>
 #include "glfont.h"
 #include "glscene.h"

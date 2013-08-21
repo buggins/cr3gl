@@ -11,18 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E1E40AE5-69C1-4EAC-86C0-B41C73B8DF70}</ProjectGuid>
+    <ProjectGuid>{1AA374C2-E3A0-48BD-BBDC-84047569990A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>cr3win</RootNamespace>
+    <RootNamespace>zlib</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -37,19 +37,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\cr3\crengine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CR3_PATCH=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -59,12 +55,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\cr3\crengine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -74,25 +70,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="cr3win.ico" />
     <None Include="ReadMe.txt" />
-    <None Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cr3win.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\adler32.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\compress.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\crc32.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\deflate.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\gzio.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\infback.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\inffast.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\inflate.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\inftrees.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\trees.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\uncompr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cr3win.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="cr3win.rc" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\crc32.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\deflate.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\inffast.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\inffixed.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\inflate.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\inftrees.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\trees.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\zconf.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\zlib.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\zlib\zutil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

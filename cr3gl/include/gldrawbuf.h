@@ -11,7 +11,13 @@
 #include <lvdrawbuf.h>
 #include <lvhashtable.h>
 #include <lvptrvec.h>
+
+#ifdef _WIN32
+#include <GL/glew.h>
+#include <GL/wglew.h>
+#else
 #include <gl.h>
+#endif
 
 #include "glscene.h"
 

@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4BAB978A-5F4E-41E4-8B50-3CC5811D6290}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>antiword</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;CR3_ANTIWORD_PATCH=1;DEBUG;__dos;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;CR3_ANTIWORD_PATCH=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\asc85enc.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\blocklist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\chartrans.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\datalist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\depot.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\doclist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\fail.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\finddata.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\findtext.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\fontlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\fonts.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\fonts_u.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\hdrftrlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\imgexam.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\listlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\misc.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\notes.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\out2window.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\pictlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\prop0.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\prop2.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\prop6.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\prop8.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\properties.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\propmod.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\rowlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\sectlist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\stylelist.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\stylesheet.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\summary.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\tabstop.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\unix.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\utf8.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\word2text.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\worddos.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\wordlib.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\wordmac.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\wordole.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\wordwin.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\antiword\xmalloc.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cr3\thirdparty\antiword\antiword.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

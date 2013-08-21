@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DD772182-7CB9-42BA-B0E9-FD1A8EE88FE2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libjpeg</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcapimin.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcapistd.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jccoefct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jccolor.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcdctmgr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jchuff.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcinit.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcmainct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcmarker.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcmaster.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcomapi.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcparam.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcphuff.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcprepct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jcsample.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jctrans.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdapimin.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdapistd.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdatadst.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdatasrc.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdcoefct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdcolor.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jddctmgr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdhuff.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdinput.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdmainct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdmarker.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdmaster.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdmerge.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdphuff.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdpostct.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdsample.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jdtrans.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jerror.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jfdctflt.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jfdctfst.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jfdctint.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jidctflt.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jidctfst.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jidctint.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jidctred.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jmemmgr.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jmemnobs.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jquant1.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jquant2.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libjpeg\jutils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jchuff.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jconfig.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jdct.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jdhuff.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jerror.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jinclude.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jmemsys.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jmorecfg.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jpegint.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jpeglib.h" />
+    <ClInclude Include="..\..\..\cr3\thirdparty\libjpeg\jversion.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
