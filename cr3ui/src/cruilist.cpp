@@ -140,10 +140,6 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			lvPoint sz = _itemSizes[i];
 			childRc.top = y;
 			childRc.bottom = y + sz.y;
-//			if (childRc.top > clientRc.bottom)
-//				childRc.top = clientRc.bottom;
-//			if (childRc.bottom > clientRc.bottom)
-//				childRc.bottom = clientRc.bottom;
 			_itemRects.add(childRc);
 			y = childRc.bottom;
 			if (i < getItemCount() - 1)
@@ -157,10 +153,6 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			lvPoint sz = _itemSizes[i];
 			childRc.left = x;
 			childRc.right = x + sz.x;
-//			if (childRc.left > clientRc.right)
-//				childRc.left = clientRc.right;
-//			if (childRc.right > clientRc.right)
-//				childRc.right = clientRc.right;
 			_itemRects.add(childRc);
 			x = childRc.right;
 			if (i < getItemCount() - 1)

@@ -14,6 +14,7 @@
 #include "cruicontrols.h"
 #include "cruilist.h"
 #include "cruihomewidget.h"
+#include "cruifolderwidget.h"
 
 struct CRUIDeviceInfo {
 	int dpi;
