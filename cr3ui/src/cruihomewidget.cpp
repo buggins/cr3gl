@@ -9,6 +9,7 @@
 #include "cruicontrols.h"
 #include "crui.h"
 #include "cruitheme.h"
+#include "stringresource.h"
 
 using namespace CRUI;
 
@@ -36,25 +37,29 @@ public:
 		_cover->setAlign(ALIGN_CENTER);
 		addChild(_cover);
 		_layout = new CRUILinearLayout(true);
-		_layout->setPadding(PT_TO_PX(4));
 		addChild(_layout);
 		_captionLayout = new CRUILinearLayout(false);
 		_menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
-		_caption = new CRUITextWidget(lString16(L"Now reading"));
+		_caption = new CRUITextWidget(STR_NOW_READING);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
 		_caption->setBackground(0xE0404040);
 		_caption->setAlign(ALIGN_LEFT|ALIGN_TOP);
+		_caption->setPadding(PT_TO_PX(4));
 		_captionLayout->addChild(_caption);
 		_captionLayout->addChild(_menuButton);
 
 		_layout->addChild(_captionLayout);
+		lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
 		_title = new CRUITextWidget(lString16(L"War and Peace"));
 		_title->setFontSize(FONT_SIZE_MEDIUM);
+		_title->setPadding(pad);
 		_authors = new CRUITextWidget(lString16(L"Leo Tolstoy"));
 		_authors->setFontSize(FONT_SIZE_SMALL);
+		_authors->setPadding(pad);
 		_info = new CRUITextWidget(lString16(L"fb2 3245K 1891"));
 		_info->setFontSize(FONT_SIZE_SMALL);
+		_info->setPadding(pad);
 
 //		CRUIButton * testButton = new CRUIButton(lString16(), "ic_menu_more");
 //		testButton->setMinWidth(100);
@@ -76,8 +81,8 @@ class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter {
 	CRUIImageWidget * _itemImage;
 	CRUITextWidget * _textWidget;
 public:
-	CRUIHomeItemListWidget(lString16 caption) : CRUILinearLayout(true) {
-		_caption = new CRUITextWidget(caption);
+	CRUIHomeItemListWidget(const char * captionResourceId) : CRUILinearLayout(true) {
+		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
 		_caption->setPadding(3);
 		_caption->setFont(currentTheme->getFontForSize(CRUI::FONT_SIZE_SMALL));
@@ -141,28 +146,28 @@ public:
 
 class CRUIFileSystemDirsWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIFileSystemDirsWidget() : CRUIHomeItemListWidget(lString16(L"Browse file system")) {
+	CRUIFileSystemDirsWidget() : CRUIHomeItemListWidget(STR_BROWSE_FILESYSTEM) {
 
 	}
 };
 
 class CRUILibraryWidget : public CRUIHomeItemListWidget {
 public:
-	CRUILibraryWidget() : CRUIHomeItemListWidget(lString16(L"Library")) {
+	CRUILibraryWidget() : CRUIHomeItemListWidget(STR_BROWSE_LIBRARY) {
 
 	}
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIOnlineCatalogsWidget() : CRUIHomeItemListWidget(lString16(L"Online Catalogs")) {
+	CRUIOnlineCatalogsWidget() : CRUIHomeItemListWidget(STR_ONLINE_CATALOGS) {
 
 	}
 };
 
 class CRUIRecentBooksListWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIRecentBooksListWidget() : CRUIHomeItemListWidget(lString16(L"Recently read books")) {
+	CRUIRecentBooksListWidget() : CRUIHomeItemListWidget(STR_RECENT_BOOKS) {
 	}
 };
 
