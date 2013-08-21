@@ -40,9 +40,11 @@ class CRUIFileItemWidget : public CRUILinearLayout {
 public:
 	CRUIImageWidget * _icon;
 	CRUILinearLayout * _layout;
+	CRUILinearLayout * _infolayout;
 	CRUITextWidget * _line1;
 	CRUITextWidget * _line2;
 	CRUITextWidget * _line3;
+	CRUITextWidget * _line4;
 	CRUIFileItemWidget(const char * iconRes) : CRUILinearLayout(false) {
 		_icon = new CRUIImageWidget(iconRes);
 		_icon->setMinWidth(MIN_ITEM_PX);
@@ -51,15 +53,21 @@ public:
 		_icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
 		addChild(_icon);
 		_layout = new CRUILinearLayout(true);
+		_infolayout = new CRUILinearLayout(false);
 		_line1 = new CRUITextWidget();
 		_line1->setFontSize(FONT_SIZE_SMALL);
 		_line2 = new CRUITextWidget();
 		_line2->setFontSize(FONT_SIZE_MEDIUM);
 		_line3 = new CRUITextWidget();
 		_line3->setFontSize(FONT_SIZE_SMALL);
+		_line4 = new CRUITextWidget();
+		_line4->setFontSize(FONT_SIZE_XSMALL);
 		_layout->addChild(_line1);
 		_layout->addChild(_line2);
-		_layout->addChild(_line3);
+		_infolayout->addChild(_line3);
+		_infolayout->addChild(_line4);
+		_line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+		_layout->addChild(_infolayout);
 		_layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
 		_layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		//_layout->setBackground(0x80C0C0C0);
@@ -70,6 +78,15 @@ public:
 		setStyle("LIST_ITEM");
 	}
 };
+
+static lString16 sizeToString(int size) {
+	if (size < 4096)
+		return lString16::itoa(size);
+	else if (size < 4096*1024)
+		return lString16::itoa(size / 1024) + L"K";
+	else
+		return lString16::itoa(size / 1024 / 1024) + L"M";
+}
 
 class CRUIFileListWidget : public CRUIListWidget {
 protected:
@@ -105,10 +122,26 @@ public:
 			lString16 text1;
 			lString16 text2;
 			lString16 text3;
+			lString16 text4;
 			if (book) {
 				text2 = Utf8ToUnicode(book->title.c_str());
-				text1 = lString16("Author name");
-				text3 = lString16("Moonlight, #1; FB2 1024K");
+				for (int i = 0; i<book->authors.length(); i++) {
+					if (text1.length())
+						text1 += L", ";
+					text1 += Utf8ToUnicode(book->authors[i]->name.c_str());
+				}
+				if (!book->series.isNull()) {
+					text3 += Utf8ToUnicode(book->series->name.c_str());
+					if (book->seriesNumber) {
+						if (text3.length())
+							text3 += " ";
+						text3 += "#";
+						text3 += lString16::itoa(book->seriesNumber);
+					}
+				}
+				text4 = sizeToString(book->filesize);
+				text4 += " ";
+				text4 += LVDocFormatName(book->format);
 			} else {
 				text2 = Utf8ToUnicode(item->getFileName());
 			}
@@ -117,6 +150,7 @@ public:
 			res->_line1->setText(text1);
 			res->_line2->setText(text2);
 			res->_line3->setText(text3);
+			res->_line4->setText(text4);
 			//CRLog::trace("returning book item");
 			return res;
 		}
@@ -124,11 +158,7 @@ public:
 	virtual void setDirectory(CRDirCacheItem * dir)
 	{
 		_dir = dir;
-		requestLayout();
-		if (dir)
-			CRLog::trace("setDirectory(%s)", dir->getPathName().c_str());
-		else
-			CRLog::trace("setDirectory(NULL)");
+		dir->sort(BY_TITLE);
 		requestLayout();
 	}
 };

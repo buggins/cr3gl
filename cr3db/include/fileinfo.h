@@ -10,19 +10,51 @@
 
 #include <cr3db.h>
 
+namespace CRUI {
+	enum DocFormat {
+		UNKNOWN_FORMAT,
+		FB2,
+		TXT,
+		RTF,
+		EPUB,
+		HTML,
+		TXT_BOOKMARK,
+		CHM,
+		DOC,
+		PDB
+	};
+
+	enum FolderSortOrder {
+		BY_TITLE,
+		BY_TITLE_DESC,
+		BY_AUTHOR,
+		BY_AUTHOR_DESC,
+		BY_SERIES,
+		BY_SERIES_DESC,
+		BY_DATE,
+		BY_DATE_DESC,
+	};
+};
+
+
+
+int LVDocFormatFromExtension(lString16 &pathName);
+lString16 LVDocFormatName(int fmt);
+
 class CRDirEntry {
 	lString8 _pathName;
 	bool _isArchive;
 public:
 	CRDirEntry(const lString8 & pathname, bool archive) : _pathName(pathname), _isArchive(archive) {}
 	virtual ~CRDirEntry() {}
-	const lString8 & getPathName() { return _pathName; }
-	lString8 getFileName();
-	virtual bool isDirectory() = 0;
-	virtual bool isArchive() { return _isArchive; }
-	virtual BookDBBook * getBook() { return NULL; }
+	const lString8 & getPathName() const { return _pathName; }
+	lString8 getFileName() const;
+	lString16 getTitle() const;
+	virtual bool isDirectory() const = 0;
+	virtual bool isArchive() const { return _isArchive; }
+	virtual BookDBBook * getBook() const { return NULL; }
 	virtual void setBook(BookDBBook * book) { }
-	virtual bool isParsed() { return false; }
+	virtual bool isParsed() const { return false; }
 	virtual void setParsed(bool parsed) {}
 };
 
@@ -32,18 +64,18 @@ private:
 	bool _parsed;
 public:
 	virtual void setParsed(bool parsed) { _parsed = parsed; }
-	virtual bool isParsed() { return _parsed; }
-	virtual BookDBBook * getBook() { return _book; }
+	virtual bool isParsed() const { return _parsed; }
+	virtual BookDBBook * getBook() const { return _book; }
 	virtual void setBook(BookDBBook * book) { if (_book) delete _book; _book = book; }
 	CRFileItem(const lString8 & pathname, bool archive) : CRDirEntry(pathname, archive), _book(NULL), _parsed(false) { }
 	~CRFileItem() { if (_book) delete _book; }
-	virtual bool isDirectory() { return false; }
+	virtual bool isDirectory() const { return false; }
 };
 
 class CRDirItem : public CRDirEntry {
 public:
 	CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
-	virtual bool isDirectory() { return true; }
+	virtual bool isDirectory() const { return true; }
 };
 
 class CRDirCacheItem : public CRDirItem {
@@ -51,15 +83,16 @@ class CRDirCacheItem : public CRDirItem {
 	bool _scanned;
 	lUInt64 _hash;
 public:
-	int itemCount() { return _entries.length(); }
-	CRDirEntry * getItem(int index) { return _entries[index]; }
+	int itemCount() const { return _entries.length(); }
+	CRDirEntry * getItem(int index) const { return _entries[index]; }
 	CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0) {}
 	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0) {}
 	virtual void setParsed(bool parsed) { _scanned = parsed; }
-	virtual bool isParsed() { return _scanned; }
+	virtual bool isParsed() const { return _scanned; }
 	bool refresh();
 	bool scan();
 	bool needScan();
+	void sort(int sortOrder);
 };
 
 class CRDirCache {

@@ -17,18 +17,22 @@
 #include <fb2def.h>
 #include <sys/stat.h>
 
-enum DocFormat {
-	UNKNOWN_FORMAT,
-	FB2,
-	TXT,
-	RTF,
-	EPUB,
-	HTML,
-	TXT_BOOKMARK,
-	CHM,
-	DOC,
-	PDB
-};
+using namespace CRUI;
+
+lString16 LVDocFormatName(int fmt) {
+	switch (fmt) {
+	case FB2: return lString16("FB2");
+	case TXT: return lString16("TXT");
+	case RTF: return lString16("RTF");
+	case EPUB: return lString16("EPUB");
+	case HTML: return lString16("HTML");
+	case TXT_BOOKMARK: return lString16("BMK");
+	case CHM: return lString16("CHM");
+	case DOC: return lString16("DOC");
+	case PDB: return lString16("PDB");
+	default: return lString16("?");
+	}
+}
 
 int LVDocFormatFromExtension(lString16 &pathName) {
 	if (pathName.endsWith(".fb2"))
@@ -239,8 +243,14 @@ bool CRDirCacheItem::scan() {
 	return res;
 }
 
-lString8 CRDirEntry::getFileName() {
+lString8 CRDirEntry::getFileName() const {
 	return UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(_pathName)));
+}
+
+lString16 CRDirEntry::getTitle() const {
+	if (getBook())
+		return Utf8ToUnicode(getBook()->title.c_str());
+	return lString16();
 }
 
 bool CRDirCacheItem::refresh() {
@@ -258,6 +268,36 @@ bool CRDirCacheItem::needScan() {
 		return hash != _hash;
 	return false;
 }
+
+static int title_comparator(const CRDirEntry ** item1, const CRDirEntry ** item2) {
+	const CRDirEntry * e1 = *item1;
+	const CRDirEntry * e2 = *item2;
+	if (e1->isDirectory() && !e2->isDirectory())
+		return -1;
+	if (!e1->isDirectory() && e2->isDirectory())
+		return 1;
+	lString8 fn1 = e1->getFileName();
+	lString8 fn2 = e2->getFileName();
+	if (e1->isDirectory() && e2->isDirectory()) {
+		return fn1.compare(fn2);
+	}
+	lString16 t1 = e1->getTitle();
+	lString16 t2 = e2->getTitle();
+	// move items w/o title to end of list
+	if (t1.empty() && !t2.empty())
+		return 1;
+	if (!t1.empty() && t2.empty())
+		return -1;
+	int res = t1.compare(t2);
+	if (res)
+		return res;
+	return fn1.compare(fn2);
+}
+
+void CRDirCacheItem::sort(int sortOrder) {
+	_entries.sort(title_comparator);
+}
+
 
 void CRDirCache::addItem(CRDirCacheItem * dir) {
 	Item * item = new Item(dir);
