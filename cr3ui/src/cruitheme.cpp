@@ -288,6 +288,8 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 }
 
 CRUIImageRef CRResourceResolver::getIcon(const char * name, bool tiled) {
+	if (!name || !name[0])
+		return CRUIImageRef();
 	lString8 name8(name);
 	if (tiled)
 		name8 += "-tiled";

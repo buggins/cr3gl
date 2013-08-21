@@ -9,6 +9,7 @@
 #define CRUIFOLDERWIDGET_H_
 
 #include "cruilist.h"
+#include "fileinfo.h"
 
 class CRUITitleBarWidget;
 class CRUIFileListWidget;
@@ -16,13 +17,11 @@ class CRUIFileListWidget;
 class CRUIFolderWidget : public CRUIContainerWidget {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
+	CRDirCacheItem * _dir;
 public:
+	virtual void setDirectory(CRDirCacheItem * _dir);
 	CRUIFolderWidget();
 	virtual ~CRUIFolderWidget();
-	/// measure dimensions
-	virtual void measure(int baseWidth, int baseHeight);
-	/// updates widget position based on specified rectangle
-	virtual void layout(int left, int top, int right, int bottom);
 };
 
 

@@ -13,10 +13,13 @@
 class CRUITextWidget : public CRUIWidget {
 protected:
 	lString16 _text;
+	lString8 _textResourceId;
 	int _maxLines;
 public:
 	virtual CRUIWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
 	virtual CRUIWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
+	virtual CRUIWidget * setText(lString8 textResourceId) { _textResourceId = textResourceId; requestLayout(); return this; }
+	virtual lString16 getText();
 
 	CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines) {}
 	/// measure dimensions
@@ -53,7 +56,11 @@ public:
 	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
 };
 
-
+class CRUIImageButton : public CRUIButton {
+protected:
+public:
+	CRUIImageButton(const char * imageResource, const char * styleName = "BUTTON_NOBACKGROUND");
+};
 
 
 #endif /* CRUICONTROLS_H_ */

@@ -76,10 +76,14 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 	lString8Collection dirs;
 	//dirs.add(UnicodeToUtf8(resourceDir));
-	dirs.add(UnicodeToUtf8(resourceDir) + "screen-density-xhigh");
+	lString8 resDir8 = UnicodeToUtf8(resourceDir);
+	dirs.add(resDir8 + "screen-density-xhigh");
 	LVCreateResourceResolver(dirs);
 	LVGLCreateImageCache();
-
+	CRIniFileTranslator * fallbackTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/en.ini").c_str());
+	CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/ru.ini").c_str());
+	CRI18NTranslator::setTranslator(mainTranslator);
+	CRI18NTranslator::setDefTranslator(fallbackTranslator);
 
 	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite13";
 	bookDB = new CRBookDB();

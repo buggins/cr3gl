@@ -9,6 +9,7 @@
 #define CRUIWIDGET_H_
 
 #include "cruievent.h"
+#include "cri18n.h"
 
 /// base class for all UI elements
 class CRUIWidget {
@@ -115,10 +116,13 @@ public:
 	CRUIStyle * getStyle(bool forState = false);
 
 	virtual CRUIWidget * setText(lString16 text) { return this; }
+	virtual CRUIWidget * setText(lString8 textResourceId) { return this; }
+	virtual lString16 getText() { return lString16::empty_str; }
 
 	virtual CRUIWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
 	virtual CRUIWidget * setFontSize(lUInt8 sz) { _fontSize = sz; requestLayout(); return this; }
 	virtual CRUIWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
+	virtual CRUIWidget * setBackground(const char * resourceName) { _background = resourceResolver->getIcon(resourceName); requestLayout(); return this; }
 	virtual CRUIWidget * setBackground(CRUIImageRef background) { _background = background; requestLayout(); return this; }
 	virtual CRUIWidget * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); requestLayout(); return this; }
 	virtual CRUIImageRef getBackground();

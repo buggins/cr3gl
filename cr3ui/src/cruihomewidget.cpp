@@ -39,18 +39,7 @@ public:
 		_layout->setPadding(PT_TO_PX(4));
 		addChild(_layout);
 		_captionLayout = new CRUILinearLayout(false);
-		CRUIImageRef img = resourceResolver->getIcon("ic_menu_more");
-		if (img.isNull()) {
-			CRLog::trace("cannot load moreicon image");
-			img = resourceResolver->getIcon("cancel");
-		}
-		if (!img.isNull())
-			CRLog::trace("img size %d x %d", img->originalWidth(), img->originalHeight());
-		_menuButton = new CRUIButton(lString16::empty_str, img); //moreicon
-		_menuButton->setStyle("BUTTON_NOBACKGROUND");
-		_menuButton->setMinWidth(deviceInfo.minListItemSize);
-		_menuButton->setMinHeight(deviceInfo.minListItemSize);
-		_menuButton->setAlign(CRUI::ALIGN_CENTER);
+		_menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
 		_caption = new CRUITextWidget(lString16(L"Now reading"));
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);

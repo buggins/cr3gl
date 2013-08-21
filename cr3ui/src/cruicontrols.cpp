@@ -6,14 +6,24 @@
  */
 
 #include "cruicontrols.h"
+#include "crui.h"
 
 using namespace CRUI;
 
 //=================================================================================
 
+lString16 CRUITextWidget::getText() {
+	if (!_text.empty())
+		return _text;
+	if (!_textResourceId.empty())
+		return _16(_textResourceId.c_str());
+	return _text;
+}
+
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
-	int width = getFont()->getTextWidth(_text.c_str(), _text.length());
+	lString16 text = getText();
+	int width = getFont()->getTextWidth(text.c_str(), text.length());
 	int height = getFont()->getHeight();
 	defMeasure(baseWidth, baseHeight, width, height);
 }
@@ -29,6 +39,7 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUITextWidget::draw(LVDrawBuf * buf) {
+	lString16 text = getText();
 	CRUIWidget::draw(buf);
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
@@ -36,11 +47,11 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	setClipRect(buf, rc);
 	applyPadding(rc);
 	buf->SetTextColor(getTextColor());
-	int width = getFont()->getTextWidth(_text.c_str(), _text.length());
+	int width = getFont()->getTextWidth(text.c_str(), text.length());
 	int height = getFont()->getHeight();
 	applyAlign(rc, width, height);
 	getFont()->DrawTextString(buf, rc.left, rc.top,
-            _text.c_str(), _text.length(),
+            text.c_str(), text.length(),
             '?');
 }
 
@@ -87,6 +98,14 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 
 
 
+CRUIImageButton::CRUIImageButton(const char * imageResource, const char * styleName) : CRUIButton(lString16::empty_str, imageResource, true)
+{
+	if (styleName)
+		setStyle(styleName);
+	setMinWidth(deviceInfo.minListItemSize);
+	setMinHeight(deviceInfo.minListItemSize);
+	setAlign(CRUI::ALIGN_CENTER);
+}
 
 CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
 	CRUIImageRef image;
