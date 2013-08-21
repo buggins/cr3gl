@@ -3,6 +3,7 @@
 #include "glfont.h"
 #include <crengine.h>
 #include "crui.h"
+#include "fileinfo.h"
 
 using namespace CRUI;
 
@@ -88,7 +89,10 @@ GlRendererTemplate::GlRendererTemplate(void)
 
 	_widget = layout;
 #endif
-	_widget = new CRUIHomeWidget();
+	//_widget = new CRUIHomeWidget();
+	CRUIFolderWidget * folder = new CRUIFolderWidget();
+	folder->setDirectory(dirCache->find(lString8("/mnt/ums/Downloads")));
+	_widget = folder;
 	_eventManager->setRootWidget(_widget);
 }
 
@@ -180,14 +184,14 @@ GlRendererTemplate::Draw(void)
 	buf.beforeDrawing();
 
 
-	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
-	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
-//	buf.FillRect(0, 0, 500, 10, 0x000000FF);
-	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
-//	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
-//	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
-	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
-	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
+//	buf.FillRect(100, 50, 300, 500, 0x0055aa55);
+//	buf.FillRect(200, 100, 400, 700, 0x80aa55aa);
+////	buf.FillRect(0, 0, 500, 10, 0x000000FF);
+//	pagebuf.DrawTo(&buf, 10, 10, 0, NULL);
+////	backbuf.DrawTo(&buf, 150, 70, 0, NULL);
+////	buf.DrawRescaled(&backbuf, 30, 250, 50, 50, 0);
+//	buf.FillRect(0, buf.GetHeight() - 1, buf.GetWidth(), buf.GetHeight(), 0x0000FFFF);
+//	buf.FillRect(buf.GetWidth() - 1, 0, buf.GetWidth(), buf.GetHeight(), 0x0000FF00);
 
 
 //	layout->setFont(font);
@@ -212,8 +216,8 @@ GlRendererTemplate::Draw(void)
 	_widget->invalidate();
 	if (needLayout) {
 		//CRLog::trace("need layout");
-		_widget->measure(__controlWidth - 50, __controlHeight - 80);
-		_widget->layout(25, 50, 25 + _widget->getMeasuredWidth(), 50 + _widget->getMeasuredHeight());
+		_widget->measure(__controlWidth, __controlHeight);
+		_widget->layout(0, 0, _widget->getMeasuredWidth(), _widget->getMeasuredHeight());
 	}
 	if (needDraw) {
 		//CRLog::trace("need draw");

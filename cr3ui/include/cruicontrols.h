@@ -18,11 +18,14 @@ protected:
 public:
 	virtual CRUIWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
 	virtual CRUIWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
+	virtual CRUIWidget * setText(const wchar_t * text) { _text = lString16(text); requestLayout(); return this; }
 	virtual CRUIWidget * setText(lString8 textResourceId) { _textResourceId = textResourceId; requestLayout(); return this; }
+	virtual CRUIWidget * setText(const char * textResourceId) { _textResourceId = lString8(textResourceId); requestLayout(); return this; }
 	virtual lString16 getText();
 
 	CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines) {}
 	CRUITextWidget(const char * textResourceId, int maxLines = 1) : _textResourceId(textResourceId), _maxLines(maxLines) {}
+	CRUITextWidget() : _maxLines(1) {}
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
@@ -35,6 +38,7 @@ class CRUIImageWidget : public CRUIWidget {
 protected:
 	CRUIImageRef _image;
 public:
+	CRUIImageWidget(const char * imageRes) : _image(resourceResolver->getIcon(imageRes)) { }
 	CRUIImageWidget(CRUIImageRef image) : _image(image) { }
 	virtual void setImage(CRUIImageRef image) { _image = image; requestLayout(); }
 	/// measure dimensions

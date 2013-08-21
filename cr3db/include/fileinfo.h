@@ -17,6 +17,7 @@ public:
 	CRDirEntry(const lString8 & pathname, bool archive) : _pathName(pathname), _isArchive(archive) {}
 	virtual ~CRDirEntry() {}
 	const lString8 & getPathName() { return _pathName; }
+	lString8 getFileName();
 	virtual bool isDirectory() = 0;
 	virtual bool isArchive() { return _isArchive; }
 	virtual BookDBBook * getBook() { return NULL; }
@@ -50,6 +51,8 @@ class CRDirCacheItem : public CRDirItem {
 	bool _scanned;
 	lUInt64 _hash;
 public:
+	int itemCount() { return _entries.length(); }
+	CRDirEntry * getItem(int index) { return _entries[index]; }
 	CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0) {}
 	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0) {}
 	virtual void setParsed(bool parsed) { _scanned = parsed; }

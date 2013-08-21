@@ -145,6 +145,10 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 
 	CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
 	homeStyle->setBackground("tx_wood_v3.jpg");
+
+	CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
+	fileListStyle->setBackground("tx_wood_v3.jpg");
+	fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
 }
 
 

@@ -18,7 +18,7 @@ class CRUIListAdapter {
 public:
 	virtual int getItemCount(CRUIListWidget * list) = 0;
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) = 0;
-	virtual bool isEnabled(int index) { return true; }
+	virtual bool isEnabled(CRUIListWidget * list, int index) { return true; }
 	virtual ~CRUIListAdapter() {}
 };
 
@@ -73,8 +73,11 @@ public:
 
 	virtual int getScrollOffset() { return _scrollOffset; }
 	virtual void setScrollOffset(int offset);
+
 	virtual CRUIWidget * getItemWidget(int index) { return _adapter != NULL ? _adapter->getItemWidget(this, index) : 0; }
 	virtual int getItemCount() { return _adapter != NULL ? _adapter->getItemCount(this) : 0; }
+	virtual bool isItemEnabled(int index) { return _adapter != NULL ? _adapter->isEnabled(this, index) : true; }
+
 	/// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	/// measure dimensions

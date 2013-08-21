@@ -75,6 +75,7 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			CRUIWidget * item = getItemWidget(i);
 			item->measure(maxw, maxh);
 			lvPoint sz(item->getMeasuredWidth(), item->getMeasuredHeight());
+			//CRLog::trace("measured list item[%d] (%d,%d)", i, sz.x, sz.y);
 			totalh += sz.y;
 			if (biggestw < sz.x)
 				biggestw = sz.x;
@@ -140,6 +141,7 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 			lvPoint sz = _itemSizes[i];
 			childRc.top = y;
 			childRc.bottom = y + sz.y;
+			//CRLog::trace("layout list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
 			_itemRects.add(childRc);
 			y = childRc.bottom;
 			if (i < getItemCount() - 1)
@@ -165,13 +167,17 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 /// draws widget with its children to specified surface
 void CRUIListWidget::draw(LVDrawBuf * buf) {
 	CRUIWidget::draw(buf);
-	if (!_adapter)
-		return;
+//	if (!_adapter)
+//		return;
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
+
+	lvRect clip;
+	buf->GetClipRect(&clip);
+
 	CRUIImageRef delimiter;
 	int delimiterSize = 0;
 	if (isVertical()) {
@@ -185,7 +191,7 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 	}
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
 		bool selected = _selectedItem == i;
-		bool enabled = _adapter->isEnabled(i);
+		bool enabled = isItemEnabled(i);
 		CRUIWidget * item = getItemWidget(i);
 		item->setState(selected ? STATE_FOCUSED : 0, STATE_FOCUSED);
 		item->setState(!enabled ? STATE_DISABLED : 0, STATE_DISABLED);
@@ -206,11 +212,14 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 			delimiterRc.left = childRc.right;
 			delimiterRc.right = delimiterRc.left + delimiterSize;
 		}
-		if (rc.intersects(childRc)) {
+		if (clip.intersects(childRc)) {
+			//CRLog::trace("drawing list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->draw(buf);
+		} else {
+			//CRLog::trace("list item out of clip rect");
 		}
-		if (delimiterSize && i < getItemCount() - 1 && rc.intersects(delimiterRc))
+		if (delimiterSize && i < getItemCount() - 1 && clip.intersects(delimiterRc))
 			delimiter->draw(buf, delimiterRc);
 	}
 	//_scrollOffset++;

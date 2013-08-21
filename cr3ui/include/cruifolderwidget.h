@@ -14,7 +14,7 @@
 class CRUITitleBarWidget;
 class CRUIFileListWidget;
 
-class CRUIFolderWidget : public CRUIContainerWidget {
+class CRUIFolderWidget : public CRUILinearLayout {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
 	CRDirCacheItem * _dir;

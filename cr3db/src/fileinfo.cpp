@@ -239,6 +239,10 @@ bool CRDirCacheItem::scan() {
 	return res;
 }
 
+lString8 CRDirEntry::getFileName() {
+	return UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(_pathName)));
+}
+
 bool CRDirCacheItem::refresh() {
 	if (needScan())
 		return scan();

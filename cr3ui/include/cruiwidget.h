@@ -117,6 +117,8 @@ public:
 
 	virtual CRUIWidget * setText(lString16 text) { return this; }
 	virtual CRUIWidget * setText(lString8 textResourceId) { return this; }
+	virtual CRUIWidget * setText(const wchar_t * text) { return this; }
+	virtual CRUIWidget * setText(const char * textResourceId) { return this; }
 	virtual lString16 getText() { return lString16::empty_str; }
 
 	virtual CRUIWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
