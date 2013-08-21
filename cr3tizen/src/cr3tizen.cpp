@@ -144,10 +144,10 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
 
 	CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
-	homeStyle->setBackground("tx_wood_v3.jpg");
+	homeStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
 
 	CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
-	fileListStyle->setBackground("tx_wood_v3.jpg");
+	fileListStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
 	fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
 }
 

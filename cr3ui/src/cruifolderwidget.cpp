@@ -21,18 +21,18 @@ public:
 	CRUITitleBarWidget(lString16 title) : CRUILinearLayout(false) {
 		setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_menuButton = new CRUIImageButton("ic_menu_more");
-		_backButton = new CRUIImageButton("cancel");
+		_backButton = new CRUIImageButton("ic_menu_back");
 		_caption = new CRUITextWidget(title);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_MEDIUM);
-		_caption->setBackground(0xa0404040);
-		_caption->setAlign(ALIGN_LEFT|ALIGN_CENTER);
+		_caption->setAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 		_caption->setPadding(PT_TO_PX(2));
 		addChild(_backButton);
 		addChild(_caption);
 		addChild(_menuButton);
 		setMinHeight(MIN_ITEM_PX);
 		setBackground("tx_wood_v3.jpg");
+		//_caption->setBackground(0xC0C0C040);
 	}
 };
 
@@ -62,6 +62,7 @@ public:
 		_line3->setFontSize(FONT_SIZE_SMALL);
 		_line4 = new CRUITextWidget();
 		_line4->setFontSize(FONT_SIZE_XSMALL);
+		_line4->setAlign(ALIGN_RIGHT | ALIGN_BOTTOM);
 		_layout->addChild(_line1);
 		_layout->addChild(_line2);
 		_infolayout->addChild(_line3);

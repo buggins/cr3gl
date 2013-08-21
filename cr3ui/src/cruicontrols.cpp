@@ -49,7 +49,9 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 	buf->SetTextColor(getTextColor());
 	int width = getFont()->getTextWidth(text.c_str(), text.length());
 	int height = getFont()->getHeight();
+	//CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), width, height);
 	applyAlign(rc, width, height);
+	//CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
 	getFont()->DrawTextString(buf, rc.left, rc.top,
             text.c_str(), text.length(),
             '?');
