@@ -12,6 +12,19 @@ using namespace CRUI;
 
 CRUIDeviceInfo deviceInfo;
 
+bool CRUIDeviceInfo::isSizeChanged(int dx, int dy) {
+    int _shortSide;
+    int _longSide;
+    if (dx < dy) {
+        _shortSide = dx;
+        _longSide = dy;
+    } else {
+        _shortSide = dy;
+        _longSide = dx;
+    }
+    return shortSide != _shortSide || longSide != _longSide;
+}
+
 CRUIDeviceInfo::CRUIDeviceInfo() {
 	setScreenDimensions(600, 800, 300);
 }

@@ -45,6 +45,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
+#include <gldrawbuf.h>
 
 QOpenGLFunctions * _qtgl = NULL;
 //! [1]
@@ -57,6 +58,8 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 {
     setSurfaceType(QWindow::OpenGLSurface);
     _qtgl = this;
+    //_widget = new CRUIButton(lString16("Test"));
+    _widget = new CRUIHomeWidget();
 }
 //! [1]
 
@@ -81,14 +84,39 @@ void OpenGLWindow::render()
 {
     if (!m_device)
         m_device = new QOpenGLPaintDevice;
-
+    //CRLog::trace("Render is called");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glClearColor(1,1,1,1);
 
     m_device->setSize(size());
 
-    QPainter painter(m_device);
-    render(&painter);
+    QSize sz = size();
+    if (deviceInfo.isSizeChanged(sz.width(), sz.height())) {
+        deviceInfo.setScreenDimensions(sz.width(), sz.height(), 200);
+        //CRLog::trace("Layout is needed");
+        _widget->requestLayout();
+    }
+    GLDrawBuf buf(sz.width(), sz.height(), 32, false);
+    buf.beforeDrawing();
+    bool needLayout, needDraw;
+    //CRLog::trace("Checking if draw is required");
+    CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+    _widget->invalidate();
+    if (needLayout) {
+        //CRLog::trace("need layout");
+        _widget->measure(sz.width(), sz.height());
+        _widget->layout(0, 0, sz.width(), sz.height());
+    }
+    if (needDraw) {
+        //CRLog::trace("need draw");
+        _widget->draw(&buf);
+    }
+    //CRLog::trace("Calling buf.afterDrawing");
+    buf.afterDrawing();
+    //CRLog::trace("Finished buf.afterDrawing");
+
+//    QPainter painter(m_device);
+//    render(&painter);
 }
 //! [2]
 

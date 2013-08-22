@@ -79,12 +79,19 @@ public:
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
 	    glBindTexture(GL_TEXTURE_2D, _textureId);
-	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, _drawbuf->GetScanLine(0));
+        checkError("updateTexture - glBindTexture");
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        checkError("updateTexture - glPixelStorei");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("updateTexture - glTexParameteri");
+        lUInt8 * pixels = _drawbuf->GetScanLine(0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, _drawbuf->GetScanLine(0));
 	    checkError("updateTexture - glTexImage2D");
 	    if (glGetError() != GL_NO_ERROR) {
 	        glDeleteTextures(1, &_textureId);

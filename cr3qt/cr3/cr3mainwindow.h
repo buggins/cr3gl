@@ -58,7 +58,7 @@ class OpenGLWindow : public QWindow, protected QOpenGLFunctions
     Q_OBJECT
 
 protected:
-    CRUIHomeWidget * _widget;
+    CRUIWidget * _widget;
 public:
     explicit OpenGLWindow(QWindow *parent = 0);
     ~OpenGLWindow();

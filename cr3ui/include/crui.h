@@ -27,6 +27,7 @@ struct CRUIDeviceInfo {
 	int mmToPixels(int mm);
 	int pixelsToPt(int pixels);
 	int ptToPixels(int mm);
+    bool isSizeChanged(int newDx, int newDy);
 	CRUIDeviceInfo();
 	void setScreenDimensions(int dx, int dy, int dpi);
 };
