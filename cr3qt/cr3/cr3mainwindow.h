@@ -55,6 +55,8 @@ class QOpenGLContext;
 class QOpenGLPaintDevice;
 QT_END_NAMESPACE
 
+class CRUIEventAdapter;
+
 //! [1]
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions
 {
@@ -62,6 +64,8 @@ class OpenGLWindow : public QWindow, protected QOpenGLFunctions
 
 protected:
     CRUIWidget * _widget;
+    CRUIEventManager * _eventManager;
+    CRUIEventAdapter * _eventAdapter;
 public:
     explicit OpenGLWindow(QWindow *parent = 0);
     ~OpenGLWindow();
@@ -69,9 +73,15 @@ public:
     virtual void render(QPainter *painter);
     virtual void render();
 
+    virtual void renderIfChanged();
+
     virtual void initialize();
 
     void setAnimating(bool animating);
+
+    virtual void mousePressEvent(QMouseEvent * event);
+    virtual void mouseReleaseEvent(QMouseEvent * event);
+    virtual void mouseMoveEvent(QMouseEvent * event);
 
 public slots:
     void renderLater();

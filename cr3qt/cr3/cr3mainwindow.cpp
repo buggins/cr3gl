@@ -45,7 +45,103 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
+#include <QtGui/QMouseEvent>
 #include <gldrawbuf.h>
+#include <crui.h>
+
+class CRUIEventAdapter {
+    CRUIEventManager * _eventManager;
+    LVPtrVector<CRUIMotionEventItem> _activePointers;
+    int findPointer(lUInt64 id);
+public:
+    CRUIEventAdapter(CRUIEventManager * eventManager);
+    // touch event listener
+    void dispatchTouchEvent(QMouseEvent * event);
+};
+
+CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager)
+{
+
+}
+
+int CRUIEventAdapter::findPointer(lUInt64 id) {
+    for (int i=0; i<_activePointers.length(); i++)
+        if (_activePointers[i]->getPointerId() == id)
+            return i;
+    return -1;
+}
+
+lUInt64 GetCurrentTimeMillis() {
+#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
+    timeval ts;
+    gettimeofday(&ts, NULL);
+    return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
+#else
+ #ifdef _WIN32
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    return ft.dwLowDateTime | ((lInt64)ft.dwHighDateTime << 32);
+ #else
+ #error * You should define GetCurrentTimeMillis() *
+ #endif
+#endif
+}
+
+using namespace CRUI;
+
+static lUInt32 pointerId = 1;
+void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
+{
+    int x = event->x();
+    int y = event->y();
+    int type = event->type();
+    //CRLog::trace("dispatchTouchEvent() %d  %d,%d", type, x, y);
+    if (type == QEvent::MouseButtonPress)
+        pointerId++;
+    if (type == QEvent::MouseMove && !event->buttons())
+        return; // ignore not pressed moves
+    unsigned long pointId = pointerId; //touchInfo.GetPointId();
+    int action = 0;
+    switch (type) {
+    case QEvent::MouseButtonPress: //The touch pressed event type
+        action = ACTION_DOWN; break;
+    case QEvent::MouseButtonRelease: //The touch released event type
+        action = ACTION_UP; break;
+    case QEvent::MouseMove: //The touch moved event type
+        action = ACTION_MOVE; break;
+    }
+    if (action) {
+        int index = findPointer(pointId);
+        CRUIMotionEventItem * lastItem = index >= 0 ? _activePointers[index] : NULL;
+        bool isLast = (action == ACTION_CANCEL || action == ACTION_UP);
+        bool isFirst = (action == ACTION_DOWN);
+        if (!lastItem && !isFirst) {
+            CRLog::warn("Ignoring unexpected touch event %d with id%lld", action, pointId);
+            return;
+        }
+        lUInt64 ts = GetCurrentTimeMillis();
+        CRUIMotionEventItem * item = new CRUIMotionEventItem(lastItem, pointId, action, x, y, ts);
+        if (index >= 0) {
+            if (!isLast)
+                _activePointers.set(index, item);
+            else
+                _activePointers.remove(index);
+        } else {
+            if (!isLast)
+                _activePointers.add(item);
+        }
+        CRUIMotionEvent * event = new CRUIMotionEvent();
+        event->addEvent(item);
+        for (int i=0; i<_activePointers.length(); i++) {
+            if (_activePointers[i] != item)
+                event->addEvent(_activePointers[i]);
+        }
+        _eventManager->dispatchTouchEvent(event);
+        delete event;
+    }
+}
+
+
 
 lString16 resourceDir;
 void setupResourcesForScreenSize() {
@@ -80,6 +176,9 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _qtgl = this;
     //_widget = new CRUIButton(lString16("Test"));
     _widget = new CRUIHomeWidget();
+    _eventManager = new CRUIEventManager();
+    _eventAdapter = new CRUIEventAdapter(_eventManager);
+    _eventManager->setRootWidget(_widget);
 }
 //! [1]
 
@@ -98,6 +197,7 @@ void OpenGLWindow::render(QPainter *painter)
 
 void OpenGLWindow::initialize()
 {
+    resize(QSize(600,400));
 }
 
 void adaptThemeForScreenSize() {
@@ -113,6 +213,29 @@ void adaptThemeForScreenSize() {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
     setupResourcesForScreenSize();
+}
+
+void OpenGLWindow::mousePressEvent(QMouseEvent * event) {
+    _eventAdapter->dispatchTouchEvent(event);
+    renderIfChanged();
+}
+
+void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event) {
+    _eventAdapter->dispatchTouchEvent(event);
+    renderIfChanged();
+}
+
+void OpenGLWindow::mouseMoveEvent(QMouseEvent * event) {
+    _eventAdapter->dispatchTouchEvent(event);
+    renderIfChanged();
+}
+
+void OpenGLWindow::renderIfChanged()
+{
+    bool needLayout, needDraw;
+    CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+    if (needLayout || needDraw)
+        renderLater();
 }
 
 void OpenGLWindow::render()
