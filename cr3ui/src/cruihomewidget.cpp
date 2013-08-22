@@ -64,9 +64,15 @@ public:
 //		CRUIButton * testButton = new CRUIButton(lString16(), "ic_menu_more");
 //		testButton->setMinWidth(100);
 
-		_layout->addChild(_authors);
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(1);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(2);
+        _layout->addChild(spacer1);
+        _layout->addChild(_authors);
 		_layout->addChild(_title);
 		_layout->addChild(_info);
+        _layout->addChild(spacer2);
 
 //		_layout->addChild(testButton);
 
@@ -85,7 +91,7 @@ public:
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
 		_caption->setPadding(3);
-		_caption->setFont(currentTheme->getFontForSize(CRUI::FONT_SIZE_SMALL));
+        _caption->setFontSize(CRUI::FONT_SIZE_SMALL);
 //		lvRect rc;
 //		_caption->getMargin(rc);
 //		CRLog::trace("list caption margin: %d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom);
@@ -112,7 +118,7 @@ public:
 
 		_textWidget = new CRUITextWidget(lString16());
 		_textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
-		_textWidget->setFont(currentTheme->getFontForSize(CRUI::FONT_SIZE_XSMALL));
+        _textWidget->setFontSize(CRUI::FONT_SIZE_XSMALL);
 		_textWidget->setPadding(PT_TO_PX(1));
 
 		_itemWidget = new CRUILinearLayout(true);
@@ -122,6 +128,7 @@ public:
 		_itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
 		_itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
 		_itemWidget->setStyle("LIST_ITEM");
+        setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
 	}
 
 	virtual int getItemCount(CRUIListWidget * list) {
@@ -204,10 +211,10 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 		int nowReadingH = baseHeight / 3;
 		int otherH = (baseHeight - nowReadingH) / 2;
 		_currentBook->measure(baseWidth, nowReadingH);
-		_recentBooksList->measure(baseWidth / 2, otherH);
-		_fileSystem->measure(baseWidth / 2, otherH);
-		_library->measure(baseWidth / 2, otherH);
-		_onlineCatalogsList->measure(baseWidth / 2, otherH);
+        _recentBooksList->measure(baseWidth * 3 / 5, otherH);
+        _fileSystem->measure(baseWidth * 2 / 5, otherH);
+        _library->measure(baseWidth * 3 / 5, otherH);
+        _onlineCatalogsList->measure(baseWidth * 2 / 5, otherH);
 	}
 }
 

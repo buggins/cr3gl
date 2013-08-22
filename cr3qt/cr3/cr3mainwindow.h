@@ -46,6 +46,9 @@
 
 #include <crui.h>
 
+extern lString16 resourceDir;
+void setupResourcesForScreenSize();
+
 QT_BEGIN_NAMESPACE
 class QPainter;
 class QOpenGLContext;

@@ -47,6 +47,26 @@
 #include <QtGui/QPainter>
 #include <gldrawbuf.h>
 
+lString16 resourceDir;
+void setupResourcesForScreenSize() {
+    lString8 resDir8 = UnicodeToUtf8(resourceDir);
+    lString8Collection dirs;
+    if (deviceInfo.shortSide <= 320) {
+        dirs.add(resDir8 + "screen-density-normal");
+        dirs.add(resDir8 + "screen-density-high");
+        dirs.add(resDir8 + "screen-density-xhigh");
+    } else if (deviceInfo.shortSide <= 480) {
+        dirs.add(resDir8 + "screen-density-high");
+        dirs.add(resDir8 + "screen-density-xhigh");
+        dirs.add(resDir8 + "screen-density-normal");
+    } else {
+        dirs.add(resDir8 + "screen-density-xhigh");
+        dirs.add(resDir8 + "screen-density-high");
+        dirs.add(resDir8 + "screen-density-normal");
+    }
+    resourceResolver->setDirList(dirs);
+}
+
 QOpenGLFunctions * _qtgl = NULL;
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
@@ -80,6 +100,21 @@ void OpenGLWindow::initialize()
 {
 }
 
+void adaptThemeForScreenSize() {
+    int sz = deviceInfo.shortSide;
+    int sz1 = sz / 32;
+    int sz2 = sz / 24;
+    int sz3 = sz / 18;
+    int sz4 = sz / 14;
+    int sz5 = sz / 10;
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    setupResourcesForScreenSize();
+}
+
 void OpenGLWindow::render()
 {
     if (!m_device)
@@ -92,8 +127,24 @@ void OpenGLWindow::render()
 
     QSize sz = size();
     if (deviceInfo.isSizeChanged(sz.width(), sz.height())) {
-        deviceInfo.setScreenDimensions(sz.width(), sz.height(), 200);
+        int dpi = 72;
+        int minsz = sz.width() < sz.height() ? sz.width() : sz.height();
+        if (minsz >= 320)
+            dpi = 120;
+        if (minsz >= 480)
+            dpi = 160;
+        if (minsz >= 640)
+            dpi = 200;
+        if (minsz >= 800)
+            dpi = 250;
+        if (minsz >= 900)
+            dpi = 300;
+        deviceInfo.setScreenDimensions(sz.width(), sz.height(), dpi);
+        adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");
+        if (_widget)
+            delete _widget;
+        _widget = new CRUIHomeWidget();
         _widget->requestLayout();
     }
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);

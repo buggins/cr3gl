@@ -89,6 +89,7 @@ class CRResourceResolver {
 	LVHashTable<lString8, LVImageSourceRef> _imageSourceMap;
 	LVHashTable<lString8, CRUIImageRef> _iconMap;
 public:
+    void setDirList(lString8Collection & dirList);
 	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList), _imageSourceMap(1000), _iconMap(1000) { }
 	LVImageSourceRef getImageSource(const char * name);
 	CRUIImageRef getIcon(const char * name, bool tiled= false);

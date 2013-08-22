@@ -262,6 +262,13 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 	return lString16::empty_str;
 }
 
+void CRResourceResolver::setDirList(lString8Collection & dirList) {
+    _imageSourceMap.clear();
+    _iconMap.clear();
+    _dirList.clear();
+    _dirList.addAll(dirList);
+}
+
 LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	lString8 name8(name);
 	LVImageSourceRef res = _imageSourceMap.get(name8);

@@ -23,7 +23,7 @@ void InitCREngine(lString16 exePath) {
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\arialbi.ttf"));
     //fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
     //dirs.add(UnicodeToUtf8(resourceDir));
-    lString16 resourceDir = exePath + L"res\\";
+    resourceDir = exePath + L"res\\";
     lString8 resDir8 = UnicodeToUtf8(resourceDir);
     lString8Collection dirs;
     dirs.add(resDir8 + "screen-density-xhigh");
