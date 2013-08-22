@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "cr3win.h"
-
+#include "gldrawbuf.h"
 
 
 #ifdef WIN32
@@ -86,6 +86,13 @@ protected:
      * @see Game::render
      */
     void render(float elapsedTime) {
+		GLDrawBuf buf(this->getWidth(),this->getHeight(),32,false);
+		buf.beforeDrawing();
+		buf.FillRect(0, 0, 1, 1, 0x808080);
+#if 0
+		buf.FillRect(110, 210, 530, 740, 0xFFFF00);
+#endif
+		buf.afterDrawing();
 	}
 
 private:

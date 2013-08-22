@@ -85,10 +85,10 @@
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngrtran.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngrutil.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngset.c" />
-    <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngtest.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngtrans.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngvcrd.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngwio.c" />
+    <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngwrite.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngwtran.c" />
     <ClCompile Include="..\..\..\cr3\thirdparty\libpng\pngwutil.c" />
   </ItemGroup>

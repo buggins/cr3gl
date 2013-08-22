@@ -838,6 +838,27 @@ void GLDrawBuf::deleteFramebuffer()
 	}
 }
 
+void myGlOrtho(float left, float right, float bottom, float top,
+                                         float zNearPlane, float zFarPlane)
+{
+	float m[16];
+
+    float r_l = 1.0f / (right - left);
+    float t_b = 1.0f / (top - bottom);
+    float f_n = 1.0f / (zFarPlane - zNearPlane);
+
+    memset(m, 0, sizeof(m));
+    m[0] = 2.0f * r_l;
+    m[5] = 2.0f * t_b;
+    m[10] = -2.0f * f_n;
+    m[12] = (-(right + left)) * r_l;
+    m[13] = (-(top + bottom)) * t_b;
+    m[14] = (-(zFarPlane + zNearPlane)) * f_n;
+    m[15] = 1.0f;
+	glLoadMatrixf(m);
+}
+
+
 void GLDrawBuf::beforeDrawing()
 {
 	if (_prepareStage++ == 0) {
@@ -852,11 +873,12 @@ void GLDrawBuf::beforeDrawing()
 		glPushMatrix();
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+		myGlOrtho(0, _dx, 0, _dy, -1.0f, 5.0f);
+		//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 		glViewport(0,0,_dx,_dy);
 		_scene = LVGLPushScene(new GLScene());
-//		glMatrixMode(GL_MODELVIEW);
-//		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 	}
 }
 
