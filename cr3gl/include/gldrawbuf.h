@@ -12,12 +12,7 @@
 #include <lvhashtable.h>
 #include <lvptrvec.h>
 
-#ifdef _WIN32
-#include <GL/glew.h>
-#include <GL/wglew.h>
-#else
-#include <gl.h>
-#endif
+#include "glwrapper.h"
 
 #include "glscene.h"
 
