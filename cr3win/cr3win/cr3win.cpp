@@ -4,6 +4,114 @@
 #include "stdafx.h"
 #include "cr3win.h"
 
+
+
+#ifdef WIN32
+
+#include "gameplay.h"
+
+using namespace gameplay;
+
+#ifndef _WINDOWS_
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+#endif
+
+
+namespace gameplay {
+/**
+ * Main game class.
+ */
+class CR3Game : public Game//, Control::Listener
+{
+public:
+
+    /**
+     * Constructor.
+     */
+    CR3Game() {
+	}
+
+	void keyEvent(Keyboard::KeyEvent evt, int key) {
+	}
+
+    void touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex) {
+	}
+
+    bool mouseEvent(Mouse::MouseEvent evt, int x, int y, int wheelDelta) {
+		return true;
+	}
+
+    void menuEvent() {
+	}
+
+    void gestureSwipeEvent(int x, int y, int direction) {
+	}
+    
+    void gesturePinchEvent(int x, int y, float scale) {
+	}
+    
+    void gestureTapEvent(int x, int y) {
+	}
+
+//    void controlEvent(Control* control, EventType evt) {
+//	}
+
+//    void gamepadEvent(Gamepad::GamepadEvent evt, Gamepad* gamepad, unsigned int analogIndex = 0);
+
+//    static CR3Game* getInstance() {
+//	}
+    
+protected:
+
+    /**
+     * @see Game::initialize
+     */
+    void initialize() {
+	}
+
+    /**
+     * @see Game::finalize
+     */
+    void finalize() {
+	}
+
+    /**
+     * @see Game::update
+     */
+    void update(float elapsedTime) {
+	}
+
+    /**
+     * @see Game::render
+     */
+    void render(float elapsedTime) {
+	}
+
+private:
+
+};
+}
+
+gameplay::CR3Game game;
+
+/**
+ * Main entry point.
+ */
+extern "C" int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow)
+{
+    Game* game = Game::getInstance();
+    Platform* platform = Platform::create(game);
+    GP_ASSERT(platform);
+    int result = platform->enterMessagePump();
+    delete platform;
+    return result;
+}
+
+#endif
+
+#if 0
+
 #include <lvstring.h>
 
 #include <GL/glew.h>
@@ -548,3 +656,5 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
+#endif
