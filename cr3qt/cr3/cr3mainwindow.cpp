@@ -51,24 +51,16 @@
 
 class CRUIEventAdapter {
     CRUIEventManager * _eventManager;
-    LVPtrVector<CRUIMotionEventItem> _activePointers;
-    int findPointer(lUInt64 id);
+    CRUIMotionEventItem * _activePointer;
 public:
     CRUIEventAdapter(CRUIEventManager * eventManager);
     // touch event listener
     void dispatchTouchEvent(QMouseEvent * event);
 };
 
-CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager)
+CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager), _activePointer(NULL)
 {
 
-}
-
-int CRUIEventAdapter::findPointer(lUInt64 id) {
-    for (int i=0; i<_activePointers.length(); i++)
-        if (_activePointers[i]->getPointerId() == id)
-            return i;
-    return -1;
 }
 
 lUInt64 GetCurrentTimeMillis() {
@@ -95,11 +87,11 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
     int x = event->x();
     int y = event->y();
     int type = event->type();
-    //CRLog::trace("dispatchTouchEvent() %d  %d,%d", type, x, y);
+    CRLog::trace("dispatchTouchEvent() %d  %d,%d", type, x, y);
     if (type == QEvent::MouseButtonPress)
         pointerId++;
-    if (type == QEvent::MouseMove && !event->buttons())
-        return; // ignore not pressed moves
+//    if (type == QEvent::MouseMove && !event->buttons())
+//        return; // ignore not pressed moves
     unsigned long pointId = pointerId; //touchInfo.GetPointId();
     int action = 0;
     switch (type) {
@@ -111,33 +103,47 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
         action = ACTION_MOVE; break;
     }
     if (action) {
-        int index = findPointer(pointId);
-        CRUIMotionEventItem * lastItem = index >= 0 ? _activePointers[index] : NULL;
-        bool isLast = (action == ACTION_CANCEL || action == ACTION_UP);
+        lUInt64 ts = GetCurrentTimeMillis();
         bool isFirst = (action == ACTION_DOWN);
+        bool isLast = (action == ACTION_CANCEL || action == ACTION_UP);
+        if (isFirst) {
+            if (_activePointer) {
+                // cancel active pointer
+                CRUIMotionEventItem * item = new CRUIMotionEventItem(_activePointer, _activePointer->getPointerId(), ACTION_CANCEL, x, y, ts);
+                CRUIMotionEvent * event = new CRUIMotionEvent();
+                event->addEvent(item);
+                _eventManager->dispatchTouchEvent(event);
+                delete item;
+                delete event;
+                delete _activePointer;
+                _activePointer = NULL;
+            }
+        }
+        CRUIMotionEventItem * lastItem = _activePointer;
         if (!lastItem && !isFirst) {
-            CRLog::warn("Ignoring unexpected touch event %d with id%lld", action, pointId);
+            //CRLog::warn("Ignoring unexpected touch event %d with id%lld", action, pointId);
             return;
         }
-        lUInt64 ts = GetCurrentTimeMillis();
         CRUIMotionEventItem * item = new CRUIMotionEventItem(lastItem, pointId, action, x, y, ts);
-        if (index >= 0) {
-            if (!isLast)
-                _activePointers.set(index, item);
-            else
-                _activePointers.remove(index);
+        if (lastItem) {
+            if (_activePointer) {
+                delete _activePointer;
+                _activePointer = NULL;
+            }
+            if (!isLast) {
+                _activePointer = item;
+            }
         } else {
-            if (!isLast)
-                _activePointers.add(item);
+            if (!isLast) {
+                _activePointer = item;
+            }
         }
         CRUIMotionEvent * event = new CRUIMotionEvent();
         event->addEvent(item);
-        for (int i=0; i<_activePointers.length(); i++) {
-            if (_activePointers[i] != item)
-                event->addEvent(_activePointers[i]);
-        }
         _eventManager->dispatchTouchEvent(event);
         delete event;
+        if (lastItem)
+            delete item;
     }
 }
 
@@ -173,8 +179,10 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     , m_device(0)
 {
     setSurfaceType(QWindow::OpenGLSurface);
+    resize(QSize(600,400));
+
     _qtgl = this;
-    //_widget = new CRUIButton(lString16("Test"));
+
     _widget = new CRUIHomeWidget();
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
@@ -197,7 +205,6 @@ void OpenGLWindow::render(QPainter *painter)
 
 void OpenGLWindow::initialize()
 {
-    resize(QSize(600,400));
 }
 
 void adaptThemeForScreenSize() {
@@ -268,6 +275,7 @@ void OpenGLWindow::render()
         if (_widget)
             delete _widget;
         _widget = new CRUIHomeWidget();
+        _eventManager->setRootWidget(_widget);
         _widget->requestLayout();
     }
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
