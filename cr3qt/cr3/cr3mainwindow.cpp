@@ -142,7 +142,7 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
         event->addEvent(item);
         _eventManager->dispatchTouchEvent(event);
         delete event;
-        if (lastItem)
+        if (isLast)
             delete item;
     }
 }
