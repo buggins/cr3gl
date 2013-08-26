@@ -15,8 +15,7 @@ TEMPLATE = app
 SOURCES += main.cpp\
         cr3mainwindow.cpp
 
-HEADERS  += cr3mainwindow.h \
-    ../../cr3gl/include/glwrapper.h
+HEADERS  += cr3mainwindow.h
 
 win32 {
     DEFINES += _WIN32=1 \
@@ -358,6 +357,7 @@ SOURCES += \
     ../../cr3ui/src/cruitheme.cpp \
     ../../cr3ui/src/cruiwidget.cpp \
     ../../cr3ui/src/stringresource.cpp \
+    ../../cr3ui/src/crconcurrent.cpp
 
 HEADERS += \
     ../../cr3db/include/basedb.h \
@@ -366,6 +366,7 @@ HEADERS += \
     ../../cr3gl/include/gldrawbuf.h \
     ../../cr3gl/include/glfont.h \
     ../../cr3gl/include/glscene.h \
+    ../../cr3gl/include/glwrapper.h \
     ../../cr3ui/include/crui.h \
     ../../cr3ui/include/cruicontrols.h \
     ../../cr3ui/include/cruievent.h \
@@ -376,4 +377,5 @@ HEADERS += \
     ../../cr3ui/include/cruireadwidget.h \
     ../../cr3ui/include/cruitheme.h \
     ../../cr3ui/include/cruiwidget.h \
-    ../../cr3ui/include/stringresource.h
+    ../../cr3ui/include/stringresource.h \
+    ../../cr3ui/include/crconcurrent.h

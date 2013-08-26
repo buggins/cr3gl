@@ -1,5 +1,8 @@
 #include "cr3mainwindow.h"
 #include <QApplication>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
 #include <lvstring.h>
 #include <lvfntman.h>
@@ -7,14 +10,75 @@
 #include <gldrawbuf.h>
 #include <glfont.h>
 #include <fileinfo.h>
+#include <crconcurrent.h>
 
 using namespace CRUI;
+
+class QtConcurrencyProvider : public CRConcurrencyProvider {
+    Q_OBJECT
+public:
+
+    class QtMutex : public CRMutex {
+        QMutex mutex;
+    public:
+        QtMutex() : mutex(QMutex::Recursive) {}
+        virtual void acquire() { mutex.lock(); }
+        virtual void release() { mutex.unlock(); }
+    };
+
+    class QtMonitor : public CRMonitor {
+        QMutex mutex;
+        QWaitCondition cond;
+    public:
+        virtual void acquire() { mutex.lock(); }
+        virtual void release() { mutex.unlock(); }
+        virtual void wait() { cond.wait(&mutex); }
+        virtual void notify() { cond.wakeOne(); }
+        virtual void notifyAll() { cond.wakeAll(); }
+    };
+
+    class QtThread : public CRThread {
+        CRRunnable * runnable;
+        QThread thread;
+    public:
+        QtThread(CRRunnable * _runnable) : runnable(_runnable) {}
+        virtual ~QtThread() {
+            thread.wait();
+        }
+        virtual void start() {
+            thread.start();
+        }
+        virtual void join() {
+            thread.wait();
+        }
+        virtual void run() {
+            runnable->run();
+        }
+    };
+
+public:
+    virtual CRMutex * createMutex() {
+        return new QtMutex();
+    }
+
+    virtual CRMonitor * createMonitor() {
+        return new QtMonitor();
+    }
+
+    virtual CRThread * createThread(CRRunnable * threadTask) {
+        return new QtThread(threadTask);
+    }
+    QtConcurrencyProvider() {
+    }
+    virtual ~QtConcurrencyProvider() {}
+};
+
 
 void InitCREngine(lString16 exePath) {
     lString16 logfile = exePath + L"cr3.log";
     CRLog::setFileLogger(LCSTR(logfile), true);
     CRLog::setLogLevel(CRLog::LL_TRACE);
-
+    concurrencyProvider = new QtConcurrencyProvider();
     InitFontManager(lString8());
     LVInitGLFontManager(fontMan);
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\arial.ttf"));
