@@ -50,6 +50,8 @@ public:
 	const lString8 & getPathName() const { return _pathName; }
 	lString8 getFileName() const;
 	lString16 getTitle() const;
+    lString16 getSeriesName(bool numberFirst) const;
+    lString16 getAuthorNames(bool fileAs) const;
 	virtual bool isDirectory() const = 0;
 	virtual bool isArchive() const { return _isArchive; }
 	virtual BookDBBook * getBook() const { return NULL; }

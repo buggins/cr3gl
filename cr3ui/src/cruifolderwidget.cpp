@@ -126,20 +126,8 @@ public:
 			lString16 text4;
 			if (book) {
 				text2 = Utf8ToUnicode(book->title.c_str());
-				for (int i = 0; i<book->authors.length(); i++) {
-					if (text1.length())
-						text1 += L", ";
-					text1 += Utf8ToUnicode(book->authors[i]->name.c_str());
-				}
-				if (!book->series.isNull()) {
-					text3 += Utf8ToUnicode(book->series->name.c_str());
-					if (book->seriesNumber) {
-						if (text3.length())
-							text3 += " ";
-						text3 += "#";
-						text3 += lString16::itoa(book->seriesNumber);
-					}
-				}
+                text1 = item->getAuthorNames(false);
+                text3 = item->getSeriesName(true);
 				text4 = sizeToString(book->filesize);
 				text4 += " ";
 				text4 += LVDocFormatName(book->format);

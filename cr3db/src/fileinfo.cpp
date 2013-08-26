@@ -253,6 +253,47 @@ lString16 CRDirEntry::getTitle() const {
 	return lString16();
 }
 
+lString16 CRDirEntry::getSeriesName(bool numberFirst) const {
+    if (!getBook())
+        return lString16();
+    lString16 text3;
+    if (!getBook()->series.isNull()) {
+        if (numberFirst) {
+            if (getBook()->seriesNumber) {
+                text3 += "#";
+                text3 += lString16::itoa(getBook()->seriesNumber);
+                text3 += " ";
+            }
+            text3 += Utf8ToUnicode(getBook()->series->name.c_str());
+        } else {
+            text3 += Utf8ToUnicode(getBook()->series->name.c_str());
+            if (getBook()->seriesNumber) {
+                if (text3.length())
+                    text3 += " ";
+                text3 += "#";
+                text3 += lString16::itoa(getBook()->seriesNumber);
+            }
+        }
+    }
+    return text3;
+}
+
+lString16 CRDirEntry::getAuthorNames(bool fileAs) const {
+    if (getBook()) {
+        lString16 text1;
+        for (int i = 0; i<getBook()->authors.length(); i++) {
+            if (text1.length())
+                text1 += L", ";
+            if (fileAs)
+                text1 += Utf8ToUnicode(getBook()->authors[i]->fileAs.c_str());
+            else
+                text1 += Utf8ToUnicode(getBook()->authors[i]->name.c_str());
+        }
+        return text1;
+    }
+    return lString16();
+}
+
 bool CRDirCacheItem::refresh() {
 	if (needScan())
 		return scan();
