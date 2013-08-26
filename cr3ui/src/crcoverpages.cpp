@@ -253,7 +253,7 @@ void CRCoverFileCache::checkSize() {
             totalFiles++;
         }
         totalBooks++;
-        if (totalBooks > _maxitems || totalFiles > _maxfiles || totalSize > _maxsize) {
+        if ((totalBooks > _maxitems || totalFiles > _maxfiles || totalSize > _maxsize) && (totalBooks > 2)) {
             iterator.remove();
             if (item->type == COVER_CACHED)
                 LVDeleteFile(getFilename(item));
@@ -274,14 +274,29 @@ bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
 CRCoverFileCache::Entry * CRCoverFileCache::find(const lString8 & pathname) {
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.get();
-        if (item) {
-            if (item->pathname == pathname) {
-                iterator.moveToHead();
-                return item;
-            }
+        if (item->pathname == pathname) {
+            iterator.moveToHead();
+            return item;
         }
     }
     return NULL;
+}
+
+void CRCoverFileCache::clear() {
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.remove();
+        delete item;
+    }
+}
+
+LVStreamRef CRCoverFileCache::getStream(const lString8 & pathname) {
+    Entry * item = find(pathname);
+    if (!item) {
+        item = scan(pathname);
+    }
+    if (!item)
+        return LVStreamRef();
+    return getStream(item);
 }
 
 LVStreamRef CRCoverFileCache::getStream(Entry * item) {
@@ -368,3 +383,71 @@ bool CRCoverFileCache::save() {
     out->Write(buf.c_str(), buf.length(), &bytesWritten);
     return bytesWritten == buf.length();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+CRCoverImageCache::Entry * CRCoverImageCache::draw(CRDirEntry * _book, int dx, int dy) {
+    LVDrawBuf * drawbuf = createDrawBuf(dx, dy);
+    LVStreamRef stream = coverCache->getStream(_book->getPathName());
+    LVImageSourceRef image;
+    if (!stream.isNull()) {
+        image = LVCreateStreamImageSource(stream);
+    }
+    // TODO: fix font face
+    CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
+    return put(_book, dx, dy, drawbuf);
+}
+
+CRCoverImageCache::Entry * CRCoverImageCache::find(CRDirEntry * _book, int dx, int dy) {
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.get();
+        if (item->book->getPathName() == _book->getPathName() && item->dx == dx && item->dy == dy) {
+            iterator.moveToHead();
+            return item;
+        }
+    }
+    return NULL;
+}
+
+CRCoverImageCache::Entry * CRCoverImageCache::put(CRDirEntry * _book, int _dx, int _dy, LVDrawBuf * _image) {
+    Entry * existing = find(_book, _dx, _dy);
+    if (existing) {
+        return existing;
+    }
+    Entry * p = new Entry(_book->clone(), _dx, _dy, _image);
+    _cache.pushFront(p);
+    checkSize();
+    return p;
+}
+
+void CRCoverImageCache::checkSize() {
+    int totalItems = 0;
+    int totalSize = 0;
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.get();
+        totalSize += item->dx * item->dy * 4;
+        totalItems++;
+        if ((totalItems > _maxitems || totalSize > _maxsize) && totalItems > 2) {
+            iterator.remove();
+            delete item;
+        }
+    }
+}
+
+void CRCoverImageCache::clear() {
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.remove();
+        delete item;
+    }
+}
+
+CRCoverImageCache * coverImageCache = NULL;

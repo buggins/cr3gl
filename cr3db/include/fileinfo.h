@@ -58,6 +58,7 @@ public:
 	virtual void setBook(BookDBBook * book) { }
 	virtual bool isParsed() const { return false; }
 	virtual void setParsed(bool parsed) {}
+    virtual CRDirEntry * clone() const { return NULL; }
 };
 
 class CRFileItem : public CRDirEntry {
@@ -72,12 +73,14 @@ public:
 	CRFileItem(const lString8 & pathname, bool archive) : CRDirEntry(pathname, archive), _book(NULL), _parsed(false) { }
 	~CRFileItem() { if (_book) delete _book; }
 	virtual bool isDirectory() const { return false; }
+    virtual CRDirEntry * clone() const { CRFileItem * res = new CRFileItem(this->getPathName(), this->isArchive()); res->setParsed(this->_parsed); res->setBook(this->_book ? this->_book->clone() : NULL); return res; }
 };
 
 class CRDirItem : public CRDirEntry {
 public:
 	CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
 	virtual bool isDirectory() const { return true; }
+    virtual CRDirEntry * clone() const { CRDirItem * res = new CRDirItem(this->getPathName(), this->isArchive()); return res; }
 };
 
 class CRDirCacheItem : public CRDirItem {

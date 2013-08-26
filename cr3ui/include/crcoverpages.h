@@ -43,16 +43,47 @@ private:
     Entry * put(const lString8 & pathname, int type, LVStreamRef stream);
     bool knownCachedFile(const lString8 & fn);
 public:
+    void clear();
     bool open();
     bool save();
     lString16 getFilename(Entry * item);
     LVStreamRef getStream(Entry * item);
+    LVStreamRef getStream(const lString8 & pathname);
     Entry * scan(const lString8 & pathname);
     Entry * find(const lString8 & pathname);
-    CRCoverFileCache(lString16 dir, int maxitems, int maxfiles, int maxsize);
-    ~CRCoverFileCache() { save(); }
+    CRCoverFileCache(lString16 dir, int maxitems = 1000, int maxfiles = 200, int maxsize = 16*1024*1024);
+    ~CRCoverFileCache() { save(); clear(); }
 };
 
 extern CRCoverFileCache * coverCache;
+
+class CRCoverImageCache {
+public:
+    class Entry {
+    public:
+        CRDirEntry * book;
+        int dx;
+        int dy;
+        LVDrawBuf * image;
+        Entry(CRDirEntry * _book, int _dx, int _dy, LVDrawBuf * _image) : book(_book->clone()), dx(_dx), dy(_dy), image(_image) {}
+        ~Entry() { if (image) delete image; }
+    };
+private:
+    LVQueue<Entry*> _cache;
+    int _maxitems;
+    int _maxsize;
+    void checkSize();
+    Entry * put(CRDirEntry * _book, int _dx, int _dy, LVDrawBuf * _image);
+    /// override to use non-standard draw buffers (e.g. OpenGL)
+    virtual LVDrawBuf * createDrawBuf(int dx, int dy) { LVColorDrawBuf * res = new LVColorDrawBuf(dx, dy, 32); res->Clear(0xFF000000); return res; }
+public:
+    void clear();
+    Entry * draw(CRDirEntry * _book, int dx, int dy);
+    Entry * find(CRDirEntry * _book, int dx, int dy);
+    CRCoverImageCache(int maxitems = 1000, int maxsize = 16*1024*1024);
+    ~CRCoverImageCache() { clear(); }
+};
+
+extern CRCoverImageCache * coverImageCache;
 
 #endif // CRCOVERPAGES_H

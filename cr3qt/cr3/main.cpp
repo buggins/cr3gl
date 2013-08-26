@@ -11,6 +11,7 @@
 #include <glfont.h>
 #include <fileinfo.h>
 #include <crconcurrent.h>
+#include <crcoverpages.h>
 
 using namespace CRUI;
 
@@ -73,17 +74,33 @@ public:
 };
 
 
+void UninitCREngine() {
+    if (coverCache) {
+        delete coverCache;
+        coverCache = NULL;
+    }
+    if (bookDB) {
+        bookDB->close();
+        delete bookDB;
+        bookDB = NULL;
+    }
+}
+
 void InitCREngine(lString16 exePath) {
+    // Logger
     lString16 logfile = exePath + L"cr3.log";
     CRLog::setFileLogger(LCSTR(logfile), true);
     CRLog::setLogLevel(CRLog::LL_TRACE);
+    // Concurrency
     concurrencyProvider = new QtConcurrencyProvider();
+
     InitFontManager(lString8());
     LVInitGLFontManager(fontMan);
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\arial.ttf"));
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\ariali.ttf"));
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\arialbd.ttf"));
     fontMan->RegisterFont(lString8("C:\\Windows\\Fonts\\arialbi.ttf"));
+
     //fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
     //dirs.add(UnicodeToUtf8(resourceDir));
     resourceDir = exePath + L"res\\";
@@ -92,6 +109,16 @@ void InitCREngine(lString16 exePath) {
     dirs.add(resDir8 + "screen-density-xhigh");
     LVCreateResourceResolver(dirs);
     LVGLCreateImageCache();
+
+    // coverpage file cache
+    lString16 coverCacheDir = exePath + L"coverpages";
+    coverCache = new CRCoverFileCache(coverCacheDir);
+
+    // document cache
+    lString16 docCacheDir = exePath + L"cache";
+    ldomDocCache::init(docCacheDir, 32*1024*1024);
+
+    // I18N
     CRIniFileTranslator * fallbackTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/en.ini").c_str());
     CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/ru.ini").c_str());
     CRI18NTranslator::setTranslator(mainTranslator);
@@ -156,5 +183,7 @@ int main(int argc, char *argv[])
     OpenGLWindow w;
     w.show();
     
-    return a.exec();
+    int res = a.exec();
+    UninitCREngine();
+    return res;
 }
