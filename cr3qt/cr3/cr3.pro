@@ -104,6 +104,7 @@ HEADERS += \
     ../../../cr3/crengine/include/lvmemman.h \
     ../../../cr3/crengine/include/lvimg.h \
     ../../../cr3/crengine/include/lvhashtable.h \
+    ../../../cr3/crengine/include/lvqueue.h \
     ../../../cr3/crengine/include/lvfntman.h \
     ../../../cr3/crengine/include/lvfnt.h \
     ../../../cr3/crengine/include/lvdrawbuf.h \

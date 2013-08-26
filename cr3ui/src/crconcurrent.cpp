@@ -23,7 +23,7 @@ void CRThreadExecutor::run() {
                 _monitor->wait();
             if (_stopped)
                 break;
-            task = _queue.pop();
+            task = _queue.popFront();
         }
         // process next event
         if (task) {
@@ -39,7 +39,7 @@ void CRThreadExecutor::execute(CRRunnable * task) {
         CRLog::error("Ignoring new task since executor is stopped");
         return;
     }
-    _queue.push(task);
+    _queue.pushBack(task);
     _monitor->notify();
 }
 
@@ -47,7 +47,7 @@ void CRThreadExecutor::stop() {
     CRGuard guard(_monitor);
     _stopped = true;
     while (_queue.length() > 0) {
-        CRRunnable * p = _queue.pop();
+        CRRunnable * p = _queue.popFront();
         delete p;
     }
     _monitor->notifyAll();

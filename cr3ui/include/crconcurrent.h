@@ -2,6 +2,7 @@
 #define CRCONCURRENT_H
 
 #include <lvref.h>
+#include <lvqueue.h>
 
 class CRMutex {
 public:
@@ -41,58 +42,6 @@ public:
 };
 
 extern CRConcurrencyProvider * concurrencyProvider;
-
-template < typename T >
-class LVQueue {
-    struct Item {
-        T value;
-        Item * next;
-        Item(T & v) : value(v), next(NULL) {}
-    };
-    Item * head;
-    Item * tail;
-    int count;
-public:
-    LVQueue() : head(NULL), tail(NULL), count(0) {}
-    ~LVQueue() { clear(); }
-//    T & operator [] (int index) {
-
-//    }
-
-    int length() { return count; }
-    void push(T item) {
-        Item * p = new Item(item);
-        if (tail) {
-            tail->next = p;
-            tail = p;
-        } else {
-            head = tail = p;
-        }
-        count++;
-    }
-    T pop() {
-        Item * p = head;
-        if (!p)
-            return T();
-        if (head == tail)
-            tail = NULL;
-        head = head->next;
-        T res = p->value;
-        delete p;
-        count--;
-        return res;
-    }
-    void clear() {
-        while (head) {
-            Item * p = head;
-            head = p->next;
-            delete p;
-        }
-        head = NULL;
-        tail = NULL;
-        count = 0;
-    }
-};
 
 
 class CRThreadExecutor : public CRRunnable {
