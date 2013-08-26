@@ -347,6 +347,7 @@ SOURCES += \
     ../../cr3gl/src/glfont.cpp \
     ../../cr3gl/src/glscene.cpp \
     ../../cr3ui/src/crui.cpp \
+    ../../cr3ui/src/crconcurrent.cpp \
     ../../cr3ui/src/cruicontrols.cpp \
     ../../cr3ui/src/cruievent.cpp \
     ../../cr3ui/src/cruifolderwidget.cpp \
@@ -356,8 +357,7 @@ SOURCES += \
     ../../cr3ui/src/cruireadwidget.cpp \
     ../../cr3ui/src/cruitheme.cpp \
     ../../cr3ui/src/cruiwidget.cpp \
-    ../../cr3ui/src/stringresource.cpp \
-    ../../cr3ui/src/crconcurrent.cpp
+    ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
     ../../cr3db/include/basedb.h \

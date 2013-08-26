@@ -15,7 +15,6 @@
 using namespace CRUI;
 
 class QtConcurrencyProvider : public CRConcurrencyProvider {
-    Q_OBJECT
 public:
 
     class QtMutex : public CRMutex {
