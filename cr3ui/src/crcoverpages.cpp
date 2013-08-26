@@ -12,7 +12,7 @@ void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, 
     lString16 seriesName = book->getSeriesName(false);
     if (title.empty() && authors.empty())
         title = Utf8ToUnicode(book->getFileName());
-   if (drawbuf != NULL) {
+    if (drawbuf != NULL) {
         int factor = 1;
         int dx = drawbuf->GetWidth();
         int dy = drawbuf->GetHeight();
@@ -62,7 +62,53 @@ bool LVBookFileExists(lString8 fname) {
     }
 }
 
-LVStreamRef LVScanBookCover(lString8 _path) {
+LVStreamRef LVGetBookCoverStream(lString8 _path) {
+    lString16 path = Utf8ToUnicode(_path);
+    lString16 arcname, item;
+    LVStreamRef res;
+    LVContainerRef arc;
+    if (!LVSplitArcName(path, arcname, item)) {
+        // not in archive
+        LVStreamRef stream = LVOpenFileStream(path.c_str(), LVOM_READ);
+        if (!stream.isNull()) {
+            arc = LVOpenArchieve(stream);
+            if (!arc.isNull()) {
+                // ZIP-based format
+                if (DetectEpubFormat(stream)) {
+                    // EPUB
+                    // extract coverpage from epub
+                    res = GetEpubCoverpage(arc);
+                    return res;
+                }
+            } else {
+                doc_format_t fmt;
+                if (DetectPDBFormat(stream, fmt)) {
+                    res = GetPDBCoverpage(stream);
+                    return res;
+                }
+            }
+        }
+    } else {
+        LVStreamRef arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+        if (!arcstream.isNull()) {
+            arc = LVOpenArchieve(arcstream);
+            if (!arc.isNull()) {
+                LVStreamRef stream = arc->OpenStream(item.c_str(), LVOM_READ);
+                if (!stream.isNull()) {
+                    doc_format_t fmt;
+                    if (DetectPDBFormat(stream, fmt)) {
+                        res = GetPDBCoverpage(stream);
+                        return res;
+                    }
+                }
+            }
+        }
+    }
+    return res;
+}
+
+LVStreamRef LVScanBookCover(lString8 _path, int & type) {
+    type = COVER_EMPTY;
     lString16 path = Utf8ToUnicode(_path);
     CRLog::debug("scanBookCoverInternal(%s) called", LCSTR(path));
     lString16 arcname, item;
@@ -79,6 +125,8 @@ LVStreamRef LVScanBookCover(lString8 _path) {
                     // EPUB
                     // extract coverpage from epub
                     res = GetEpubCoverpage(arc);
+                    if (!res.isNull())
+                        type = COVER_FROMBOOK;
                 }
             } else {
                 res = GetFB2Coverpage(stream);
@@ -86,7 +134,11 @@ LVStreamRef LVScanBookCover(lString8 _path) {
                     doc_format_t fmt;
                     if (DetectPDBFormat(stream, fmt)) {
                         res = GetPDBCoverpage(stream);
+                        if (!res.isNull())
+                            type = COVER_FROMBOOK;
                     }
+                } else {
+                    type = COVER_CACHED;
                 }
             }
         }
@@ -104,7 +156,11 @@ LVStreamRef LVScanBookCover(lString8 _path) {
                         doc_format_t fmt;
                         if (DetectPDBFormat(stream, fmt)) {
                             res = GetPDBCoverpage(stream);
+                            if (!res.isNull())
+                                type = COVER_FROMBOOK;
                         }
+                    } else {
+                        type = COVER_CACHED;
                     }
                 }
             }
@@ -121,7 +177,7 @@ LVStreamRef LVScanBookCover(lString8 _path) {
 
 CRCoverFileCache * coverCache = NULL;
 
-CRCoverFileCache::CRCoverFileCache(lString16 dir, int maxfiles, int maxsize) : _dir(dir), _maxfiles(maxfiles), _maxsize(maxsize), _nextId(0) {
+CRCoverFileCache::CRCoverFileCache(lString16 dir, int maxitems, int maxfiles, int maxsize) : _dir(dir), _maxitems(maxitems), _maxfiles(maxfiles), _maxsize(maxsize), _nextId(0) {
     LVAppendPathDelimiter(_dir);
     _filename = _dir;
     _filename += "covercache.ini";
@@ -155,6 +211,12 @@ CRCoverFileCache::Entry * CRCoverFileCache::add(const lString8 & pathname, int t
     return p;
 }
 
+CRCoverFileCache::Entry * CRCoverFileCache::scan(const lString8 & pathname) {
+    int type = COVER_EMPTY;
+    LVStreamRef stream = LVScanBookCover(pathname, type);
+    return put(pathname, type, stream);
+}
+
 CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int type, LVStreamRef stream) {
     Entry * existing = find(pathname);
     if (existing) {
@@ -171,8 +233,42 @@ CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int t
         }
     }
     _cache.pushFront(p);
+    checkSize();
     save();
     return p;
+}
+
+lString16 CRCoverFileCache::getFilename(Entry * item) {
+    return _dir + Utf8ToUnicode(item->cachedFile);
+}
+
+void CRCoverFileCache::checkSize() {
+    int totalBooks = 0;
+    int totalFiles = 0;
+    int totalSize = 0;
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.get();
+        if (item->type == COVER_CACHED) {
+            totalSize += item->size;
+            totalFiles++;
+        }
+        totalBooks++;
+        if (totalBooks > _maxitems || totalFiles > _maxfiles || totalSize > _maxsize) {
+            iterator.remove();
+            if (item->type == COVER_CACHED)
+                LVDeleteFile(getFilename(item));
+            delete item;
+        }
+    }
+}
+
+bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.get();
+        if (item->cachedFile == fn)
+            return true;
+    }
+    return false;
 }
 
 CRCoverFileCache::Entry * CRCoverFileCache::find(const lString8 & pathname) {
@@ -186,6 +282,14 @@ CRCoverFileCache::Entry * CRCoverFileCache::find(const lString8 & pathname) {
         }
     }
     return NULL;
+}
+
+LVStreamRef CRCoverFileCache::getStream(Entry * item) {
+    if (item->type == COVER_EMPTY)
+        return LVStreamRef();
+    if (item->type == COVER_CACHED)
+        return LVOpenFileStream(getFilename(item).c_str(), LVOM_READ);
+    return LVGetBookCoverStream(item->pathname);
 }
 
 bool CRCoverFileCache::open() {
@@ -230,6 +334,20 @@ bool CRCoverFileCache::open() {
                     continue;
                 }
                 add(pathname, t, sz, lString8(s));
+            }
+        }
+    }
+    /// delete unknown files from cache directory
+    LVContainerRef dir = LVOpenDirectory(_dir.c_str(), L"*.img");
+    if (!dir.isNull()) {
+        for (int i = 0; i<dir->GetObjectCount(); i++) {
+            const LVContainerItemInfo * item = dir->GetObjectInfo(i);
+            if (!item->IsContainer()) {
+                lString8 fn = UnicodeToUtf8(item->GetName());
+                if (!fn.endsWith(".img"))
+                    continue;
+                if (!knownCachedFile(fn))
+                    LVDeleteFile(_dir + item->GetName());
             }
         }
     }

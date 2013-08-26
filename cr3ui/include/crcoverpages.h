@@ -7,18 +7,18 @@
 #include "lvstream.h"
 #include "lvqueue.h"
 
+enum CoverCachingType {
+    COVER_CACHED,   // cached in directory
+    COVER_FROMBOOK, // read from book directly (it's fast enough for format)
+    COVER_EMPTY     // no cover image in book
+};
+
 /// draw book cover to drawbuf
 void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, LVImageSourceRef image, int bpp = 32);
-LVStreamRef LVScanBookCover(lString8 _path);
 bool LVBookFileExists(lString8 fname);
 
 class CRCoverFileCache {
 public:
-    enum {
-        COVER_CACHED,   // cached in directory
-        COVER_FROMBOOK, // read from book directly (it's fast enough for format)
-        COVER_EMPTY     // no cover image in book
-    };
     class Entry {
     public:
         lString8 pathname;
@@ -32,18 +32,24 @@ private:
     LVQueue<Entry*> _cache;
     lString16 _dir;
     lString16 _filename;
+    int _maxitems;
     int _maxfiles;
     int _maxsize;
     int _nextId;
-    bool open();
-    bool save();
     lString8 generateNextFilename();
     lString8 saveToCache(LVStreamRef stream);
+    void checkSize();
     Entry * add(const lString8 & pathname, int type, int sz, lString8 & fn);
-public:
-    Entry * find(const lString8 & pathname);
     Entry * put(const lString8 & pathname, int type, LVStreamRef stream);
-    CRCoverFileCache(lString16 dir, int maxfiles, int maxsize);
+    bool knownCachedFile(const lString8 & fn);
+public:
+    bool open();
+    bool save();
+    lString16 getFilename(Entry * item);
+    LVStreamRef getStream(Entry * item);
+    Entry * scan(const lString8 & pathname);
+    Entry * find(const lString8 & pathname);
+    CRCoverFileCache(lString16 dir, int maxitems, int maxfiles, int maxsize);
     ~CRCoverFileCache() { save(); }
 };
 
