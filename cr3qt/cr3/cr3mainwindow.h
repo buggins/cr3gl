@@ -44,6 +44,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLFunctions>
 #include <QCoreApplication>
+#include <QThread>
 
 #include <crui.h>
 #include <crconcurrent.h>
@@ -102,6 +103,16 @@ private:
     QOpenGLPaintDevice *m_device;
 };
 //! [1]
+
+class CRQtThread : public QThread {
+    Q_OBJECT
+    CRRunnable * runnable;
+protected:
+    virtual void run() { runnable->run(); }
+public:
+    CRQtThread(CRRunnable * _runnable) : runnable(_runnable) {}
+    virtual ~CRQtThread() { }
+};
 
 class QtGuiExecutorObject : public QObject {
     Q_OBJECT

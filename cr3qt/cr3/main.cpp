@@ -39,10 +39,9 @@ public:
     };
 
     class QtThread : public CRThread {
-        CRRunnable * runnable;
-        QThread thread;
+        CRQtThread thread;
     public:
-        QtThread(CRRunnable * _runnable) : runnable(_runnable) {}
+        QtThread(CRRunnable * _runnable) : thread(_runnable) {}
         virtual ~QtThread() {
             thread.wait();
         }
@@ -51,9 +50,6 @@ public:
         }
         virtual void join() {
             thread.wait();
-        }
-        virtual void run() {
-            runnable->run();
         }
     };
 

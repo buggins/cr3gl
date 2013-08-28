@@ -87,7 +87,7 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
     int x = event->x();
     int y = event->y();
     int type = event->type();
-    CRLog::trace("dispatchTouchEvent() %d  %d,%d", type, x, y);
+    // CRLog::trace("dispatchTouchEvent() %d  %d,%d", type, x, y);
     if (type == QEvent::MouseButtonPress)
         pointerId++;
 //    if (type == QEvent::MouseMove && !event->buttons())
