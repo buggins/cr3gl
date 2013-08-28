@@ -43,8 +43,10 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLFunctions>
+#include <QCoreApplication>
 
 #include <crui.h>
+#include <crconcurrent.h>
 
 extern lString16 resourceDir;
 void setupResourcesForScreenSize();
@@ -100,6 +102,33 @@ private:
     QOpenGLPaintDevice *m_device;
 };
 //! [1]
+
+class QtGuiExecutorObject : public QObject {
+    Q_OBJECT
+
+    class QtGuiExecutorEvent : public QEvent {
+        CRRunnable * task;
+    public:
+        void run() { task->run(); }
+        QtGuiExecutorEvent(CRRunnable * _task) : QEvent(QEvent::User), task(_task) { }
+        virtual ~QtGuiExecutorEvent() { delete task; }
+    };
+
+public:
+    virtual bool event(QEvent * e) {
+        QtGuiExecutorEvent * ee = dynamic_cast<QtGuiExecutorEvent*>(e);
+        if (ee) {
+            ee->run();
+            ee->accept();
+        }
+        return true;
+    }
+    void execute(CRRunnable * _task) {
+        QtGuiExecutorEvent * event = new QtGuiExecutorEvent(_task);
+        QCoreApplication::postEvent(this, event);
+    }
+};
+
 
 
 #endif // CR3MAINWINDOW_H

@@ -5,7 +5,6 @@
 
 CRConcurrencyProvider * concurrencyProvider = NULL;
 
-
 CRThreadExecutor::CRThreadExecutor() {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);

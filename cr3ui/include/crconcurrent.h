@@ -39,19 +39,25 @@ public:
     virtual CRMutex * createMutex() = 0;
     virtual CRMonitor * createMonitor() = 0;
     virtual CRThread * createThread(CRRunnable * threadTask) = 0;
+    virtual void executeGui(CRRunnable * task) = 0;
 };
 
 extern CRConcurrencyProvider * concurrencyProvider;
 
+class CRExecutor {
+public:
+    virtual ~CRExecutor() {}
+    virtual void execute(CRRunnable * task) = 0;
+};
 
-class CRThreadExecutor : public CRRunnable {
+class CRThreadExecutor : public CRRunnable, public CRExecutor {
     bool _stopped;
     CRMonitorRef _monitor;
     CRThreadRef _thread;
     LVQueue<CRRunnable *> _queue;
 public:
     CRThreadExecutor();
-    void execute(CRRunnable * task);
+    virtual void execute(CRRunnable * task);
     void stop();
     virtual void run();
 };

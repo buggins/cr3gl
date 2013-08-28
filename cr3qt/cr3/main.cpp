@@ -16,6 +16,7 @@
 using namespace CRUI;
 
 class QtConcurrencyProvider : public CRConcurrencyProvider {
+    QtGuiExecutorObject * guiExecutor;
 public:
 
     class QtMutex : public CRMutex {
@@ -68,7 +69,12 @@ public:
     virtual CRThread * createThread(CRRunnable * threadTask) {
         return new QtThread(threadTask);
     }
+    virtual void executeGui(CRRunnable * task) {
+        guiExecutor->execute(task);
+    }
+
     QtConcurrencyProvider() {
+        guiExecutor = new QtGuiExecutorObject();
     }
     virtual ~QtConcurrencyProvider() {}
 };
@@ -113,6 +119,8 @@ void InitCREngine(lString16 exePath) {
     // coverpage file cache
     lString16 coverCacheDir = exePath + L"coverpages";
     coverCache = new CRCoverFileCache(coverCacheDir);
+    coverImageCache = new CRCoverImageCache();
+    coverPageManager = new CRCoverPageManager();
 
     // document cache
     lString16 docCacheDir = exePath + L"cache";

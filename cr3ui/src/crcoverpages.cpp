@@ -450,4 +450,109 @@ void CRCoverImageCache::clear() {
     }
 }
 
+CRCoverImageCache::CRCoverImageCache(int maxitems, int maxsize) : _maxitems(maxitems), _maxsize(maxsize){
+
+}
+
 CRCoverImageCache * coverImageCache = NULL;
+
+
+void CRCoverPageManager::stop() {
+    CRGuard guard(_monitor);
+    _stopped = true;
+    while (_queue.length() > 0) {
+        CoverTask * p = _queue.popFront();
+        delete p;
+    }
+    _monitor->notifyAll();
+    _thread->join();
+}
+
+void CRCoverPageManager::run() {
+    CRLog::info("CRCoverPageManager thread started");
+    for (;;) {
+        if (_stopped)
+            break;
+        CoverTask * task = NULL;
+        {
+            CRGuard guard(_monitor);
+            if (_queue.length() == 0)
+                _monitor->wait();
+            if (_stopped)
+                break;
+            task = _queue.popFront();
+            if (task) {
+                CRCoverImageCache::Entry * entry = coverImageCache->find(task->book, task->dx, task->dy);
+                if (!entry) {
+                    entry = coverImageCache->draw(task->book, task->dx, task->dy);
+                }
+                concurrencyProvider->executeGui(task->callback); // callback will be deleted in GUI thread
+                delete task;
+            }
+        }
+        // process next event
+    }
+    CRLog::info("CRCoverPageManager thread finished");
+}
+
+LVDrawBuf * CRCoverPageManager::getIfReady(CRDirEntry * _book, int dx, int dy)
+{
+    CRGuard guard(_monitor);
+    CRCoverImageCache::Entry * existing = coverImageCache->find(_book, dx, dy);
+    if (existing)
+        return existing->image;
+    return NULL;
+}
+
+void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback)
+{
+    CRGuard guard(_monitor);
+    if (_stopped) {
+        CRLog::error("Ignoring new task since cover page manager is stopped");
+        return;
+    }
+    CRCoverImageCache::Entry * existing = coverImageCache->find(_book, dx, dy);
+    if (existing) {
+        // we are in GUI thread now
+        readyCallback->run();
+        delete readyCallback;
+        return;
+    }
+    for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        if (item->isSame(_book, dx, dy)) {
+            // already has the same task in queue
+            iterator.moveToHead();
+            return;
+        }
+    }
+    CoverTask * task = new CoverTask(_book, dx, dy, readyCallback);
+    _queue.pushBack(task);
+    _monitor->notify();
+}
+
+void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
+{
+    CRGuard guard(_monitor);
+    for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        if (item->isSame(_book, dx, dy)) {
+            iterator.remove();
+            delete item->callback;
+            delete item;
+            break;
+        }
+    }
+}
+
+CRCoverPageManager::CRCoverPageManager() {
+    _monitor = concurrencyProvider->createMonitor();
+    _thread = concurrencyProvider->createThread(this);
+    _thread->start();
+}
+
+CRCoverPageManager::~CRCoverPageManager() {
+    stop();
+}
+
+CRCoverPageManager * coverPageManager = NULL;

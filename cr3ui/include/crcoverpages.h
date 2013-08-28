@@ -6,6 +6,7 @@
 #include "lvdrawbuf.h"
 #include "lvstream.h"
 #include "lvqueue.h"
+#include "crconcurrent.h"
 
 enum CoverCachingType {
     COVER_CACHED,   // cached in directory
@@ -85,5 +86,43 @@ public:
 };
 
 extern CRCoverImageCache * coverImageCache;
+
+
+class CRCoverPageManager : public CRRunnable {
+    class CoverTask {
+    public:
+        CRDirEntry * book;
+        int dx;
+        int dy;
+        CRRunnable * callback;
+        CoverTask(CRDirEntry * _book, int _dx, int _dy, CRRunnable * _callback) : book(_book->clone()), dx(_dx), dy(_dy), callback(_callback) {}
+        virtual ~CoverTask() {
+            delete book;
+        }
+        bool isSame(CRDirEntry * _book, int _dx, int _dy) {
+            return dx == _dx && dy == _dy && _book->getPathName() == book->getPathName();
+        }
+    };
+
+    bool _stopped;
+    CRMonitorRef _monitor;
+    CRThreadRef _thread;
+    LVQueue<CoverTask *> _queue;
+public:
+    CRCoverPageManager();
+    virtual ~CRCoverPageManager();
+
+    void stop();
+    virtual void run();
+
+    /// returns cover page, if it's already prepared and cached; call from GUI thread only!
+    LVDrawBuf * getIfReady(CRDirEntry * _book, int dx, int dy);
+    /// cancels pending coverpage task (if not yet started)
+    void cancel(CRDirEntry * _book, int dx, int dy);
+    /// prepares coverpage in background thread; calls readyCallback in GUI thread when done
+    void prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback);
+};
+
+extern CRCoverPageManager * coverPageManager;
 
 #endif // CRCOVERPAGES_H
