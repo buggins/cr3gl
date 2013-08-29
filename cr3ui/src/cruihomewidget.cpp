@@ -36,8 +36,9 @@ public:
 		_cover->setMaxWidth(coverSize);
 		_cover->setMinHeight(coverSize * 3 / 4);
 		_cover->setMaxHeight(coverSize * 3 / 4);
-		_cover->setBackground(0xC0808000);
-		_cover->setAlign(ALIGN_CENTER);
+        //_cover->setBackground(0xC0808000);
+        _cover->setBackground("home_frame.9.png");
+        _cover->setAlign(ALIGN_CENTER);
 		addChild(_cover);
 		_layout = new CRUILinearLayout(true);
 		addChild(_layout);
@@ -46,9 +47,10 @@ public:
 		_caption = new CRUITextWidget(STR_NOW_READING);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
-		_caption->setBackground(0xE0404040);
+        //_caption->setBackground(0xE0404040);
 		_caption->setAlign(ALIGN_LEFT|ALIGN_TOP);
 		_caption->setPadding(PT_TO_PX(4));
+        _caption->setStyle("HOME_LIST_CAPTION");
 		_captionLayout->addChild(_caption);
 		_captionLayout->addChild(_menuButton);
 
@@ -96,7 +98,8 @@ public:
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
 		_caption->setPadding(3);
-        _caption->setFontSize(CRUI::FONT_SIZE_SMALL);
+        //_caption->setFontSize(CRUI::FONT_SIZE_SMALL);
+        _caption->setStyle("HOME_LIST_CAPTION");
 //		lvRect rc;
 //		_caption->getMargin(rc);
 //		CRLog::trace("list caption margin: %d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom);
@@ -112,7 +115,7 @@ public:
 		addChild(_caption);
 		_list = new CRUIListWidget(false, this);
 		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
-		_list->setBackground(0xE0000000);
+        _list->setBackground("home_frame.9.png");
 		_list->setPadding(PT_TO_PX(3));
 		addChild(_list);
 

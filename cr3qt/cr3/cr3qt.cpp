@@ -214,7 +214,8 @@ void InitCREngine(lString16 exePath) {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
 
-    currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+    //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+    currentTheme->setListDelimiterVertical(resourceResolver->getIcon("list_delimiter_h.png"));
     CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
     //keyboard_key_feedback_background.9
     buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
@@ -240,5 +241,10 @@ void InitCREngine(lString16 exePath) {
     CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
     fileListStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
     fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+
+    CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
+    //homeListCaption->setTextColor(0x40000000);
+    homeListCaption->setTextColor(0x00402000);
+    homeListCaption->setFontSize(CRUI::FONT_SIZE_SMALL);
 }
 
