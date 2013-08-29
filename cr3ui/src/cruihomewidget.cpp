@@ -85,7 +85,7 @@ public:
 	}
 };
 
-class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter {
+class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
 protected:
 	CRUITextWidget * _caption;
 	CRUIListWidget * _list;
@@ -94,6 +94,7 @@ protected:
 	CRUITextWidget * _textWidget;
     CRUIHomeWidget * _home;
 public:
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) { return false; }
     CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
@@ -117,7 +118,8 @@ public:
 		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
         _list->setBackground("home_frame.9.png");
 		_list->setPadding(PT_TO_PX(3));
-		addChild(_list);
+        _list->setOnItemClickListener(this);
+        addChild(_list);
 
 		_itemImage = new CRUIImageWidget(CRUIImageRef());
 		_itemImage->setAlign(CRUI::ALIGN_CENTER);
@@ -214,6 +216,11 @@ public:
     }
     CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
         deviceInfo.topDirs.sort(0);
+    }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CRTopDirItem * item = deviceInfo.topDirs.getItem(itemIndex);
+        _home->getMain()->showFolder(item->getPathName());
+        return true;
     }
 };
 

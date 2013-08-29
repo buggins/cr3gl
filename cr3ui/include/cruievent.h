@@ -70,7 +70,9 @@ public:
 	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
 	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }
 	int getAction(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
-	lUInt64 getDownDuration(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDownDuration() : 0; }
+    lUInt64 getEventTimestamp(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getEventTimestamp() : 0; }
+    lUInt64 getDownEventTimestamp(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDownEventTimestamp() : 0; }
+    lUInt64 getDownDuration(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDownDuration() : 0; }
 	lUInt64 getPointerId(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
 	CRUIWidget * getWidget(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getWidget() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found

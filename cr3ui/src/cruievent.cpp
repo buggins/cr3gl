@@ -26,11 +26,12 @@ CRUIMotionEventItem::CRUIMotionEventItem(const CRUIMotionEventItem * previous, l
   _startX(previous ? previous->getStartX() : x),
   _startY(previous ? previous->getStartY() : y),
   _ts(ts),
-  _downTs(previous ? previous->getDownEventTimestamp() : ts),
+  _downTs(action == ACTION_DOWN ? ts : (previous ? previous->getDownEventTimestamp() : ts)),
   _isOutside(previous ? previous->isOutside() : false),
   _widget(previous ? previous->getWidget() : NULL)
 {
 	//
+    //CRLog::trace("created event ts=%lld downts=%lld", _ts, _downTs);
 }
 
 

@@ -30,7 +30,7 @@ lUInt64 GetCurrentTimeMillis() {
  #ifdef _WIN32
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
-    return ft.dwLowDateTime | ((lInt64)ft.dwHighDateTime << 32);
+    return (ft.dwLowDateTime | ((lInt64)ft.dwHighDateTime << 32)) / 1000;
  #else
  #error * You should define GetCurrentTimeMillis() *
  #endif
@@ -62,6 +62,7 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
     }
     if (action) {
         lUInt64 ts = GetCurrentTimeMillis();
+        //CRLog::trace("mouse event ts %lld", ts);
         bool isFirst = (action == ACTION_DOWN);
         bool isLast = (action == ACTION_CANCEL || action == ACTION_UP);
         if (isFirst) {

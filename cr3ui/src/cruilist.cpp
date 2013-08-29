@@ -7,6 +7,8 @@
 
 #include "cruilist.h"
 
+#define LONG_TOUCH_THRESHOLD 1000
+
 using namespace CRUI;
 
 #define NO_DRAG (-1234567)
@@ -295,7 +297,8 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			_dragStartOffset = NO_DRAG;
 			setScrollOffset(_scrollOffset);
 			if (itemIndex != -1) {
-				bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+                //CRLog::trace("UP ts=%lld downTs=%lld downDuration=%lld", event->getEventTimestamp(), event->getDownEventTimestamp(), event->getDownDuration());
+                bool isLong = event->getDownDuration() > LONG_TOUCH_THRESHOLD; // 0.5 seconds threshold
 				if (isLong && onItemLongClickEvent(itemIndex))
 					return true;
 				onItemClickEvent(itemIndex);
