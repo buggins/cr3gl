@@ -350,6 +350,7 @@ SOURCES += \
     ../../cr3gl/src/gldrawbuf.cpp \
     ../../cr3gl/src/glfont.cpp \
     ../../cr3gl/src/glscene.cpp \
+    ../../cr3ui/src/cruimain.cpp \
     ../../cr3ui/src/crui.cpp \
     ../../cr3ui/src/crconcurrent.cpp \
     ../../cr3ui/src/cruicontrols.cpp \
@@ -372,6 +373,7 @@ HEADERS += \
     ../../cr3gl/include/glfont.h \
     ../../cr3gl/include/glscene.h \
     ../../cr3gl/include/glwrapper.h \
+    ../../cr3ui/include/cruimain.h \
     ../../cr3ui/include/crui.h \
     ../../cr3ui/include/cruicontrols.h \
     ../../cr3ui/include/cruievent.h \

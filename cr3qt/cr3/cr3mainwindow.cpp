@@ -62,12 +62,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     _qtgl = this;
 
-
-    CRUIHomeWidget * home = new CRUIHomeWidget();
-    CRUIFolderWidget * folder = new CRUIFolderWidget();
-    folder->setDirectory(dirCache->find(lString8("c:\\Shared\\Books")));
-
-    _widget = folder;
+    _widget = new CRUIMainWidget();
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
@@ -156,14 +151,7 @@ void OpenGLWindow::render()
         deviceInfo.setScreenDimensions(sz.width(), sz.height(), dpi);
         adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");
-        if (_widget)
-            delete _widget;
-        CRUIFolderWidget * folder = new CRUIFolderWidget();
-        folder->setDirectory(dirCache->find(lString8("c:\\Shared\\Books")));
-        _widget = folder;
-        //_widget = new CRUIHomeWidget();
-        _eventManager->setRootWidget(_widget);
-        _widget->requestLayout();
+        _widget->recreate();
     }
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");

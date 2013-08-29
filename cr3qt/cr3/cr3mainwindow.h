@@ -47,6 +47,7 @@
 #include <QThread>
 
 #include "cr3qt.h"
+#include "cruimain.h"
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -61,7 +62,7 @@ class OpenGLWindow : public QWindow, protected QOpenGLFunctions
     Q_OBJECT
 
 protected:
-    CRUIWidget * _widget;
+    CRUIMainWidget * _widget;
     CRUIEventManager * _eventManager;
     CRUIEventAdapter * _eventAdapter;
 public:
