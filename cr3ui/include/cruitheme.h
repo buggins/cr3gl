@@ -92,7 +92,12 @@ namespace CRUI {
 		ALIGN_MASK_HORIZONTAL = 0x0F, // mask
 	};
 
-};
+    enum CRUIEllipsisOption {
+        ELLIPSIS_RIGHT,
+        ELLIPSIS_MIDDLE,
+        ELLIPSIS_LEFT
+    };
+}
 
 class CRResourceResolver {
 	lString8Collection _dirList;

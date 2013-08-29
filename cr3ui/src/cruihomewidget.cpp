@@ -84,6 +84,7 @@ public:
 };
 
 class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter {
+protected:
 	CRUITextWidget * _caption;
 	CRUIListWidget * _list;
 	CRUILinearLayout * _itemWidget;
@@ -124,6 +125,8 @@ public:
 		_textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
         _textWidget->setFontSize(CRUI::FONT_SIZE_XSMALL);
 		_textWidget->setPadding(PT_TO_PX(1));
+        _textWidget->setMaxLines(2);
+        _textWidget->setEllipsisMode(ELLIPSIS_MIDDLE);
 
 		_itemWidget = new CRUILinearLayout(true);
 		_itemWidget->addChild(_itemImage);
@@ -157,9 +160,58 @@ public:
 
 class CRUIFileSystemDirsWidget : public CRUIHomeItemListWidget {
 public:
+    virtual int getItemCount(CRUIListWidget * list) {
+        return deviceInfo.topDirs.itemCount();
+    }
+    virtual lString16 getItemText(int index) {
+        CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
+        switch(item->getDirType()) {
+        case DIR_TYPE_INTERNAL_STORAGE:
+            return _16(STR_INTERNAL_STORAGE_DIR);
+        case DIR_TYPE_SD_CARD:
+            return _16(STR_SD_CARD_DIR);
+        case DIR_TYPE_FS_ROOT:
+            return Utf8ToUnicode(item->getPathName());
+        case DIR_TYPE_DEFAULT_BOOKS_DIR:
+            return Utf8ToUnicode(item->getPathName());
+        case DIR_TYPE_CURRENT_BOOK_DIR:
+            return Utf8ToUnicode(item->getPathName());
+        case DIR_TYPE_DOWNLOADS:
+            return Utf8ToUnicode(item->getPathName());
+        case DIR_TYPE_FAVORITE:
+            return Utf8ToUnicode(item->getPathName());
+        case DIR_TYPE_NORMAL:
+            return Utf8ToUnicode(item->getFileName());
+        default:
+            return Utf8ToUnicode(item->getPathName());
+        }
+    }
+    virtual CRUIImageRef getItemIcon(int index) {
+        CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
+        switch(item->getDirType()) {
+        case DIR_TYPE_INTERNAL_STORAGE:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_SD_CARD:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_FS_ROOT:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_DEFAULT_BOOKS_DIR:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_CURRENT_BOOK_DIR:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_DOWNLOADS:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_FAVORITE:
+            return resourceResolver->getIcon("folder_blue");
+        case DIR_TYPE_NORMAL:
+            return resourceResolver->getIcon("folder_blue");
+        default:
+            return resourceResolver->getIcon("folder_blue");
+        }
+    }
     CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
-
-	}
+        deviceInfo.topDirs.sort(0);
+    }
 };
 
 class CRUILibraryWidget : public CRUIHomeItemListWidget {

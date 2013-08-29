@@ -15,6 +15,7 @@
 #include "cruilist.h"
 #include "cruihomewidget.h"
 #include "cruifolderwidget.h"
+#include "fileinfo.h"
 
 struct CRUIDeviceInfo {
 	int dpi;
@@ -28,6 +29,7 @@ struct CRUIDeviceInfo {
 	int pixelsToPt(int pixels);
 	int ptToPixels(int mm);
     bool isSizeChanged(int newDx, int newDy);
+    CRTopDirList topDirs;
 	CRUIDeviceInfo();
 	void setScreenDimensions(int dx, int dy, int dpi);
 };

@@ -20,11 +20,113 @@ lString16 CRUITextWidget::getText() {
 	return _text;
 }
 
+static lString16 setEllipsis(const lString16 & text, int mode, int count, const lString16 & ellipsis) {
+    if (count == 0)
+        return text;
+    if (count >= text.length())
+        return lString16("");
+    if (mode == ELLIPSIS_LEFT) {
+        return ellipsis + text.substr(count);
+    } else if (mode == ELLIPSIS_MIDDLE) {
+        int p = (text.length() - count - 1) / 2;
+        if (p < 0)
+            p = 0;
+        return text.substr(0, p) + ellipsis + text.substr(p + count);
+    } else {
+        // ELLIPSIS_RIGHT
+        return text.substr(0, text.length() - count) + ellipsis;
+    }
+}
+
+lString16 CRUITextWidget::applyEllipsis(lString16 text, int maxWidth, int mode, const lString16 & ellipsis) {
+    LVFontRef font = getFont();
+    for (int count = 0; count < text.length(); count++) {
+        lString16 s = setEllipsis(text, mode, count, count > 0 ? ellipsis : lString16::empty_str);
+        int w = font->getTextWidth(s.c_str(), s.length());
+        if (w <= maxWidth)
+            return s;
+    }
+    return lString16();
+}
+
+static int findBestSplitPosition(const lString16 & text, int startPos, int dir) {
+    for (int i = startPos; i >= 0 && i < text.length(); i += dir) {
+        lChar16 ch = text[i];
+        if (ch == ' ' || ch == '/' || ch == '\\' || ch == '.' || ch == ',')
+            return i;
+    }
+    return -1; // not found
+}
+
+void CRUITextWidget::layoutText(lString16 text, int maxWidth, lString16 & line1, lString16 & line2, int & width, int & height) {
+    lvRect pad = getPadding();
+    lvRect margin = getMargin();
+    maxWidth -= pad.left + pad.right + margin.left + margin.right;
+    width = getFont()->getTextWidth(text.c_str(), text.length());
+    height = getFont()->getHeight();
+    if (width <= maxWidth) {
+        line1 = text;
+        return;
+    }
+    lString16 ellipsis("...");
+    if (_maxLines <= 1) {
+        line1 = applyEllipsis(text, maxWidth, _ellipsisMode, ellipsis);
+        width = getFont()->getTextWidth(line1.c_str(), line1.length());
+        return;
+    }
+    lString16 s1 = applyEllipsis(text, maxWidth, ELLIPSIS_RIGHT, lString16::empty_str);
+    lString16 s2 = applyEllipsis(text, maxWidth, ELLIPSIS_LEFT, lString16::empty_str);
+    height = height * 2;
+    if (_ellipsisMode == ELLIPSIS_LEFT) {
+        int p = findBestSplitPosition(text, text.length() - s2.length(), 1);
+        if (text.length() - p >= s2.length() / 3) {
+            line1 = text.substr(0, p + 1);
+            line2 = text.substr(p + 1);
+            line1 = applyEllipsis(line1, maxWidth, ELLIPSIS_LEFT, ellipsis);
+        } else {
+            line1 = s1;
+            line2 = text.substr(s1.length());
+            line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
+        }
+    } else if (_ellipsisMode == ELLIPSIS_MIDDLE) {
+        int p = findBestSplitPosition(text, s1.length() - 1, -1);
+        if (p > s1.length() / 3) {
+            line1 = text.substr(0, p + 1);
+            line2 = text.substr(p + 1);
+            line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_LEFT, ellipsis);
+        } else {
+            line1 = s1;
+            line2 = text.substr(s1.length());
+            line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_LEFT, ellipsis);
+        }
+    } else {
+        // ELLIPSIS_RIGHT
+        int p = findBestSplitPosition(text, s1.length() - 1, -1);
+        if (p > s1.length() / 3) {
+            line1 = text.substr(0, p + 1);
+            line2 = text.substr(p + 1);
+            line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
+        } else {
+            line1 = s1;
+            line2 = text.substr(s1.length());
+            line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
+        }
+    }
+    // calc width
+    int w1 = getFont()->getTextWidth(line1.c_str(), line1.length());
+    int w2 = getFont()->getTextWidth(line2.c_str(), line2.length());
+    if (w1 > w2)
+        width = w1;
+    else
+        width = w2;
+}
+
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
-	lString16 text = getText();
-	int width = getFont()->getTextWidth(text.c_str(), text.length());
-	int height = getFont()->getHeight();
+    lString16 text = getText();
+    lString16 line1, line2;
+    int width, height;
+    layoutText(text, baseWidth, line1, line2, width, height);
 	defMeasure(baseWidth, baseHeight, width, height);
 }
 
@@ -39,22 +141,42 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUITextWidget::draw(LVDrawBuf * buf) {
-	lString16 text = getText();
-	CRUIWidget::draw(buf);
+    lString16 text = getText();
+    lString16 line1, line2;
+    int width, height;
+    layoutText(text, _pos.width(), line1, line2, width, height);
+    CRUIWidget::draw(buf);
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
 	buf->SetTextColor(getTextColor());
-	int width = getFont()->getTextWidth(text.c_str(), text.length());
-	int height = getFont()->getHeight();
 	//CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), width, height);
-	applyAlign(rc, width, height);
-	//CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
-	getFont()->DrawTextString(buf, rc.left, rc.top,
-            text.c_str(), text.length(),
-            '?');
+    if (line2.empty()) {
+        // single line
+        applyAlign(rc, width, height);
+        getFont()->DrawTextString(buf, rc.left, rc.top,
+                line1.c_str(), line1.length(),
+                '?');
+    } else {
+        // two lines
+        int h = getFont()->getHeight();
+        int w1 = getFont()->getTextWidth(line1.c_str(), line1.length());
+        int w2 = getFont()->getTextWidth(line2.c_str(), line2.length());
+        lvRect rc1 = rc;
+        rc1.bottom = rc1.bottom - h;
+        applyAlign(rc1, w1, h);
+        lvRect rc2 = rc;
+        rc2.top = rc2.top + h;
+        applyAlign(rc2, w2, h);
+        getFont()->DrawTextString(buf, rc1.left, rc1.top,
+                line1.c_str(), line1.length(),
+                '?');
+        getFont()->DrawTextString(buf, rc2.left, rc2.top,
+                line2.c_str(), line2.length(),
+                '?');
+    }
 }
 
 

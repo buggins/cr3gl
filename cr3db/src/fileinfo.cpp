@@ -354,6 +354,37 @@ void CRDirCacheItem::sort(int sortOrder) {
 	_entries.sort(title_comparator);
 }
 
+static int access_time_comparator(const CRTopDirItem ** item1, const CRTopDirItem ** item2) {
+    const CRTopDirItem * e1 = *item1;
+    const CRTopDirItem * e2 = *item2;
+    if (e1->getLastAccessTime() == e2->getLastAccessTime()) {
+        if (e1->getDirType() == e2->getDirType())
+            return e1->getPathName().compare(e2->getPathName());
+        if (e1->getDirType() < e2->getDirType())
+            return -1;
+        return 1;
+    }
+    if (e1->getLastAccessTime() > e2->getLastAccessTime())
+        return -1;
+    return 1;
+}
+
+void CRTopDirList::sort(int sortOrder) {
+    _entries.sort(access_time_comparator);
+}
+
+CRTopDirItem * CRTopDirList::addItem(DIR_TYPE t, lString8 path, lUInt64 ts) {
+    CRTopDirItem * item = new CRTopDirItem(t, path, ts);
+    _entries.add(item);
+    return item;
+}
+
+CRTopDirItem * CRTopDirList::itemByType(DIR_TYPE t) {
+    for (int i = 0; i<_entries.length(); i++)
+        if (_entries[i]->getDirType() == t)
+            return _entries[i];
+    return NULL;
+}
 
 void CRDirCache::addItem(CRDirCacheItem * dir) {
 	Item * item = new Item(dir);

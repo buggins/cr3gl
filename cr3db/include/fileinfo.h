@@ -41,6 +41,17 @@ namespace CRUI {
 int LVDocFormatFromExtension(lString16 &pathName);
 lString16 LVDocFormatName(int fmt);
 
+enum DIR_TYPE {
+    DIR_TYPE_INTERNAL_STORAGE,
+    DIR_TYPE_SD_CARD,
+    DIR_TYPE_FS_ROOT,
+    DIR_TYPE_DEFAULT_BOOKS_DIR,
+    DIR_TYPE_CURRENT_BOOK_DIR,
+    DIR_TYPE_DOWNLOADS,
+    DIR_TYPE_FAVORITE,
+    DIR_TYPE_NORMAL
+};
+
 class CRDirEntry {
 	lString8 _pathName;
 	bool _isArchive;
@@ -61,6 +72,9 @@ public:
 	virtual bool isParsed() const { return false; }
 	virtual void setParsed(bool parsed) {}
     virtual CRDirEntry * clone() const { return NULL; }
+    virtual DIR_TYPE getDirType() const { return DIR_TYPE_NORMAL; }
+    virtual bool isRootDir() { DIR_TYPE t = getDirType(); return t == DIR_TYPE_SD_CARD || t == DIR_TYPE_INTERNAL_STORAGE || t == DIR_TYPE_FS_ROOT; }
+    virtual lUInt64 getLastAccessTime() const { return 0; }
 };
 
 class CRFileItem : public CRDirEntry {
@@ -83,6 +97,28 @@ public:
 	CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
 	virtual bool isDirectory() const { return true; }
     virtual CRDirEntry * clone() const { CRDirItem * res = new CRDirItem(this->getPathName(), this->isArchive()); return res; }
+};
+
+class CRTopDirItem : public CRDirItem {
+    DIR_TYPE _dirtype;
+    lUInt64 _lastAccess;
+public:
+    CRTopDirItem(DIR_TYPE dirType, const lString8 & pathname, lUInt64 lastAccess = 0) : CRDirItem(pathname, false), _dirtype(dirType), _lastAccess(lastAccess) {}
+    virtual DIR_TYPE getDirType() const { return _dirtype; }
+    virtual CRDirEntry * clone() const { CRTopDirItem * res = new CRTopDirItem(this->getDirType(), this->getPathName()); return res; }
+    virtual lUInt64 getLastAccessTime() const { return _lastAccess; }
+    virtual void setLastAccessTime(lUInt64 ts) { _lastAccess = ts; }
+};
+
+class CRTopDirList : public CRDirItem {
+    LVPtrVector<CRTopDirItem> _entries;
+public:
+    int itemCount() const { return _entries.length(); }
+    CRTopDirItem * getItem(int index) const { return _entries[index]; }
+    CRTopDirItem * addItem(DIR_TYPE t, lString8 path, lUInt64 ts = 0);
+    CRTopDirItem * itemByType(DIR_TYPE t);
+    CRTopDirList() :  CRDirItem(lString8(), false) {}
+    void sort(int sortOrder);
 };
 
 class CRDirCacheItem : public CRDirItem {

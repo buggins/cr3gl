@@ -22,7 +22,8 @@ class CRUIFolderWidget : public CRUILinearLayout {
 	CRDirCacheItem * _dir;
     CRUIMainWidget * _main;
 public:
-	virtual void setDirectory(CRDirCacheItem * _dir);
+    CRUIMainWidget * getMain() { return _main; }
+    virtual void setDirectory(CRDirCacheItem * _dir);
     CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();
 };

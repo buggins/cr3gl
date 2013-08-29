@@ -11,6 +11,7 @@
 #include "cruilist.h"
 #include "cruicontrols.h"
 #include "crcoverpages.h"
+#include "cruimain.h"
 
 using namespace CRUI;
 
@@ -154,6 +155,7 @@ protected:
 	CRDirCacheItem * _dir;
 	CRUIFileItemWidget * _folderWidget;
 	CRUIFileItemWidget * _bookWidget;
+    CRUIFolderWidget * _parent;
     int _coverDx;
     int _coverDy;
 public:
@@ -180,12 +182,12 @@ public:
         CRUIListWidget::layout(left, top, right, bottom);
     }
 
-    CRUIFileListWidget() : CRUIListWidget(true) {
+    CRUIFileListWidget(CRUIFolderWidget * parent) : CRUIListWidget(true), _parent(parent) {
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
-        _folderWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "folder_blue", this);
-        _bookWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "cr3_logo", this);
+        _folderWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "folder_blue", parent->getMain());
+        _bookWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "cr3_logo", parent->getMain());
 		setStyle("FILE_LIST");
 	}
 	virtual int getItemCount() {
@@ -251,7 +253,7 @@ CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUILinearLayout(tru
 {
 	_title = new CRUITitleBarWidget(lString16("File list"));
 	addChild(_title);
-	_fileList = new CRUIFileListWidget();
+    _fileList = new CRUIFileListWidget(this);
 	addChild(_fileList);
 }
 

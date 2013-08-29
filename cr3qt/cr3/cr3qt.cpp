@@ -198,6 +198,14 @@ void InitCREngine(lString16 exePath) {
     CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
     cachedir->refresh();
 
+    deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("c:\\"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("d:\\"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8("c:\\Shared\\Books"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_CURRENT_BOOK_DIR, lString8("c:\\Shared\\Books"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("c:\\Shared\\Books\\Downloads"));
+
     currentTheme = new CRUITheme(lString8("BLACK"));
     currentTheme->setTextColor(0x000000);
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));

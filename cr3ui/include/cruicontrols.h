@@ -15,17 +15,23 @@ protected:
 	lString16 _text;
 	lString8 _textResourceId;
 	int _maxLines;
+    int _ellipsisMode;
+    void layoutText(lString16 text, int maxWidth, lString16 & line1, lString16 & line2, int & width, int & height);
+    lString16 applyEllipsis(lString16 text, int maxWidth, int mode, const lString16 & ellipsis);
 public:
-	virtual CRUIWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
+    virtual int getEllipsisMode() { return _ellipsisMode; }
+    virtual int getMaxLines() { return _maxLines; }
+    virtual CRUITextWidget * setEllipsisMode(int mode) { _ellipsisMode = mode; requestLayout(); return this; }
+    virtual CRUITextWidget * setMaxLines(int maxLines) { _maxLines = maxLines; requestLayout(); return this; }
 	virtual CRUIWidget * setText(lString16 text) { _text = text; requestLayout(); return this; }
 	virtual CRUIWidget * setText(const wchar_t * text) { _text = lString16(text); requestLayout(); return this; }
 	virtual CRUIWidget * setText(lString8 textResourceId) { _textResourceId = textResourceId; requestLayout(); return this; }
 	virtual CRUIWidget * setText(const char * textResourceId) { _textResourceId = lString8(textResourceId); requestLayout(); return this; }
 	virtual lString16 getText();
 
-	CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines) {}
-	CRUITextWidget(const char * textResourceId, int maxLines = 1) : _textResourceId(textResourceId), _maxLines(maxLines) {}
-	CRUITextWidget() : _maxLines(1) {}
+    CRUITextWidget(lString16 text, int maxLines = 1) : _text(text), _maxLines(maxLines), _ellipsisMode(CRUI::ELLIPSIS_RIGHT) {}
+    CRUITextWidget(const char * textResourceId, int maxLines = 1) : _textResourceId(textResourceId), _maxLines(maxLines), _ellipsisMode(CRUI::ELLIPSIS_RIGHT) {}
+    CRUITextWidget() : _maxLines(1), _ellipsisMode(CRUI::ELLIPSIS_RIGHT) {}
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
