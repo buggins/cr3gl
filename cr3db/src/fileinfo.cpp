@@ -253,6 +253,21 @@ lString16 CRDirEntry::getTitle() const {
 	return lString16();
 }
 
+lString16 CRDirEntry::getSeriesNameOnly() const {
+    if (!getBook())
+        return lString16();
+    if (!getBook()->series.isNull()) {
+        return Utf8ToUnicode(getBook()->series->name.c_str());
+    }
+    return lString16();
+}
+
+int CRDirEntry::getSeriesNumber() const {
+    if (!getBook())
+        return 0;
+    return (getBook()->seriesNumber);
+}
+
 lString16 CRDirEntry::getSeriesName(bool numberFirst) const {
     if (!getBook())
         return lString16();

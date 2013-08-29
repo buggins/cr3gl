@@ -51,6 +51,8 @@ public:
 	lString8 getFileName() const;
 	lString16 getTitle() const;
     lString16 getSeriesName(bool numberFirst) const;
+    lString16 getSeriesNameOnly() const;
+    int getSeriesNumber() const;
     lString16 getAuthorNames(bool fileAs) const;
 	virtual bool isDirectory() const = 0;
 	virtual bool isArchive() const { return _isArchive; }

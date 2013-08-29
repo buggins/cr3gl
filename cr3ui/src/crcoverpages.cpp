@@ -15,7 +15,8 @@ void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, 
     //CRLog::debug("drawBookCover called");
     lString16 title = book->getTitle();
     lString16 authors = book->getAuthorNames(false);
-    lString16 seriesName = book->getSeriesName(false);
+    lString16 seriesName = book->getSeriesNameOnly();
+    int seriesNumber = book->getSeriesNumber();
     if (title.empty() && authors.empty())
         title = Utf8ToUnicode(book->getFileName());
     if (drawbuf != NULL) {
@@ -41,11 +42,11 @@ void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, 
 
         if (bpp >= 16) {
             // native color resolution
-            LVDrawBookCover(*drawbuf2, image, fontFace, title, authors, seriesName, 0);
+            LVDrawBookCover(*drawbuf2, image, fontFace, title, authors, seriesName, seriesNumber);
             image.Clear();
         } else {
             LVGrayDrawBuf grayBuf(drawbuf2->GetWidth(), drawbuf2->GetHeight(), bpp);
-            LVDrawBookCover(grayBuf, image, fontFace, title, authors, seriesName, 0);
+            LVDrawBookCover(grayBuf, image, fontFace, title, authors, seriesName, seriesNumber);
             image.Clear();
             grayBuf.DrawTo(drawbuf2, 0, 0, 0, NULL);
         }
