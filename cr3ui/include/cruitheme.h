@@ -43,6 +43,17 @@ public:
 	virtual ~CRUIBitmapImage() { }
 };
 
+class CRUIDrawBufImage : public CRUIImage {
+protected:
+    LVDrawBuf * _src;
+public:
+    virtual int originalWidth() { return _src->GetWidth(); }
+    virtual int originalHeight() { return _src->GetHeight(); }
+    virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0);
+    CRUIDrawBufImage(LVDrawBuf * img);
+    virtual ~CRUIDrawBufImage() { }
+};
+
 namespace CRUI {
 	enum CRUILayoutOption {
 		FILL_PARENT  = 0x40000000,

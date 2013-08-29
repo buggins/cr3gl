@@ -4,6 +4,12 @@
 #include "epubfmt.h"
 #include "pdbfmt.h"
 
+#define USE_GL_COVERPAGE_CACHE 0 // no GL context under this thread anyway
+
+#if USE_GL_COVERPAGE_CACHE
+#include "gldrawbuf.h"
+#endif
+
 void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, LVImageSourceRef image, int bpp)
 {
     CRLog::debug("drawBookCover called");
@@ -403,7 +409,9 @@ CRCoverImageCache::Entry * CRCoverImageCache::draw(CRDirEntry * _book, int dx, i
         image = LVCreateStreamImageSource(stream);
     }
     // TODO: fix font face
+    drawbuf->beforeDrawing();
     CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
+    drawbuf->afterDrawing();
     return put(_book, dx, dy, drawbuf);
 }
 
@@ -441,6 +449,17 @@ void CRCoverImageCache::checkSize() {
             delete item;
         }
     }
+}
+
+LVDrawBuf * CRCoverImageCache::createDrawBuf(int dx, int dy) {
+#if USE_GL_COVERPAGE_CACHE == 1
+    GLDrawBuf * res = new GLDrawBuf(dx, dy, 32, true);
+    return res;
+#else
+    LVColorDrawBuf * res = new LVColorDrawBuf(dx, dy, 32);
+    res->Clear(0xFF000000);
+    return res;
+#endif
 }
 
 void CRCoverImageCache::clear() {
@@ -499,14 +518,18 @@ LVDrawBuf * CRCoverPageManager::getIfReady(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);
     CRCoverImageCache::Entry * existing = coverImageCache->find(_book, dx, dy);
-    if (existing)
+    if (existing) {
+        CRLog::trace("CRCoverPageManager::getIfReady - found existing image for %s %dx%d", _book->getPathName().c_str(), dx, dy);
         return existing->image;
+    }
+    CRLog::trace("CRCoverPageManager::getIfReady - not found %s %dx%d", _book->getPathName().c_str(), dx, dy);
     return NULL;
 }
 
 void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback)
 {
     CRGuard guard(_monitor);
+    CRLog::trace("CRCoverPageManager::prepare %s %dx%d", _book->getPathName().c_str(), dx, dy);
     if (_stopped) {
         CRLog::error("Ignoring new task since cover page manager is stopped");
         return;
@@ -521,6 +544,7 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         if (item->isSame(_book, dx, dy)) {
+            CRLog::trace("CRCoverPageManager::prepare %s %dx%d -- there is already such task in queue", _book->getPathName().c_str(), dx, dy);
             // already has the same task in queue
             iterator.moveToHead();
             return;
@@ -529,11 +553,13 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
     CoverTask * task = new CoverTask(_book, dx, dy, readyCallback);
     _queue.pushBack(task);
     _monitor->notify();
+    CRLog::trace("CRCoverPageManager::prepare - added new task %s %dx%d", _book->getPathName().c_str(), dx, dy);
 }
 
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);
+    CRLog::trace("CRCoverPageManager::cancel %s %dx%d", _book->getPathName().c_str(), dx, dy);
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         if (item->isSame(_book, dx, dy)) {
@@ -545,7 +571,7 @@ void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
     }
 }
 
-CRCoverPageManager::CRCoverPageManager() {
+CRCoverPageManager::CRCoverPageManager() : _stopped(false) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
     _thread->start();

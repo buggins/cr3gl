@@ -592,7 +592,7 @@ void GLDrawBuf::Draw( int x, int y, const lUInt8 * bitmap, int width, int height
 
 
 class GLDrawImageSceneItem : public GLSceneItem {
-	LVImageSource * img;
+    CacheableObject * img;
 	int x;
 	int y;
 	int width;
@@ -609,7 +609,7 @@ public:
 		if (glImageCache)
 			glImageCache->drawItem(img, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip);
 	}
-	GLDrawImageSceneItem(LVImageSource * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip)
+    GLDrawImageSceneItem(CacheableObject * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip)
 	: img(_img), x(_x), y(_y), width(_width), height(_height),
 	  srcx(_srcx), srcy(_srcy), srcwidth(_srcw), srcheight(_srch),
 	  color(_color), options(_options), clip(_clip)
@@ -752,7 +752,9 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int options)
 {
-	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(src);
+    if (dx <= 0 || dy <= 0 || !src)
+        return;
+    GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(src);
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
 			if (_scene)
@@ -761,7 +763,22 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
 	} else {
-		CRLog::error("GLDrawBuf::DrawRescaled() is not implemented for non-GL draw buffer sources");
+        GLImageCacheItem * item = glImageCache->get(src);
+        if (item == NULL)
+            item = glImageCache->set(src);
+        if (item != NULL) {
+            lvRect cliprect;
+            GetClipRect(&cliprect);
+            lvRect rc;
+            rc.left = x;
+            rc.top = y;
+            rc.right = x + dx;
+            rc.bottom = y + dy;
+            if (!rc.intersects(cliprect))
+                return; // out of bounds
+            lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
+            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), 0xFFFFFF, 0, clip));
+        }
 	}
 }
 

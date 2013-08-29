@@ -225,6 +225,17 @@ CRUIBitmapImage::CRUIBitmapImage(LVImageSourceRef img, bool ninePatch, bool tile
 }
 
 
+void CRUIDrawBufImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {
+    lvRect rc = rect;
+    buf->DrawRescaled(_src, rc.left, rc.top, rc.width(), rc.height(), 0);
+}
+
+CRUIDrawBufImage::CRUIDrawBufImage(LVDrawBuf * img) : _src(img) {
+
+}
+
+
+
 //============================================================================
 // Resource resolver
 

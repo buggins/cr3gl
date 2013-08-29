@@ -76,7 +76,7 @@ private:
     void checkSize();
     Entry * put(CRDirEntry * _book, int _dx, int _dy, LVDrawBuf * _image);
     /// override to use non-standard draw buffers (e.g. OpenGL)
-    virtual LVDrawBuf * createDrawBuf(int dx, int dy) { LVColorDrawBuf * res = new LVColorDrawBuf(dx, dy, 32); res->Clear(0xFF000000); return res; }
+    virtual LVDrawBuf * createDrawBuf(int dx, int dy);
 public:
     void clear();
     Entry * draw(CRDirEntry * _book, int dx, int dy);
