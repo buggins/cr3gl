@@ -170,6 +170,7 @@ void InitCREngine(lString16 exePath) {
     // coverpage file cache
     lString16 coverCacheDir = exePath + L"coverpages";
     coverCache = new CRCoverFileCache(coverCacheDir);
+    coverCache->open();
     coverImageCache = new CRCoverImageCache();
     coverPageManager = new CRCoverPageManager();
 

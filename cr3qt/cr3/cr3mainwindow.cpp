@@ -166,6 +166,7 @@ void OpenGLWindow::render()
         _widget->requestLayout();
     }
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
+    //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
     bool needLayout, needDraw;
     //CRLog::trace("Checking if draw is required");
@@ -175,10 +176,12 @@ void OpenGLWindow::render()
         //CRLog::trace("need layout");
         _widget->measure(sz.width(), sz.height());
         _widget->layout(0, 0, sz.width(), sz.height());
+        //CRLog::trace("done layout");
     }
     if (needDraw) {
         //CRLog::trace("need draw");
         _widget->draw(&buf);
+        //CRLog::trace("done draw");
     }
     //CRLog::trace("Calling buf.afterDrawing");
     buf.afterDrawing();

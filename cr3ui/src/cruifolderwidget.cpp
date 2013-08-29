@@ -14,6 +14,17 @@
 
 using namespace CRUI;
 
+class CoverReadyCallback : public CRRunnable {
+    CRUIWidget * _callbackWidget;
+public:
+    CoverReadyCallback(CRUIWidget * callbackWidget) : _callbackWidget(callbackWidget) {}
+    virtual void run() {
+        CRLog::trace("Cover page ready callback is called");
+        // TODO: safety fix
+        _callbackWidget->invalidate();
+    }
+};
+
 class CRUITitleBarWidget : public CRUILinearLayout {
 	CRUIButton * _backButton;
 	CRUIButton * _menuButton;
@@ -97,27 +108,24 @@ public:
 	}
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf) {
+        //CRLog::trace("CRUIFileItemWidget draw enter");
         if (_entry) {
+            //CRLog::trace("Book entry");
             LVDrawBuf * buf = coverPageManager->getIfReady(_entry, _iconDx, _iconDy);
             if (buf) {
+                //CRLog::trace("Found existing cover");
                 CRUIImageRef img(new CRUIDrawBufImage(buf));
                 _icon->setImage(img);
             } else {
-                class CoverReadyCallback : public CRRunnable {
-                    CRUIWidget * _callbackWidget;
-                public:
-                    CoverReadyCallback(CRUIWidget * callbackWidget) : _callbackWidget(callbackWidget) {}
-                    virtual void run() {
-                        CRLog::trace("Cover page ready callback is called");
-                        // TODO: safety fix
-                        _callbackWidget->invalidate();
-                    }
-                };
+                //CRLog::trace("Requesting new cover");
                 coverPageManager->prepare(_entry, _iconDx, _iconDy, new CoverReadyCallback(_callbackWidget));
+                //CRLog::trace("Clearing coverpage");
                 _icon->setImage(CRUIImageRef());
             }
         }
+        //CRLog::trace("CRUIFileItemWidget draw - calling CRUILinearLayout::draw");
         CRUILinearLayout::draw(buf);
+        //CRLog::trace("CRUIFileItemWidget draw exit");
     }
     void setBook(CRDirEntry * entry, int iconDx, int iconDy) {
         _iconDx = iconDx;

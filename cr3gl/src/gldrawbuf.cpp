@@ -183,10 +183,13 @@ public:
 		return cacheItem;
 	}
 	void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip) {
-		if (_needUpdateTexture)
+        //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
+        if (_needUpdateTexture)
 			updateTexture();
+        if (glIsTexture(_textureId) != GL_TRUE) {
+            CRLog::error("Invalid texture %d", _textureId);
+        }
 		if (_textureId != 0) {
-			//CRLog::trace("drawing character at %d,%d", x, y);
 			float dstx0 = x;
 			float dsty0 = y;
 			float dstx1 = x + dx;
@@ -239,6 +242,7 @@ public:
 	    	glDisable(GL_TEXTURE_2D);
 	    	glDisable(GL_BLEND);
 		}
+        //CRLog::trace("drawItem done");
 	}
 	void close() {
 		_closed = true;
