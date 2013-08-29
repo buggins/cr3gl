@@ -7,14 +7,22 @@
 
 #include "cruilayout.h"
 
+using namespace CRUI;
+
 // Vertical Layout
 /// measure dimensions
 void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 	lvRect padding;
 	getPadding(padding);
 	lvRect margin = getMargin();
-	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
-	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
+    int maxw = baseWidth;
+    int maxh = baseHeight;
+    if (getMaxWidth() != UNSPECIFIED && maxw > getMaxWidth())
+        maxw = getMaxWidth();
+    if (getMaxHeight() != UNSPECIFIED && maxh > getMaxHeight())
+        maxh = getMaxHeight();
+    maxw = maxw - (margin.left + margin.right + padding.left + padding.right);
+    maxh = maxh - (margin.top + margin.bottom + padding.top + padding.bottom);
 	int totalWeight = 0;
 	if (_isVertical) {
 		int biggestw = 0;

@@ -445,6 +445,7 @@ void CRCoverImageCache::checkSize() {
         totalSize += item->dx * item->dy * 4;
         totalItems++;
         if ((totalItems > _maxitems || totalSize > _maxsize) && totalItems > 2) {
+            CRLog::info("CRCoverImageCache::checkSize() removing item %s %dx%d", item->book->getPathName().c_str(), item->dx, item->dy);
             iterator.remove();
             delete item;
         }
@@ -463,6 +464,7 @@ LVDrawBuf * CRCoverImageCache::createDrawBuf(int dx, int dy) {
 }
 
 void CRCoverImageCache::clear() {
+    CRLog::info("CRCoverImageCache::clear()");
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.remove();
         delete item;
@@ -470,7 +472,7 @@ void CRCoverImageCache::clear() {
 }
 
 CRCoverImageCache::CRCoverImageCache(int maxitems, int maxsize) : _maxitems(maxitems), _maxsize(maxsize){
-
+    CRLog::info("CRCoverImageCache:: maxitems=%d maxsize=%d", maxitems, maxsize);
 }
 
 CRCoverImageCache * coverImageCache = NULL;
@@ -503,8 +505,10 @@ void CRCoverPageManager::run() {
             if (task) {
                 CRCoverImageCache::Entry * entry = coverImageCache->find(task->book, task->dx, task->dy);
                 if (!entry) {
+                    CRLog::trace("CRCoverPageManager: rendering new coverpage image ");
                     entry = coverImageCache->draw(task->book, task->dx, task->dy);
                 }
+                CRLog::trace("CRCoverPageManager: calling ready callback");
                 concurrencyProvider->executeGui(task->callback); // callback will be deleted in GUI thread
                 delete task;
             }

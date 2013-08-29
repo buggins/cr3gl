@@ -58,6 +58,7 @@ class GLImageCachePage {
 	int _itemCount;
 public:
 	GLImageCachePage(GLImageCache * cache, int dx, int dy) : _cache(cache), _drawbuf(NULL), _currentLine(0), _nextLine(0), _x(0), _closed(false), _needUpdateTexture(false), _textureId(0) {
+        CRLog::trace("created image cache page %d x %d", dx, dy);
 		_tdx = nearestPOT(dx);
 		_tdy = nearestPOT(dy);
 		_itemCount = 0;
@@ -321,7 +322,8 @@ GLImageCache::~GLImageCache() {
 }
 
 void GLImageCache::clear() {
-	LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
+    CRLog::trace("Clearing image cache");
+    LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
 	LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * p;
 	for (;;) {
 		p = iter.next();
@@ -334,11 +336,15 @@ void GLImageCache::clear() {
 }
 
 void GLImageCache::onCachedObjectDeleted(CacheableObject * obj) {
+    CRLog::trace("Cached object deleted");
 	GLImageCacheItem* item = get(obj);
 	if (item) {
 		int itemsLeft = item->getPage()->deleteItem(item);
-		if (itemsLeft <= 0)
-			removePage(item->getPage());
+        CRLog::trace("itemsLeft = %d", itemsLeft);
+        if (itemsLeft <= 0) {
+            CRLog::trace("removing page");
+            removePage(item->getPage());
+        }
 		_map.remove(obj);
 		delete item;
 	}

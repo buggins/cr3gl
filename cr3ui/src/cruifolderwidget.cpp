@@ -52,9 +52,11 @@ public:
     CRUIWidget * _callbackWidget;
     CRUIFileItemWidget(int iconDx, int iconDy, const char * iconRes, CRUIWidget * callbackWidget) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL), _callbackWidget(callbackWidget) {
 		_icon = new CRUIImageWidget(iconRes);
-		_icon->setMinWidth(MIN_ITEM_PX);
-		_icon->setMinHeight(MIN_ITEM_PX);
-		_icon->setAlign(ALIGN_CENTER);
+        _icon->setMinWidth(iconDx);
+        _icon->setMinHeight(iconDy);
+        _icon->setMaxWidth(iconDx);
+        _icon->setMaxHeight(iconDy);
+        _icon->setAlign(ALIGN_CENTER);
 		_icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
 		addChild(_icon);
 		_layout = new CRUILinearLayout(true);
@@ -67,16 +69,26 @@ public:
 		_line3->setFontSize(FONT_SIZE_SMALL);
 		_line4 = new CRUITextWidget();
 		_line4->setFontSize(FONT_SIZE_XSMALL);
-		_line4->setAlign(ALIGN_RIGHT | ALIGN_BOTTOM);
-		_layout->addChild(_line1);
+        _line4->setAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+
+        _line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _infolayout->addChild(_line3);
+        _infolayout->addChild(_line4);
+
+        _layout->addChild(spacer1);
+        _layout->addChild(_line1);
 		_layout->addChild(_line2);
-		_infolayout->addChild(_line3);
-		_infolayout->addChild(_line4);
-		_line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_layout->addChild(_infolayout);
-		_layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
+        _layout->addChild(spacer2);
+        _layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
 		_layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-		//_layout->setBackground(0x80C0C0C0);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
+        //_layout->setBackground(0x80C0C0C0);
 		addChild(_layout);
 		setMinWidth(MIN_ITEM_PX);
 		setMinHeight(MIN_ITEM_PX);
@@ -96,6 +108,7 @@ public:
                 public:
                     CoverReadyCallback(CRUIWidget * callbackWidget) : _callbackWidget(callbackWidget) {}
                     virtual void run() {
+                        CRLog::trace("Cover page ready callback is called");
                         // TODO: safety fix
                         _callbackWidget->invalidate();
                     }
@@ -109,6 +122,12 @@ public:
     void setBook(CRDirEntry * entry, int iconDx, int iconDy) {
         _iconDx = iconDx;
         _iconDy = iconDy;
+        _icon->setMinWidth(iconDx);
+        _icon->setMinHeight(iconDy);
+        _icon->setMaxWidth(iconDx);
+        _icon->setMaxHeight(iconDy);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
         _entry = entry;
     }
 };
@@ -134,11 +153,11 @@ public:
         if (dx < dy) {
             // vertical
             _coverDx = dx / 6;
-            _coverDy = _coverDx * 3 / 4;
+            _coverDy = _coverDx * 4 / 3;
         } else {
             // horizontal
             _coverDy = dy / 4;
-            _coverDx = _coverDy * 4 / 3;
+            _coverDx = _coverDy * 3 / 4;
         }
     }
 
@@ -156,9 +175,9 @@ public:
     CRUIFileListWidget() : CRUIListWidget(true) {
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
+        calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
         _folderWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "folder_blue", this);
         _bookWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "cr3_logo", this);
-        calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
 		setStyle("FILE_LIST");
 	}
 	virtual int getItemCount() {
@@ -171,7 +190,8 @@ public:
 		CRDirEntry * item = _dir->getItem(index);
 		if (item->isDirectory()) {
 			CRUIFileItemWidget * res = _folderWidget;
-			res->_line1->setText(L"");
+            res->setBook(NULL, _coverDx, _coverDy);
+            res->_line1->setText(L"");
 			res->_line2->setText(Utf8ToUnicode(item->getFileName()));
 			res->_line3->setText(L"");
 			//CRLog::trace("returning folder item");
