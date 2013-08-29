@@ -13,10 +13,12 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+        cr3qt.cpp \
         cr3mainwindow.cpp
 
-HEADERS  += cr3mainwindow.h
-
+HEADERS  += cr3mainwindow.h \
+            cr3qt.h
+            
 win32 {
     DEFINES += _WIN32=1 \
         WIN32=1 \

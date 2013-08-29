@@ -46,11 +46,7 @@
 #include <QCoreApplication>
 #include <QThread>
 
-#include <crui.h>
-#include <crconcurrent.h>
-
-extern lString16 resourceDir;
-void setupResourcesForScreenSize();
+#include "cr3qt.h"
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -58,7 +54,6 @@ class QOpenGLContext;
 class QOpenGLPaintDevice;
 QT_END_NAMESPACE
 
-class CRUIEventAdapter;
 
 //! [1]
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions
@@ -103,42 +98,6 @@ private:
     QOpenGLPaintDevice *m_device;
 };
 //! [1]
-
-class CRQtThread : public QThread {
-    Q_OBJECT
-    CRRunnable * runnable;
-protected:
-    virtual void run() { runnable->run(); }
-public:
-    CRQtThread(CRRunnable * _runnable) : runnable(_runnable) {}
-    virtual ~CRQtThread() { }
-};
-
-class QtGuiExecutorObject : public QObject {
-    Q_OBJECT
-
-    class QtGuiExecutorEvent : public QEvent {
-        CRRunnable * task;
-    public:
-        void run() { task->run(); }
-        QtGuiExecutorEvent(CRRunnable * _task) : QEvent(QEvent::User), task(_task) { }
-        virtual ~QtGuiExecutorEvent() { delete task; }
-    };
-
-public:
-    virtual bool event(QEvent * e) {
-        QtGuiExecutorEvent * ee = dynamic_cast<QtGuiExecutorEvent*>(e);
-        if (ee) {
-            ee->run();
-            ee->accept();
-        }
-        return true;
-    }
-    void execute(CRRunnable * _task) {
-        QtGuiExecutorEvent * event = new QtGuiExecutorEvent(_task);
-        QCoreApplication::postEvent(this, event);
-    }
-};
 
 
 
