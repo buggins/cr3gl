@@ -67,6 +67,8 @@ class CRGuard {
 public:
     CRGuard(CRMutexRef & _mutex) : mutex(_mutex.get()) { mutex->acquire(); }
     CRGuard(CRMonitorRef & _mutex) : mutex(_mutex.get()) { mutex->acquire(); }
+    CRGuard(CRMutex * _mutex) : mutex(_mutex) { mutex->acquire(); }
+    CRGuard(CRMonitor * _mutex) : mutex(_mutex) { mutex->acquire(); }
     ~CRGuard() { mutex->release(); }
 };
 

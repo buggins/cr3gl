@@ -50,17 +50,21 @@ void CRUIMainWidget::showHome() {
     setMode(MODE_HOME);
 }
 
-void CRUIMainWidget::showFolder(lString8 folder) {
-    if (_currentFolder != folder) {
-        _currentFolder = folder;
-        CRDirCacheItem * dir = dirCache->find(folder);
-        if (!dir) {
-            dir = dirCache->getOrAdd(folder);
-            dir->scan();
-        }
-        _folder->setDirectory(dir);
+void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
+    if (item->getPathName() == _pendingFolder) {
+        CRLog::info("Directory %s is ready", _pendingFolder.c_str());
+        _currentFolder = _pendingFolder;
+        _folder->setDirectory(item);
         setMode(MODE_FOLDER);
-        requestLayout();
+        _pendingFolder.clear();
+    }
+}
+
+void CRUIMainWidget::showFolder(lString8 folder) {
+    if (_currentFolder != folder && _pendingFolder != folder) {
+        _pendingFolder = folder;
+        CRLog::info("Starting background directory scan for %s", _pendingFolder.c_str());
+        dirCache->scan(folder, this);
     }
 }
 

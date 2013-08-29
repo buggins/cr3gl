@@ -12,15 +12,17 @@ enum VIEW_MODE {
     MODE_READ,
 };
 
-class CRUIMainWidget : public CRUIWidget {
+class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback {
     CRUIHomeWidget * _home;
     CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
     CRUIWidget * _currentWidget;
     VIEW_MODE _mode;
     lString8 _currentFolder;
+    lString8 _pendingFolder;
     void setMode(VIEW_MODE mode);
 public:
+    virtual void onDirectoryScanFinished(CRDirCacheItem * item);
     virtual int getChildCount();
     virtual CRUIWidget * getChild(int index);
     /// measure dimensions

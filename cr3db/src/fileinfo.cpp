@@ -237,7 +237,6 @@ bool CRDirCacheItem::scan() {
 	CRLog::trace("Scanning directory %s", getPathName().c_str());
 	lUInt64 hash;
 	bool res = LVListDirectory(getPathName(), isArchive(), _entries, hash);
-	setParsed(true);
 	_hash = hash;
 	_scanned = true;
 	return res;
@@ -309,10 +308,37 @@ lString16 CRDirEntry::getAuthorNames(bool fileAs) const {
     return lString16();
 }
 
+int CRDirCacheItem::itemCount() const {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    return _entries.length();
+}
+
+CRDirEntry * CRDirCacheItem::getItem(int index) const {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    return _entries[index];
+}
+
+CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0), _scanning(false)
+{
+    _mutex = concurrencyProvider->createMutex();
+}
+
+CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0), _scanning(false)
+{
+    _mutex = concurrencyProvider->createMutex();
+}
+
 bool CRDirCacheItem::refresh() {
-	if (needScan())
-		return scan();
-	return true;
+    CRGuard guard(_mutex);
+    _scanning = true;
+    bool res = true;
+    if (needScan()) {
+        res = scan();
+    } else {
+        CRLog::trace("CRDirCacheItem::refresh() - no scan is required");
+    }
+    _scanning = false;
+    return res;
 }
 
 bool CRDirCacheItem::needScan() {
@@ -351,7 +377,8 @@ static int title_comparator(const CRDirEntry ** item1, const CRDirEntry ** item2
 }
 
 void CRDirCacheItem::sort(int sortOrder) {
-	_entries.sort(title_comparator);
+    CRGuard guard(_mutex);
+    _entries.sort(title_comparator);
 }
 
 static int access_time_comparator(const CRTopDirItem ** item1, const CRTopDirItem ** item2) {
@@ -415,11 +442,89 @@ void CRDirCache::moveToHead(CRDirCache::Item * item) {
 	_head = item;
 }
 
+void CRDirCache::stop() {
+    CRGuard guard(_monitor);
+    _stopped = true;
+    while (_queue.length() > 0) {
+        DirectoryScanTask * p = _queue.popFront();
+        delete p;
+    }
+    _monitor->notifyAll();
+    _thread->join();
+}
+
+void CRDirCache::scan(const lString8 & pathname, CRDirScanCallback * callback) {
+    //CRLog::trace("CRDirCache::scan - entering");
+    CRDirCacheItem * dir = getOrAdd(pathname);
+    //CRLog::trace("CRDirCache::scan - got dir");
+    CRGuard guard(_monitor);
+    //CRLog::trace("CRDirCache::scan - acquired lock");
+    //CRLog::trace("CRCoverPageManager::prepare %s %dx%d", _book->getPathName().c_str(), dx, dy);
+    if (_stopped) {
+        CRLog::error("Ignoring new task since dir cache thread is stopped");
+        return;
+    }
+    for (LVQueue<DirectoryScanTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        DirectoryScanTask * item = iterator.get();
+        if (item->isSame(pathname)) {
+            iterator.moveToHead();
+            return;
+        }
+    }
+    DirectoryScanTask * task = new DirectoryScanTask(dir, callback);
+    _queue.pushBack(task);
+    _monitor->notify();
+    CRLog::trace("CRDirCache::scan - added new task %s", pathname.c_str());
+}
+
+void CRDirCache::run() {
+    CRLog::info("CRDirCache thread started");
+    for (;;) {
+        if (_stopped)
+            break;
+        DirectoryScanTask * task = NULL;
+        {
+            //CRLog::trace("CRDirCache::run :: wait for lock");
+            CRGuard guard(_monitor);
+            //CRLog::trace("CRDirCache::run :: lock acquired");
+            if (_queue.length() == 0) {
+                //CRLog::trace("CRDirCache::run :: calling monitor wait");
+                _monitor->wait();
+                //CRLog::trace("CRDirCache::run :: done monitor wait");
+            }
+            if (_stopped)
+                break;
+            task = _queue.popFront();
+        }
+        if (task) {
+            CRDirCacheItem * item = task->dir;
+            //CRLog::trace("CRDirCache::run :: calling refresh()");
+            item->refresh();
+            //CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
+            concurrencyProvider->executeGui(task); // callback will be deleted in GUI thread
+        }
+    }
+    CRLog::info("CRCoverPageManager thread finished");
+}
+
+
+CRDirCache::~CRDirCache() {
+    stop();
+    clear();
+}
+
+CRDirCache::CRDirCache() : _head(NULL), _byName(1000), _stopped(false) {
+    _monitor = concurrencyProvider->createMonitor();
+    _thread = concurrencyProvider->createThread(this);
+    _thread->start();
+}
+
 CRDirCacheItem * CRDirCache::getOrAdd(CRDirItem * dir) {
-	CRDirCacheItem * existing = find(dir);
+    CRDirCacheItem * existing = find(dir);
 	if (existing)
 		return existing;
-	CRDirCacheItem * newItem = new CRDirCacheItem(dir);
+    CRGuard guard(_monitor);
+    CRDirCacheItem * newItem = new CRDirCacheItem(dir);
 	addItem(newItem);
 	return newItem;
 }
@@ -446,14 +551,16 @@ CRDirCacheItem * CRDirCache::getOrAdd(const lString8 & pathname) {
 }
 
 CRDirCacheItem * CRDirCache::find(lString8 pathname) {
-	CRDirCache::Item * item = findItem(pathname);
+    CRGuard guard(_monitor);
+    CRDirCache::Item * item = findItem(pathname);
 	if (!item)
 		return NULL;
 	return item->dir;
 }
 
 void CRDirCache::clear() {
-	while (_head) {
+    CRGuard guard(_monitor);
+    while (_head) {
 		Item * item = _head;
 		_head = item->next;
 		delete item->dir;

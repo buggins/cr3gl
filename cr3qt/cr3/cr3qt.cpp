@@ -195,9 +195,9 @@ void InitCREngine(lString16 exePath) {
         CRLog::error("Error while filling caches");
 
     dirCache = new CRDirCache();
-    lString8 dir("c:\\Shared\\Books");
-    CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
-    cachedir->refresh();
+//    lString8 dir("c:\\Shared\\Books");
+//    CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
+//    cachedir->refresh();
 
     deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
     deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));

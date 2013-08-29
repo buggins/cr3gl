@@ -9,6 +9,7 @@
 #define FILEINFO_H_
 
 #include <cr3db.h>
+#include <crconcurrent.h>
 
 namespace CRUI {
 	enum DocFormat {
@@ -122,24 +123,48 @@ public:
 };
 
 class CRDirCacheItem : public CRDirItem {
+    friend class CRDirCache;
 	LVPtrVector<CRDirEntry> _entries;
 	bool _scanned;
 	lUInt64 _hash;
+    CRMutexRef _mutex;
+    volatile bool _scanning;
+    bool scan();
+    bool needScan();
+    bool refresh();
 public:
-	int itemCount() const { return _entries.length(); }
-	CRDirEntry * getItem(int index) const { return _entries[index]; }
-	CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0) {}
-	CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0) {}
+    int itemCount() const;
+    CRDirEntry * getItem(int index) const;
+    CRDirCacheItem(CRDirEntry * item);
+    CRDirCacheItem(const lString8 & pathname, bool isArchive);
 	virtual void setParsed(bool parsed) { _scanned = parsed; }
 	virtual bool isParsed() const { return _scanned; }
-	bool refresh();
-	bool scan();
-	bool needScan();
-	void sort(int sortOrder);
+    virtual bool isScanning() const { return _scanning; }
+    void sort(int sortOrder);
 };
 
-class CRDirCache {
-	struct Item {
+class CRDirScanCallback {
+public:
+    virtual void onDirectoryScanFinished(CRDirCacheItem * item) = 0;
+    virtual ~CRDirScanCallback() {}
+};
+
+class CRDirCache  : public CRRunnable {
+    class DirectoryScanTask : public CRRunnable {
+    public:
+        CRDirCacheItem * dir;
+        CRDirScanCallback * callback;
+        DirectoryScanTask(CRDirCacheItem * _dir, CRDirScanCallback * _callback) : dir(_dir), callback(_callback) {}
+        virtual ~DirectoryScanTask() {
+        }
+        bool isSame(lString8 _pathname) {
+            return dir->getPathName() == _pathname;
+        }
+        virtual void run() {
+            callback->onDirectoryScanFinished(dir);
+        }
+    };
+    struct Item {
 		CRDirCacheItem * dir;
 		Item * next;
 		Item * prev;
@@ -150,14 +175,23 @@ class CRDirCache {
 	void addItem(CRDirCacheItem * dir);
 	Item * findItem(const lString8 & pathname);
 	void moveToHead(Item * item);
+
+    bool _stopped;
+    CRMonitorRef _monitor;
+    CRThreadRef _thread;
+    LVQueue<DirectoryScanTask *> _queue;
+    void clear();
 public:
-	CRDirCache() : _head(NULL), _byName(1000) {}
-	~CRDirCache() { clear(); }
-	CRDirCacheItem * find(lString8 pathname);
+    void stop();
+    virtual void run();
+
+    CRDirCache();
+    ~CRDirCache();
+    CRDirCacheItem * find(lString8 pathname);
 	CRDirCacheItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
 	CRDirCacheItem * getOrAdd(CRDirItem * dir);
-	CRDirCacheItem * getOrAdd(const lString8 & pathname);
-	void clear();
+    CRDirCacheItem * getOrAdd(const lString8 & pathname);
+    void scan(const lString8 & pathname, CRDirScanCallback * callback);
 };
 
 extern CRDirCache * dirCache;
