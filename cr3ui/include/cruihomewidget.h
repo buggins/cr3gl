@@ -16,6 +16,7 @@ class CRUIRecentBooksListWidget;
 class CRUIFileSystemDirsWidget;
 class CRUILibraryWidget;
 class CRUIOnlineCatalogsWidget;
+class CRUIMainWidget;
 
 class CRUIHomeWidget : public CRUIContainerWidget {
 	CRUINowReadingWidget * _currentBook;
@@ -23,8 +24,10 @@ class CRUIHomeWidget : public CRUIContainerWidget {
 	CRUIFileSystemDirsWidget * _fileSystem;
 	CRUILibraryWidget * _library;
 	CRUIOnlineCatalogsWidget * _onlineCatalogsList;
+    CRUIMainWidget * _main;
 public:
-	CRUIHomeWidget();
+    CRUIMainWidget * getMain() { return _main; }
+    CRUIHomeWidget(CRUIMainWidget * main);
 	virtual ~CRUIHomeWidget() {}
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);

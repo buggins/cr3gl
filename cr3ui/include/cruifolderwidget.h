@@ -14,13 +14,16 @@
 class CRUITitleBarWidget;
 class CRUIFileListWidget;
 
+class CRUIMainWidget;
+
 class CRUIFolderWidget : public CRUILinearLayout {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
 	CRDirCacheItem * _dir;
+    CRUIMainWidget * _main;
 public:
 	virtual void setDirectory(CRDirCacheItem * _dir);
-	CRUIFolderWidget();
+    CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();
 };
 

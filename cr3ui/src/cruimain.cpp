@@ -7,9 +7,9 @@ void CRUIMainWidget::recreate() {
         delete _folder;
     if (_read)
         delete _read;
-    _home = new CRUIHomeWidget();
-    _folder = new CRUIFolderWidget();
-    _read = new CRUIReadWidget();
+    _home = new CRUIHomeWidget(this);
+    _folder = new CRUIFolderWidget(this);
+    _read = new CRUIReadWidget(this);
     switch (_mode) {
     case MODE_HOME:
         _currentWidget = _home;

@@ -11,9 +11,11 @@
 
 #include "cruiwidget.h"
 
+class CRUIMainWidget;
 class CRUIReadWidget : public CRUIWidget {
+    CRUIMainWidget * _main;
 public:
-	CRUIReadWidget();
+    CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);

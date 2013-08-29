@@ -247,7 +247,7 @@ void CRUIFolderWidget::setDirectory(CRDirCacheItem * dir)
 	requestLayout();
 }
 
-CRUIFolderWidget::CRUIFolderWidget() : CRUILinearLayout(true), 	_title(NULL), _fileList(NULL), _dir(NULL)
+CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUILinearLayout(true), 	_title(NULL), _fileList(NULL), _dir(NULL), _main(main)
 {
 	_title = new CRUITitleBarWidget(lString16("File list"));
 	addChild(_title);

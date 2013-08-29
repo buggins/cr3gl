@@ -8,10 +8,11 @@
 
 #include "cruireadwidget.h"
 #include "crui.h"
+#include "cruimain.h"
 
 using namespace CRUI;
 
-CRUIReadWidget::CRUIReadWidget() {}
+CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main) {}
 
 CRUIReadWidget::~CRUIReadWidget() {}
 

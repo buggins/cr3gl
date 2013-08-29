@@ -10,9 +10,11 @@
 #include "crui.h"
 #include "cruitheme.h"
 #include "stringresource.h"
+#include "cruimain.h"
 
 using namespace CRUI;
 
+class CRUIMainWidget;
 class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUIImageWidget * _cover;
 	CRUILinearLayout * _captionLayout;
@@ -23,8 +25,9 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUITextWidget * _title;
 	CRUITextWidget * _authors;
 	CRUITextWidget * _info;
+    CRUIHomeWidget * _home;
 public:
-	CRUINowReadingWidget() : CRUILinearLayout(false) {
+    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
 		_coverImage = resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
 		_cover = new CRUIImageWidget(_coverImage);
 		int coverSize = deviceInfo.shortSide / 4;
@@ -86,8 +89,9 @@ class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter {
 	CRUILinearLayout * _itemWidget;
 	CRUIImageWidget * _itemImage;
 	CRUITextWidget * _textWidget;
+    CRUIHomeWidget * _home;
 public:
-	CRUIHomeItemListWidget(const char * captionResourceId) : CRUILinearLayout(true) {
+    CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
 		_caption->setPadding(3);
@@ -153,37 +157,37 @@ public:
 
 class CRUIFileSystemDirsWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIFileSystemDirsWidget() : CRUIHomeItemListWidget(STR_BROWSE_FILESYSTEM) {
+    CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
 
 	}
 };
 
 class CRUILibraryWidget : public CRUIHomeItemListWidget {
 public:
-	CRUILibraryWidget() : CRUIHomeItemListWidget(STR_BROWSE_LIBRARY) {
+    CRUILibraryWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_LIBRARY) {
 
 	}
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIOnlineCatalogsWidget() : CRUIHomeItemListWidget(STR_ONLINE_CATALOGS) {
+    CRUIOnlineCatalogsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_ONLINE_CATALOGS) {
 
 	}
 };
 
 class CRUIRecentBooksListWidget : public CRUIHomeItemListWidget {
 public:
-	CRUIRecentBooksListWidget() : CRUIHomeItemListWidget(STR_RECENT_BOOKS) {
+    CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_RECENT_BOOKS) {
 	}
 };
 
-CRUIHomeWidget::CRUIHomeWidget() {
-	_currentBook = new CRUINowReadingWidget();
-	_recentBooksList = new CRUIRecentBooksListWidget();
-	_fileSystem = new CRUIFileSystemDirsWidget();
-	_library = new CRUILibraryWidget();
-	_onlineCatalogsList = new CRUIOnlineCatalogsWidget();
+CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : _main(main){
+    _currentBook = new CRUINowReadingWidget(this);
+    _recentBooksList = new CRUIRecentBooksListWidget(this);
+    _fileSystem = new CRUIFileSystemDirsWidget(this);
+    _library = new CRUILibraryWidget(this);
+    _onlineCatalogsList = new CRUIOnlineCatalogsWidget(this);
 	addChild(_currentBook);
 	addChild(_recentBooksList);
 	addChild(_fileSystem);
