@@ -193,7 +193,7 @@ void InitCREngine(lString16 exePath) {
         CRLog::error("Error while filling caches");
 
     dirCache = new CRDirCache();
-    lString8 dir("C:\\Shared\\Books");
+    lString8 dir("c:\\Shared\\Books");
     CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
     cachedir->refresh();
 

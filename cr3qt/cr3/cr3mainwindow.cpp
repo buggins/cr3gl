@@ -62,7 +62,12 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     _qtgl = this;
 
-    _widget = new CRUIHomeWidget();
+
+    CRUIHomeWidget * home = new CRUIHomeWidget();
+    CRUIFolderWidget * folder = new CRUIFolderWidget();
+    folder->setDirectory(dirCache->find(lString8("c:\\Shared\\Books")));
+
+    _widget = folder;
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
@@ -153,7 +158,10 @@ void OpenGLWindow::render()
         //CRLog::trace("Layout is needed");
         if (_widget)
             delete _widget;
-        _widget = new CRUIHomeWidget();
+        CRUIFolderWidget * folder = new CRUIFolderWidget();
+        folder->setDirectory(dirCache->find(lString8("c:\\Shared\\Books")));
+        _widget = folder;
+        //_widget = new CRUIHomeWidget();
         _eventManager->setRootWidget(_widget);
         _widget->requestLayout();
     }
