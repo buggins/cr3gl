@@ -362,6 +362,7 @@ SOURCES += \
     ../../cr3ui/src/cruireadwidget.cpp \
     ../../cr3ui/src/cruitheme.cpp \
     ../../cr3ui/src/cruiwidget.cpp \
+    ../../cr3ui/src/cruipopup.cpp \
     ../../cr3ui/src/crcoverpages.cpp \
     ../../cr3ui/src/stringresource.cpp
 
@@ -384,6 +385,7 @@ HEADERS += \
     ../../cr3ui/include/cruireadwidget.h \
     ../../cr3ui/include/cruitheme.h \
     ../../cr3ui/include/cruiwidget.h \
+    ../../cr3ui/include/cruipopup.h \
     ../../cr3ui/include/crcoverpages.h \
     ../../cr3ui/include/stringresource.h \
     ../../cr3ui/include/crconcurrent.h
