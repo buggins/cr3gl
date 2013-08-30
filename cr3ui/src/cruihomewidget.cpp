@@ -195,19 +195,19 @@ public:
         CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
         switch(item->getDirType()) {
         case DIR_TYPE_INTERNAL_STORAGE:
-            return resourceResolver->getIcon("folder_blue");
+            return resourceResolver->getIcon("media_flash_sd_mmc");
         case DIR_TYPE_SD_CARD:
-            return resourceResolver->getIcon("folder_blue");
+            return resourceResolver->getIcon("media_flash_sd_mmc");
         case DIR_TYPE_FS_ROOT:
             return resourceResolver->getIcon("folder_blue");
         case DIR_TYPE_DEFAULT_BOOKS_DIR:
-            return resourceResolver->getIcon("folder_blue");
+            return resourceResolver->getIcon("folder_bookmark");
         case DIR_TYPE_CURRENT_BOOK_DIR:
-            return resourceResolver->getIcon("folder_blue");
+            return resourceResolver->getIcon("folder_bookmark");
         case DIR_TYPE_DOWNLOADS:
             return resourceResolver->getIcon("folder_blue");
         case DIR_TYPE_FAVORITE:
-            return resourceResolver->getIcon("folder_blue");
+            return resourceResolver->getIcon("folder_bookmark");
         case DIR_TYPE_NORMAL:
             return resourceResolver->getIcon("folder_blue");
         default:
