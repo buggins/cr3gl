@@ -63,6 +63,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _qtgl = this;
 
     _widget = new CRUIMainWidget();
+    _widget->setScreenUpdater(this);
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
@@ -116,10 +117,16 @@ void OpenGLWindow::mouseMoveEvent(QMouseEvent * event) {
     renderIfChanged();
 }
 
+void OpenGLWindow::setScreenUpdateMode(bool updateNow, int animationFps) {
+    setAnimating(animationFps > 0);
+    if (!animationFps && updateNow)
+        renderIfChanged();
+}
+
 void OpenGLWindow::renderIfChanged()
 {
-    bool needLayout, needDraw;
-    CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+    bool needLayout, needDraw, animating;
+    CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
     if (needLayout || needDraw)
         renderLater();
 }
@@ -156,9 +163,9 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
-    bool needLayout, needDraw;
+    bool needLayout, needDraw, animating;
     //CRLog::trace("Checking if draw is required");
-    CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+    CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
     _widget->invalidate();
     if (needLayout) {
         //CRLog::trace("need layout");

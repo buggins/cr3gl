@@ -57,7 +57,7 @@ QT_END_NAMESPACE
 
 
 //! [1]
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions, public CRUIScreenUpdateManagerCallback
 {
     Q_OBJECT
 
@@ -81,6 +81,8 @@ public:
     virtual void mousePressEvent(QMouseEvent * event);
     virtual void mouseReleaseEvent(QMouseEvent * event);
     virtual void mouseMoveEvent(QMouseEvent * event);
+
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps);
 
 public slots:
     void renderLater();

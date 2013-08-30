@@ -5,23 +5,41 @@
 #include "cruifolderwidget.h"
 #include "cruihomewidget.h"
 #include "cruireadwidget.h"
+#include "cruipopup.h"
 
 enum VIEW_MODE {
     MODE_HOME,
     MODE_FOLDER,
-    MODE_READ,
+    MODE_READ
 };
 
-class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback {
+class CRUIScreenUpdateManagerCallback {
+public:
+    /// set animation fps (0 to disable) and/or update screen instantly
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps) = 0;
+    virtual ~CRUIScreenUpdateManagerCallback() {}
+};
+
+class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIScreenUpdateManagerCallback {
     CRUIHomeWidget * _home;
     CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
+    CRUIPopupWindow * _popup;
     CRUIWidget * _currentWidget;
     VIEW_MODE _mode;
     lString8 _currentFolder;
     lString8 _pendingFolder;
+    CRUIScreenUpdateManagerCallback * _screenUpdater;
     void setMode(VIEW_MODE mode);
 public:
+    /// draw now
+    virtual void update();
+    /// forward screen update request to external code
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps) {
+        if (_screenUpdater)
+            _screenUpdater->setScreenUpdateMode(updateNow, animationFps);
+    }
+    virtual void setScreenUpdater(CRUIScreenUpdateManagerCallback * screenUpdater) { _screenUpdater = screenUpdater; }
     virtual void onDirectoryScanFinished(CRDirCacheItem * item);
     virtual int getChildCount();
     virtual CRUIWidget * getChild(int index);

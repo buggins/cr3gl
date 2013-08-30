@@ -110,6 +110,11 @@ public:
     QtConcurrencyProvider() {
         guiExecutor = new QtGuiExecutorObject();
     }
+    /// sleep current thread
+    virtual void sleepMs(int durationMs) {
+        QThread::msleep(durationMs);
+    }
+
     virtual ~QtConcurrencyProvider() {}
 };
 

@@ -43,12 +43,13 @@ protected:
 
 	/// measure dimensions
 	virtual void defMeasure(int baseWidth, int baseHeight, int contentWidth, int contentHeight);
-	/// correct rectangle bounds according to alignment
-	virtual void applyAlign(lvRect & rc, int contentWidth, int contentHeight);
 
 	bool setClipRect(LVDrawBuf * buf, lvRect & rc);
 
 public:
+
+    /// correct rectangle bounds according to alignment
+    virtual void applyAlign(lvRect & rc, int contentWidth, int contentHeight);
 
 	CRUIWidget();
 	virtual ~CRUIWidget();
@@ -154,6 +155,7 @@ public:
 			_parent->requestLayout(true);
 	}
 
+    virtual bool isAnimating() { return false; }
 	virtual bool isDrawRequested() { return _drawRequested; }
 	virtual void invalidate() {
 		_drawRequested = true;
@@ -172,6 +174,6 @@ public:
 };
 
 /// will set needLayout to true if any widget in tree starting from specified requires layout, set needRedraw if any widget is invalidated
-void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw);
+void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating);
 
 #endif /* CRUIWIDGET_H_ */

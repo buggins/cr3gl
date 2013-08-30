@@ -21,22 +21,6 @@ CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventMana
 
 }
 
-lUInt64 GetCurrentTimeMillis() {
-#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
-    timeval ts;
-    gettimeofday(&ts, NULL);
-    return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
-#else
- #ifdef _WIN32
-    FILETIME ft;
-    GetSystemTimeAsFileTime(&ft);
-    return (ft.dwLowDateTime | ((lInt64)ft.dwHighDateTime << 32)) / 1000;
- #else
- #error * You should define GetCurrentTimeMillis() *
- #endif
-#endif
-}
-
 using namespace CRUI;
 
 static lUInt32 pointerId = 1;

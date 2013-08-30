@@ -325,18 +325,21 @@ CRUIWidget * CRUIWidget::childById(const char * id) {
 }
 
 
-static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw) {
+static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
 	if (widget->isLayoutRequested())
 		needLayout = true;
 	if (widget->isDrawRequested())
 		needRedraw = true;
-	for (int i = 0; i < widget->getChildCount(); i++)
-		checkUpdateOptions(widget->getChild(i), needLayout, needRedraw);
+    if (widget->isAnimating())
+        animating = true;
+    for (int i = 0; i < widget->getChildCount(); i++)
+        checkUpdateOptions(widget->getChild(i), needLayout, needRedraw, animating);
 }
-void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw) {
+void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
 	needLayout = false;
 	needRedraw = false;
-	checkUpdateOptions(widget, needLayout, needRedraw);
-	if (needLayout)
+    animating = false;
+    checkUpdateOptions(widget, needLayout, needRedraw, animating);
+    if (needLayout || animating)
 		needRedraw = true;
 }

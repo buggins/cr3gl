@@ -60,3 +60,21 @@ void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {
 	longSideMillimeters = pixelsToMm(longSide);
 	minListItemSize = mmToPixels(8);
 }
+
+
+lUInt64 GetCurrentTimeMillis() {
+#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
+    timeval ts;
+    gettimeofday(&ts, NULL);
+    return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
+#else
+ #ifdef _WIN32
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    return (ft.dwLowDateTime | (((lUInt64)ft.dwHighDateTime) << 32)) / 10000;
+ #else
+ #error * You should define GetCurrentTimeMillis() *
+ #endif
+#endif
+}
+

@@ -601,6 +601,12 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	hash = 0;
 	LVContainerRef dir;
 	LVStreamRef arcStream;
+
+    // for testing
+    CRLog::trace("sleeping for 3 seconds");
+    concurrencyProvider->sleepMs(3000);
+    CRLog::trace("awake");
+
 	if (isArchive) {
 		arcStream = LVOpenFileStream(path.c_str(), LVOM_READ);
 		if (arcStream.isNull()) {
