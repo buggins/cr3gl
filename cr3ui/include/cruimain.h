@@ -54,6 +54,7 @@ public:
     /// returns true if widget is child of this
     virtual bool isChild(CRUIWidget * widget);
 
+    void openBook(lString8 pathname);
     void showFolder(lString8 folder);
     void showHome();
 

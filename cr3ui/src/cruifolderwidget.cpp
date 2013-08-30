@@ -255,6 +255,19 @@ CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUILinearLayout(tru
 	addChild(_title);
     _fileList = new CRUIFileListWidget(this);
 	addChild(_fileList);
+    _fileList->setOnItemClickListener(this);
+}
+
+bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
+    if (index < 0 || index > _dir->itemCount())
+        return false;
+    CRDirEntry * entry = _dir->getItem(index);
+    if (entry->isDirectory()) {
+        getMain()->showFolder(entry->getPathName());
+    } else {
+        // Book? open book
+        getMain()->openBook(entry->getPathName());
+    }
 }
 
 CRUIFolderWidget::~CRUIFolderWidget()

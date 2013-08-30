@@ -85,6 +85,10 @@ void CRUIMainWidget::showFolder(lString8 folder) {
     }
 }
 
+void CRUIMainWidget::openBook(lString8 pathname) {
+    CRLog::debug("Opening book %s", pathname.c_str());
+}
+
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _folder(NULL), _read(NULL), _popup(NULL), _currentWidget(NULL), _screenUpdater(NULL) {
     _mode = MODE_HOME;
     recreate();
