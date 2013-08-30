@@ -182,7 +182,7 @@ public:
         CRUIListWidget::layout(left, top, right, bottom);
     }
 
-    CRUIFileListWidget(CRUIFolderWidget * parent) : CRUIListWidget(true), _parent(parent) {
+    CRUIFileListWidget(CRUIFolderWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent) {
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);

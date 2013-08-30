@@ -21,6 +21,8 @@ void CRUIMainWidget::recreate() {
         _currentWidget = _read;
         break;
     }
+    if (!_currentFolder.empty())
+        _folder->setDirectory(dirCache->find(_currentFolder));
     requestLayout();
 }
 
