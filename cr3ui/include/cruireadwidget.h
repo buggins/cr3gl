@@ -14,13 +14,26 @@
 class CRUIMainWidget;
 class CRUIReadWidget : public CRUIWidget {
     CRUIMainWidget * _main;
+    LVDocView * _docview;
+    bool _isDragging;
+    lvPoint _dragStart;
+    int _dragStartOffset;
 public:
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();
+
+    bool openBook(lString8 pathname);
+
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
 	virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+
+    /// motion event handler, returns true if it handled event
+    bool onTouchEvent(const CRUIMotionEvent * event);
+
 };
 
 

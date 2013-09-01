@@ -100,7 +100,12 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 		event->_data[0]->_isOutside = true;
 	if (pointInside)
 		event->_data[0]->_isOutside = false;
-	return res;
+    if (res && action == ACTION_DOWN) {
+        //CRLog::trace("setting widget on DOWN");
+        if (!event->getWidget())
+            event->setWidget(widget);
+    }
+    return res;
 }
 
 bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {

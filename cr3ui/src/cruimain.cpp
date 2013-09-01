@@ -52,7 +52,7 @@ void CRUIMainWidget::setMode(VIEW_MODE mode) {
 
 /// returns true if widget is child of this
 bool CRUIMainWidget::isChild(CRUIWidget * widget) {
-    return _currentWidget->isChild(widget);
+    return widget == this || _currentWidget->isChild(widget);
 }
 
 void CRUIMainWidget::showHome() {
@@ -115,6 +115,8 @@ void CRUIMainWidget::showFolder(lString8 folder) {
 
 void CRUIMainWidget::openBook(lString8 pathname) {
     CRLog::debug("Opening book %s", pathname.c_str());
+    _read->openBook(pathname);
+    setMode(MODE_READ);
 }
 
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _folder(NULL), _read(NULL), _popup(NULL), _currentWidget(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
