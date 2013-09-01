@@ -5,6 +5,9 @@
  *      Author: vlopatin
  */
 
+// uncomment for simulation of long operation
+//#define SLOW_SCAN_SIMULATION_FOR_TEST
+
 #include "fileinfo.h"
 #include <lvstream.h>
 
@@ -602,11 +605,12 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	LVContainerRef dir;
 	LVStreamRef arcStream;
 
+#ifdef SLOW_SCAN_SIMULATION_FOR_TEST
     // for testing
     CRLog::trace("sleeping for 3 seconds");
     concurrencyProvider->sleepMs(3000);
     CRLog::trace("awake");
-
+#endif
 	if (isArchive) {
 		arcStream = LVOpenFileStream(path.c_str(), LVOM_READ);
 		if (arcStream.isNull()) {

@@ -77,12 +77,18 @@ public:
     virtual void draw(LVDrawBuf * buf);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    /// motion event handler - before children, returns true if it handled event
+    virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
     /// returns true if widget is child of this
     virtual bool isChild(CRUIWidget * widget);
+
+    void showSlowOperationPopup();
+    void hideSlowOperationPopup();
 
     void openBook(lString8 pathname);
     void showFolder(lString8 folder);
     void showHome();
+    void back();
 
     virtual void onDirectoryScanFinished(CRDirCacheItem * item);
 

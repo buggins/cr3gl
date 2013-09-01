@@ -59,7 +59,9 @@ public:
 	/// returns true if widget is child of this
 	virtual bool isChild(CRUIWidget * widget);
 
-	/// motion event handler, returns true if it handled event
+    /// motion event handler - before children, returns true if it handled event
+    virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
+    /// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	/// click handler, returns true if it handled event
 	virtual bool onClickEvent();

@@ -31,7 +31,7 @@ class CRUITitleBarWidget : public CRUILinearLayout {
 	CRUIButton * _menuButton;
 	CRUITextWidget * _caption;
 public:
-	CRUITitleBarWidget(lString16 title) : CRUILinearLayout(false) {
+    CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener) : CRUILinearLayout(false) {
 		setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_menuButton = new CRUIImageButton("ic_menu_more");
 		_backButton = new CRUIImageButton("ic_menu_back");
@@ -46,6 +46,9 @@ public:
 		setMinHeight(MIN_ITEM_PX);
 		setBackground("tx_wood_v3.jpg");
 		//_caption->setBackground(0xC0C0C040);
+        _menuButton->setId(lString8("MENU"));
+        _backButton->setId(lString8("BACK"));
+        _backButton->setOnClickListener(buttonListener);
 	}
 };
 
@@ -249,13 +252,23 @@ void CRUIFolderWidget::setDirectory(CRDirCacheItem * dir)
 	requestLayout();
 }
 
+
 CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUILinearLayout(true), 	_title(NULL), _fileList(NULL), _dir(NULL), _main(main)
 {
-	_title = new CRUITitleBarWidget(lString16("File list"));
+    _title = new CRUITitleBarWidget(lString16("File list"), this);
 	addChild(_title);
     _fileList = new CRUIFileListWidget(this);
 	addChild(_fileList);
     _fileList->setOnItemClickListener(this);
+}
+
+bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        getMain()->back();
+    else if (widget->getId() == "MENU") {
+        // TODO
+    }
+    return true;
 }
 
 bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
@@ -263,6 +276,7 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
         return false;
     CRDirEntry * entry = _dir->getItem(index);
     if (entry->isDirectory()) {
+        widget->setSelectedItem(index);
         getMain()->showFolder(entry->getPathName());
     } else {
         // Book? open book

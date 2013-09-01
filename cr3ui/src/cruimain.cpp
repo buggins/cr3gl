@@ -2,6 +2,10 @@
 
 using namespace CRUI;
 
+#define WINDOW_ANIMATION_DELAY 300
+#define SLOW_OPERATION_POPUP_DELAY 800
+#define SLOW_OPERATION_POPUP_DIMMING_DURATION 1200
+
 void CRUIMainWidget::recreate() {
     if (_home)
         delete _home;
@@ -55,13 +59,14 @@ void CRUIMainWidget::showHome() {
     setMode(MODE_HOME);
 }
 
+void CRUIMainWidget::back() {
+    startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false);
+}
+
 void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
     if (item->getPathName() == _pendingFolder) {
         CRLog::info("Directory %s is ready", _pendingFolder.c_str());
-        if (_popup) {
-            delete _popup;
-            _popup = NULL;
-        }
+        hideSlowOperationPopup();
         // setup folder animation
         CRUIFolderWidget * newWidget = _folder;
         bool deleteOldWidget = false;
@@ -72,22 +77,35 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
         newWidget->setDirectory(item);
         _currentFolder = _pendingFolder;
         _pendingFolder.clear();
-        startAnimation(newWidget, MODE_FOLDER, -1, 4000, deleteOldWidget);
+        startAnimation(newWidget, MODE_FOLDER, -1, WINDOW_ANIMATION_DELAY, deleteOldWidget);
         //_folder->setDirectory(item);
         _folder = newWidget;
         update();
     }
 }
 
+void CRUIMainWidget::showSlowOperationPopup()
+{
+    CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));
+    pleaseWait->setBackground(0xFFFFFF);
+    pleaseWait->setPadding(PT_TO_PX(7));
+    pleaseWait->setAlign(ALIGN_CENTER);
+    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+    _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, 0xA0000000);
+}
+
+void CRUIMainWidget::hideSlowOperationPopup()
+{
+    if (_popup) {
+        delete _popup;
+        _popup = NULL;
+    }
+}
+
 void CRUIMainWidget::showFolder(lString8 folder) {
-    if (_currentFolder != folder && _pendingFolder != folder) {
+    if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
+        showSlowOperationPopup();
         _pendingFolder = folder;
-        CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));
-        pleaseWait->setBackground(0xFFFFFF);
-        pleaseWait->setPadding(PT_TO_PX(7));
-        pleaseWait->setAlign(ALIGN_CENTER);
-        pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        _popup = new CRUIPopupWindow(pleaseWait, 1000, 0xA0000000);
         //_popup->setBackground(0xC0000000); // dimming
         requestLayout();
         CRLog::info("Starting background directory scan for %s", _pendingFolder.c_str());
@@ -171,6 +189,7 @@ void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, i
     _animation.direction = direction;
     _animation.progress = 0;
     _animation.deleteOldWidget = deleteOldWidget;
+    newWidget->measure(_pos.width(), _pos.height());
 }
 
 void CRUIMainWidget::stopAnimation() {
@@ -199,10 +218,17 @@ void CRUIMainWidget::animate(lUInt64 millisPassed) {
             CRLog::trace("animation position %d", x);
             lvRect rc1 = _pos;
             lvRect rc2 = _pos;
-            rc1.left -= x;
-            rc1.right -= x;
-            rc2.left += _pos.width() - x;
-            rc2.right += _pos.width() - x;
+            if (_animation.direction < 0) {
+                rc1.left -= x;
+                rc1.right -= x;
+                rc2.left += _pos.width() - x;
+                rc2.right += _pos.width() - x;
+            } else {
+                rc1.left += x;
+                rc1.right += x;
+                rc2.left -= _pos.width() - x;
+                rc2.right -= _pos.width() - x;
+            }
             _animation.oldWidget->layout(rc1.left, rc1.top, rc1.right, rc1.bottom);
             _animation.newWidget->layout(rc2.left, rc2.top, rc2.right, rc2.bottom);
         }
@@ -245,3 +271,10 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
 bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return _currentWidget->onTouchEvent(event);
 }
+
+/// motion event handler - before children, returns true if it handled event
+bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
+    // by returning of true, just ignore all events while animation is on
+    return _animation.active;
+}
+

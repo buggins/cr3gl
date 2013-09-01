@@ -84,11 +84,11 @@ CRUIWidget * CRUIPopupWindow::setContentWidget(CRUIWidget * widget) {
     return widget;
 }
 
-CRUIPopupWindow::CRUIPopupWindow(int _appearanceDelay, lUInt32 _fadeColor) : appearanceDelay(_appearanceDelay), fadeColor(_fadeColor) {
+CRUIPopupWindow::CRUIPopupWindow(int _appearanceDelay, int dimDuration, lUInt32 _fadeColor) : appearanceDelay(_appearanceDelay), fadeDuration(dimDuration), fadeColor(_fadeColor) {
     startTimestamp = GetCurrentTimeMillis();
 }
 
-CRUIPopupWindow::CRUIPopupWindow(CRUIWidget * contentWidget, int _appearanceDelay, lUInt32 _fadeColor) : appearanceDelay(_appearanceDelay), fadeColor(_fadeColor) {
+CRUIPopupWindow::CRUIPopupWindow(CRUIWidget * contentWidget, int dimDuration, int _appearanceDelay, lUInt32 _fadeColor) : appearanceDelay(_appearanceDelay), fadeDuration(dimDuration), fadeColor(_fadeColor) {
     startTimestamp = GetCurrentTimeMillis();
     setContentWidget(contentWidget);
 }

@@ -47,7 +47,15 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 	bool pointInside = widget->isPointInside(event->getX(), event->getY());
 	if (!pointInside && !event->getWidget())
 		return false;
-	int action = event->getAction();
+    int action = event->getAction();
+    if (widget->onTouchEventPreProcess(event)) {
+        if (action == ACTION_DOWN) {
+            //CRLog::trace("setting widget on DOWN");
+            if (!event->getWidget())
+                event->setWidget(widget);
+        }
+        return true;
+    }
 	if (!event->getWidget()) { // if not not assigned on widget
 		for (int i=0; i<widget->getChildCount(); i++) {
 			CRUIWidget * child = widget->getChild(i);

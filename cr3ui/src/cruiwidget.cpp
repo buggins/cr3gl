@@ -111,6 +111,11 @@ CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	return res;
 }
 
+/// motion event handler - before children, returns true if it handled event
+bool CRUIWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
+    return false;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	if (_onTouchListener != NULL)

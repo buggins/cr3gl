@@ -52,10 +52,10 @@ protected:
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
 public:
-	CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
+    virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }
+    virtual int getSelectedItem() { return _selectedItem; }
+    CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
 	int itemFromPoint(int x, int y);
-	virtual void setSelectedItem(int item) { _selectedItem = item; invalidate(); }
-	virtual int getSelectedItem() { return _selectedItem; }
 	virtual bool isVertical() { return _vertical; }
 	virtual CRUIListWidget * setAdapter(CRUIListAdapter * adapter, bool deleteOnWidgetDestroy = false) {
 		_adapter = adapter;

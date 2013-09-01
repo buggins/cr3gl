@@ -6,6 +6,7 @@
 class CRUIPopupWindow : public CRUIContainerWidget {
     lUInt64 startTimestamp;
     int appearanceDelay;
+    int fadeDuration;
     lUInt32 fadeColor;
 public:
     virtual CRUIWidget * getContentWidget() { return getChildCount() > 0 ? getChild(0) : NULL; }
@@ -18,8 +19,8 @@ public:
     virtual void layout(int left, int top, int right, int bottom);
     virtual bool isAnimating();
 
-    CRUIPopupWindow(int appearanceDelay = 0, lUInt32 fadeColor = 0xFF000000);
-    CRUIPopupWindow(CRUIWidget * contentWidget, int appearanceDelay = 0, lUInt32 fadeColor = 0xFF000000);
+    CRUIPopupWindow(int appearanceDelay = 0, int dimDuration = 1000, lUInt32 fadeColor = 0xFF000000);
+    CRUIPopupWindow(CRUIWidget * contentWidget, int appearanceDelay = 0, int dimDuration = 1000, lUInt32 fadeColor = 0xFF000000);
 };
 
 #endif // CRUIPOPUP_H

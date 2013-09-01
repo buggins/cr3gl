@@ -16,12 +16,13 @@ class CRUIFileListWidget;
 
 class CRUIMainWidget;
 
-class CRUIFolderWidget : public CRUILinearLayout, public CRUIOnListItemClickListener {
+class CRUIFolderWidget : public CRUILinearLayout, public CRUIOnListItemClickListener, public CRUIOnClickListener {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
 	CRDirCacheItem * _dir;
     CRUIMainWidget * _main;
 public:
+    virtual bool onClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     CRUIMainWidget * getMain() { return _main; }
     virtual void setDirectory(CRDirCacheItem * _dir);
