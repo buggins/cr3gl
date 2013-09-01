@@ -155,6 +155,7 @@ public:
 			_parent->requestLayout(true);
 	}
 
+    virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating() { return false; }
 	virtual bool isDrawRequested() { return _drawRequested; }
 	virtual void invalidate() {

@@ -324,6 +324,11 @@ CRUIWidget * CRUIWidget::childById(const char * id) {
 	return childById(lString8(id));
 }
 
+void CRUIWidget::animate(lUInt64 millisPassed)
+{
+    for (int i = 0; i < getChildCount(); i++)
+        getChild(i)->animate(millisPassed);
+}
 
 static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
 	if (widget->isLayoutRequested())
@@ -343,3 +348,4 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
     if (needLayout || animating)
 		needRedraw = true;
 }
+

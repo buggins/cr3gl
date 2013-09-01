@@ -62,10 +62,20 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
             delete _popup;
             _popup = NULL;
         }
+        // setup folder animation
+        CRUIFolderWidget * newWidget = _folder;
+        bool deleteOldWidget = false;
+        if (_currentWidget == _folder) {
+            newWidget = new CRUIFolderWidget(this);
+            deleteOldWidget = true;
+        }
+        newWidget->setDirectory(item);
         _currentFolder = _pendingFolder;
-        _folder->setDirectory(item);
-        setMode(MODE_FOLDER);
         _pendingFolder.clear();
+        startAnimation(newWidget, MODE_FOLDER, -1, 4000, deleteOldWidget);
+        //_folder->setDirectory(item);
+        _folder = newWidget;
+        update();
     }
 }
 
@@ -89,7 +99,7 @@ void CRUIMainWidget::openBook(lString8 pathname) {
     CRLog::debug("Opening book %s", pathname.c_str());
 }
 
-CRUIMainWidget::CRUIMainWidget() : _home(NULL), _folder(NULL), _read(NULL), _popup(NULL), _currentWidget(NULL), _screenUpdater(NULL) {
+CRUIMainWidget::CRUIMainWidget() : _home(NULL), _folder(NULL), _read(NULL), _popup(NULL), _currentWidget(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
     _mode = MODE_HOME;
     recreate();
 }
@@ -146,14 +156,88 @@ void CRUIMainWidget::update() {
     setScreenUpdateMode(true, animating ? 30 : 0);
 }
 
+void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget) {
+    if (_animation.active) {
+        stopAnimation();
+    }
+    CRLog::trace("starting animation mode %d -> mode %d", _mode, newMode);
+    CRReinitTimer();
+    _animation.active = true;
+    _animation.oldMode = _mode;
+    _animation.newMode = newMode;
+    _animation.oldWidget = _currentWidget;
+    _animation.newWidget = newWidget;
+    _animation.duration = duration;
+    _animation.direction = direction;
+    _animation.progress = 0;
+    _animation.deleteOldWidget = deleteOldWidget;
+}
+
+void CRUIMainWidget::stopAnimation() {
+    if (!_animation.active)
+        return;
+    CRLog::trace("stopping animation");
+    _animation.active = false;
+    _animation.oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    if (_animation.deleteOldWidget)
+        delete _animation.oldWidget;
+    _currentWidget = _animation.newWidget;
+    _currentWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    _mode = _animation.newMode;
+}
+
+void CRUIMainWidget::animate(lUInt64 millisPassed) {
+    CRUIWidget::animate(millisPassed);
+    if (_animation.active) {
+        _animation.progress += (int)millisPassed;
+        int p = _animation.progress;
+        CRLog::trace("animating ts = %lld,  passed = %d   %d of %d", (lUInt64)GetCurrentTimeMillis(), (int)millisPassed, (int)p, (int)_animation.duration);
+        if (p > _animation.duration) {
+            stopAnimation();
+        } else {
+            int x = _pos.width() * p / _animation.duration;
+            CRLog::trace("animation position %d", x);
+            lvRect rc1 = _pos;
+            lvRect rc2 = _pos;
+            rc1.left -= x;
+            rc1.right -= x;
+            rc2.left += _pos.width() - x;
+            rc2.right += _pos.width() - x;
+            _animation.oldWidget->layout(rc1.left, rc1.top, rc1.right, rc1.bottom);
+            _animation.newWidget->layout(rc2.left, rc2.top, rc2.right, rc2.bottom);
+        }
+    }
+}
+
+bool CRUIMainWidget::isAnimating() {
+    return _animation.active;
+}
+
+
 /// draws widget with its children to specified surface
 void CRUIMainWidget::draw(LVDrawBuf * buf) {
-    _currentWidget->draw(buf);
+    bool needLayout, needDraw, animating;
+    CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
+    if (animating) {
+        lUInt64 ts = GetCurrentTimeMillis();
+        if (!_lastAnimationTs)
+            _lastAnimationTs = ts;
+        lUInt64 millisDiff = ts - _lastAnimationTs;
+        /// call animate
+        animate(millisDiff);
+        _lastAnimationTs = ts;
+    } else {
+        _lastAnimationTs = 0;
+    }
+
+    if (_animation.active) {
+        _animation.oldWidget->draw(buf);
+        _animation.newWidget->draw(buf);
+    } else {
+        _currentWidget->draw(buf);
+    }
     if (_popup)
         _popup->draw(buf);
-    bool needLayout, needDraw, animating;
-    //CRLog::trace("Checking if draw is required");
-    CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
     setScreenUpdateMode(false, animating ? 30 : 0);
 }
 

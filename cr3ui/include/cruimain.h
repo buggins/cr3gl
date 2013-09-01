@@ -30,17 +30,43 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     lString8 _currentFolder;
     lString8 _pendingFolder;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
+    lString8Collection _folderStack;
+    lUInt64 _lastAnimationTs;
+
     void setMode(VIEW_MODE mode);
+
+    struct AnimatinControl {
+        bool active;
+        bool deleteOldWidget;
+        VIEW_MODE oldMode;
+        VIEW_MODE newMode;
+        CRUIWidget * oldWidget;
+        CRUIWidget * newWidget;
+        int direction;
+        int duration;
+        int progress;
+        lUInt64 startTs;
+        AnimatinControl() : active(false) {}
+    };
+    AnimatinControl _animation;
+
+    void startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget);
+    void stopAnimation();
 public:
+    virtual void animate(lUInt64 millisPassed);
+    virtual bool isAnimating();
+
     /// draw now
     virtual void update();
+
     /// forward screen update request to external code
     virtual void setScreenUpdateMode(bool updateNow, int animationFps) {
         if (_screenUpdater)
             _screenUpdater->setScreenUpdateMode(updateNow, animationFps);
     }
     virtual void setScreenUpdater(CRUIScreenUpdateManagerCallback * screenUpdater) { _screenUpdater = screenUpdater; }
-    virtual void onDirectoryScanFinished(CRDirCacheItem * item);
+
+
     virtual int getChildCount();
     virtual CRUIWidget * getChild(int index);
     /// measure dimensions
@@ -57,6 +83,8 @@ public:
     void openBook(lString8 pathname);
     void showFolder(lString8 folder);
     void showHome();
+
+    virtual void onDirectoryScanFinished(CRDirCacheItem * item);
 
     void recreate();
     CRUIMainWidget();

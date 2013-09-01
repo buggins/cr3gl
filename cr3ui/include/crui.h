@@ -48,6 +48,7 @@ inline int PT_TO_PX(int mm) { return deviceInfo.ptToPixels(mm); }
 #define MIN_ITEM_PX (deviceInfo.minListItemSize)
 
 lUInt64 GetCurrentTimeMillis();
+void CRReinitTimer();
 
 
 #endif /* GLUI_H_ */
