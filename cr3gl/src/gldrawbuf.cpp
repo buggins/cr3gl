@@ -188,6 +188,7 @@ public:
 			updateTexture();
         if (glIsTexture(_textureId) != GL_TRUE) {
             CRLog::error("Invalid texture %d", _textureId);
+            return;
         }
 		if (_textureId != 0) {
 			float dstx0 = x;
@@ -201,18 +202,23 @@ public:
 			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
 			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
 			if (clip) {
+                //CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
 				// correct clipping
-				float xscale = item->_dx / (float)dx;
-				float yscale = item->_dy / (float)dy;
-				dstx0 += clip->left;
-				srcx0 += clip->left * txppx * xscale;
+                float xscale = (srcx1-srcx0) / (dstx1 - dstx0);
+                float yscale =  (srcy1-srcy0) / (dsty1 - dsty0);
+
+                srcx0 += clip->left * xscale;
+                srcx1 -= clip->right * xscale;
+                dstx0 += clip->left;
 				dstx1 -= clip->right;
-				srcx1 -= clip->right * txppx * xscale;
-				dsty0 -= clip->top;
-				srcy0 += clip->top * txppy * yscale;
-				dsty1 += clip->bottom;
-				srcy1 -= clip->bottom * txppy * yscale;
-			}
+
+                srcy0 -= clip->top * yscale;
+                srcy1 += clip->bottom * yscale;
+                dsty0 -= clip->top;
+                dsty1 += clip->bottom;
+
+                //CRLog::trace("after clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
+            }
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
@@ -664,6 +670,8 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 					continue; // empty
 				if (!dstitems[i].intersects(cliprect))
 					continue; // out of bounds
+                //CRLog::trace("cliprect (%d, %d, %d, %d)", cliprect.left, cliprect.top, cliprect.right, cliprect.bottom);
+                //CRLog::trace("nine-patch[%d] (%d, %d, %d, %d) -> (%d, %d, %d, %d)", i, srcitems[i].left, srcitems[i].top, srcitems[i].right, srcitems[i].bottom, dstitems[i].left, dstitems[i].top, dstitems[i].right, dstitems[i].bottom);
 				// visible
 				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
 				LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), 0xFFFFFF, 0, clip));
