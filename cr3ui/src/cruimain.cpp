@@ -60,7 +60,7 @@ void CRUIMainWidget::showHome() {
 }
 
 void CRUIMainWidget::back() {
-    startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false);
+    startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false, false);
 }
 
 void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
@@ -77,7 +77,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
         newWidget->setDirectory(item);
         _currentFolder = _pendingFolder;
         _pendingFolder.clear();
-        startAnimation(newWidget, MODE_FOLDER, -1, WINDOW_ANIMATION_DELAY, deleteOldWidget);
+        startAnimation(newWidget, MODE_FOLDER, -1, WINDOW_ANIMATION_DELAY, deleteOldWidget, false);
         //_folder->setDirectory(item);
         _folder = newWidget;
         update();
@@ -176,7 +176,7 @@ void CRUIMainWidget::update() {
     setScreenUpdateMode(true, animating ? 30 : 0);
 }
 
-void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget) {
+void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget, bool manual) {
     if (_animation.active) {
         stopAnimation();
     }
@@ -187,10 +187,11 @@ void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, i
     _animation.newMode = newMode;
     _animation.oldWidget = _currentWidget;
     _animation.newWidget = newWidget;
-    _animation.duration = duration;
+    _animation.duration = duration * 10;
     _animation.direction = direction;
     _animation.progress = 0;
     _animation.deleteOldWidget = deleteOldWidget;
+    _animation.manual = manual;
     newWidget->measure(_pos.width(), _pos.height());
 }
 
@@ -199,6 +200,7 @@ void CRUIMainWidget::stopAnimation() {
         return;
     CRLog::trace("stopping animation");
     _animation.active = false;
+    _animation.manual = false;
     _animation.oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     if (_animation.deleteOldWidget)
         delete _animation.oldWidget;
@@ -210,7 +212,9 @@ void CRUIMainWidget::stopAnimation() {
 void CRUIMainWidget::animate(lUInt64 millisPassed) {
     CRUIWidget::animate(millisPassed);
     if (_animation.active) {
-        _animation.progress += (int)millisPassed;
+        if (!_animation.manual) {
+            _animation.progress += (int)millisPassed * 10;
+        }
         int p = _animation.progress;
         CRLog::trace("animating ts = %lld,  passed = %d   %d of %d", (lUInt64)GetCurrentTimeMillis(), (int)millisPassed, (int)p, (int)_animation.duration);
         if (p > _animation.duration) {
@@ -277,6 +281,50 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
 /// motion event handler - before children, returns true if it handled event
 bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     // by returning of true, just ignore all events while animation is on
+    if (_animation.active && _animation.manual) {
+        switch(event->getAction()) {
+        case ACTION_MOVE:
+            {
+                int dx = _animation.startPoint.x - event->getX();
+                int p = dx * _animation.duration / _pos.width();
+                if (_animation.direction > 0)
+                    p = -p;
+                _animation.progress = p > 0 ? p : 0;
+                invalidate();
+                CRLog::trace("manual animation progress %d", p);
+            }
+            break;
+        case ACTION_CANCEL:
+        case ACTION_DOWN:
+        case ACTION_UP:
+            _animation.manual = false;
+            break;
+        default:
+            break;
+        }
+
+        return true;
+    }
     return _animation.active;
+}
+
+/// return true if drag operation is intercepted
+bool CRUIMainWidget::startDragging(const CRUIMotionEvent * event, bool vertical) {
+    if (vertical)
+        return false;
+    int dx = event->getX() - event->getStartX();
+    if (dx > 0 && _currentWidget == _home)
+        return false;
+    if (dx < 0) {
+        // FORWARD dragging
+        return false; // no forward implemented so far
+    } else {
+        // BACK dragging
+        (const_cast<CRUIMotionEvent *>(event))->setWidget(this);
+        startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false, true);
+        _animation.startPoint.x = event->getStartX();
+        _animation.startPoint.y = event->getStartY();
+        return true;
+    }
 }
 

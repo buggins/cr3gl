@@ -79,6 +79,9 @@ public:
 	virtual int getItemCount() { return _adapter != NULL ? _adapter->getItemCount(this) : 0; }
 	virtual bool isItemEnabled(int index) { return _adapter != NULL ? _adapter->isEnabled(this, index) : true; }
 
+    /// return true if drag operation is intercepted
+    virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);
+
 	/// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
 	/// measure dimensions

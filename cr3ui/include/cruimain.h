@@ -37,6 +37,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     struct AnimatinControl {
         bool active;
+        bool manual;
         bool deleteOldWidget;
         VIEW_MODE oldMode;
         VIEW_MODE newMode;
@@ -45,12 +46,13 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
         int direction;
         int duration;
         int progress;
+        lvPoint startPoint;
         lUInt64 startTs;
         AnimatinControl() : active(false) {}
     };
     AnimatinControl _animation;
 
-    void startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget);
+    void startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget, bool manual);
     void stopAnimation();
 public:
     virtual void animate(lUInt64 millisPassed);
@@ -79,6 +81,10 @@ public:
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
     /// motion event handler - before children, returns true if it handled event
     virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
+
+    /// return true if drag operation is intercepted
+    virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);
+
     /// returns true if widget is child of this
     virtual bool isChild(CRUIWidget * widget);
 

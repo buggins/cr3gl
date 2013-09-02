@@ -72,10 +72,11 @@ class CRUIMotionEvent {
 	friend class CRUIEventAdapter;
 	LVPtrVector<CRUIMotionEventItem, false> _data;
 	void addEvent(CRUIMotionEventItem * event) { _data.add(event); }
-	void setWidget(CRUIWidget * widget) { _data[0]->setWidget(widget); }
 	void changeAction(int newAction) { _data[0]->_action = newAction; }
 public:
-	int count() const { return _data.length(); }
+    // use with caution
+    void setWidget(CRUIWidget * widget) { _data[0]->setWidget(widget); }
+    int count() const { return _data.length(); }
 	const CRUIMotionEventItem * operator[] (int index) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
 	const CRUIMotionEventItem * get(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
 	int getX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }

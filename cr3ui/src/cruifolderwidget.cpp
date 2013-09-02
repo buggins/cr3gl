@@ -243,6 +243,12 @@ public:
 		dir->sort(BY_TITLE);
 		requestLayout();
 	}
+
+    /// return true if drag operation is intercepted
+    virtual bool startDragging(const CRUIMotionEvent * event, bool vertical) {
+        return _parent->getMain()->startDragging(event, false);
+    }
+
 };
 
 void CRUIFolderWidget::setDirectory(CRDirCacheItem * dir)

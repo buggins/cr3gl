@@ -297,7 +297,8 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	int dx = event->getX() - event->getStartX();
 	int dy = event->getY() - event->getStartY();
 	int delta = isVertical() ? dy : dx;
-	bool isDragging = _dragStartOffset != NO_DRAG;
+    int delta2 = isVertical() ? dx : dy;
+    bool isDragging = _dragStartOffset != NO_DRAG;
 	//CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
 	switch (action) {
 	case ACTION_DOWN:
@@ -363,7 +364,10 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			setScrollOffset(_dragStartOffset - delta);
 		} else if (isDragging) {
 			setScrollOffset(_dragStartOffset - delta);
-		}
+        } else if (!isDragging) {
+            if ((delta2 > DRAG_THRESHOLD) || (-delta2 > DRAG_THRESHOLD))
+                startDragging(event, !isVertical());
+        }
 		// ignore
 		//CRLog::trace("list MOVE");
 		break;
@@ -373,6 +377,10 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	return true;
 }
 
+/// return true if drag operation is intercepted
+bool CRUIListWidget::startDragging(const CRUIMotionEvent * event, bool vertical) {
+    return false;
+}
 
 
 //===================================================================================================
