@@ -47,6 +47,7 @@ bool CRUIReadWidget::openBook(lString8 pathname) {
 }
 
 #define DRAG_THRESHOLD 5
+#define DRAG_THRESHOLD_X 15
 #define SCROLL_SPEED_CALC_INTERVAL 2000
 #define SCROLL_MIN_SPEED 3
 #define SCROLL_FRICTION 13
@@ -71,9 +72,10 @@ bool CRUIReadWidget::isAnimating() {
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int action = event->getAction();
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
-    //int dx = event->getX() - event->getStartX();
+    int dx = event->getX() - event->getStartX();
     int dy = event->getY() - event->getStartY();
     int delta = dy; //isVertical() ? dy : dx;
+    int delta2 = dx; //isVertical() ? dy : dx;
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
     switch (action) {
     case ACTION_DOWN:
@@ -142,6 +144,10 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             _docview->SetPos(_dragStartOffset - delta, false);
             invalidate();
             _main->update();
+        } else if (!_isDragging) {
+            if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
+                _main->startDragging(event, false);
+            }
         }
         // ignore
         //CRLog::trace("list MOVE");

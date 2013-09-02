@@ -272,6 +272,7 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 }
 
 #define DRAG_THRESHOLD 5
+#define DRAG_THRESHOLD_X 15
 #define SCROLL_SPEED_CALC_INTERVAL 2000
 #define SCROLL_MIN_SPEED 3
 #define SCROLL_FRICTION 20
@@ -365,7 +366,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		} else if (isDragging) {
 			setScrollOffset(_dragStartOffset - delta);
         } else if (!isDragging) {
-            if ((delta2 > DRAG_THRESHOLD) || (-delta2 > DRAG_THRESHOLD))
+            if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X))
                 startDragging(event, !isVertical());
         }
 		// ignore

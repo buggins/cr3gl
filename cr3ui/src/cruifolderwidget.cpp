@@ -26,6 +26,8 @@ public:
     }
 };
 
+#define DRAG_THRESHOLD_X 15
+
 class CRUITitleBarWidget : public CRUILinearLayout {
 	CRUIButton * _backButton;
 	CRUIButton * _menuButton;
@@ -50,6 +52,7 @@ public:
         _backButton->setId(lString8("BACK"));
         _backButton->setOnClickListener(buttonListener);
 	}
+
 };
 
 class CRUIFileItemWidget : public CRUILinearLayout {
@@ -246,7 +249,7 @@ public:
 
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical) {
-        return _parent->getMain()->startDragging(event, false);
+        return _parent->getMain()->startDragging(event, vertical);
     }
 
 };
@@ -293,4 +296,31 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
 CRUIFolderWidget::~CRUIFolderWidget()
 {
 
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUIFolderWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    int action = event->getAction();
+    int delta = event->getX() - event->getStartX();
+    //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
+    switch (action) {
+    case ACTION_DOWN:
+        break;
+    case ACTION_UP:
+        break;
+    case ACTION_FOCUS_IN:
+        break;
+    case ACTION_FOCUS_OUT:
+        return false; // to continue tracking
+        break;
+    case ACTION_CANCEL:
+        break;
+    case ACTION_MOVE:
+        if ((delta > DRAG_THRESHOLD_X) || (-delta > DRAG_THRESHOLD_X))
+            getMain()->startDragging(event, false);
+        break;
+    default:
+        return CRUIWidget::onTouchEvent(event);
+    }
+    return true;
 }

@@ -313,9 +313,12 @@ bool CRUIMainWidget::startDragging(const CRUIMotionEvent * event, bool vertical)
     int dx = event->getX() - event->getStartX();
     if (dx > 0 && !_history.hasBack())
         return false;
+    if (dx < 0 && !_history.hasForward())
+        return false;
     if (dx < 0) {
         // FORWARD dragging
-        return false; // no forward implemented so far
+        startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY, event);
+        return true;
     } else {
         // BACK dragging
         startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY, event);

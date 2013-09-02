@@ -33,6 +33,8 @@ public:
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
 	virtual void layout(int left, int top, int right, int bottom);
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
 };
 
 #endif /* CRUIHOMEWIDGET_H_ */
