@@ -283,7 +283,7 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
     CRDirEntry * entry = _dir->getItem(index);
     if (entry->isDirectory()) {
         widget->setSelectedItem(index);
-        getMain()->showFolder(entry->getPathName());
+        getMain()->showFolder(entry->getPathName(), true);
     } else {
         // Book? open book
         getMain()->openBook(entry->getPathName());

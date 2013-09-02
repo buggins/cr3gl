@@ -219,7 +219,7 @@ public:
     }
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CRTopDirItem * item = deviceInfo.topDirs.getItem(itemIndex);
-        _home->getMain()->showFolder(item->getPathName());
+        _home->getMain()->showFolder(item->getPathName(), true);
         return true;
     }
 };

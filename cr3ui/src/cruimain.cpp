@@ -7,79 +7,43 @@ using namespace CRUI;
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1200
 
 void CRUIMainWidget::recreate() {
-    if (_home)
-        delete _home;
-    if (_folder)
-        delete _folder;
-    if (_read)
-        delete _read;
-    _home = new CRUIHomeWidget(this);
-    _folder = new CRUIFolderWidget(this);
-    _read = new CRUIReadWidget(this);
-    switch (_mode) {
-    case MODE_HOME:
-        _currentWidget = _home;
-        break;
-    case MODE_FOLDER:
-        _currentWidget = _folder;
-        break;
-    case MODE_READ:
-        _currentWidget = _read;
-        break;
+    if (!_history.length()) {
+        _home = new CRUIHomeWidget(this);
+        _read = new CRUIReadWidget(this);
+        _history.add(new HomeItem(this, _home));
+        return;
     }
-    if (!_currentFolder.empty())
-        _folder->setDirectory(dirCache->find(_currentFolder));
-    requestLayout();
-}
 
-void CRUIMainWidget::setMode(VIEW_MODE mode) {
-    _mode = mode;
-    switch (_mode) {
-    case MODE_HOME:
-        _currentWidget = _home;
-        break;
-    case MODE_FOLDER:
-        _currentWidget = _folder;
-        break;
-    case MODE_READ:
-        _currentWidget = _read;
-        break;
+    for (int i = 0; i < _history.length(); i++) {
+        CRUIWidget * oldwidget = _history[i]->getWidget();
+        CRUIWidget * newwidget = _history[i]->recreate();
+        if (oldwidget == _home)
+            _home = (CRUIHomeWidget*)newwidget;
     }
-    _currentWidget->requestLayout();
     requestLayout();
-    update();
 }
 
 /// returns true if widget is child of this
 bool CRUIMainWidget::isChild(CRUIWidget * widget) {
-    return widget == this || _currentWidget->isChild(widget);
+    return widget == this || _history.currentWidget()->isChild(widget);
 }
 
 void CRUIMainWidget::showHome() {
-    setMode(MODE_HOME);
+    startAnimation(0, WINDOW_ANIMATION_DELAY);
 }
 
 void CRUIMainWidget::back() {
-    startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false, false);
+    if (_history.hasBack()) {
+        startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY);
+    }
 }
 
 void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
-    if (item->getPathName() == _pendingFolder) {
-        CRLog::info("Directory %s is ready", _pendingFolder.c_str());
+    if (_history.next() && _history.next()->getMode() == MODE_FOLDER && _history.next()->getPathName() == item->getPathName()) {
+        CRLog::info("Directory %s is ready", item->getPathName().c_str());
         hideSlowOperationPopup();
-        // setup folder animation
-        CRUIFolderWidget * newWidget = _folder;
-        bool deleteOldWidget = false;
-        if (_currentWidget == _folder) {
-            newWidget = new CRUIFolderWidget(this);
-            deleteOldWidget = true;
-        }
-        newWidget->setDirectory(item);
-        _currentFolder = _pendingFolder;
-        _pendingFolder.clear();
-        startAnimation(newWidget, MODE_FOLDER, -1, WINDOW_ANIMATION_DELAY, deleteOldWidget, false);
-        //_folder->setDirectory(item);
-        _folder = newWidget;
+        startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+    } else {
         update();
     }
 }
@@ -102,40 +66,47 @@ void CRUIMainWidget::hideSlowOperationPopup()
     }
 }
 
-void CRUIMainWidget::showFolder(lString8 folder) {
-    if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
+void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
+    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
+    int newpos = _history.findPosByMode(MODE_FOLDER, folder);
+    if (newpos < 0) {
         showSlowOperationPopup();
-        _pendingFolder = folder;
+        _history.setNext(new FolderItem(this, folder));
         //_popup->setBackground(0xC0000000); // dimming
-        requestLayout();
-        CRLog::info("Starting background directory scan for %s", _pendingFolder.c_str());
+        CRLog::info("Starting background directory scan for %s", folder.c_str());
         dirCache->scan(folder, this);
+    } else {
+        // found existing
+        // do nothing
+        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
     }
 }
 
 void CRUIMainWidget::openBook(lString8 pathname) {
     CRLog::debug("Opening book %s", pathname.c_str());
+    int newpos = _history.findPosByMode(MODE_READ);
+    if (newpos < 0) {
+        _history.setNext(new ReadItem(this, _read));
+        newpos = _history.pos() + 1;
+    }
     _read->openBook(pathname);
-    setMode(MODE_READ);
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
-CRUIMainWidget::CRUIMainWidget() : _home(NULL), _folder(NULL), _read(NULL), _popup(NULL), _currentWidget(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
-    _mode = MODE_HOME;
+CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
     recreate();
 }
 
 CRUIMainWidget::~CRUIMainWidget() {
     if (_home)
         delete _home;
-    if (_folder)
-        delete _folder;
     if (_read)
         delete _read;
 }
 
 int CRUIMainWidget::getChildCount() {
     int cnt = 0;
-    if (_currentWidget)
+    if (_history.currentWidget())
         cnt++;
     if (_popup)
         cnt++;
@@ -145,22 +116,22 @@ int CRUIMainWidget::getChildCount() {
 CRUIWidget * CRUIMainWidget::getChild(int index) {
     if (_popup && index == 0)
         return _popup;
-    return _currentWidget;
+    return _history.currentWidget();
     //return _currentWidget->getChild(index);
 }
 
 /// measure dimensions
 void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
-    _currentWidget->measure(baseWidth, baseHeight);
-    _measuredWidth = _currentWidget->getMeasuredWidth();
-    _measuredHeight = _currentWidget->getMeasuredHeight();
+    _history.currentWidget()->measure(baseWidth, baseHeight);
+    _measuredWidth = _history.currentWidget()->getMeasuredWidth();
+    _measuredHeight = _history.currentWidget()->getMeasuredHeight();
     if (_popup)
         _popup->measure(baseWidth, baseHeight);
 }
 
 /// updates widget position based on specified rectangle
 void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
-    _currentWidget->layout(left, top, right, bottom);
+    _history.currentWidget()->layout(left, top, right, bottom);
     _pos.left = left;
     _pos.top = top;
     _pos.right = right;
@@ -176,37 +147,60 @@ void CRUIMainWidget::update() {
     setScreenUpdateMode(true, animating ? 30 : 0);
 }
 
-void CRUIMainWidget::startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget, bool manual) {
+void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEvent * event) {
     if (_animation.active) {
         stopAnimation();
     }
-    CRLog::trace("starting animation mode %d -> mode %d", _mode, newMode);
+    int oldpos = _history.pos();
+    if (newpos == oldpos)
+        return;
+    CRUIWidget * newWidget = _history[newpos]->getWidget();
+    CRUIWidget * oldWidget = _history[oldpos]->getWidget();
+    if (!newWidget || !oldWidget)
+        return;
+    bool manual = event != NULL;
+    int direction;
+    if (oldpos < newpos)
+        direction = -1;
+    else
+        direction = +1;
+    CRLog::trace("starting animation %d -> %d", oldpos, newpos);
     CRReinitTimer();
     _animation.active = true;
-    _animation.oldMode = _mode;
-    _animation.newMode = newMode;
-    _animation.oldWidget = _currentWidget;
-    _animation.newWidget = newWidget;
+    _animation.oldpos = oldpos;
+    _animation.newpos = newpos;
     _animation.duration = duration * 10;
     _animation.direction = direction;
     _animation.progress = 0;
-    _animation.deleteOldWidget = deleteOldWidget;
     _animation.manual = manual;
+    if (event) {
+        // manual
+        (const_cast<CRUIMotionEvent *>(event))->setWidget(this);
+        _animation.startPoint.x = event->getStartX();
+        _animation.startPoint.y = event->getStartY();
+    }
     newWidget->measure(_pos.width(), _pos.height());
+    newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    if (duration == 0) {
+        stopAnimation();
+    } else {
+        requestLayout();
+        update();
+    }
 }
 
 void CRUIMainWidget::stopAnimation() {
     if (!_animation.active)
         return;
-    CRLog::trace("stopping animation");
+    CRLog::trace("stopping animation %d, %d", _animation.oldpos, _animation.newpos);
     _animation.active = false;
-    _animation.manual = false;
-    _animation.oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    if (_animation.deleteOldWidget)
-        delete _animation.oldWidget;
-    _currentWidget = _animation.newWidget;
-    _currentWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    _mode = _animation.newMode;
+    CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
+    CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
+    oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    _history.setPos(_animation.newpos);
+    requestLayout();
+    update();
 }
 
 void CRUIMainWidget::animate(lUInt64 millisPassed) {
@@ -216,12 +210,12 @@ void CRUIMainWidget::animate(lUInt64 millisPassed) {
             _animation.progress += (int)millisPassed * 10;
         }
         int p = _animation.progress;
-        CRLog::trace("animating ts = %lld,  passed = %d   %d of %d", (lUInt64)GetCurrentTimeMillis(), (int)millisPassed, (int)p, (int)_animation.duration);
+        //CRLog::trace("animating ts = %lld,  passed = %d   %d of %d", (lUInt64)GetCurrentTimeMillis(), (int)millisPassed, (int)p, (int)_animation.duration);
         if (p > _animation.duration) {
             stopAnimation();
         } else {
             int x = _pos.width() * p / _animation.duration;
-            CRLog::trace("animation position %d", x);
+            //CRLog::trace("animation position %d", x);
             lvRect rc1 = _pos;
             lvRect rc2 = _pos;
             if (_animation.direction < 0) {
@@ -235,8 +229,10 @@ void CRUIMainWidget::animate(lUInt64 millisPassed) {
                 rc2.left -= _pos.width() - x;
                 rc2.right -= _pos.width() - x;
             }
-            _animation.oldWidget->layout(rc1.left, rc1.top, rc1.right, rc1.bottom);
-            _animation.newWidget->layout(rc2.left, rc2.top, rc2.right, rc2.bottom);
+            CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
+            CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
+            oldWidget->layout(rc1.left, rc1.top, rc1.right, rc1.bottom);
+            newWidget->layout(rc2.left, rc2.top, rc2.right, rc2.bottom);
         }
     }
 }
@@ -263,10 +259,12 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
     }
 
     if (_animation.active) {
-        _animation.oldWidget->draw(buf);
-        _animation.newWidget->draw(buf);
+        CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
+        CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
+        oldWidget->draw(buf);
+        newWidget->draw(buf);
     } else {
-        _currentWidget->draw(buf);
+        _history.currentWidget()->draw(buf);
     }
     if (_popup)
         _popup->draw(buf);
@@ -275,7 +273,7 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
 
 /// motion event handler, returns true if it handled event
 bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
-    return _currentWidget->onTouchEvent(event);
+    return _history.currentWidget()->onTouchEvent(event);
 }
 
 /// motion event handler - before children, returns true if it handled event
@@ -313,17 +311,14 @@ bool CRUIMainWidget::startDragging(const CRUIMotionEvent * event, bool vertical)
     if (vertical)
         return false;
     int dx = event->getX() - event->getStartX();
-    if (dx > 0 && _currentWidget == _home)
+    if (dx > 0 && !_history.hasBack())
         return false;
     if (dx < 0) {
         // FORWARD dragging
         return false; // no forward implemented so far
     } else {
         // BACK dragging
-        (const_cast<CRUIMotionEvent *>(event))->setWidget(this);
-        startAnimation(_home, MODE_HOME, 1, WINDOW_ANIMATION_DELAY, false, true);
-        _animation.startPoint.x = event->getStartX();
-        _animation.startPoint.y = event->getStartY();
+        startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY, event);
         return true;
     }
 }

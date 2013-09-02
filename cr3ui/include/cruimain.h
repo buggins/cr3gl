@@ -20,41 +20,192 @@ public:
     virtual ~CRUIScreenUpdateManagerCallback() {}
 };
 
+class CRUIMainWidget;
+class NavHistoryItem {
+protected:
+    CRUIMainWidget * main;
+    CRUIWidget * widget;
+public:
+    virtual CRUIWidget * recreate() = 0;
+    virtual void setDirectory(CRDirCacheItem * item) { }
+    virtual const lString8 & getPathName() { return lString8::empty_str; }
+    virtual VIEW_MODE getMode() = 0;
+    virtual CRUIWidget * getWidget() { return widget; }
+    NavHistoryItem(CRUIMainWidget * _main, CRUIWidget * widget) : main(_main), widget(widget) {}
+    virtual ~NavHistoryItem() {}
+};
+
+
+class HomeItem : public NavHistoryItem {
+public:
+    virtual CRUIWidget * recreate() {
+        if (widget)
+            delete widget;
+        widget = new CRUIHomeWidget(main);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_HOME; }
+    //HomeItem(CRUIMainWidget * _main) : NavHistoryItem(_main, new CRUIHomeWidget(_main)) {}
+    HomeItem(CRUIMainWidget * _main, CRUIHomeWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class ReadItem : public NavHistoryItem {
+public:
+    // recreate on config change
+    virtual CRUIWidget * recreate() {
+        lvRect pos = ((CRUIWidget*)main)->getPos();
+        widget->measure(pos.width(), pos.height());
+        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_READ; }
+    ReadItem(CRUIMainWidget * _main, CRUIReadWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class FolderItem : public NavHistoryItem {
+    lString8 pathname;
+public:
+    virtual CRUIWidget * recreate() {
+        if (widget)
+            delete widget;
+        widget = new CRUIFolderWidget(main);
+        ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+        return widget;
+    }
+    virtual void setDirectory(CRDirCacheItem * item) { ((CRUIFolderWidget*)widget)->setDirectory(item); }
+    virtual VIEW_MODE getMode() { return MODE_FOLDER; }
+    FolderItem(CRUIMainWidget * _main, lString8 _pathname) : NavHistoryItem(_main, new CRUIFolderWidget(_main)), pathname(_pathname) {
+        ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+    }
+    virtual const lString8 & getPathName() { return pathname; }
+    virtual ~FolderItem() {
+        if (widget)
+            delete widget;
+    }
+};
+
+class NavHistory {
+    LVPtrVector<NavHistoryItem> _list;
+    int _pos;
+public:
+    NavHistory() : _pos(0) {}
+    bool hasBack() const { return _pos > 0; }
+    bool hasForward() const { return _pos < _list.length() - 1; }
+
+    /// returns current widget
+    CRUIWidget * currentWidget() { return _pos >= 0 && _pos < _list.length() ? _list[_pos]->getWidget() : NULL; }
+    /// returns current mode
+    VIEW_MODE currentMode()  { return _pos >= 0 && _pos < _list.length() ? _list[_pos]->getMode() : MODE_HOME; }
+    /// returns current window
+    NavHistoryItem * current() { return _pos >= 0 && _pos < _list.length() ? _list[_pos] : NULL; }
+    /// returns previous window, NULL if none
+    NavHistoryItem * prev() { return _pos > 0 && _pos < _list.length() ? _list[_pos - 1] : NULL; }
+    /// returns next window, NULL if none
+    NavHistoryItem * next() { return _pos >= 0 && _pos < _list.length() - 1 ? _list[_pos + 1] : NULL; }
+    void truncateForward() {
+        while (_pos < _list.length() - 1) {
+            NavHistoryItem * removed = _list.remove(_pos + 1);
+            delete removed;
+        }
+    }
+
+    /// sets next item, clears forward history - if any
+    void setNext(NavHistoryItem * item) {
+        truncateForward();
+        _list.add(item);
+    }
+    /// sets next item and move to it, clears forward history - if any
+    void add(NavHistoryItem * item) {
+        setNext(item);
+        if (_pos < _list.length() - 1)
+            _pos++;
+    }
+    /// returns current position
+    int pos() const { return _pos; }
+    /// returns count of items
+    int length() const { return _list.length(); }
+    /// returns item by index
+    NavHistoryItem * operator[] (int index) { return index >= 0 && index < _list.length() ? _list[index] : NULL; }
+    /// clears the whole history
+    void clear() { _list.clear(); }
+    /// sets history position
+    void setPos(int p) { if (p >= 0 && p < _list.length()) _pos = p; }
+    /// searches for history position by specified mode
+    int findPosByMode(VIEW_MODE mode) {
+        int p = -1;
+        for (int i = 0; i < _list.length(); i++) {
+            if (_list[i]->getMode() == mode) {
+                p = i;
+                break;
+            }
+        }
+        return p;
+    }
+    /// sets history position by finding existing item of specified mode
+    bool setPosByMode(VIEW_MODE mode, bool truncateFwd) {
+        int p = findPosByMode(mode);
+        if (p < 0)
+            return false;
+        _pos = p;
+        if (truncateFwd)
+            truncateForward();
+        return true;
+    }
+    /// searches for history position by specified mode and path
+    int findPosByMode(VIEW_MODE mode, lString8 pathname) {
+        int p = -1;
+        for (int i = 0; i < _list.length(); i++) {
+            if (_list[i]->getMode() == mode && _list[i]->getPathName() == pathname) {
+                p = i;
+                break;
+            }
+        }
+        return p;
+    }
+    /// sets history position by finding existing item of specified mode and path
+    bool setPosByMode(VIEW_MODE mode, lString8 pathname, bool truncateFwd) {
+        int p = findPosByMode(mode, pathname);
+        if (p < 0)
+            return false;
+        _pos = p;
+        if (truncateFwd)
+            truncateForward();
+        return true;
+    }
+};
+
 class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIScreenUpdateManagerCallback {
     CRUIHomeWidget * _home;
-    CRUIFolderWidget * _folder;
+    //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
     CRUIPopupWindow * _popup;
-    CRUIWidget * _currentWidget;
-    VIEW_MODE _mode;
-    lString8 _currentFolder;
-    lString8 _pendingFolder;
+    //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
     lString8Collection _folderStack;
     lUInt64 _lastAnimationTs;
 
-    void setMode(VIEW_MODE mode);
-
-    struct AnimatinControl {
+    struct AnimationControl {
         bool active;
         bool manual;
-        bool deleteOldWidget;
-        VIEW_MODE oldMode;
-        VIEW_MODE newMode;
-        CRUIWidget * oldWidget;
-        CRUIWidget * newWidget;
         int direction;
         int duration;
         int progress;
+        int oldpos;
+        int newpos;
         lvPoint startPoint;
         lUInt64 startTs;
-        AnimatinControl() : active(false) {}
+        AnimationControl() : active(false) {}
     };
-    AnimatinControl _animation;
+    AnimationControl _animation;
 
-    void startAnimation(CRUIWidget * newWidget, VIEW_MODE newMode, int direction, int duration, bool deleteOldWidget, bool manual);
+    NavHistory _history;
+
+    void startAnimation(int newpos, int duration, const CRUIMotionEvent * event = NULL);
     void stopAnimation();
 public:
+    VIEW_MODE getMode() { return _history.currentMode(); }
+    CRUIWidget * currentWidget() { return _history.currentWidget(); }
+    NavHistory & history() { return _history; }
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
 
@@ -92,7 +243,7 @@ public:
     void hideSlowOperationPopup();
 
     void openBook(lString8 pathname);
-    void showFolder(lString8 folder);
+    void showFolder(lString8 folder, bool appendHistory);
     void showHome();
     void back();
 

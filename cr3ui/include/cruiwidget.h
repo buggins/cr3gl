@@ -83,6 +83,7 @@ public:
 	CRUIWidget * setState(lUInt32 state) { if (_state != state) { _state = state; invalidate(); } return this; }
 	CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }
 
+    virtual const lvRect & getPos() { return _pos; }
 	virtual lUInt32 getAlign();
 	virtual lUInt32 getHAlign() { return getAlign() & CRUI::ALIGN_MASK_HORIZONTAL; }
 	virtual lUInt32 getVAlign() { return getAlign() & CRUI::ALIGN_MASK_VERTICAL; }
