@@ -18,6 +18,8 @@ int CRUIMotionEvent::findPointerId(int pointerId) {
 	return -1;
 }
 
+#define MAX_TRACK_MILLIS 2000
+
 CRUIMotionEventItem::CRUIMotionEventItem(const CRUIMotionEventItem * previous, lUInt64 pointerId, int action, int x, int y, lUInt64 ts)
 : _pointerId(pointerId),
   _action(action),
@@ -32,6 +34,50 @@ CRUIMotionEventItem::CRUIMotionEventItem(const CRUIMotionEventItem * previous, l
 {
 	//
     //CRLog::trace("created event ts=%lld downts=%lld", _ts, _downTs);
+
+    if (previous)
+        _track.reserve(previous->_track.length() + 1);
+    lUInt32 trackTs = (lUInt32)(ts - _downTs);
+    lUInt32 minTs = trackTs - MAX_TRACK_MILLIS;
+    TrackItem t(x, y, trackTs);
+    _track.add(t);
+    if (previous) {
+        for (int i = 0; i<previous->_track.length(); i++) {
+            if (previous->_track[i].ts < minTs)
+                _track.add(previous->_track[i]);
+        }
+    }
+}
+
+lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
+    if (_track.length() < 2)
+        return lvPoint(0,0);
+    int vx0 = _track[0].x - _track[1].x;
+    int vy0 = _track[0].y - _track[1].y;
+    int svx = 0;
+    int svy = 0;
+    int sw = 0;
+    lUInt32 t0 = _track[0].ts;
+    for (int i = 0; i < _track.length() - 2; i++) {
+        int dt = t0 - _track[i].ts;
+        if (dt > maxtime)
+            break;
+        int t = _track[i].ts - _track[i + 1].ts;
+        int dx = _track[i].x - _track[i + 1].x;
+        int dy = _track[i].y - _track[i + 1].y;
+        int vx = t > 0 ? dx * 1000 / t : 0;
+        int vy = t > 0 ? dy * 1000 / t : 0;
+        int p = vx * vx0 + vy * vy0;
+        if (p < 0)
+            break;
+        int w = 1000000/(1000 + (dt * 1000 / maxtime) * 10);
+        svx += vx * w;
+        svy += vy * w;
+        sw += w;
+    }
+    if (sw <= 0)
+        return lvPoint(0, 0);
+    return lvPoint(svx / sw, svy / sw);
 }
 
 

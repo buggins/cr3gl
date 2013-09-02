@@ -38,8 +38,21 @@ class CRUIMotionEventItem {
 	lUInt64 _downTs;
 	bool _isOutside;
 	CRUIWidget * _widget;
-	void setWidget(CRUIWidget * widget) { _widget = widget; }
+
+    struct TrackItem {
+        lInt16 x;
+        lInt16 y;
+        lUInt32 ts; // millis, relative to downTs
+        TrackItem(lInt16 _x, lInt16 _y, lUInt32 _ts) : x(_x), y(_y), ts(_ts) {}
+        TrackItem() : x(0), y(0), ts(0) {}
+    };
+    LVArray<TrackItem> _track;
+
+    void setWidget(CRUIWidget * widget) { _widget = widget; }
 public:
+
+    lvPoint getSpeed(int maxtime = 500);
+
 	CRUIMotionEventItem(const CRUIMotionEventItem * previous, lUInt64 pointerId, int action, int x, int y, lUInt64 ts);
 	int getX() const { return _x; }
 	int getY() const { return _y; }
