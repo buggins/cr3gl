@@ -232,9 +232,9 @@ CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int t
     if (existing) {
         return existing;
     }
-    int sz = (int)stream->GetSize();
-    if (stream.isNull() || sz == 0)
+    if (stream.isNull() || stream->GetSize() == 0)
         type = COVER_EMPTY;
+    int sz = !stream.isNull() ? (int)stream->GetSize() : 0;
     Entry * p = new Entry(pathname, type);
     if (type == COVER_CACHED) {
         lString8 cached = saveToCache(stream);
