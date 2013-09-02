@@ -12,7 +12,13 @@
 
 using namespace CRUI;
 
-CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main), _isDragging(false), _dragStartOffset(0) {
+CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
+    _isDragging(false), _dragStartOffset(0),
+    _isScrolling(false),
+    _scrollSpeed(0),
+    _scrollFriction(0),
+    _scrollPos1000(0)
+{
     _docview = new LVDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
     _docview->setFontSize(26);
@@ -22,11 +28,16 @@ CRUIReadWidget::~CRUIReadWidget() {}
 
 /// measure dimensions
 void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
-
+    _measuredWidth = baseWidth;
+    _measuredHeight = baseHeight;
 }
 
 /// updates widget position based on specified rectangle
 void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
+    _pos.left = left;
+    _pos.top = top;
+    _pos.bottom = bottom;
+    _pos.right = right;
     _docview->Resize(right-left, bottom-top);
 }
 
@@ -40,6 +51,21 @@ bool CRUIReadWidget::openBook(lString8 pathname) {
 }
 
 #define DRAG_THRESHOLD 5
+#define SCROLL_SPEED_CALC_INTERVAL 1000
+#define SCROLL_MIN_SPEED 2
+
+void CRUIReadWidget::animate(lUInt64 millisPassed) {
+    lInt64 oldpos = _scrollPos1000;
+    _scrollPos1000 = oldpos + millisPassed * _scrollSpeed;
+    if (_scrollPos1000 / 1000 != oldpos / 1000) {
+        _docview->SetPos((int)(_scrollPos1000/1000), false);
+    }
+    // TODO: speed change
+}
+
+bool CRUIReadWidget::isAnimating() {
+    return _isScrolling;
+}
 
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
@@ -55,12 +81,25 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         _dragStart.x = event->getX();
         _dragStart.y = event->getY();
         _dragStartOffset = _docview->GetPos();
+        if (_isScrolling) {
+            _isScrolling = false;
+            _scrollSpeed = 0;
+        }
         invalidate();
         //CRLog::trace("list DOWN");
         break;
     case ACTION_UP:
         {
             invalidate();
+            if (_isDragging) {
+                lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
+                if (speed.y < -SCROLL_MIN_SPEED || speed.y > SCROLL_MIN_SPEED) {
+                    _isScrolling = true;
+                    _scrollSpeed = -speed.y;
+                    _scrollPos1000 = _docview->GetPos() * (lInt64)1000;
+                    CRLog::trace("Starting scroll with speed %d", _scrollSpeed);
+                }
+            }
             _dragStartOffset = 0; //NO_DRAG;
             _isDragging = false;
 //            setScrollOffset(_scrollOffset);

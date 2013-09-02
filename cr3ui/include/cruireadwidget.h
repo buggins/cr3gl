@@ -18,6 +18,10 @@ class CRUIReadWidget : public CRUIWidget {
     bool _isDragging;
     lvPoint _dragStart;
     int _dragStartOffset;
+    bool _isScrolling;
+    int _scrollSpeed;
+    int _scrollFriction;
+    lInt64 _scrollPos1000;
 public:
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();
@@ -30,6 +34,9 @@ public:
 	virtual void layout(int left, int top, int right, int bottom);
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
+
+    virtual void animate(lUInt64 millisPassed);
+    virtual bool isAnimating();
 
     /// motion event handler, returns true if it handled event
     bool onTouchEvent(const CRUIMotionEvent * event);
