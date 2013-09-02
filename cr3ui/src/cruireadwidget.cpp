@@ -43,7 +43,11 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
 }
 
 bool CRUIReadWidget::openBook(lString8 pathname) {
-    return _docview->LoadDocument(pathname.c_str());
+    bool res = _docview->LoadDocument(pathname.c_str());
+    if (!res) {
+        _docview->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
+    }
+    return res;
 }
 
 #define DRAG_THRESHOLD 5

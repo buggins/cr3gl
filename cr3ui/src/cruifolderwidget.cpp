@@ -180,6 +180,7 @@ public:
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight) {
         calcCoverSize(baseWidth, baseHeight);
+        setColCount(baseWidth > baseHeight ? 2 : 1);
         CRUIListWidget::measure(baseWidth, baseHeight);
     }
 
@@ -195,6 +196,7 @@ public:
         _folderWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "folder_blue", parent->getMain());
         _bookWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "cr3_logo", parent->getMain());
 		setStyle("FILE_LIST");
+        setColCount(2);
 	}
 	virtual int getItemCount() {
 		if (!_dir)

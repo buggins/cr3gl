@@ -641,7 +641,10 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 			hash = hash * 31 + getHash(pathName) + 1826327 * item->GetSize();
 			LVStreamRef stream = dir->OpenStream(item->GetName(), LVOM_READ);
 			if (!stream.isNull()) {
-				LVContainerRef arc = LVOpenArchieve(stream);
+                // don't try to open epubs
+                lString16 name(item->GetName());
+                name.lowercase();
+                LVContainerRef arc = !name.endsWith(L".epub") ? LVOpenArchieve(stream) : LVContainerRef();
 				if (!arc.isNull()) {
 					//CRLog::trace("archive: %s", pathName8.c_str());
 					int knownFiles = 0;

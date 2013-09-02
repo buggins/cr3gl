@@ -20,7 +20,8 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
 : _vertical(vertical), _adapter(adapter),
   _ownAdapter(false), _scrollOffset(0),
   _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG),
-  _onItemClickListener(NULL), _onItemLongClickListener(NULL)
+  _onItemClickListener(NULL), _onItemLongClickListener(NULL),
+  _colCount(1)
 {
 
 }
@@ -70,27 +71,36 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			delimiterSize = delimiter->originalWidth();
 	}
 	if (_vertical) {
+        // VERTICAL
 		int biggestw = 0;
 		int totalh = 0;
 
-		for (int i=0; i<getItemCount(); i++) {
-			CRUIWidget * item = getItemWidget(i);
-			item->measure(maxw, maxh);
-			lvPoint sz(item->getMeasuredWidth(), item->getMeasuredHeight());
-			//CRLog::trace("measured list item[%d] (%d,%d)", i, sz.x, sz.y);
-			totalh += sz.y;
-			if (biggestw < sz.x)
-				biggestw = sz.x;
-			_itemSizes.add(sz);
-			if (i < getItemCount() - 1)
-				totalh += delimiterSize;
-		}
+        for (int i=0; i<getItemCount() + _colCount - 1; i += _colCount) {
+            int maxColH = 0;
+            for (int col = 0; col < _colCount; col++) {
+                CRUIWidget * item = i + col < getItemCount() ? getItemWidget(i + col) : NULL;
+                if (item) {
+                    item->measure(maxw, maxh);
+                    lvPoint sz(item->getMeasuredWidth(), item->getMeasuredHeight());
+                    //CRLog::trace("measured list item[%d] (%d,%d)", i, sz.x, sz.y);
+                    if (maxColH < sz.y)
+                        maxColH = sz.y;
+                    if (biggestw < sz.x)
+                        biggestw = sz.x;
+                    _itemSizes.add(sz);
+                }
+            }
+            totalh += maxColH;
+            if (i < getItemCount()  + _colCount - 1 - 1)
+                totalh += delimiterSize;
+        }
 		if (biggestw > maxw)
 			biggestw = maxw;
 		if (totalh > maxh)
 			totalh = maxh;
 		defMeasure(baseWidth, baseHeight, biggestw, totalh);
 	} else {
+        // HORIZONTAL
 		int biggesth = 0;
 		int totalw = 0;
 
@@ -139,16 +149,31 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	if (_vertical) {
 		int y = childRc.top;
 		int y0 = y;
-		for (int i=0; i<getItemCount() && i < _itemSizes.length(); i++) {
-			lvPoint sz = _itemSizes[i];
-			childRc.top = y;
-			childRc.bottom = y + sz.y;
-			//CRLog::trace("layout list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
-			_itemRects.add(childRc);
-			y = childRc.bottom;
-			if (i < getItemCount() - 1)
-				y += delimiterSize;
-		}
+        for (int i=0; i<getItemCount() + _colCount - 1 /* && i < _itemSizes.length() */; i += _colCount) {
+            int maxColH = 0;
+            for (int col = 0; col < _colCount; col++) {
+                int idx = i + col;
+                if (idx < _itemSizes.length()) {
+                    if (maxColH < _itemSizes[idx].y)
+                        maxColH = _itemSizes[idx].y;
+                }
+            }
+            childRc.top = y;
+            childRc.bottom = y + maxColH;
+            for (int col = 0; col < _colCount; col++) {
+                int idx = i + col;
+                if (idx < _itemSizes.length()) {
+                    lvPoint sz = _itemSizes[idx];
+                    childRc.left = clientRc.left + col * clientRc.width() / _colCount;
+                    childRc.right = col < _colCount - 1 ? clientRc.left + (col + 1) * clientRc.width() / _colCount : clientRc.right;
+                    //CRLog::trace("layout list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
+                    _itemRects.add(childRc);
+                }
+            }
+            y = childRc.bottom;
+            if (i < getItemCount() - 1)
+                y += delimiterSize;
+        }
 		_maxScrollOffset = y - y0 - winsize > 0 ? y - y0 - winsize : 0;
 	} else {
 		int x = childRc.left;

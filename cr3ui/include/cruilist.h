@@ -47,12 +47,15 @@ protected:
 	int _topItem;
 	int _selectedItem;
 	int _dragStartOffset;
+    int _colCount;
 	CRUIOnListItemClickListener * _onItemClickListener;
 	CRUIOnListItemLongClickListener * _onItemLongClickListener;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
     ScrollControl _scroll;
 public:
+    virtual void setColCount(int cnt) { _colCount = cnt; requestLayout(); }
+    virtual int getColCount() { return _colCount; }
     virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }
     virtual int getSelectedItem() { return _selectedItem; }
     CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
