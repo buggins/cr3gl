@@ -13,11 +13,7 @@
 using namespace CRUI;
 
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
-    _isDragging(false), _dragStartOffset(0),
-    _isScrolling(false),
-    _scrollSpeed(0),
-    _scrollFriction(0),
-    _scrollPos1000(0)
+    _isDragging(false), _dragStartOffset(0)
 {
     _docview = new LVDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
@@ -51,20 +47,24 @@ bool CRUIReadWidget::openBook(lString8 pathname) {
 }
 
 #define DRAG_THRESHOLD 5
-#define SCROLL_SPEED_CALC_INTERVAL 1000
-#define SCROLL_MIN_SPEED 2
+#define SCROLL_SPEED_CALC_INTERVAL 2000
+#define SCROLL_MIN_SPEED 3
+#define SCROLL_FRICTION 20
 
 void CRUIReadWidget::animate(lUInt64 millisPassed) {
-    lInt64 oldpos = _scrollPos1000;
-    _scrollPos1000 = oldpos + millisPassed * _scrollSpeed;
-    if (_scrollPos1000 / 1000 != oldpos / 1000) {
-        _docview->SetPos((int)(_scrollPos1000/1000), false);
+    bool changed = _scroll.animate(millisPassed);
+    if (changed) {
+        int oldpos = _docview->GetPos();
+        _docview->SetPos(_scroll.pos(), false);
+        if (oldpos == _docview->GetPos()) {
+            // stopping: bounds
+            _scroll.stop();
+        }
     }
-    // TODO: speed change
 }
 
 bool CRUIReadWidget::isAnimating() {
-    return _isScrolling;
+    return _scroll.isActive();
 }
 
 /// motion event handler, returns true if it handled event
@@ -81,10 +81,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         _dragStart.x = event->getX();
         _dragStart.y = event->getY();
         _dragStartOffset = _docview->GetPos();
-        if (_isScrolling) {
-            _isScrolling = false;
-            _scrollSpeed = 0;
-        }
+        if (_scroll.isActive())
+            _scroll.stop();
         invalidate();
         //CRLog::trace("list DOWN");
         break;
@@ -94,10 +92,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 if (speed.y < -SCROLL_MIN_SPEED || speed.y > SCROLL_MIN_SPEED) {
-                    _isScrolling = true;
-                    _scrollSpeed = -speed.y;
-                    _scrollPos1000 = _docview->GetPos() * (lInt64)1000;
-                    CRLog::trace("Starting scroll with speed %d", _scrollSpeed);
+                    _scroll.start(_docview->GetPos(), -speed.y, SCROLL_FRICTION);
+                    CRLog::trace("Starting scroll with speed %d", _scroll.speed());
                 }
             }
             _dragStartOffset = 0; //NO_DRAG;

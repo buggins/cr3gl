@@ -18,10 +18,7 @@ class CRUIReadWidget : public CRUIWidget {
     bool _isDragging;
     lvPoint _dragStart;
     int _dragStartOffset;
-    bool _isScrolling;
-    int _scrollSpeed;
-    int _scrollFriction;
-    lInt64 _scrollPos1000;
+    ScrollControl _scroll;
 public:
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();

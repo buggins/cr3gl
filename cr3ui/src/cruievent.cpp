@@ -54,9 +54,9 @@ lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
         return lvPoint(0,0);
     int vx0 = _track[0].x - _track[1].x;
     int vy0 = _track[0].y - _track[1].y;
-    int svx = 0;
-    int svy = 0;
-    int sw = 0;
+    lInt64 svx = 0;
+    lInt64 svy = 0;
+    lInt64 sw = 0;
     lUInt32 t0 = _track[0].ts;
     for (int i = 0; i < _track.length() - 2; i++) {
         int dt = t0 - _track[i].ts;
@@ -70,14 +70,14 @@ lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
         int p = vx * vx0 + vy * vy0;
         if (p < 0)
             break;
-        int w = 1000000/(1000 + (dt * 1000 / maxtime) * 10);
+        lInt64 w = ((lInt64)t) * 1000000/(1000 + (dt * 1000 / maxtime) * 10);
         svx += vx * w;
         svy += vy * w;
         sw += w;
     }
     if (sw <= 0)
         return lvPoint(0, 0);
-    return lvPoint(svx / sw, svy / sw);
+    return lvPoint((int)(svx / sw), (int)(svy / sw));
 }
 
 
