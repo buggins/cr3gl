@@ -272,6 +272,22 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 }
 
 #define DRAG_THRESHOLD 5
+#define SCROLL_SPEED_CALC_INTERVAL 2000
+#define SCROLL_MIN_SPEED 3
+#define SCROLL_FRICTION 20
+
+void CRUIListWidget::animate(lUInt64 millisPassed) {
+    if (_scroll.animate(millisPassed)) {
+        int oldpos = getScrollOffset();
+        setScrollOffset(_scroll.pos());
+        if (oldpos == getScrollOffset())
+            _scroll.stop();
+    }
+}
+
+bool CRUIListWidget::isAnimating() {
+    return _scroll.isActive();
+}
 
 /// motion event handler, returns true if it handled event
 bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
@@ -286,6 +302,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	switch (action) {
 	case ACTION_DOWN:
 		_selectedItem = index;
+        _scroll.stop();
 		invalidate();
 		//CRLog::trace("list DOWN");
 		break;
@@ -294,15 +311,24 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			int itemIndex = _selectedItem;
 			_selectedItem = -1;
 			invalidate();
-			_dragStartOffset = NO_DRAG;
 			setScrollOffset(_scrollOffset);
-			if (itemIndex != -1) {
+            if (_dragStartOffset != NO_DRAG) {
+                lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
+                int spd = isVertical() ? speed.y : speed.x;
+                if (spd < -SCROLL_MIN_SPEED || spd > SCROLL_MIN_SPEED) {
+                    _scroll.start(_scrollOffset, -spd, SCROLL_FRICTION);
+                    CRLog::trace("Starting scroll with speed %d", _scroll.speed());
+                }
+                _dragStartOffset = NO_DRAG;
+            }
+            if (itemIndex != -1) {
                 //CRLog::trace("UP ts=%lld downTs=%lld downDuration=%lld", event->getEventTimestamp(), event->getDownEventTimestamp(), event->getDownDuration());
                 bool isLong = event->getDownDuration() > LONG_TOUCH_THRESHOLD; // 0.5 seconds threshold
 				if (isLong && onItemLongClickEvent(itemIndex))
 					return true;
 				onItemClickEvent(itemIndex);
-			}
+            } else {
+            }
 		}
 		// fire onclick
 		//CRLog::trace("list UP");

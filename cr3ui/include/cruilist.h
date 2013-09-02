@@ -51,6 +51,7 @@ protected:
 	CRUIOnListItemLongClickListener * _onItemLongClickListener;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
+    ScrollControl _scroll;
 public:
     virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }
     virtual int getSelectedItem() { return _selectedItem; }
@@ -87,6 +88,9 @@ public:
 	/// draws widget with its children to specified surface
 	virtual void draw(LVDrawBuf * buf);
 	virtual lvPoint getTileOffset() const;
+
+    virtual void animate(lUInt64 millisPassed);
+    virtual bool isAnimating();
 };
 
 

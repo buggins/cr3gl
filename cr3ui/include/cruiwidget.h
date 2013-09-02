@@ -183,6 +183,7 @@ struct ScrollControl {
 private:
     bool active;
     int  speed1000;
+    int  startspeed;
     int  friction;
     lInt64 pos1000; // position * 1000
 public:
@@ -191,23 +192,9 @@ public:
     bool isActive() { return active; }
     ScrollControl() : active(false), speed1000(0), friction(0), pos1000(0) {}
     void stop() { active = false; speed1000 = 0; }
-    void start(int _pos, int _speed, int _friction) {
-        active = true;
-        speed1000 = _speed * 1000;
-        friction = _friction;
-        pos1000 = _pos * 1000;
-    }
-    bool animate(lUInt64 millisPassed) {
-        lInt64 oldpos = pos1000;
-        pos1000 = oldpos + millisPassed * speed1000 / 1000;
-        speed1000 -= (int)(friction * speed1000 * millisPassed / 1000 / 10);
-        if (speed1000 >= -SCROLL_STOP_THRESHOLD * 1000 && speed1000 <= SCROLL_STOP_THRESHOLD * 1000)
-            stop();
-        if (pos1000 / 1000 != oldpos / 1000) {
-            return true;
-        }
-        return false;
-    }
+    void start(int _pos, int _speed, int _friction);
+    // returns true if position changed
+    bool animate(lUInt64 millisPassed);
 };
 
 

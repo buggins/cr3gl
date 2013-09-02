@@ -49,7 +49,7 @@ bool CRUIReadWidget::openBook(lString8 pathname) {
 #define DRAG_THRESHOLD 5
 #define SCROLL_SPEED_CALC_INTERVAL 2000
 #define SCROLL_MIN_SPEED 3
-#define SCROLL_FRICTION 20
+#define SCROLL_FRICTION 13
 
 void CRUIReadWidget::animate(lUInt64 millisPassed) {
     bool changed = _scroll.animate(millisPassed);
