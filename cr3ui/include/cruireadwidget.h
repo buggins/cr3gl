@@ -54,6 +54,7 @@ class CRUIReadWidget : public CRUIWidget {
     };
     ScrollModePageCache _scrollCache;
 
+    void animateScrollTo(int newpos, int speed);
 
 public:
     CRUIReadWidget(CRUIMainWidget * main);
@@ -74,6 +75,7 @@ public:
     /// motion event handler, returns true if it handled event
     bool onTouchEvent(const CRUIMotionEvent * event);
     bool onKeyEvent(const CRUIKeyEvent * event);
+    bool doCommand(int cmd, int param = 0);
 
 };
 

@@ -63,8 +63,10 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
     bool changed = _scroll.animate(millisPassed);
     if (changed) {
         int oldpos = _docview->GetPos();
+        //CRLog::trace("scroll animation: new position %d", _scroll.pos());
         _docview->SetPos(_scroll.pos(), false);
         if (oldpos == _docview->GetPos()) {
+            //CRLog::trace("scroll animation - stopping at %d since set position not changed position", _scroll.pos());
             // stopping: bounds
             _scroll.stop();
         }
@@ -75,17 +77,55 @@ bool CRUIReadWidget::isAnimating() {
     return _scroll.isActive();
 }
 
+void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
+    CRLog::trace("animateScrollTo( %d -> %d )", _docview->GetPos(), newpos);
+    _scroll.start(_docview->GetPos(), newpos, speed, SCROLL_FRICTION);
+    //invalidate();
+    //_main->update();
+}
+
+bool CRUIReadWidget::doCommand(int cmd, int param) {
+    int pos = _docview->GetPos();
+    int newpos = pos;
+    int speed = 0;
+    switch (cmd) {
+    case DCMD_PAGEUP:
+        newpos = pos - _pos.height() * 9 / 10;
+        speed = _pos.height() * 2;
+        break;
+    case DCMD_PAGEDOWN:
+        newpos = pos + _pos.height() * 9 / 10;
+        speed = _pos.height() * 2;
+        break;
+    case DCMD_LINEUP:
+        newpos = pos - _docview->getFontSize();
+        speed = _pos.height() / 2;
+        break;
+    case DCMD_LINEDOWN:
+        newpos = pos + _docview->getFontSize();
+        speed = _pos.height() / 2;
+        break;
+    default:
+        return _docview->doCommand((LVDocCmd)cmd, param);
+    }
+    if (pos != newpos) {
+        animateScrollTo(newpos, speed);
+    }
+}
+
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     if (event->getType() == KEY_ACTION_PRESS) {
+        if (_scroll.isActive())
+            _scroll.stop();
         int key = event->key();
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
-            _docview->doCommand(DCMD_PAGEDOWN);
+            doCommand(DCMD_PAGEDOWN);
             break;
         case CR_KEY_PGUP:
-            _docview->doCommand(DCMD_PAGEUP);
+            doCommand(DCMD_PAGEUP);
             break;
         case CR_KEY_HOME:
             _docview->doCommand(DCMD_BEGIN);
@@ -94,10 +134,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
             _docview->doCommand(DCMD_END);
             break;
         case CR_KEY_UP:
-            _docview->doCommand(DCMD_LINEUP, 1);
+            doCommand(DCMD_LINEUP, 1);
             break;
         case CR_KEY_DOWN:
-            _docview->doCommand(DCMD_LINEDOWN, 1);
+            doCommand(DCMD_LINEDOWN, 1);
             break;
         default:
             break;

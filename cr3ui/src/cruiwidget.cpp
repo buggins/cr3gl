@@ -374,9 +374,21 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
 }
 
 
+void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
+    active = true;
+    manual = true;
+    if (_pos2 < _pos && _speed > 0)
+        _speed = -_speed;
+    speed1000 = _speed * 1000;
+    startspeed = speed1000;
+    friction = _friction;
+    pos1000 = _pos * 1000;
+    dstpos1000 = _pos2 * 1000;
+}
 
 void ScrollControl::start(int _pos, int _speed, int _friction) {
     active = true;
+    manual = false;
     speed1000 = _speed * 1000;
     startspeed = speed1000;
     friction = _friction;
@@ -386,17 +398,39 @@ bool ScrollControl::animate(lUInt64 millisPassed) {
     if (!active)
         return false;
     lInt64 oldpos = pos1000;
-    int fr = friction * startspeed / speed1000;
-    if (fr > friction * 3)
-        fr = friction * 3;
-    pos1000 = oldpos + (lInt64)millisPassed * speed1000 / 1000;
-    speed1000 -= (int)(fr * speed1000 * (lInt64)millisPassed / 1000 / 10);
-    if (speed1000 >= -SCROLL_STOP_THRESHOLD * 1000 && speed1000 <= SCROLL_STOP_THRESHOLD * 1000)
-        stop();
-    if ((pos1000 < 0 && oldpos > 0) || (pos1000 > 0 && oldpos < 0))
-        stop();
-    if (pos1000 / 1000 != oldpos / 1000) {
-        return true;
+    if (manual) {
+        pos1000 = oldpos + (lInt64)millisPassed * speed1000 / 1000;
+        if (startspeed > 0) {
+            if (pos1000 >= dstpos1000) {
+                pos1000 = dstpos1000;
+                //CRLog::trace("stopping manual scroll at %d - %d", (int)(pos1000/1000), (int)(dstpos1000/1000));
+                stop();
+                return true;
+            }
+        } else {
+            if (pos1000 <= dstpos1000) {
+                pos1000 = dstpos1000;
+                //CRLog::trace("stopping manual scroll at %d - %d", (int)(pos1000/1000), (int)(dstpos1000/1000));
+                stop();
+                return true;
+            }
+        }
+        if (pos1000 / 1000 != oldpos / 1000) {
+            return true;
+        }
+    } else {
+        int fr = friction * startspeed / speed1000;
+        if (fr > friction * 3)
+            fr = friction * 3;
+        pos1000 = oldpos + (lInt64)millisPassed * speed1000 / 1000;
+        speed1000 -= (int)(fr * speed1000 * (lInt64)millisPassed / 1000 / 10);
+        if (speed1000 >= -SCROLL_STOP_THRESHOLD * 1000 && speed1000 <= SCROLL_STOP_THRESHOLD * 1000)
+            stop();
+        if ((pos1000 < 0 && oldpos > 0) || (pos1000 > 0 && oldpos < 0))
+            stop();
+        if (pos1000 / 1000 != oldpos / 1000) {
+            return true;
+        }
     }
     return false;
 }

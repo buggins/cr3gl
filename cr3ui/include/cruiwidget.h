@@ -194,13 +194,16 @@ private:
     int  startspeed;
     int  friction;
     lInt64 pos1000; // position * 1000
+    lInt64 dstpos1000; // position * 1000
+    bool manual;
 public:
     int pos() { return (int)(pos1000 / 1000); }
     int speed() { return (int)(speed1000 / 1000); }
     bool isActive() { return active; }
-    ScrollControl() : active(false), speed1000(0), friction(0), pos1000(0) {}
+    ScrollControl() : active(false), speed1000(0), friction(0), pos1000(0), manual(false) {}
     void stop() { active = false; speed1000 = 0; }
     void start(int _pos, int _speed, int _friction);
+    void start(int _pos, int _pos2, int _speed, int _friction);
     // returns true if position changed
     bool animate(lUInt64 millisPassed);
 };
