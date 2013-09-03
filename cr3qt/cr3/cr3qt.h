@@ -125,6 +125,8 @@ public:
     CRUIEventAdapter(CRUIEventManager * eventManager);
     // touch event listener
     void dispatchTouchEvent(QMouseEvent * event);
+    // key event listener
+    void dispatchKeyEvent(QKeyEvent * event);
 };
 
 

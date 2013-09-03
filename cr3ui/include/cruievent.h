@@ -102,6 +102,15 @@ enum KEY_EVENT_TYPE {
     KEY_ACTION_RELEASE
 };
 
+enum CR_KEY_MODIFIER {
+    CR_KEY_MODIFIER_NONE =    0x00000000,
+    CR_KEY_MODIFIER_SHIFT =   0x10000000,
+    CR_KEY_MODIFIER_CONTROL = 0x20000000,
+    CR_KEY_MODIFIER_ALT =     0x40000000,
+    CR_KEY_MODIFIER_META =    0x80000000,
+    CR_KEY_MODIFIER_KEYPAD =  0x08000000
+};
+
 #define CR_KEY_SPACE ' '
 #define CR_KEY_0 '0'
 #define CR_KEY_1 '1'
@@ -114,14 +123,21 @@ enum KEY_EVENT_TYPE {
 #define CR_KEY_8 '8'
 #define CR_KEY_9 '9'
 
-enum CR_KEY_MODIFIER {
-    CR_KEY_MODIFIER_NONE =    0x00000000,
-    CR_KEY_MODIFIER_SHIFT =   0x10000000,
-    CR_KEY_MODIFIER_CONTROL = 0x20000000,
-    CR_KEY_MODIFIER_ALT =     0x40000000,
-    CR_KEY_MODIFIER_META =    0x80000000,
-    CR_KEY_MODIFIER_KEYPAD =  0x08000000
-};
+#define CR_KEY_SHIFT 0x101
+#define CR_KEY_CONTROL 0x102
+#define CR_KEY_ALT 0x103
+#define CR_KEY_META 0x104
+
+#define CR_KEY_HOME 0x110
+#define CR_KEY_END 0x111
+#define CR_KEY_PGUP 0x112
+#define CR_KEY_PGDOWN 0x113
+#define CR_KEY_LEFT 0x114
+#define CR_KEY_RIGHT 0x115
+#define CR_KEY_UP 0x116
+#define CR_KEY_DOWN 0x117
+
+#define CR_KEY_RETURN 0x120
 
 class CRUIKeyEvent {
     KEY_EVENT_TYPE _type;
@@ -149,12 +165,9 @@ public:
     }
 
     CRUIKeyEvent(const CRUIKeyEvent & v) : _type(v._type), _key(v._key), _autorepeat(v._autorepeat), _count(v._count), _modifiers(v._modifiers), _ts(v._ts), _downTs(v._downTs), _widget(v._widget) {}
-    CRUIKeyEvent(KEY_EVENT_TYPE type, int key, bool autorepeat, int count, int modifiers, CRUIKeyEvent * downEvent) : _type(type), _key(key), _autorepeat(autorepeat), _count(count), _modifiers(modifiers), _widget(NULL) {
+    CRUIKeyEvent(KEY_EVENT_TYPE type, int key, bool autorepeat, int count, int modifiers) : _type(type), _key(key), _autorepeat(autorepeat), _count(count), _modifiers(modifiers), _widget(NULL) {
         _ts = GetCurrentTimeMillis();
-        if (downEvent)
-            _downTs = downEvent->getEventTimestamp();
-        else
-            _downTs = _ts;
+        _downTs = _ts;
     }
     ~CRUIKeyEvent() {}
 };

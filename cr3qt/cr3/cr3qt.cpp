@@ -90,7 +90,62 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
     }
 }
 
+static int translateKeyCode(int key) {
+    switch(key) {
+    case Qt::Key_0: return CR_KEY_0;
+    case Qt::Key_1: return CR_KEY_1;
+    case Qt::Key_2: return CR_KEY_2;
+    case Qt::Key_3: return CR_KEY_3;
+    case Qt::Key_4: return CR_KEY_4;
+    case Qt::Key_5: return CR_KEY_5;
+    case Qt::Key_6: return CR_KEY_6;
+    case Qt::Key_7: return CR_KEY_7;
+    case Qt::Key_8: return CR_KEY_8;
+    case Qt::Key_9: return CR_KEY_9;
+    case Qt::Key_Space: return CR_KEY_SPACE;
+    case Qt::Key_Shift: return CR_KEY_SHIFT;
+    case Qt::Key_Alt: return CR_KEY_SHIFT;
+    case Qt::Key_Meta: return CR_KEY_SHIFT;
 
+    case Qt::Key_Return: return CR_KEY_RETURN;
+    case Qt::Key_Home: return CR_KEY_HOME;
+    case Qt::Key_End: return CR_KEY_END;
+    case Qt::Key_PageUp: return CR_KEY_PGUP;
+    case Qt::Key_PageDown: return CR_KEY_PGDOWN;
+    case Qt::Key_Left: return CR_KEY_LEFT;
+    case Qt::Key_Up: return CR_KEY_UP;
+    case Qt::Key_Right: return CR_KEY_RIGHT;
+    case Qt::Key_Down: return CR_KEY_DOWN;
+    default:
+        return 0;
+    }
+}
+
+static lUInt32 translateModifiers(lUInt32 flags) {
+    lUInt32 res = 0;
+    if (flags & Qt::ShiftModifier) res |= CR_KEY_MODIFIER_SHIFT;
+    if (flags & Qt::ControlModifier) res |= CR_KEY_MODIFIER_CONTROL;
+    if (flags & Qt::AltModifier) res |= CR_KEY_MODIFIER_ALT;
+    if (flags & Qt::MetaModifier) res |= CR_KEY_MODIFIER_META;
+    if (flags & Qt::KeypadModifier) res |= CR_KEY_MODIFIER_KEYPAD;
+    return res;
+}
+
+// key event listener
+void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
+    KEY_EVENT_TYPE type = event->type() == QEvent::KeyPress ? KEY_ACTION_PRESS : KEY_ACTION_RELEASE;
+    int key = translateKeyCode(event->key());
+    if (!key) {
+        CRLog::warn("Skipping unknown key %d", key);
+        return;
+    }
+    bool autorepeat = event->isAutoRepeat();
+    int count = event->count();
+    lUInt32 modifiers = translateModifiers(event->modifiers());
+    CRUIKeyEvent * ev = new CRUIKeyEvent(type, key, autorepeat, count, modifiers);
+    _eventManager->dispatchKeyEvent(ev);
+    delete ev;
+}
 
 lString16 resourceDir;
 void setupResourcesForScreenSize() {
