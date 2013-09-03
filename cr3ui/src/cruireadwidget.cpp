@@ -14,7 +14,7 @@
 using namespace CRUI;
 
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
-    _isDragging(false), _dragStartOffset(0)
+    _isDragging(false), _dragStartOffset(0), _locked(false)
 {
     _docview = new LVDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
@@ -35,22 +35,136 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     _pos.top = top;
     _pos.bottom = bottom;
     _pos.right = right;
-    _docview->Resize(right-left, bottom-top);
+    if (!_locked)
+        _docview->Resize(right-left, bottom-top);
 }
 
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
-    _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
-    _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+    if (renderIfNecessary()) {
+        CRLog::trace("Document is ready, drawing");
+        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
+        _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+    } else {
+        // document render in progress; draw just page background
+        CRLog::trace("Document is locked, just drawing background");
+        _docview->drawPageBackground(*buf, 0, 0);
+    }
     //_docview->Draw(*buf, false);
 }
 
-bool CRUIReadWidget::openBook(lString8 pathname) {
-    bool res = _docview->LoadDocument(pathname.c_str());
-    if (!res) {
-        _docview->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
+class BookLoadedNotificationTask : public CRRunnable {
+    lString8 pathname;
+    CRDocumentLoadCallback * callback;
+    CRDocumentLoadCallback * callback2;
+    bool success;
+public:
+    BookLoadedNotificationTask(lString8 _pathname, bool _success, CRDocumentLoadCallback * _callback, CRDocumentLoadCallback * _callback2) {
+        pathname = _pathname;
+        pathname.modify();
+        callback = _callback;
+        callback2 = _callback2;
+        success = _success;
     }
-    return res;
+    virtual void run() {
+        CRLog::trace("BookLoadedNotificationTask.run()");
+        callback->onDocumentLoadFinished(pathname, success);
+        callback2->onDocumentLoadFinished(pathname, success);
+    }
+};
+
+class BookRenderedNotificationTask : public CRRunnable {
+    lString8 pathname;
+    CRDocumentRenderCallback * callback;
+    CRDocumentRenderCallback * callback2;
+public:
+    BookRenderedNotificationTask(lString8 _pathname, CRDocumentRenderCallback * _callback, CRDocumentRenderCallback * _callback2) {
+        pathname = _pathname;
+        pathname.modify();
+        callback = _callback;
+        callback2 = _callback2;
+    }
+    virtual void run() {
+        CRLog::trace("BookRenderedNotificationTask.run()");
+        callback2->onDocumentRenderFinished(pathname);
+        callback->onDocumentRenderFinished(pathname);
+    }
+};
+
+class OpenBookTask : public CRRunnable {
+    lString8 _pathname;
+    CRUIMainWidget * _main;
+    CRUIReadWidget * _read;
+public:
+    OpenBookTask(lString16 pathname, CRUIMainWidget * main, CRUIReadWidget * read) : _main(main), _read(read) {
+        _pathname = UnicodeToUtf8(pathname);
+    }
+    virtual void run() {
+        CRLog::info("Loading book in background thread");
+        bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
+        CRLog::info("Loading is finished");
+        if (!success) {
+            _read->getDocView()->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
+        }
+        concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
+        CRLog::info("Rendering book in background thread");
+        _read->getDocView()->Render();
+        CRLog::info("Render is finished");
+        concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
+    }
+};
+
+class RenderBookTask : public CRRunnable {
+    lString8 _pathname;
+    CRUIMainWidget * _main;
+    CRUIReadWidget * _read;
+public:
+    RenderBookTask(lString16 pathname, CRUIMainWidget * main, CRUIReadWidget * read) : _main(main), _read(read) {
+        _pathname = UnicodeToUtf8(pathname);
+    }
+    virtual void run() {
+        CRLog::info("Rendering in background thread");
+        _read->getDocView()->Render();
+        CRLog::info("Render in background thread is finished");
+        concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
+    }
+};
+
+bool CRUIReadWidget::openBook(lString8 pathname) {
+    if (_locked)
+        return false;
+    _pathname = pathname;
+    _locked = true;
+    _scrollCache.clear();
+    _main->showSlowOperationPopup();
+    _main->executeBackground(new OpenBookTask(Utf8ToUnicode(pathname), _main, this));
+    return true;
+}
+
+void CRUIReadWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
+    if (!success)
+        _pathname.clear();
+}
+
+void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
+    CRLog::trace("Render is finished - unlocking document");
+    _locked = false;
+}
+
+/// returns true if document is ready, false if background rendering is in progress
+bool CRUIReadWidget::renderIfNecessary() {
+    if (_locked) {
+        CRLog::trace("Document is locked");
+        return false;
+    }
+    if (_docview->IsRendered())
+        return true;
+    CRLog::info("Render is required! Starting render task");
+    _locked = true;
+    _scrollCache.clear();
+    _main->showSlowOperationPopup();
+    _main->executeBackground(new RenderBookTask(Utf8ToUnicode(_pathname), _main, this));
+    return false;
 }
 
 #define DRAG_THRESHOLD 5

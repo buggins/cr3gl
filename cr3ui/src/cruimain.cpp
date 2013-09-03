@@ -48,6 +48,26 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
     }
 }
 
+void CRUIMainWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
+    //
+    CRLog::info("Document loaded: %s %s", pathname.c_str(), (success ? "successfully" : "with error"));
+}
+
+void CRUIMainWidget::onDocumentRenderFinished(lString8 pathname) {
+    CRLog::info("Document rendered: %s", pathname.c_str());
+    hideSlowOperationPopup();
+    if (_history.current()->getMode() != MODE_READ) {
+        int newpos = _history.findPosByMode(MODE_READ);
+        if (newpos < 0) {
+            _history.setNext(new ReadItem(this, _read));
+            newpos = _history.pos() + 1;
+        }
+        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+    } else {
+        update();
+    }
+}
+
 void CRUIMainWidget::showSlowOperationPopup()
 {
 #if 0
@@ -92,13 +112,8 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 
 void CRUIMainWidget::openBook(lString8 pathname) {
     CRLog::debug("Opening book %s", pathname.c_str());
-    int newpos = _history.findPosByMode(MODE_READ);
-    if (newpos < 0) {
-        _history.setNext(new ReadItem(this, _read));
-        newpos = _history.pos() + 1;
-    }
+    _read->measure(_measuredWidth, _measuredHeight);
     _read->openBook(pathname);
-    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {

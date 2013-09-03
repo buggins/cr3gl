@@ -12,7 +12,22 @@
 #include "cruiwidget.h"
 
 class CRUIMainWidget;
-class CRUIReadWidget : public CRUIWidget {
+
+class CRDocumentLoadCallback {
+public:
+    virtual void onDocumentLoadFinished(lString8 pathname, bool success) = 0;
+    virtual ~CRDocumentLoadCallback() {}
+};
+
+class CRDocumentRenderCallback {
+public:
+    virtual void onDocumentRenderFinished(lString8 pathname) = 0;
+    virtual ~CRDocumentRenderCallback() {}
+};
+
+
+class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback
+{
     CRUIMainWidget * _main;
     LVDocView * _docview;
     bool _isDragging;
@@ -56,11 +71,22 @@ class CRUIReadWidget : public CRUIWidget {
 
     void animateScrollTo(int newpos, int speed);
 
+    bool _locked;
+    lString8 _pathname;
+
 public:
+
+    virtual void onDocumentLoadFinished(lString8 pathname, bool success);
+    virtual void onDocumentRenderFinished(lString8 pathname);
+
+    LVDocView * getDocView() { return _docview; }
+
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();
 
     bool openBook(lString8 pathname);
+    /// returns true if document is ready, false if background rendering is in progress
+    bool renderIfNecessary();
 
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);

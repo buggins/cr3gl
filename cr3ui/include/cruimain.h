@@ -174,7 +174,9 @@ public:
     }
 };
 
-class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIScreenUpdateManagerCallback {
+class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIScreenUpdateManagerCallback,
+        public CRDocumentLoadCallback, public CRDocumentRenderCallback
+{
     CRUIHomeWidget * _home;
     //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
@@ -200,9 +202,12 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     NavHistory _history;
 
+    CRThreadExecutor _backgroundThread;
+
     void startAnimation(int newpos, int duration, const CRUIMotionEvent * event = NULL);
     void stopAnimation();
 public:
+    void executeBackground(CRRunnable * task) { _backgroundThread.execute(task); }
     VIEW_MODE getMode() { return _history.currentMode(); }
     CRUIWidget * currentWidget() { return _history.currentWidget(); }
     NavHistory & history() { return _history; }
@@ -248,6 +253,8 @@ public:
     void back();
 
     virtual void onDirectoryScanFinished(CRDirCacheItem * item);
+    virtual void onDocumentLoadFinished(lString8 pathname, bool success);
+    virtual void onDocumentRenderFinished(lString8 pathname);
 
     void recreate();
     CRUIMainWidget();
