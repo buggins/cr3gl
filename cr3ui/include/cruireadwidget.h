@@ -19,6 +19,42 @@ class CRUIReadWidget : public CRUIWidget {
     lvPoint _dragStart;
     int _dragStartOffset;
     ScrollControl _scroll;
+
+    class ScrollModePage {
+    public:
+        int pos;
+        int dx;
+        int dy;
+        LVDrawBuf * drawbuf;
+        ScrollModePage() : pos(0), dx(0), dy(0), drawbuf(NULL) { }
+        ~ScrollModePage() {
+            if (drawbuf)
+                delete drawbuf;
+        }
+        bool intersects(int y0, int y1) {
+            return !(pos + dy <= y0 || pos >= y1);
+        }
+    };
+    class ScrollModePageCache {
+        LVPtrVector<ScrollModePage> pages;
+        LVDrawBuf * createBuf(int dx, int dy);
+        int minpos;
+        int maxpos;
+        int dx;
+        int dy;
+    public:
+        void setSize(int _dx, int _dy);
+        ScrollModePageCache();
+        /// ensure images are prepared
+        void prepare(LVDocView * docview, int pos, int dx, int dy, int direction);
+        /// draw
+        void draw(LVDrawBuf * dst, int pos, int x, int y);
+        /// remove images from cache
+        void clear();
+    };
+    ScrollModePageCache _scrollCache;
+
+
 public:
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();

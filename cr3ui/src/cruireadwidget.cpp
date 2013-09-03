@@ -9,6 +9,7 @@
 #include "cruireadwidget.h"
 #include "crui.h"
 #include "cruimain.h"
+#include "gldrawbuf.h"
 
 using namespace CRUI;
 
@@ -39,7 +40,9 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
-    _docview->Draw(*buf, false);
+    _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
+    _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+    //_docview->Draw(*buf, false);
 }
 
 bool CRUIReadWidget::openBook(lString8 pathname) {
@@ -162,3 +165,93 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+
+CRUIReadWidget::ScrollModePageCache::ScrollModePageCache() : minpos(0), maxpos(0) {
+
+}
+
+LVDrawBuf * CRUIReadWidget::ScrollModePageCache::createBuf(int dx, int dy) {
+    return new GLDrawBuf(dx, dy, 32, true);
+}
+
+void CRUIReadWidget::ScrollModePageCache::setSize(int _dx, int _dy) {
+    if (dx != _dx || dy != _dy) {
+        clear();
+        dx = _dx;
+        dy = _dy;
+    }
+}
+
+/// ensure images are prepared
+void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos, int _dx, int _dy, int direction) {
+    setSize(_dx, _dy);
+    if (_pos >= minpos && _pos + dy <= maxpos)
+        return; // already prepared
+    int y0 = direction > 0 ? (_pos - dy / 4) : (_pos - dy * 3 / 4);
+    int y1 = direction > 0 ? (_pos + dy + dy * 3 / 4) : (_pos + dy + dy / 4);
+    int pos0 = _pos / dy * dy;
+    for (int i = pages.length() - 1; i >= 0; i--) {
+        ScrollModePage * p = pages[i];
+        if (!p->intersects(y0, y1)) {
+            pages.remove(i);
+            delete p;
+        }
+    }
+    for (int i = 0; i < 2; i++) {
+        int pos = pos0 + i * dy;
+        bool found = false;
+        for (int k = pages.length() - 1; k >= 0; k--) {
+            if (pages[k]->pos == pos) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            ScrollModePage * page = new ScrollModePage();
+            page->dx = dx;
+            page->dy = dy;
+            page->pos = pos;
+            page->drawbuf = createBuf(dx, dy);
+            GLDrawBuf * buf = dynamic_cast<GLDrawBuf*>(page->drawbuf);
+            buf->beforeDrawing();
+            int oldpos = _docview->GetPos();
+            _docview->SetPos(pos, false);
+            _docview->Draw(*buf, false);
+            _docview->SetPos(oldpos, false);
+            buf->afterDrawing();
+            pages.add(page);
+            CRLog::trace("new page cache item %d..%d", page->pos, page->pos + page->dy);
+        }
+    }
+    minpos = maxpos = -1;
+    for (int k = 0; k < pages.length(); k++) {
+        CRLog::trace("page cache item [%d] %d..%d", k, pages[k]->pos, pages[k]->pos + pages[k]->dy);
+        if (minpos == -1 || minpos > pages[k]->pos) {
+            minpos = pages[k]->pos;
+        }
+        if (maxpos == -1 || maxpos < pages[k]->pos + pages[k]->dy) {
+            maxpos = pages[k]->pos + pages[k]->dy;
+        }
+    }
+}
+
+void CRUIReadWidget::ScrollModePageCache::draw(LVDrawBuf * dst, int pos, int x, int y) {
+    GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf *>(dst);
+    if (glbuf) {
+        //glbuf->beforeDrawing();
+        for (int k = pages.length() - 1; k >= 0; k--) {
+            if (pages[k]->intersects(pos, pos + dy)) {
+                // draw fragment
+                int y0 = pages[k]->pos - pos;
+                pages[k]->drawbuf->DrawTo(glbuf, x, y + y0, 0, NULL);
+            }
+        }
+        //glbuf->afterDrawing();
+    }
+}
+
+void CRUIReadWidget::ScrollModePageCache::clear() {
+    pages.clear();
+    minpos = 0;
+    maxpos = 0;
+}
