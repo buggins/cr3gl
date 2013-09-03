@@ -221,11 +221,13 @@ public:
             }
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-
+            //rotationAngle = 0;
             if (rotationAngle) {
+                //rotationAngle = 0;
                 glPushMatrix();
                 int x = (dstx0 + dstx1) / 2;
                 int y = (dsty0 + dsty1) / 2;
+                glMatrixMode(GL_PROJECTION);
                 glTranslatef(x, y, 0);
                 glRotatef(rotationAngle, 0, 0, 1);
                 glTranslatef(-x, -y, 0);
@@ -670,9 +672,8 @@ void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int 
         rc.bottom = y + height;
         if (!rc.intersects(cliprect))
             return; // out of bounds
-        const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
         lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-        LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip, rotationAngle));
+        LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x + 1, GetHeight() - y - 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
     }
 }
 

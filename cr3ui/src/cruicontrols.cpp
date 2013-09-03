@@ -220,6 +220,7 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 
 void CRUISpinnerWidget::animate(lUInt64 millisPassed) {
     _angle += millisPassed * _speed;
+    _angle = _angle % 360000;
 }
 
 bool CRUISpinnerWidget::isAnimating() {
@@ -241,8 +242,8 @@ void CRUISpinnerWidget::draw(LVDrawBuf * buf) {
         rc.bottom = rc.top + _image->originalHeight();
         //CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
         // draw
-        //_drawbuf->DrawTo(buf, rc.left, rc.top, 0, NULL);
-        _image->drawRotated(buf, rc, _angle / 1000);
+        _image->drawRotated(buf, rc, 360 - _angle / 1000);
+        //_image->draw(buf, rc);
     }
 }
 

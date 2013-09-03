@@ -8,8 +8,6 @@
 #include "cruitheme.h"
 using namespace CRUI;
 
-#include "gldrawbuf.h"
-
 //==============================================================================================================
 // CRUIStyle
 
@@ -192,12 +190,7 @@ lUInt32 CRUIStyle::getTextColor() {
 
 
 void CRUIBitmapImage::drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) {
-    GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(buf);
-    if (glbuf) {
-        glbuf->DrawRotated(_src, rect.left, rect.top, rect.right, rect.bottom, angle);
-    } else {
-        draw(buf, rect);
-    }
+    buf->DrawRotated(_src, rect.left, rect.top, rect.width(), rect.height(), angle);
 }
 
 void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {

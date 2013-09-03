@@ -285,7 +285,7 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
             page->dy = dy;
             page->pos = pos;
             page->drawbuf = createBuf(dx, dy);
-            GLDrawBuf * buf = dynamic_cast<GLDrawBuf*>(page->drawbuf);
+            LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
             buf->beforeDrawing();
             int oldpos = _docview->GetPos();
             _docview->SetPos(pos, false);

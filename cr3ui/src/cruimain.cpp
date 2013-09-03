@@ -57,7 +57,7 @@ void CRUIMainWidget::showSlowOperationPopup()
     pleaseWait->setAlign(ALIGN_CENTER);
     pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
 #else
-    CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("spinner_white_48");
+    CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("spinner_white_48", 360 + 180);
     //CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("ic_menu_back");
     pleaseWait->setPadding(PT_TO_PX(7));
     pleaseWait->setAlign(ALIGN_CENTER);
