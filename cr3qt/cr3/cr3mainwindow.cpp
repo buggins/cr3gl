@@ -104,16 +104,31 @@ void adaptThemeForScreenSize() {
 
 void OpenGLWindow::mousePressEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
+    event->accept();
     renderIfChanged();
 }
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
+    event->accept();
     renderIfChanged();
 }
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
+    event->accept();
+    renderIfChanged();
+}
+
+void OpenGLWindow::keyPressEvent(QKeyEvent * event) {
+    _eventAdapter->dispatchKeyEvent(event);
+    event->accept();
+    renderIfChanged();
+}
+
+void OpenGLWindow::keyReleaseEvent(QKeyEvent * event) {
+    _eventAdapter->dispatchKeyEvent(event);
+    event->accept();
     renderIfChanged();
 }
 

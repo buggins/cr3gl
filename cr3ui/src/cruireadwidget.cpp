@@ -75,6 +75,37 @@ bool CRUIReadWidget::isAnimating() {
     return _scroll.isActive();
 }
 
+bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    if (event->getType() == KEY_ACTION_PRESS) {
+        int key = event->key();
+        switch(key) {
+        case CR_KEY_PGDOWN:
+        case CR_KEY_SPACE:
+            _docview->doCommand(DCMD_PAGEDOWN);
+            break;
+        case CR_KEY_PGUP:
+            _docview->doCommand(DCMD_PAGEUP);
+            break;
+        case CR_KEY_HOME:
+            _docview->doCommand(DCMD_BEGIN);
+            break;
+        case CR_KEY_END:
+            _docview->doCommand(DCMD_END);
+            break;
+        case CR_KEY_UP:
+            _docview->doCommand(DCMD_LINEUP);
+            break;
+        case CR_KEY_DOWN:
+            _docview->doCommand(DCMD_LINEDOWN);
+            break;
+        default:
+            break;
+        }
+    }
+    invalidate();
+    return true;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int action = event->getAction();
