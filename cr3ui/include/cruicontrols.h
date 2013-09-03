@@ -55,6 +55,18 @@ public:
 	virtual void draw(LVDrawBuf * buf);
 };
 
+class CRUISpinnerWidget : public CRUIImageWidget {
+protected:
+    int _angle;
+    int _speed;
+public:
+    CRUISpinnerWidget(const char * imageRes, int speed = 180) : CRUIImageWidget(imageRes), _angle(0), _speed(speed) { }
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+    virtual void animate(lUInt64 millisPassed);
+    virtual bool isAnimating();
+};
+
 class CRUIButton : public CRUILinearLayout {
 protected:
 	CRUIImageWidget * _icon;

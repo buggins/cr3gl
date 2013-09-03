@@ -124,6 +124,8 @@ public:
     virtual void Draw( int x, int y, const lUInt8 * bitmap, int width, int height, lUInt32 * palette );
     /// draws image
     virtual void Draw( LVImageSourceRef img, int x, int y, int width, int height, bool dither=true );
+    /// for GL buf only - rotated drawing
+    virtual void DrawRotated( LVImageSourceRef img, int x, int y, int width, int height, int rotationAngle);
     /// draws buffer content to another buffer doing color conversion if necessary
     virtual void DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette );
     /// draws rescaled buffer content to another buffer doing color conversion if necessary
@@ -180,7 +182,7 @@ public:
 	GLImageCacheItem * set(LVImageSourceRef img);
 	GLImageCacheItem * set(LVDrawBuf * img);
 	void clear();
-	void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip);
+    void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
 	virtual void onCachedObjectDeleted(CacheableObject * obj);
 };
 

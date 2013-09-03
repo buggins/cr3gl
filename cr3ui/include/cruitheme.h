@@ -17,7 +17,8 @@ public:
 	virtual const CR9PatchInfo * getNinePatchInfo() { return NULL; }
 	virtual bool isTiled() { return false; }
 	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) = 0;
-	virtual ~CRUIImage() { }
+    virtual void drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) { draw(buf, rect); }
+    virtual ~CRUIImage() { }
 };
 typedef LVRef<CRUIImage> CRUIImageRef;
 
@@ -39,7 +40,8 @@ public:
 	virtual int originalHeight() { return _src->GetHeight() - (_src->GetNinePatchInfo() ? 2 : 0); }
 	virtual bool isTiled() { return _tiled; }
 	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0);
-	CRUIBitmapImage(LVImageSourceRef img, bool ninePatch = false, bool tiled = false);
+    virtual void drawRotated(LVDrawBuf * buf, lvRect & rect, int angle);
+    CRUIBitmapImage(LVImageSourceRef img, bool ninePatch = false, bool tiled = false);
 	virtual ~CRUIBitmapImage() { }
 };
 

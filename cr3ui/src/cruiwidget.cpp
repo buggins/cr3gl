@@ -394,6 +394,7 @@ void ScrollControl::start(int _pos, int _speed, int _friction) {
     friction = _friction;
     pos1000 = _pos * 1000;
 }
+
 bool ScrollControl::animate(lUInt64 millisPassed) {
     if (!active)
         return false;

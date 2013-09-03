@@ -5,8 +5,8 @@
  *      Author: vlopatin
  */
 
-// uncomment for simulation of long operation
-//#define SLOW_SCAN_SIMULATION_FOR_TEST
+// uncomment for simulation of long directory scan operation
+#define SLOW_SCAN_SIMULATION_FOR_TEST
 
 #include "fileinfo.h"
 #include <lvstream.h>
@@ -19,6 +19,7 @@
 #define XS_IMPLEMENT_SCHEME 1
 #include <fb2def.h>
 #include <sys/stat.h>
+
 
 using namespace CRUI;
 

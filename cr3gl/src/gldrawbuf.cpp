@@ -182,7 +182,7 @@ public:
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
-	void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip) {
+    void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip, int rotationAngle) {
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
@@ -222,6 +222,15 @@ public:
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
+            if (rotationAngle) {
+                glPushMatrix();
+                int x = (dstx0 + dstx1) / 2;
+                int y = (dsty0 + dsty1) / 2;
+                glTranslatef(x, y, 0);
+                glRotatef(rotationAngle, 0, 0, 1);
+                glTranslatef(-x, -y, 0);
+            }
+
 	    	LVGLSetColor(color);
 	    	//glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	    	//glDisable(GL_LIGHTING);
@@ -242,6 +251,10 @@ public:
 	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 
 	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            if (rotationAngle) {
+                glPopMatrix();
+            }
 
 	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	    	glDisableClientState(GL_VERTEX_ARRAY);
@@ -314,11 +327,11 @@ GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
 	return res;
 }
 
-void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip)
+void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip, int rotationAngle)
 {
 	GLImageCacheItem* item = get(obj);
 	if (item) {
-		item->getPage()->drawItem(item, x, y, dx, dy, srcx, srcy, srcdx, srcdy, color, options, clip);
+        item->getPage()->drawItem(item, x, y, dx, dy, srcx, srcy, srcdx, srcdy, color, options, clip, rotationAngle);
 	}
 }
 
@@ -620,15 +633,16 @@ class GLDrawImageSceneItem : public GLSceneItem {
 	lUInt32 color;
 	lUInt32 options;
 	lvRect * clip;
+    int rotationAngle;
 public:
 	virtual void draw() {
 		if (glImageCache)
-			glImageCache->drawItem(img, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip);
+            glImageCache->drawItem(img, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip, rotationAngle);
 	}
-    GLDrawImageSceneItem(CacheableObject * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip)
+    GLDrawImageSceneItem(CacheableObject * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip, int _rotationAngle)
 	: img(_img), x(_x), y(_y), width(_width), height(_height),
 	  srcx(_srcx), srcy(_srcy), srcwidth(_srcw), srcheight(_srch),
-	  color(_color), options(_options), clip(_clip)
+      color(_color), options(_options), clip(_clip), rotationAngle(_rotationAngle)
 	{
 
 	}
@@ -637,6 +651,30 @@ public:
 			delete clip;
 	}
 };
+
+/// draws image
+void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int height, int rotationAngle)
+{
+    if (width <= 0 || height <= 0)
+        return;
+    GLImageCacheItem * item = glImageCache->get(img.get());
+    if (item == NULL)
+        item = glImageCache->set(img);
+    if (item != NULL) {
+        lvRect cliprect;
+        GetClipRect(&cliprect);
+        lvRect rc;
+        rc.left = x;
+        rc.top = y;
+        rc.right = x + width;
+        rc.bottom = y + height;
+        if (!rc.intersects(cliprect))
+            return; // out of bounds
+        const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
+        lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
+        LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip, rotationAngle));
+    }
+}
 
 /// draws image
 void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height, bool dither)
@@ -659,7 +697,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
 		if (!ninePatch) {
 			lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-			LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip));
+            LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip, 0));
 		} else {
 			lvRect srcitems[9];
 			lvRect dstitems[9];
@@ -674,7 +712,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
                 //CRLog::trace("nine-patch[%d] (%d, %d, %d, %d) -> (%d, %d, %d, %d)", i, srcitems[i].left, srcitems[i].top, srcitems[i].right, srcitems[i].bottom, dstitems[i].left, dstitems[i].top, dstitems[i].right, dstitems[i].bottom);
 				// visible
 				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
-				LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), 0xFFFFFF, 0, clip));
+                LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), 0xFFFFFF, 0, clip, 0));
 			}
 		}
 	}
@@ -795,7 +833,7 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
             if (!rc.intersects(cliprect))
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), 0xFFFFFF, 0, clip));
+            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), 0xFFFFFF, 0, clip, 0));
         }
 	}
 }
@@ -845,7 +883,8 @@ void GLDrawBuf::createFramebuffer()
 		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
 			CRLog::error("glFramebufferTexture2DOES failed");
 		}
-		glClearColor(0.5f, 0, 0, 1);
+        //glClearColor(0.5f, 0, 0, 1);
+        glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 }

@@ -7,6 +7,7 @@
 
 #include "cruicontrols.h"
 #include "crui.h"
+#include "gldrawbuf.h"
 
 using namespace CRUI;
 
@@ -217,6 +218,33 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	}
 }
 
+void CRUISpinnerWidget::animate(lUInt64 millisPassed) {
+    _angle += millisPassed * _speed;
+}
+
+bool CRUISpinnerWidget::isAnimating() {
+    return true;
+}
+
+/// draws widget with its children to specified surface
+void CRUISpinnerWidget::draw(LVDrawBuf * buf) {
+    LVDrawStateSaver saver(*buf);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+    if (!_image.isNull()) {
+        //CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), _image->originalWidth(), _image->originalHeight());
+        applyAlign(rc, _image->originalWidth(), _image->originalHeight());
+        // don't scale
+        rc.right = rc.left + _image->originalWidth();
+        rc.bottom = rc.top + _image->originalHeight();
+        //CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
+        // draw
+        //_drawbuf->DrawTo(buf, rc.left, rc.top, 0, NULL);
+        _image->drawRotated(buf, rc, _angle / 1000);
+    }
+}
 
 
 

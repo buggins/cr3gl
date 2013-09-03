@@ -3,7 +3,7 @@
 using namespace CRUI;
 
 #define WINDOW_ANIMATION_DELAY 300
-#define SLOW_OPERATION_POPUP_DELAY 800
+#define SLOW_OPERATION_POPUP_DELAY 300
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1200
 
 void CRUIMainWidget::recreate() {
@@ -50,11 +50,19 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
 
 void CRUIMainWidget::showSlowOperationPopup()
 {
+#if 0
     CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));
     pleaseWait->setBackground(0xFFFFFF);
     pleaseWait->setPadding(PT_TO_PX(7));
     pleaseWait->setAlign(ALIGN_CENTER);
     pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+#else
+    CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("spinner_white_48");
+    //CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("ic_menu_back");
+    pleaseWait->setPadding(PT_TO_PX(7));
+    pleaseWait->setAlign(ALIGN_CENTER);
+    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+#endif
     _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, 0xA0000000);
 }
 
