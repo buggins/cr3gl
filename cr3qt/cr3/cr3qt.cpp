@@ -136,7 +136,7 @@ void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     KEY_EVENT_TYPE type = event->type() == QEvent::KeyPress ? KEY_ACTION_PRESS : KEY_ACTION_RELEASE;
     int key = translateKeyCode(event->key());
     if (!key) {
-        CRLog::warn("Skipping unknown key %d", key);
+        CRLog::warn("Skipping unknown key %d", event->key());
         return;
     }
     bool autorepeat = event->isAutoRepeat();

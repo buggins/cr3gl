@@ -78,6 +78,7 @@ bool CRUIReadWidget::isAnimating() {
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     if (event->getType() == KEY_ACTION_PRESS) {
         int key = event->key();
+        //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
@@ -93,15 +94,16 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
             _docview->doCommand(DCMD_END);
             break;
         case CR_KEY_UP:
-            _docview->doCommand(DCMD_LINEUP);
+            _docview->doCommand(DCMD_LINEUP, 1);
             break;
         case CR_KEY_DOWN:
-            _docview->doCommand(DCMD_LINEDOWN);
+            _docview->doCommand(DCMD_LINEDOWN, 1);
             break;
         default:
             break;
         }
     }
+    //CRLog::trace("new pos=%d", _docview->GetPos());
     invalidate();
     return true;
 }
