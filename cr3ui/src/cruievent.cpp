@@ -81,7 +81,7 @@ lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
 }
 
 
-CRUIEventManager::CRUIEventManager() : _rootWidget(NULL), _lastTouchEvent(NULL) {
+CRUIEventManager::CRUIEventManager() : _rootWidget(NULL), _lastTouchEvent(NULL), _keyDownEvents(1024) {
 
 }
 
@@ -178,4 +178,90 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 	return dispatchTouchEvent(_rootWidget, event);
 }
 
+bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event) {
+    if (!widget)
+        return false; // invalid widget
+    KEY_EVENT_TYPE action = event->getType();
+    if (widget->onKeyEventPreProcess(event)) {
+        if (action == KEY_ACTION_PRESS) {
+            //CRLog::trace("setting widget on DOWN");
+            if (!event->getWidget())
+                event->setWidget(widget);
+        }
+        return true;
+    }
+    if (!event->getWidget()) { // if not not assigned on widget
+        for (int i=0; i<widget->getChildCount(); i++) {
+            CRUIWidget * child = widget->getChild(i);
+            if (dispatchKeyEvent(child, event)) {
+                if (action == KEY_ACTION_PRESS) {
+                    //CRLog::trace("setting widget on DOWN");
+                    if (!event->getWidget())
+                        event->setWidget(child);
+                }
+                return true;
+            }
+        }
+    }
+
+    bool res = widget->onKeyEvent(event);
+    if (res && action == KEY_ACTION_PRESS) {
+        //CRLog::trace("setting widget on DOWN");
+        if (!event->getWidget())
+            event->setWidget(widget);
+    }
+    return res;
+}
+
+bool CRUIEventManager::dispatchKeyEvent(CRUIKeyEvent * event) {
+    CRUIKeyEvent * downevent = _keyDownEvents.get(event->key());
+    if (event->getType() == KEY_ACTION_RELEASE) {
+        if (downevent) {
+            _keyDownEvents.remove(event->key());
+            event->setDownEvent(downevent);
+            delete downevent;
+            downevent = NULL;
+        }
+    } else {
+        if (!event->isAutorepeat()) {
+            if (downevent) {
+                _keyDownEvents.remove(event->key());
+                delete downevent;
+            }
+            downevent = new CRUIKeyEvent(*event);
+            _keyDownEvents.set(event->key(), downevent);
+        } else {
+            if (downevent) {
+                event->setDownEvent(downevent);
+                downevent = NULL;
+            }
+        }
+    }
+    if (_rootWidget == NULL) {
+        CRLog::error("Cannot dispatch touch event: no root widget");
+        return false;
+    }
+
+    //CRLog::trace("Touch event %d (%d,%d) %s", event->getAction(), event->getX(), event->getY(), (event->getWidget() ? "[widget]" : ""));
+    CRUIWidget * widget = event->getWidget();
+    if (widget) {
+        // event is tracked by widget
+        if (!_rootWidget->isChild(widget)) {
+            CRLog::trace("Widget is not a child of root - skipping event");
+            return false;
+        }
+        //CRLog::trace("Dispatching event directly to widget");
+        return dispatchKeyEvent(widget, event);
+    }
+    if (event->getType() != KEY_ACTION_PRESS) { // skip non tracked event - only DOWN allowed
+        CRLog::trace("Skipping non-down key event without widget");
+        return false;
+    }
+    //CRLog::trace("No widget: dispatching using tree");
+    bool res = dispatchKeyEvent(_rootWidget, event);
+    if (downevent) {
+        downevent->setWidget(event->getWidget());
+    }
+    return res;
+}
 

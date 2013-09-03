@@ -38,7 +38,8 @@ protected:
 	lUInt32 _align;
 	int _layoutWeight;
 	CRUIOnTouchEventListener * _onTouchListener;
-	CRUIOnClickListener * _onClickListener;
+    CRUIOnKeyEventListener * _onKeyListener;
+    CRUIOnClickListener * _onClickListener;
 	CRUIOnLongClickListener * _onLongClickListener;
 
 	/// measure dimensions
@@ -63,14 +64,20 @@ public:
     virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
     /// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
-	/// click handler, returns true if it handled event
+    /// key event handler - before children, returns true if it handled event
+    virtual bool onKeyEventPreProcess(const CRUIKeyEvent * event);
+    /// key event handler, returns true if it handled event
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
+    /// click handler, returns true if it handled event
 	virtual bool onClickEvent();
 	/// long click handler, returns true if it handled event
 	virtual bool onLongClickEvent();
 
 	virtual CRUIOnTouchEventListener * setOnTouchListener(CRUIOnTouchEventListener * listener);
 	virtual CRUIOnTouchEventListener * getOnTouchListener() { return _onTouchListener; }
-	virtual CRUIOnClickListener * setOnClickListener(CRUIOnClickListener * listener);
+    virtual CRUIOnKeyEventListener * setOnKeyListener(CRUIOnKeyEventListener * listener);
+    virtual CRUIOnKeyEventListener * getOnKeyListener() { return _onKeyListener; }
+    virtual CRUIOnClickListener * setOnClickListener(CRUIOnClickListener * listener);
 	virtual CRUIOnClickListener * getOnClickListener() { return _onClickListener; }
 	virtual CRUIOnLongClickListener * setOnLongClickListener(CRUIOnLongClickListener * listener);
 	virtual CRUIOnLongClickListener * getOnLongClickListener() { return _onLongClickListener; }

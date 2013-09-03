@@ -11,6 +11,9 @@
 #include <crengine.h>
 #include "cruitheme.h"
 
+lUInt64 GetCurrentTimeMillis();
+void CRReinitTimer();
+
 class CRUIWidget;
 
 namespace CRUI {
@@ -94,21 +97,92 @@ public:
 	int findPointerId(int pointerId);
 };
 
+enum KEY_EVENT_TYPE {
+    KEY_ACTION_PRESS,
+    KEY_ACTION_RELEASE
+};
+
+#define CR_KEY_SPACE ' '
+#define CR_KEY_0 '0'
+#define CR_KEY_1 '1'
+#define CR_KEY_2 '2'
+#define CR_KEY_3 '0'
+#define CR_KEY_4 '4'
+#define CR_KEY_5 '5'
+#define CR_KEY_6 '6'
+#define CR_KEY_7 '7'
+#define CR_KEY_8 '8'
+#define CR_KEY_9 '9'
+
+enum CR_KEY_MODIFIER {
+    CR_KEY_MODIFIER_NONE =    0x00000000,
+    CR_KEY_MODIFIER_SHIFT =   0x10000000,
+    CR_KEY_MODIFIER_CONTROL = 0x20000000,
+    CR_KEY_MODIFIER_ALT =     0x40000000,
+    CR_KEY_MODIFIER_META =    0x80000000,
+    CR_KEY_MODIFIER_KEYPAD =  0x08000000
+};
+
+class CRUIKeyEvent {
+    KEY_EVENT_TYPE _type;
+    int _key;
+    bool _autorepeat;
+    int _count;
+    int _modifiers;
+    lUInt64  _ts;
+    lUInt64  _downTs;
+    CRUIWidget * _widget;
+public:
+    KEY_EVENT_TYPE getType() const { return _type; }
+    int key() const { return _key; }
+    int count() const { return _count; }
+    bool isAutorepeat() const { return _autorepeat; }
+    int modifiers() const { return _modifiers; }
+    lUInt64 getEventTimestamp() const { return _ts; }
+    lUInt64 getDownEventTimestamp() const { return _downTs; }
+    lUInt64 getDownDuration() const { return _ts - _downTs; }
+    CRUIWidget * getWidget() { return _widget; }
+    void setWidget(CRUIWidget * widget) { _widget = widget; }
+    void setDownEvent(const CRUIKeyEvent * v) {
+        _downTs = v->_ts;
+        _widget = v->_widget;
+    }
+
+    CRUIKeyEvent(const CRUIKeyEvent & v) : _type(v._type), _key(v._key), _autorepeat(v._autorepeat), _count(v._count), _modifiers(v._modifiers), _ts(v._ts), _downTs(v._downTs), _widget(v._widget) {}
+    CRUIKeyEvent(KEY_EVENT_TYPE type, int key, bool autorepeat, int count, int modifiers, CRUIKeyEvent * downEvent) : _type(type), _key(key), _autorepeat(autorepeat), _count(count), _modifiers(modifiers), _widget(NULL) {
+        _ts = GetCurrentTimeMillis();
+        if (downEvent)
+            _downTs = downEvent->getEventTimestamp();
+        else
+            _downTs = _ts;
+    }
+    ~CRUIKeyEvent() {}
+};
+
 class CRUIEventManager {
 protected:
 	CRUIWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
+    LVHashTable<lUInt32, CRUIKeyEvent*> _keyDownEvents;
 	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
+    bool dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event);
 public:
 	CRUIEventManager();
 	void setRootWidget(CRUIWidget * rootWidget) { _rootWidget = rootWidget; }
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
+    bool dispatchKeyEvent(CRUIKeyEvent * event);
 };
 
 class CRUIOnTouchEventListener {
 public:
 	virtual bool onTouch(CRUIWidget * widget, const CRUIMotionEvent * event) = 0;
 	virtual ~CRUIOnTouchEventListener() {}
+};
+
+class CRUIOnKeyEventListener {
+public:
+    virtual bool onKey(CRUIWidget * widget, const CRUIKeyEvent * event) = 0;
+    virtual ~CRUIOnKeyEventListener() {}
 };
 
 class CRUIOnClickListener {

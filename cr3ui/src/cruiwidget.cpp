@@ -20,7 +20,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_drawRequested(true),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
 	_align(0), _layoutWeight(1),
-	_onTouchListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
+    _onTouchListener(NULL), _onKeyListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
 {
 
 }
@@ -123,6 +123,18 @@ bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	return false;
 }
 
+/// key event handler - before children, returns true if it handled event
+bool CRUIWidget::onKeyEventPreProcess(const CRUIKeyEvent * event) {
+    return false;
+}
+
+/// key event handler, returns true if it handled event
+bool CRUIWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    if (_onKeyListener != NULL)
+        return _onKeyListener->onKey(this, event);
+    return false;
+}
+
 /// click handler, returns true if it handled event
 bool CRUIWidget::onClickEvent()
 {
@@ -145,6 +157,13 @@ CRUIOnTouchEventListener * CRUIWidget::setOnTouchListener(CRUIOnTouchEventListen
 	CRUIOnTouchEventListener * old = _onTouchListener;
 	_onTouchListener = listener;
 	return old;
+}
+
+CRUIOnKeyEventListener * CRUIWidget::setOnKeyListener(CRUIOnKeyEventListener * listener)
+{
+    CRUIOnKeyEventListener * old = _onKeyListener;
+    _onKeyListener = listener;
+    return old;
 }
 
 CRUIOnClickListener * CRUIWidget::setOnClickListener(CRUIOnClickListener * listener)
