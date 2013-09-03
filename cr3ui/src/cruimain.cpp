@@ -91,6 +91,8 @@ void CRUIMainWidget::showSlowOperationPopup()
     buf->afterDrawing();
     _popupBackground = buf;
     _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, 0xA0000000);
+    _popup->measure(_pos.width(), _pos.height());
+    _popup->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
 }
 
 void CRUIMainWidget::hideSlowOperationPopup()
@@ -123,7 +125,12 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 
 void CRUIMainWidget::openBook(lString8 pathname) {
     CRLog::debug("Opening book %s", pathname.c_str());
+    if (_animation.active) {
+        CRLog::debug("Animation is active. Stopping.");
+        stopAnimation();
+    }
     _read->measure(_measuredWidth, _measuredHeight);
+    _read->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     _read->openBook(pathname);
 }
 
@@ -156,6 +163,8 @@ CRUIWidget * CRUIMainWidget::getChild(int index) {
 
 /// measure dimensions
 void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
+    if (_popupBackground)
+        return;
     _history.currentWidget()->measure(baseWidth, baseHeight);
     _measuredWidth = _history.currentWidget()->getMeasuredWidth();
     _measuredHeight = _history.currentWidget()->getMeasuredHeight();
@@ -165,6 +174,8 @@ void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
+    if (_popupBackground)
+        return;
     _history.currentWidget()->layout(left, top, right, bottom);
     _pos.left = left;
     _pos.top = top;
@@ -292,19 +303,23 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         _lastAnimationTs = 0;
     }
 
-    if (_animation.active) {
-        CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
-        CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
-        oldWidget->draw(buf);
-        newWidget->draw(buf);
+    if (_popupBackground) {
+        CRLog::trace("Drawing static background");
+        _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
-        if (_popupBackground)
-            _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
-        else
+        if (_animation.active) {
+            CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
+            CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
+            oldWidget->draw(buf);
+            newWidget->draw(buf);
+        } else {
             _history.currentWidget()->draw(buf);
+        }
     }
-    if (_popup)
+    if (_popup) {
+        CRLog::trace("Drawing popup");
         _popup->draw(buf);
+    }
     setScreenUpdateMode(false, animating ? 30 : 0);
 }
 

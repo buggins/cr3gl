@@ -37,19 +37,21 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     _pos.top = top;
     _pos.bottom = bottom;
     _pos.right = right;
-    if (!_locked)
-        _docview->Resize(right-left, bottom-top);
+    if (!_locked) {
+        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top)
+            _docview->Resize(right-left, bottom-top);
+    }
 }
 
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
     if (renderIfNecessary()) {
-        CRLog::trace("Document is ready, drawing");
+        //CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
     } else {
         // document render in progress; draw just page background
-        CRLog::trace("Document is locked, just drawing background");
+        //CRLog::trace("Document is locked, just drawing background");
         _docview->drawPageBackground(*buf, 0, 0);
     }
     //_docview->Draw(*buf, false);
@@ -70,8 +72,8 @@ public:
     }
     virtual void run() {
         CRLog::trace("BookLoadedNotificationTask.run()");
-        callback->onDocumentLoadFinished(pathname, success);
         callback2->onDocumentLoadFinished(pathname, success);
+        callback->onDocumentLoadFinished(pathname, success);
     }
 };
 
@@ -138,10 +140,11 @@ public:
 bool CRUIReadWidget::openBook(lString8 pathname) {
     if (_locked)
         return false;
-    _pathname = pathname;
     _locked = true;
     _scrollCache.clear();
     _main->showSlowOperationPopup();
+    _pathname = pathname;
+    _pathname.modify();
     _main->executeBackground(new OpenBookTask(Utf8ToUnicode(pathname), _main, this));
     return true;
 }

@@ -12,13 +12,13 @@ void CRUIPopupWindow::draw(LVDrawBuf * buf) {
     lUInt64 ts = GetCurrentTimeMillis();
     int interval = (int)(ts - startTimestamp);
     if (appearanceDelay && interval < appearanceDelay) {
-        CRLog::trace("popup is still invisible");
+        //CRLog::trace("popup is still invisible");
         return; // invisible so far
     }
     lUInt32 cl = fadeColor;
     int animationDelay = appearanceDelay * 2;
     if (appearanceDelay && interval > 0 && interval < appearanceDelay + animationDelay) {
-        CRLog::trace("popup fading animation in progress");
+        //CRLog::trace("popup fading animation in progress");
         int fadePercent = 100;
         int delta = interval - appearanceDelay;
         fadePercent = delta * 100 / animationDelay;
