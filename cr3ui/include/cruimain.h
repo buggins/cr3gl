@@ -181,6 +181,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
     CRUIPopupWindow * _popup;
+    LVDrawBuf * _popupBackground;
     //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
     lString8Collection _folderStack;

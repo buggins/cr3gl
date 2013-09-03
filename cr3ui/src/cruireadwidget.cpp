@@ -5,6 +5,8 @@
  *      Author: vlopatin
  */
 
+// uncomment to simulate slow render
+#define SLOW_RENDER_SIMULATION
 
 #include "cruireadwidget.h"
 #include "crui.h"
@@ -125,6 +127,9 @@ public:
     virtual void run() {
         CRLog::info("Rendering in background thread");
         _read->getDocView()->Render();
+#ifdef SLOW_RENDER_SIMULATION
+        concurrencyProvider->sleepMs(3000);
+#endif
         CRLog::info("Render in background thread is finished");
         concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
     }

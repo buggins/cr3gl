@@ -2,6 +2,8 @@
 
 using namespace CRUI;
 
+#include "gldrawbuf.h"
+
 #define WINDOW_ANIMATION_DELAY 300
 #define SLOW_OPERATION_POPUP_DELAY 300
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1200
@@ -83,6 +85,11 @@ void CRUIMainWidget::showSlowOperationPopup()
     pleaseWait->setAlign(ALIGN_CENTER);
     pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
 #endif
+    GLDrawBuf * buf = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+    buf->beforeDrawing();
+    _history.currentWidget()->draw(buf);
+    buf->afterDrawing();
+    _popupBackground = buf;
     _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, 0xA0000000);
 }
 
@@ -91,6 +98,10 @@ void CRUIMainWidget::hideSlowOperationPopup()
     if (_popup) {
         delete _popup;
         _popup = NULL;
+    }
+    if (_popupBackground) {
+        delete _popupBackground;
+        _popupBackground = NULL;
     }
 }
 
@@ -116,7 +127,7 @@ void CRUIMainWidget::openBook(lString8 pathname) {
     _read->openBook(pathname);
 }
 
-CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
+CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
     recreate();
 }
 
@@ -287,7 +298,10 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         oldWidget->draw(buf);
         newWidget->draw(buf);
     } else {
-        _history.currentWidget()->draw(buf);
+        if (_popupBackground)
+            _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
+        else
+            _history.currentWidget()->draw(buf);
     }
     if (_popup)
         _popup->draw(buf);
