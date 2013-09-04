@@ -173,6 +173,7 @@ QOpenGLFunctions * _qtgl = NULL;
 
 void UninitCREngine() {
     CRStopCoverpageManager();
+    CRStopDirectoryCacheManager();
     if (bookDB) {
         bookDB->close();
         delete bookDB;
@@ -227,7 +228,7 @@ void InitCREngine(lString16 exePath) {
     if (!bookDB->fillCaches())
         CRLog::error("Error while filling caches");
 
-    dirCache = new CRDirCache();
+    CRSetupDirectoryCacheManager();
 //    lString8 dir("c:\\Shared\\Books");
 //    CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
 //    cachedir->refresh();

@@ -122,6 +122,7 @@ public:
     void sort(int sortOrder);
 };
 
+/// directory cache item
 class CRDirCacheItem : public CRDirItem {
     friend class CRDirCache;
 	LVPtrVector<CRDirEntry> _entries;
@@ -149,6 +150,7 @@ public:
     virtual ~CRDirScanCallback() {}
 };
 
+/// directory contents and file properties scanning manager
 class CRDirCache  : public CRRunnable {
     class DirectoryScanTask : public CRRunnable {
     public:
@@ -194,6 +196,12 @@ public:
     void scan(const lString8 & pathname, CRDirScanCallback * callback);
 };
 
+/// directory contents cache
 extern CRDirCache * dirCache;
+
+/// create dirCache
+void CRSetupDirectoryCacheManager();
+/// stop dirCache thread, remove dirCache
+void CRStopDirectoryCacheManager();
 
 #endif /* FILEINFO_H_ */

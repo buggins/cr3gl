@@ -447,13 +447,15 @@ void CRDirCache::moveToHead(CRDirCache::Item * item) {
 }
 
 void CRDirCache::stop() {
-    CRGuard guard(_monitor);
-    _stopped = true;
-    while (_queue.length() > 0) {
-        DirectoryScanTask * p = _queue.popFront();
-        delete p;
+    {
+        CRGuard guard(_monitor);
+        _stopped = true;
+        while (_queue.length() > 0) {
+            DirectoryScanTask * p = _queue.popFront();
+            delete p;
+        }
+        _monitor->notifyAll();
     }
-    _monitor->notifyAll();
     _thread->join();
 }
 
@@ -490,6 +492,8 @@ void CRDirCache::run() {
         {
             //CRLog::trace("CRDirCache::run :: wait for lock");
             CRGuard guard(_monitor);
+            if (_stopped)
+                break;
             //CRLog::trace("CRDirCache::run :: lock acquired");
             if (_queue.length() == 0) {
                 //CRLog::trace("CRDirCache::run :: calling monitor wait");
@@ -790,3 +794,17 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 
 
 CRDirCache * dirCache = NULL;
+
+
+void CRSetupDirectoryCacheManager() {
+    CRStopDirectoryCacheManager();
+    dirCache = new CRDirCache();
+}
+
+void CRStopDirectoryCacheManager() {
+    if (dirCache) {
+        dirCache->stop();
+        delete dirCache;
+        dirCache = NULL;
+    }
+}
