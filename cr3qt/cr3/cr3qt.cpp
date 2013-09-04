@@ -172,10 +172,7 @@ QOpenGLFunctions * _qtgl = NULL;
 
 
 void UninitCREngine() {
-    if (coverCache) {
-        delete coverCache;
-        coverCache = NULL;
-    }
+    CRStopCoverpageManager();
     if (bookDB) {
         bookDB->close();
         delete bookDB;
@@ -209,10 +206,7 @@ void InitCREngine(lString16 exePath) {
 
     // coverpage file cache
     lString16 coverCacheDir = exePath + L"coverpages";
-    coverCache = new CRCoverFileCache(coverCacheDir);
-    coverCache->open();
-    coverImageCache = new CRCoverImageCache();
-    coverPageManager = new CRCoverPageManager();
+    CRSetupCoverpageManager(coverCacheDir);
 
     // document cache
     lString16 docCacheDir = exePath + L"cache";
