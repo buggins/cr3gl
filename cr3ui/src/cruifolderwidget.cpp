@@ -34,7 +34,8 @@ class CRUITitleBarWidget : public CRUILinearLayout {
 	CRUITextWidget * _caption;
 public:
     CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener) : CRUILinearLayout(false) {
-		setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        setStyle("TOOL_BAR");
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_menuButton = new CRUIImageButton("ic_menu_more");
 		_backButton = new CRUIImageButton("ic_menu_back");
 		_caption = new CRUITextWidget(title);
@@ -46,7 +47,6 @@ public:
 		addChild(_caption);
 		addChild(_menuButton);
 		setMinHeight(MIN_ITEM_PX);
-		setBackground("tx_wood_v3.jpg");
 		//_caption->setBackground(0xC0C0C040);
         _menuButton->setId(lString8("MENU"));
         _backButton->setId(lString8("BACK"));

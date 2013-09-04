@@ -276,6 +276,12 @@ CRUIImageRef CRUIWidget::getBackground() {
 	return getStyle(true)->getBackground();
 }
 
+CRUIImageRef CRUIWidget::getBackground2() {
+    if (!_background2.isNull())
+        return _background2;
+    return getStyle(true)->getBackground2();
+}
+
 LVFontRef CRUIWidget::getFont() {
 	if (!_font.isNull())
 		return _font;
@@ -318,18 +324,29 @@ bool CRUIWidget::setClipRect(LVDrawBuf * buf, lvRect & rc) {
 /// draws widget with its children to specified surface
 void CRUIWidget::draw(LVDrawBuf * buf) {
 	CRUIImageRef background = getBackground();
-	if (!background.isNull()) {
+    CRUIImageRef background2 = getBackground2();
+    if (!background.isNull() || !background2.isNull()) {
 		LVDrawStateSaver saver(*buf);
 		lvRect rc = _pos;
 		applyMargin(rc);
 		setClipRect(buf, rc);
-		if (background->isTiled()) {
-			lvPoint offset = getTileOffset();
-			background->draw(buf, rc, offset.x, offset.y);
-		} else {
-			background->draw(buf, rc);
-		}
-	}
+        if (!background.isNull()) {
+            if (background->isTiled()) {
+                lvPoint offset = getTileOffset();
+                background->draw(buf, rc, offset.x, offset.y);
+            } else {
+                background->draw(buf, rc);
+            }
+        }
+        if (!background2.isNull()) {
+            if (background2->isTiled()) {
+                lvPoint offset = getTileOffset();
+                background2->draw(buf, rc, offset.x, offset.y);
+            } else {
+                background2->draw(buf, rc);
+            }
+        }
+    }
 	_drawRequested = false;
 }
 

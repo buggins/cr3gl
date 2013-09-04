@@ -281,5 +281,13 @@ void InitCREngine(lString16 exePath) {
     //homeListCaption->setTextColor(0x40000000);
     homeListCaption->setTextColor(0x00402000);
     homeListCaption->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+    CRUIStyle * toolbar = currentTheme->addSubstyle("TOOL_BAR");
+    //homeListCaption->setTextColor(0x40000000);
+    toolbar->setBackground("tx_wood_v3.jpg", true);
+    toolbar->setBackground2("toolbar_shadow.9");
+    toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+
 }
 

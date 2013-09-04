@@ -125,7 +125,8 @@ protected:
 	CRUITheme * _theme;
 	lString8 _styleId;
 	CRUIImageRef _background;
-	LVFontRef _font;
+    CRUIImageRef _background2;
+    LVFontRef _font;
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
 	CRUIStyle * _parentStyle;
@@ -179,14 +180,20 @@ public:
 	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
 	virtual CRUIStyle * setTextColor(lUInt32 color) { _textColor = color; return this; }
 	virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
-	virtual CRUIStyle * setBackground(const char * imgname) { _background = resourceResolver->getIcon(imgname); return this; }
+    virtual CRUIStyle * setBackground(const char * imgname, bool tiled = false) { _background = resourceResolver->getIcon(imgname, tiled); return this; }
 	virtual CRUIStyle * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
-	virtual CRUIStyle * setListDelimiterHorizontal(CRUIImageRef img) { _listDelimiterHorizontal = img; return this; }
+    virtual CRUIStyle * setBackground2(CRUIImageRef background) { _background2 = background; return this; }
+    virtual CRUIStyle * setBackground2(const char * imgname, bool tiled = false) { _background2 = resourceResolver->getIcon(imgname, tiled); return this; }
+    virtual CRUIStyle * setBackground2(lUInt32 color) { _background2 = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
+    virtual CRUIStyle * setListDelimiterHorizontal(CRUIImageRef img) { _listDelimiterHorizontal = img; return this; }
 	virtual CRUIStyle *  setListDelimiterVertical(CRUIImageRef img) { _listDelimiterVertical = img; return this; }
 	virtual CRUIImageRef getListDelimiterHorizontal();
 	virtual CRUIImageRef getListDelimiterVertical();
+    /// main (lower) layer of background
 	virtual CRUIImageRef getBackground();
-	virtual lUInt8 getFontSize() { return _fontSize; }
+    /// additional (upper) layer of background
+    virtual CRUIImageRef getBackground2();
+    virtual lUInt8 getFontSize() { return _fontSize; }
 	virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();
 	virtual lUInt32 getAlign() { return _align; }

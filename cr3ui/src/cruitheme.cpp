@@ -170,6 +170,14 @@ CRUIImageRef CRUIStyle::getBackground() {
 	return CRUIImageRef();
 }
 
+CRUIImageRef CRUIStyle::getBackground2() {
+    if (!_background2.isNull())
+        return _background2;
+    if (_parentStyle && _stateValue)
+        return _parentStyle->getBackground2();
+    return CRUIImageRef();
+}
+
 LVFontRef CRUIStyle::getFont() {
 	if (!_font.isNull())
 		return _font;
