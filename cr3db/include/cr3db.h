@@ -359,6 +359,7 @@ public:
 
 	bool saveBooks(LVPtrVector<BookDBBook> & books);
 	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
+    BookDBBook * loadBook(lString8 pathname);
 };
 
 extern CRBookDB * bookDB;

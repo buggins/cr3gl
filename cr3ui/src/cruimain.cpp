@@ -80,16 +80,11 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
 void CRUIMainWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
     //
     CRLog::info("Document loaded: %s %s", pathname.c_str(), (success ? "successfully" : "with error"));
-    lString8Collection pathnames;
-    LVPtrVector<BookDBBook> loaded;
-    lString8Collection notFound;
-    if (success) {
-        pathnames.add(pathname);
-        bookDB->loadBooks(pathnames, loaded, notFound);
-    }
-    if (loaded.length() == 1) {
-        CRFileItem * entry = new CRFileItem(pathname, false);
-        entry->setBook(loaded[0]->clone());
+
+    BookDBBook * book = success ? bookDB->loadBook(pathname) : NULL;
+
+    if (book) {
+        CRFileItem * entry = dirCache->scanFile(pathname);
         _home->setLastBook(entry);
         delete entry;
     } else {

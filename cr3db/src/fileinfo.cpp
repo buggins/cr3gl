@@ -577,6 +577,55 @@ void CRDirCache::clear() {
 	_byName.clear();
 }
 
+CRFileItem * CRDirCache::findBook(const lString8 & pathname) {
+    Item * p = _head;
+    while (p) {
+        for (int i = 0; i < p->dir->itemCount(); i++) {
+            CRDirEntry * item = p->dir->getItem(i);
+            if (item->getPathName() == pathname && !item->isDirectory())
+                return (CRFileItem*)(item->clone());
+        }
+        p = p->next;
+    }
+    return NULL;
+}
+
+// fwd declaration
+BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName);
+
+CRFileItem * CRDirCache::scanFile(const lString8 & pathname) {
+    CRFileItem * res = NULL;
+    {
+        CRGuard guard(_monitor);
+        res = findBook(pathname);
+        if (res)
+            return res;
+        res = new CRFileItem(pathname, false);
+        BookDBBook * book = bookDB->loadBook(pathname);
+        if (!book) {
+            lString8 arcname;
+            lString8 fname;
+            lString8 path;
+            if (splitArcName(pathname, arcname, fname)) {
+                path = UnicodeToUtf8(LVExtractPath(Utf8ToUnicode(arcname), false));
+            } else {
+                path = UnicodeToUtf8(LVExtractPath(Utf8ToUnicode(pathname), false));
+            }
+            book = LVParseBook(path, pathname);
+        }
+        if (book) {
+            res->setBook(book);
+            res->setParsed(true);
+            return res;
+        }
+        delete res;
+        return NULL;
+    }
+    // need scan
+    return res;
+}
+
+
 bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash) {
 	hash = 0;
 	LVContainerRef dir;
@@ -603,6 +652,72 @@ bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash) 
 		}
 	}
 	return true;
+}
+
+BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName) {
+    lString16 lower = Utf8ToUnicode(pathName);
+    lower.lowercase();
+    int fmt = LVDocFormatFromExtension(lower);
+    CRLog::trace("going to parse %s", pathName.c_str());
+    lString8 arcname;
+    lString8 fname;
+    lInt64 createTime = 0;
+    LVContainerRef arc;
+    LVStreamRef stream;
+    LVStreamRef arcstream;
+    if (splitArcName(pathName, arcname, fname)) {
+        //CRLog::trace("item is from archive");
+        struct stat fs;
+        if (!stat(arcname.c_str(), &fs )) {
+            createTime = fs.st_mtime * (lInt64)1000;
+        }
+        arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+        if (!arcstream.isNull()) {
+            //CRLog::trace("trying to open archive %s", arcname.c_str());
+            arc = LVOpenArchieve(arcstream);
+            if (!arc.isNull()) {
+                //CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
+                stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+                //CRLog::error("returned from open stream");
+            } else {
+                CRLog::error("Failed to open archive %s", arcname.c_str());
+            }
+        }
+    } else {
+        fname = UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(pathName)));
+        stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
+        struct stat fs;
+        if (!stat(pathName.c_str(), &fs )) {
+            createTime = fs.st_mtime * (lInt64)1000;
+        }
+    }
+    if (!stream.isNull()) {
+        //CRLog::trace("processing stream");
+        // read properties
+        CRLog::trace("parsing book properties for %s", pathName.c_str());
+        BookDBBook * book = new BookDBBook();
+        book->pathname = pathName.c_str();
+        if (arcname.length()) {
+            book->arcname = arcname.c_str();
+        } else {
+
+        }
+        book->createTime = createTime;
+        book->format = fmt;
+        book->filename = fname.c_str();
+        book->filesize = (int)stream->GetSize();
+        book->folder = new BookDBFolder(path.c_str());
+        if (LVParseBookProperties(stream, book) || fmt != 0) {
+            return book;
+        } else {
+            // cannot parse properties
+            //delete book;
+            return book;
+        }
+    } else {
+        CRLog::error("Failed to open item %s", pathName.c_str());
+        return NULL;
+    }
 }
 
 bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEntry> & entries, lUInt64 & hash) {
@@ -714,67 +829,71 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	CRLog::trace("%d entries for parse", forParse.length());
 	for (int i = 0; i<forParse.length(); i++) {
 		lString8 pathName = forParse[i];
-		lString16 lower = Utf8ToUnicode(pathName);
-		lower.lowercase();
-		int fmt = LVDocFormatFromExtension(lower);
-		CRLog::trace("going to parse %s", pathName.c_str());
-		lString8 arcname;
-		lString8 fname;
-		lInt64 createTime = 0;
-		LVContainerRef arc;
-		LVStreamRef stream;
-		LVStreamRef arcstream;
-		if (splitArcName(pathName, arcname, fname)) {
-			//CRLog::trace("item is from archive");
-		    struct stat fs;
-		    if (!stat(arcname.c_str(), &fs )) {
-		        createTime = fs.st_mtime * (lInt64)1000;
-		    }
-		    arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
-		    if (!arcstream.isNull()) {
-				//CRLog::trace("trying to open archive %s", arcname.c_str());
-				arc = LVOpenArchieve(arcstream);
-				if (!arc.isNull()) {
-					//CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
-					stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
-					//CRLog::error("returned from open stream");
-				} else {
-					CRLog::error("Failed to open archive %s", arcname.c_str());
-				}
-		    }
-		} else {
-			fname = UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(pathName)));
-			stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
-		    struct stat fs;
-		    if (!stat(pathName.c_str(), &fs )) {
-		        createTime = fs.st_mtime * (lInt64)1000;
-		    }
-		}
-		if (!stream.isNull()) {
-			//CRLog::trace("processing stream");
-			// read properties
-			CRLog::trace("parsing book properties for %s", pathName.c_str());
-			BookDBBook * book = new BookDBBook();
-			book->pathname = pathName.c_str();
-			if (arcname.length()) {
-				book->arcname = arcname.c_str();
-			} else {
+        BookDBBook * book = LVParseBook(path, pathName);
+        if (book) {
+            forSave.add(book);
+        }
+//		lString16 lower = Utf8ToUnicode(pathName);
+//		lower.lowercase();
+//		int fmt = LVDocFormatFromExtension(lower);
+//		CRLog::trace("going to parse %s", pathName.c_str());
+//		lString8 arcname;
+//		lString8 fname;
+//		lInt64 createTime = 0;
+//		LVContainerRef arc;
+//		LVStreamRef stream;
+//		LVStreamRef arcstream;
+//		if (splitArcName(pathName, arcname, fname)) {
+//			//CRLog::trace("item is from archive");
+//		    struct stat fs;
+//		    if (!stat(arcname.c_str(), &fs )) {
+//		        createTime = fs.st_mtime * (lInt64)1000;
+//		    }
+//		    arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+//		    if (!arcstream.isNull()) {
+//				//CRLog::trace("trying to open archive %s", arcname.c_str());
+//				arc = LVOpenArchieve(arcstream);
+//				if (!arc.isNull()) {
+//					//CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
+//					stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+//					//CRLog::error("returned from open stream");
+//				} else {
+//					CRLog::error("Failed to open archive %s", arcname.c_str());
+//				}
+//		    }
+//		} else {
+//			fname = UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(pathName)));
+//			stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
+//		    struct stat fs;
+//		    if (!stat(pathName.c_str(), &fs )) {
+//		        createTime = fs.st_mtime * (lInt64)1000;
+//		    }
+//		}
+//		if (!stream.isNull()) {
+//			//CRLog::trace("processing stream");
+//			// read properties
+//			CRLog::trace("parsing book properties for %s", pathName.c_str());
+//			BookDBBook * book = new BookDBBook();
+//			book->pathname = pathName.c_str();
+//			if (arcname.length()) {
+//				book->arcname = arcname.c_str();
+//			} else {
 
-			}
-			book->createTime = createTime;
-			book->format = fmt;
-			book->filename = fname.c_str();
-			book->filesize = (int)stream->GetSize();
-			book->folder = new BookDBFolder(path.c_str());
-			if (LVParseBookProperties(stream, book) || fmt != 0) {
-				forSave.add(book);
-			} else {
-				// cannot parse properties
-				delete book;
-			}
-		} else {
-			CRLog::error("Failed to open item %s", pathName.c_str());
-		}
+//			}
+//			book->createTime = createTime;
+//			book->format = fmt;
+//			book->filename = fname.c_str();
+//			book->filesize = (int)stream->GetSize();
+//			book->folder = new BookDBFolder(path.c_str());
+//			if (LVParseBookProperties(stream, book) || fmt != 0) {
+//				forSave.add(book);
+//			} else {
+//				// cannot parse properties
+//				delete book;
+//			}
+//		} else {
+//			CRLog::error("Failed to open item %s", pathName.c_str());
+//		}
 	}
 	CRLog::trace("%d entries for save", forSave.length());
 	if (forSave.length()) {

@@ -621,6 +621,17 @@ bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
 	return res;
 }
 
+BookDBBook * CRBookDB::loadBook(lString8 pathname) {
+    lString8Collection pathnames;
+    LVPtrVector<BookDBBook> loaded;
+    lString8Collection notFound;
+    pathnames.add(pathname);
+    loadBooks(pathnames, loaded, notFound);
+    if (loaded.length() == 1)
+        return loaded[0]->clone();
+    return NULL;
+}
+
 bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {
 	for (int i = 0; i<pathnames.length(); i++) {
 		BookDBBook * cached = _bookCache.get(pathnames[i].c_str());

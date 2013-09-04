@@ -183,6 +183,7 @@ class CRDirCache  : public CRRunnable {
     CRThreadRef _thread;
     LVQueue<DirectoryScanTask *> _queue;
     void clear();
+    CRFileItem * findBook(const lString8 & pathname);
 public:
     void stop();
     virtual void run();
@@ -194,6 +195,7 @@ public:
 	CRDirCacheItem * getOrAdd(CRDirItem * dir);
     CRDirCacheItem * getOrAdd(const lString8 & pathname);
     void scan(const lString8 & pathname, CRDirScanCallback * callback);
+    CRFileItem * scanFile(const lString8 & pathname);
 };
 
 /// directory contents cache
