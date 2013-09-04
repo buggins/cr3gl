@@ -31,7 +31,6 @@ GLScene::~GLScene() {
 
 /// pushes new scene to scene stack, makes it current
 GLScene * LVGLPushScene(GLScene * scene) {
-    CRLog::trace("LVGLPushScene()");
     sceneStack.push(scene);
 	currentGLScene = scene;
 	return scene;
@@ -39,7 +38,6 @@ GLScene * LVGLPushScene(GLScene * scene) {
 
 /// pops last scene from scene stack, makes previous scene current, returns popped scene
 GLScene * LVGLPopScene() {
-    CRLog::trace("LVGLPopScene()");
 	GLScene * res = currentGLScene;
 	currentGLScene = sceneStack.pop();
     if (!res)

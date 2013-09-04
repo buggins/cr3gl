@@ -304,7 +304,7 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
     }
 
     if (_popupBackground) {
-        CRLog::trace("Drawing static background");
+        //CRLog::trace("Drawing static background");
         _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
         if (_animation.active) {
@@ -317,7 +317,7 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         }
     }
     if (_popup) {
-        CRLog::trace("Drawing popup");
+        //CRLog::trace("Drawing popup");
         _popup->draw(buf);
     }
     setScreenUpdateMode(false, animating ? 30 : 0);

@@ -10,6 +10,44 @@
 
 
 #include <lvhashtable.h>
+#include <lvarray.h>
+
+
+class GLImageCachePage;
+
+class GLImageCacheItem {
+    GLImageCachePage * _page;
+public:
+    GLImageCachePage * getPage() { return _page; }
+    CacheableObject * _objectPtr;
+    // image size
+    int _dx;
+    int _dy;
+    int _x0;
+    int _y0;
+    bool _deleted;
+    GLImageCacheItem(GLImageCachePage * page, CacheableObject * obj) : _page(page), _objectPtr(obj), _deleted(false) {}
+};
+
+class GLImageCache : public CacheObjectListener {
+    LVHashTable<CacheableObject*,GLImageCacheItem*> _map;
+    LVPtrVector<GLImageCachePage> _pages;
+    GLImageCachePage * _activePage;
+    void removePage(GLImageCachePage * page);
+public:
+    GLImageCache();
+    virtual ~GLImageCache();
+    GLImageCacheItem * get(CacheableObject * obj);
+    GLImageCacheItem * set(LVImageSourceRef img);
+    GLImageCacheItem * set(LVDrawBuf * img);
+    void clear();
+    void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
+    virtual void onCachedObjectDeleted(CacheableObject * obj);
+    void removeDeletedItems();
+};
+
+extern GLImageCache * glImageCache;
+
 
 
 #define MIN_TEX_SIZE 64
@@ -66,6 +104,7 @@ public:
 		_tdy = nearestPOT(dy);
 		_itemCount = 0;
 	}
+
 	virtual ~GLImageCachePage() {
 		if (_drawbuf)
 			delete _drawbuf;
@@ -74,7 +113,8 @@ public:
             checkError("~GLImageCachePage - glDeleteTextures");
         }
 	}
-	void updateTexture() {
+
+    void updateTexture() {
 		if (_drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (_textureId == 0) {
@@ -229,7 +269,6 @@ public:
             //rotationAngle = 0;
             if (rotationAngle) {
                 //rotationAngle = 0;
-                CRLog::trace("glPushMatrix");
                 glMatrixMode(GL_PROJECTION);
                 glPushMatrix();
                 checkError("push matrix");
@@ -266,7 +305,6 @@ public:
             checkError("glDrawArrays");
 
             if (rotationAngle) {
-                CRLog::trace("glPopMatrix");
                 glMatrixMode(GL_PROJECTION);
                 glPopMatrix();
                 checkError("pop matrix");
@@ -277,7 +315,6 @@ public:
             glDisable(GL_BLEND);
             glDisable(GL_TEXTURE_2D);
 		}
-        //CRLog::trace("drawItem done");
 	}
 	void close() {
 		_closed = true;
@@ -374,18 +411,38 @@ void GLImageCache::clear() {
 	_pages.clear();
 }
 
+void GLImageCache::removeDeletedItems() {
+    LVArray<CacheableObject*> list;
+    LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator p = _map.forwardIterator();
+    for (;;) {
+        LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * item = p.next();
+        if (!item)
+            break;
+        if (item->value->_deleted)
+            list.add(item->key);
+    }
+    for (int i = 0 ; i < list.length(); i++) {
+        onCachedObjectDeleted(list[i]);
+    }
+}
+
 void GLImageCache::onCachedObjectDeleted(CacheableObject * obj) {
     CRLog::trace("Cached object deleted");
 	GLImageCacheItem* item = get(obj);
 	if (item) {
-		int itemsLeft = item->getPage()->deleteItem(item);
-        CRLog::trace("itemsLeft = %d", itemsLeft);
-        if (itemsLeft <= 0) {
-            CRLog::trace("removing page");
-            removePage(item->getPage());
+        if (LVGLPeekScene()) {
+            item->_deleted = true;
+            CRLog::trace("item deleted while scene is active");
+        } else {
+            int itemsLeft = item->getPage()->deleteItem(item);
+            CRLog::trace("itemsLeft = %d", itemsLeft);
+            if (itemsLeft <= 0) {
+                CRLog::trace("removing page");
+                removePage(item->getPage());
+            }
+            _map.remove(obj);
+            delete item;
         }
-		_map.remove(obj);
-		delete item;
 	}
 }
 
@@ -953,7 +1010,6 @@ void myGlOrtho(float left, float right, float bottom, float top,
 
 void GLDrawBuf::beforeDrawing()
 {
-    CRLog::trace("beforeDrawing");
 	if (_prepareStage++ == 0) {
 		if (_textureBuf) {
 			if (_textureId == 0 || _framebufferId == 0) {
@@ -963,7 +1019,6 @@ void GLDrawBuf::beforeDrawing()
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
-        CRLog::trace("glPushMatrix");
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         checkError("glPushMatrix");
@@ -984,7 +1039,6 @@ void GLDrawBuf::beforeDrawing()
 
 void GLDrawBuf::afterDrawing()
 {
-    CRLog::trace("afterDrawing");
     if (--_prepareStage == 0) {
 		if (_scene) {
 			_scene->draw();
@@ -995,15 +1049,16 @@ void GLDrawBuf::afterDrawing()
 			}
 			delete _scene;
 			_scene = NULL;
-
-		}
+            if (!LVGLPeekScene()) {
+                glImageCache->removeDeletedItems();
+            }
+        }
 		if (_textureBuf) {
 			//bind the base framebuffer
 			//CRLog::debug("Finished render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
 		}
-        CRLog::trace("glPopMatrix");
         glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
         checkError("glPopMatrix");

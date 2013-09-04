@@ -155,37 +155,6 @@ public:
     virtual ~GLDrawBuf();
 };
 
-class GLImageCachePage;
-
-class GLImageCacheItem {
-	GLImageCachePage * _page;
-public:
-	GLImageCachePage * getPage() { return _page; }
-	CacheableObject * _objectPtr;
-	// image size
-	int _dx;
-	int _dy;
-	int _x0;
-	int _y0;
-	GLImageCacheItem(GLImageCachePage * page, CacheableObject * obj) : _page(page), _objectPtr(obj) {}
-};
-
-class GLImageCache : public CacheObjectListener {
-	LVHashTable<CacheableObject*,GLImageCacheItem*> _map;
-	LVPtrVector<GLImageCachePage> _pages;
-	GLImageCachePage * _activePage;
-	void removePage(GLImageCachePage * page);
-public:
-	GLImageCache();
-	virtual ~GLImageCache();
-	GLImageCacheItem * get(CacheableObject * obj);
-	GLImageCacheItem * set(LVImageSourceRef img);
-	GLImageCacheItem * set(LVDrawBuf * img);
-	void clear();
-    void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
-	virtual void onCachedObjectDeleted(CacheableObject * obj);
-};
-
 
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
 void LVGLFillColor(lUInt32 color, float * buf, int count);
@@ -195,6 +164,5 @@ void LVGLSetColor(lUInt32 color);
 /// creates OpenGL based image cache
 void LVGLCreateImageCache();
 
-extern GLImageCache * glImageCache;
 
 #endif /* GLDRAWBUF_H_ */

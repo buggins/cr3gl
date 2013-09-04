@@ -107,12 +107,18 @@ public:
         CRLog::info("Loading book in background thread");
         bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
         CRLog::info("Loading is finished");
+#ifdef SLOW_RENDER_SIMULATION
+        concurrencyProvider->sleepMs(3000);
+#endif
         if (!success) {
             _read->getDocView()->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
         }
         concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
         CRLog::info("Rendering book in background thread");
         _read->getDocView()->Render();
+#ifdef SLOW_RENDER_SIMULATION
+        concurrencyProvider->sleepMs(3000);
+#endif
         CRLog::info("Render is finished");
         concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
     }
