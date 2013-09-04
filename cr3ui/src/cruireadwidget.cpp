@@ -6,7 +6,7 @@
  */
 
 // uncomment to simulate slow render
-#define SLOW_RENDER_SIMULATION
+//#define SLOW_RENDER_SIMULATION
 
 #include "cruireadwidget.h"
 #include "crui.h"
@@ -47,15 +47,14 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
     if (renderIfNecessary()) {
-        //CRLog::trace("Document is ready, drawing");
+        CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
     } else {
         // document render in progress; draw just page background
-        //CRLog::trace("Document is locked, just drawing background");
+        CRLog::trace("Document is locked, just drawing background");
         _docview->drawPageBackground(*buf, 0, 0);
     }
-    //_docview->Draw(*buf, false);
 }
 
 class BookLoadedNotificationTask : public CRRunnable {
@@ -144,9 +143,16 @@ public:
     }
 };
 
+void CRUIReadWidget::closeBook() {
+    _scrollCache.clear();
+    _pathname.clear();
+    _docview->close();
+}
+
 bool CRUIReadWidget::openBook(lString8 pathname) {
     if (_locked)
         return false;
+    closeBook();
     _locked = true;
     _scrollCache.clear();
     _main->showSlowOperationPopup();

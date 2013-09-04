@@ -16,7 +16,8 @@ CRBookDB * bookDB = NULL;
 /// creates/upgrades DB schema
 bool CRBookDB::updateSchema()
 {
-	int currentVersion = _db.getVersion();
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    int currentVersion = _db.getVersion();
 	bool err = false;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS author ("
 			"id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -141,14 +142,16 @@ bool CRBookDB::updateSchema()
 
 /// open database file; returns 0 on success, error code otherwise
 int CRBookDB::open(const char * pathname) {
-	CRLog::info("Opening database %s", pathname);
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CRLog::info("Opening database %s", pathname);
 	int res = _db.open(pathname, false);
 	return res;
 }
 
 /// read DB content to caches
 bool CRBookDB::fillCaches() {
-	if (!isOpened())
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    if (!isOpened())
 		return false;
 	CRLog::trace("Filling caches");
 	bool err = false;
@@ -614,7 +617,8 @@ bool CRBookDB::saveBook(BookDBBook * book) {
 }
 
 bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
-	bool res = true;
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    bool res = true;
 	for (int i = 0; i<books.length(); i++) {
 		res = saveBook(books[i]) && res;
 	}
@@ -633,7 +637,8 @@ BookDBBook * CRBookDB::loadBook(lString8 pathname) {
 }
 
 bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {
-	for (int i = 0; i<pathnames.length(); i++) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    for (int i = 0; i<pathnames.length(); i++) {
 		BookDBBook * cached = _bookCache.get(pathnames[i].c_str());
 		if (cached)
 			loaded.add(cached->clone());

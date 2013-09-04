@@ -85,6 +85,8 @@ public:
 	virtual ~CRUIReadWidget();
 
     bool openBook(lString8 pathname);
+    void closeBook();
+
     /// returns true if document is ready, false if background rendering is in progress
     bool renderIfNecessary();
 

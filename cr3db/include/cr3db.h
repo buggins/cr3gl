@@ -13,6 +13,7 @@
 #include "lvptrvec.h"
 #include "lvref.h"
 #include "lvstring.h"
+#include "crconcurrent.h"
 
 
 class BookDBEntity {
@@ -330,7 +331,8 @@ public:
 
 
 class CRBookDB {
-	SQLiteDB _db;
+    CRMutexRef _mutex;
+    SQLiteDB _db;
 	BookDBSeriesCache _seriesCache;
 	BookDBAuthorCache _authorCache;
 	BookDBFolderCache _folderCache;
@@ -340,11 +342,22 @@ class CRBookDB {
 	BookDBBook * loadBookToCache(SQLiteStatement & stmt);
 	bool updateBook(BookDBBook * book, BookDBBook * fromCache);
 	bool insertBook(BookDBBook * book);
+
+    bool saveSeries(BookDBSeries * item);
+    bool saveFolder(BookDBFolder * folder);
+    bool saveAuthor(BookDBAuthor * author);
+    bool saveBook(BookDBBook * book);
 public:
+    CRBookDB() : _mutex(concurrencyProvider->createMutex()) {
+    }
+
 	/// open database file; returns 0 on success, error code otherwise
-	int open(const char * pathname);
+    int open(const char * pathname);
 	/// closes DB
-	int close() { return _db.close(); }
+    int close() {
+        CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+        return _db.close();
+    }
 	/// returns true if DB is opened
 	bool isOpened() { return _db.isOpened(); }
 	/// creates/upgrades DB schema
@@ -352,13 +365,12 @@ public:
 	/// read DB content to caches
 	bool fillCaches();
 
-	bool saveSeries(BookDBSeries * item);
-	bool saveFolder(BookDBFolder * folder);
-	bool saveAuthor(BookDBAuthor * author);
-	bool saveBook(BookDBBook * book);
 
+    /// protected by mutex
 	bool saveBooks(LVPtrVector<BookDBBook> & books);
+    /// protected by mutex
 	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
+    /// protected by mutex
     BookDBBook * loadBook(lString8 pathname);
 };
 
