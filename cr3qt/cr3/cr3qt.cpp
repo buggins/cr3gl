@@ -271,10 +271,12 @@ void InitCREngine(lString16 exePath) {
     listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
 
     CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
-    homeStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
+    homeStyle->setBackground("tx_wood_v3.jpg", true);
+    homeStyle->setBackground2("list_shadow_vertical.9");
 
     CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
-    fileListStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
+    fileListStyle->setBackground("tx_wood_v3.jpg", true);
+    fileListStyle->setBackground2("list_shadow_vertical.9");
     fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
 
     CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
