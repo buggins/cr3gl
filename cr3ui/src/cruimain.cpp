@@ -59,6 +59,7 @@ void CRUIMainWidget::onAllCoverpagesReady() {
 }
 
 void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
+    item->sort(CRUI::BY_TITLE);
     if (_history.next() && _history.next()->getMode() == MODE_FOLDER && _history.next()->getPathName() == item->getPathName()) {
         CRLog::info("Directory %s is ready", item->getPathName().c_str());
         CRUIFolderWidget * folder = dynamic_cast<CRUIFolderWidget *>(_history.next()->getWidget());

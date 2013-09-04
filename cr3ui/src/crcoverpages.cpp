@@ -602,13 +602,17 @@ void CRCoverPageManager::setAllTasksFinishedCallback(CRRunnable * allTasksFinish
 
 
 void CRCoverPageManager::stop() {
-    CRGuard guard(_monitor);
-    _stopped = true;
-    while (_queue.length() > 0) {
-        CoverTask * p = _queue.popFront();
-        delete p;
+    if (_stopped)
+        return;
+    {
+        CRGuard guard(_monitor);
+        _stopped = true;
+        while (_queue.length() > 0) {
+            CoverTask * p = _queue.popFront();
+            delete p;
+        }
+        _monitor->notifyAll();
     }
-    _monitor->notifyAll();
     _thread->join();
 }
 
@@ -621,6 +625,8 @@ void CRCoverPageManager::run() {
         {
             //CRLog::trace("CRCoverPageManager::run :: wait for lock");
             CRGuard guard(_monitor);
+            if (_stopped)
+                break;
             //CRLog::trace("CRCoverPageManager::run :: lock acquired");
             if (_queue.length() == 0) {
                 allTasksFinished();
