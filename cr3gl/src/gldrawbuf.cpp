@@ -1081,13 +1081,13 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 		_prepareStage(0),
 		_scene(NULL)
 {
-    if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
+    //if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
 }
 
 /// destructor
 GLDrawBuf::~GLDrawBuf()
 {
-    if (_textureBuf) CRLog::trace("GLDrawBuf::~GLDrawBuf");
+    //if (_textureBuf) CRLog::trace("GLDrawBuf::~GLDrawBuf");
     deleteFramebuffer();
 }
 

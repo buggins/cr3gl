@@ -43,7 +43,7 @@ public:
         _coverDy = coverSize;
         _cover->setSize(_coverDx, _coverDy);
         //_cover->setBackground(0xC0808000);
-        _cover->setBackground("home_frame.9.png");
+        //_cover->setBackground("home_frame.9.png");
 		addChild(_cover);
 		_layout = new CRUILinearLayout(true);
 		addChild(_layout);
@@ -90,6 +90,14 @@ public:
 
         setLastBook(NULL);
 	}
+
+    /// measure dimensions
+    void CRUINowReadingWidget::measure(int baseWidth, int baseHeight) {
+        _coverDy = baseHeight;
+        _coverDx = _coverDy * 3 / 4;
+        _cover->setSize(_coverDx, _coverDy);
+        CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
 
     ~CRUINowReadingWidget() {
         if (_lastBook)

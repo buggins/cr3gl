@@ -262,19 +262,19 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
         _animation.startPoint.y = event->getStartY();
     }
 
-    _animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
-    _animation.oldimage->beforeDrawing();
-    oldWidget->measure(_pos.width(), _pos.height());
-    oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    oldWidget->draw(_animation.oldimage);
-    _animation.oldimage->afterDrawing();
-
     _animation.newimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
     _animation.newimage->beforeDrawing();
     newWidget->measure(_pos.width(), _pos.height());
     newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     newWidget->draw(_animation.newimage);
     _animation.newimage->afterDrawing();
+
+    _animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+    _animation.oldimage->beforeDrawing();
+    oldWidget->measure(_pos.width(), _pos.height());
+    oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    oldWidget->draw(_animation.oldimage);
+    _animation.oldimage->afterDrawing();
 
     if (duration == 0) {
         stopAnimation();
