@@ -22,13 +22,16 @@ static int nearestPOT(int n) {
 	return MIN_TEX_SIZE;
 }
 
-static bool checkError(const char * context) {
-	if (glGetError() != GL_NO_ERROR) {
-		CRLog::error("GLDrawBuf : GL Error at %s", context);
+static bool _checkError(const char *srcfile, int line, const char * context) {
+    int err = glGetError();
+    if (err != GL_NO_ERROR) {
+        CRLog::error("GLDrawBuf : GL Error %04x at %s : %s : %d", err, context, srcfile, line);
 		return true;
 	}
 	return false;
 }
+
+#define checkError(context) _checkError(__FILE__, __LINE__, context)
 
 GLImageCache * glImageCache = NULL;
 
@@ -66,8 +69,10 @@ public:
 	virtual ~GLImageCachePage() {
 		if (_drawbuf)
 			delete _drawbuf;
-		if (_textureId != 0)
+        if (_textureId != 0) {
 			glDeleteTextures(1, &_textureId);
+            checkError("~GLImageCachePage - glDeleteTextures");
+        }
 	}
 	void updateTexture() {
 		if (_drawbuf == NULL)
@@ -224,10 +229,13 @@ public:
             //rotationAngle = 0;
             if (rotationAngle) {
                 //rotationAngle = 0;
+                CRLog::trace("glPushMatrix");
+                glMatrixMode(GL_PROJECTION);
                 glPushMatrix();
+                checkError("push matrix");
                 int x = (dstx0 + dstx1) / 2;
                 int y = (dsty0 + dsty1) / 2;
-                glMatrixMode(GL_PROJECTION);
+                checkError("matrix mode");
                 glTranslatef(x, y, 0);
                 glRotatef(rotationAngle, 0, 0, 1);
                 glTranslatef(-x, -y, 0);
@@ -237,8 +245,10 @@ public:
 	    	//glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	    	//glDisable(GL_LIGHTING);
 	    	glActiveTexture(GL_TEXTURE0);
-	    	glEnable(GL_TEXTURE_2D);
+            checkError("glActiveTexture");
+            glEnable(GL_TEXTURE_2D);
 	    	glBindTexture(GL_TEXTURE_2D, _textureId);
+            checkError("glBindTexture");
 
 	    	glEnable(GL_BLEND);
 	    	//GL_SRC_ALPHA
@@ -253,15 +263,19 @@ public:
 	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 
 	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+            checkError("glDrawArrays");
 
             if (rotationAngle) {
+                CRLog::trace("glPopMatrix");
+                glMatrixMode(GL_PROJECTION);
                 glPopMatrix();
+                checkError("pop matrix");
             }
 
 	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	    	glDisableClientState(GL_VERTEX_ARRAY);
-	    	glDisable(GL_TEXTURE_2D);
-	    	glDisable(GL_BLEND);
+            glDisable(GL_BLEND);
+            glDisable(GL_TEXTURE_2D);
 		}
         //CRLog::trace("drawItem done");
 	}
@@ -874,9 +888,13 @@ void GLDrawBuf::createFramebuffer()
 		checkError("glTexImage2D");
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("texParameter");
 
 		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
 		checkError("glFramebufferTexture2DOES");
@@ -884,10 +902,13 @@ void GLDrawBuf::createFramebuffer()
 		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
 			CRLog::error("glFramebufferTexture2DOES failed");
 		}
+        checkError("glCheckFramebufferStatusOES");
         //glClearColor(0.5f, 0, 0, 1);
         glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
+        checkError("glClearColor");
+        glClear(GL_COLOR_BUFFER_BIT);
+        checkError("glClear");
+    }
 }
 
 void GLDrawBuf::deleteFramebuffer()
@@ -900,7 +921,8 @@ void GLDrawBuf::deleteFramebuffer()
 		}
 		if (_framebufferId != 0) {
 			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
-			glDeleteFramebuffersOES(1, &_framebufferId);
+            checkError("deleteFramebuffer - glBindFramebufferOES");
+            glDeleteFramebuffersOES(1, &_framebufferId);
 			checkError("deleteFramebuffer - glDeleteFramebuffer");
 		}
 		_textureId = 0;
@@ -931,6 +953,7 @@ void myGlOrtho(float left, float right, float bottom, float top,
 
 void GLDrawBuf::beforeDrawing()
 {
+    CRLog::trace("beforeDrawing");
 	if (_prepareStage++ == 0) {
 		if (_textureBuf) {
 			if (_textureId == 0 || _framebufferId == 0) {
@@ -940,25 +963,34 @@ void GLDrawBuf::beforeDrawing()
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
+        CRLog::trace("glPushMatrix");
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        checkError("glPushMatrix");
 		glLoadIdentity();
 		myGlOrtho(0, _dx, 0, _dy, -1.0f, 5.0f);
 		//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 		glViewport(0,0,_dx,_dy);
-		_scene = LVGLPushScene(new GLScene());
+        checkError("glViewport");
+        _scene = LVGLPushScene(new GLScene());
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-	}
+        glPushMatrix();
+        checkError("glPushMatrix");
+        glLoadIdentity();
+    } else {
+        CRLog::warn("Duplicate beforeDrawing/afterDrawing");
+    }
 }
 
 void GLDrawBuf::afterDrawing()
 {
-	if (--_prepareStage == 0) {
+    CRLog::trace("afterDrawing");
+    if (--_prepareStage == 0) {
 		if (_scene) {
 			_scene->draw();
 			_scene->clear();
-			if (LVGLPopScene() != _scene) {
+            GLScene * s = LVGLPopScene();
+            if (s != _scene) {
 				CRLog::error("Current scene does not match");
 			}
 			delete _scene;
@@ -971,8 +1003,16 @@ void GLDrawBuf::afterDrawing()
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
 		}
-		glPopMatrix();
-	}
+        CRLog::trace("glPopMatrix");
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+        checkError("glPopMatrix");
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        checkError("glPopMatrix");
+    } else {
+        CRLog::warn("Duplicate beforeDrawing/afterDrawing");
+    }
 }
 
 /// create drawing texture of specified size
@@ -986,12 +1026,13 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 		_prepareStage(0),
 		_scene(NULL)
 {
-
+    if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
 }
 
 /// destructor
 GLDrawBuf::~GLDrawBuf()
 {
-	deleteFramebuffer();
+    if (_textureBuf) CRLog::trace("GLDrawBuf::~GLDrawBuf");
+    deleteFramebuffer();
 }
 

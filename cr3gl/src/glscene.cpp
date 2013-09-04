@@ -6,6 +6,7 @@
  */
 
 #include "glscene.h"
+#include "lvstring.h"
 
 static GLScene * currentGLScene = NULL;
 static LVPtrVector<GLScene> sceneStack;
@@ -30,16 +31,20 @@ GLScene::~GLScene() {
 
 /// pushes new scene to scene stack, makes it current
 GLScene * LVGLPushScene(GLScene * scene) {
-	sceneStack.push(scene);
+    CRLog::trace("LVGLPushScene()");
+    sceneStack.push(scene);
 	currentGLScene = scene;
 	return scene;
 }
 
 /// pops last scene from scene stack, makes previous scene current, returns popped scene
 GLScene * LVGLPopScene() {
+    CRLog::trace("LVGLPopScene()");
 	GLScene * res = currentGLScene;
 	currentGLScene = sceneStack.pop();
-	return res;
+    if (!res)
+        CRLog::error("LVGLPopScene() returning NULL");
+    return res;
 }
 /// returns top scene from scene stack, returns NULL of no current scene
 GLScene * LVGLPeekScene() {
