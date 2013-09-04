@@ -12,6 +12,7 @@
 #include "cruicontrols.h"
 #include "crcoverpages.h"
 #include "cruimain.h"
+#include "cruihomewidget.h"
 
 using namespace CRUI;
 
@@ -55,11 +56,82 @@ public:
 
 };
 
-class CRUIFileItemWidget : public CRUILinearLayout {
+class CRUIDirItemWidget : public CRUILinearLayout {
 public:
     int _iconDx;
     int _iconDy;
     CRUIImageWidget * _icon;
+    CRUILinearLayout * _layout;
+    CRUILinearLayout * _infolayout;
+    CRUITextWidget * _line1;
+    CRUITextWidget * _line2;
+    CRUITextWidget * _line3;
+    CRUITextWidget * _line4;
+    CRDirEntry * _entry;
+    CRUIDirItemWidget(int iconDx, int iconDy, const char * iconRes) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
+        _icon = new CRUIImageWidget(iconRes);
+        _icon->setMinWidth(iconDx);
+        _icon->setMinHeight(iconDy);
+        _icon->setMaxWidth(iconDx);
+        _icon->setMaxHeight(iconDy);
+        _icon->setAlign(ALIGN_CENTER);
+        _icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        addChild(_icon);
+        _layout = new CRUILinearLayout(true);
+        _infolayout = new CRUILinearLayout(false);
+        _line1 = new CRUITextWidget();
+        _line1->setFontSize(FONT_SIZE_SMALL);
+        _line2 = new CRUITextWidget();
+        _line2->setFontSize(FONT_SIZE_MEDIUM);
+        _line3 = new CRUITextWidget();
+        _line3->setFontSize(FONT_SIZE_SMALL);
+        _line4 = new CRUITextWidget();
+        _line4->setFontSize(FONT_SIZE_XSMALL);
+        _line4->setAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+
+        _line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _infolayout->addChild(_line3);
+        _infolayout->addChild(_line4);
+
+        _layout->addChild(spacer1);
+        _layout->addChild(_line1);
+        _layout->addChild(_line2);
+        _layout->addChild(_infolayout);
+        _layout->addChild(spacer2);
+        _layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
+        _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
+        //_layout->setBackground(0x80C0C0C0);
+        addChild(_layout);
+        setMinWidth(MIN_ITEM_PX);
+        setMinHeight(MIN_ITEM_PX);
+        setMargin(PT_TO_PX(1));
+        setStyle("LIST_ITEM");
+    }
+
+    void setDir(CRDirEntry * entry, int iconDx, int iconDy) {
+        _iconDx = iconDx;
+        _iconDy = iconDy;
+        _icon->setMinWidth(iconDx);
+        _icon->setMinHeight(iconDy);
+        _icon->setMaxWidth(iconDx);
+        _icon->setMaxHeight(iconDy);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
+        _entry = entry;
+    }
+};
+
+class CRUIBookItemWidget : public CRUILinearLayout {
+public:
+    int _iconDx;
+    int _iconDy;
+    CRCoverWidget * _icon;
 	CRUILinearLayout * _layout;
 	CRUILinearLayout * _infolayout;
 	CRUITextWidget * _line1;
@@ -67,16 +139,10 @@ public:
 	CRUITextWidget * _line3;
 	CRUITextWidget * _line4;
     CRDirEntry * _entry;
-    CRUIWidget * _callbackWidget;
-    CRUIFileItemWidget(int iconDx, int iconDy, const char * iconRes, CRUIWidget * callbackWidget) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL), _callbackWidget(callbackWidget) {
-		_icon = new CRUIImageWidget(iconRes);
-        _icon->setMinWidth(iconDx);
-        _icon->setMinHeight(iconDy);
-        _icon->setMaxWidth(iconDx);
-        _icon->setMaxHeight(iconDy);
-        _icon->setAlign(ALIGN_CENTER);
-		_icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-		addChild(_icon);
+    CRUIBookItemWidget(int iconDx, int iconDy, CRUIMainWidget * callback) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
+        _icon = new CRCoverWidget(callback, NULL, iconDx, iconDy);
+        _icon->setSize(iconDx, iconDy);
+        addChild(_icon);
 		_layout = new CRUILinearLayout(true);
 		_infolayout = new CRUILinearLayout(false);
 		_line1 = new CRUITextWidget();
@@ -113,37 +179,17 @@ public:
 		setMargin(PT_TO_PX(1));
 		setStyle("LIST_ITEM");
 	}
-    /// draws widget with its children to specified surface
-    virtual void draw(LVDrawBuf * buf) {
-        //CRLog::trace("CRUIFileItemWidget draw enter");
-        if (_entry) {
-            //CRLog::trace("Book entry");
-            LVDrawBuf * buf = coverPageManager->getIfReady(_entry, _iconDx, _iconDy);
-            if (buf) {
-                //CRLog::trace("Found existing cover");
-                CRUIImageRef img(new CRUIDrawBufImage(buf));
-                _icon->setImage(img);
-            } else {
-                //CRLog::trace("Requesting new cover");
-                coverPageManager->prepare(_entry, _iconDx, _iconDy, new CoverReadyCallback(_callbackWidget));
-                //CRLog::trace("Clearing coverpage");
-                _icon->setImage(CRUIImageRef());
-            }
-        }
-        //CRLog::trace("CRUIFileItemWidget draw - calling CRUILinearLayout::draw");
-        CRUILinearLayout::draw(buf);
-        //CRLog::trace("CRUIFileItemWidget draw exit");
-    }
     void setBook(CRDirEntry * entry, int iconDx, int iconDy) {
         _iconDx = iconDx;
         _iconDy = iconDy;
-        _icon->setMinWidth(iconDx);
-        _icon->setMinHeight(iconDy);
-        _icon->setMaxWidth(iconDx);
-        _icon->setMaxHeight(iconDy);
+        _icon->setSize(iconDx, iconDy);
+        _icon->setBook(entry);
         _layout->setMaxHeight(_iconDy);
         _layout->setMinHeight(_iconDy);
         _entry = entry;
+    }
+    lvPoint calcCoverSize(int w, int h) {
+        return _icon->calcCoverSize(w, h);
     }
 };
 
@@ -159,8 +205,8 @@ static lString16 sizeToString(int size) {
 class CRUIFileListWidget : public CRUIListWidget {
 protected:
 	CRDirCacheItem * _dir;
-	CRUIFileItemWidget * _folderWidget;
-	CRUIFileItemWidget * _bookWidget;
+    CRUIDirItemWidget * _folderWidget;
+    CRUIBookItemWidget * _bookWidget;
     CRUIFolderWidget * _parent;
     int _coverDx;
     int _coverDy;
@@ -193,8 +239,8 @@ public:
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
-        _folderWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "folder_blue", parent->getMain());
-        _bookWidget = new CRUIFileItemWidget(_coverDx, _coverDy, "cr3_logo", parent->getMain());
+        _folderWidget = new CRUIDirItemWidget(_coverDx, _coverDy, "folder_blue");
+        _bookWidget = new CRUIBookItemWidget(_coverDx, _coverDy, parent->getMain());
 		setStyle("FILE_LIST");
         setColCount(2);
 	}
@@ -207,15 +253,15 @@ public:
 	virtual CRUIWidget * getItemWidget(int index) {
 		CRDirEntry * item = _dir->getItem(index);
 		if (item->isDirectory()) {
-			CRUIFileItemWidget * res = _folderWidget;
-            res->setBook(NULL, _coverDx, _coverDy);
+            CRUIDirItemWidget * res = _folderWidget;
+            res->setDir(item, _coverDx, _coverDy);
             res->_line1->setText(L"");
 			res->_line2->setText(Utf8ToUnicode(item->getFileName()));
 			res->_line3->setText(L"");
 			//CRLog::trace("returning folder item");
 			return res;
 		} else {
-			CRUIFileItemWidget * res = _bookWidget;
+            CRUIBookItemWidget * res = _bookWidget;
             res->setBook(item, _coverDx, _coverDy);
 			BookDBBook * book = item->getBook();
 			lString16 text1;
@@ -275,12 +321,13 @@ public:
             if (clip.intersects(childRc)) {
                 CRDirEntry * item = _dir->getItem(i);
                 if (!item->isDirectory()) {
-                    LVDrawBuf * buf = coverPageManager->getIfReady(item, _coverDx, _coverDy);
+                    lvPoint coverSize = _bookWidget->calcCoverSize(_coverDx, _coverDy);
+                    LVDrawBuf * buf = coverPageManager->getIfReady(item, coverSize.x, coverSize.y);
                     if (buf) {
                         // image is ready
                     } else {
                         foundNotReady = true;
-                        coverPageManager->prepare(item, _coverDx, _coverDy, NULL);
+                        coverPageManager->prepare(item, coverSize.x, coverSize.y, NULL);
                     }
                 }
             }

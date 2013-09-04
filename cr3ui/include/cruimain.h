@@ -212,6 +212,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void startAnimation(int newpos, int duration, const CRUIMotionEvent * event = NULL);
     void stopAnimation();
 public:
+    CRRunnable * createUpdateCallback();
     void executeBackground(CRRunnable * task) { _backgroundThread.execute(task); }
     VIEW_MODE getMode() { return _history.currentMode(); }
     CRUIWidget * currentWidget() { return _history.currentWidget(); }

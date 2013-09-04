@@ -330,6 +330,20 @@ void CRUIMainWidget::animate(lUInt64 millisPassed) {
     }
 }
 
+class MainWidgetUpdateCallback : public CRRunnable {
+    CRUIMainWidget * _main;
+public:
+    MainWidgetUpdateCallback(CRUIMainWidget * main) : _main(main) {}
+    virtual void run() {
+        _main->requestLayout();
+        _main->update();
+    }
+};
+
+CRRunnable * CRUIMainWidget::createUpdateCallback() {
+    return new MainWidgetUpdateCallback(this);
+}
+
 bool CRUIMainWidget::isAnimating() {
     return _animation.active;
 }

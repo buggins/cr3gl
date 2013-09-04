@@ -17,19 +17,9 @@ using namespace CRUI;
 
 class CRUIMainWidget;
 
-class MainWidgetUpdateCallback : public CRRunnable {
-    CRUIMainWidget * _main;
-public:
-    MainWidgetUpdateCallback(CRUIMainWidget * main) : _main(main) {}
-    virtual void run() {
-        _main->requestLayout();
-        _main->update();
-    }
-};
-
 
 class CRUINowReadingWidget : public CRUILinearLayout {
-	CRUIImageWidget * _cover;
+    CRCoverWidget * _cover;
 	CRUILinearLayout * _captionLayout;
 	CRUILinearLayout * _layout;
 	CRUIImageRef _coverImage;
@@ -46,18 +36,14 @@ public:
 
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home), _lastBook(NULL) {
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
-		_cover = new CRUIImageWidget(_coverImage);
+        _cover = new CRCoverWidget(_home->getMain(), NULL, _coverDx, _coverDy);
 		int coverSize = deviceInfo.shortSide / 4;
 		_cover->setMargin(PT_TO_PX(4));
         _coverDx = coverSize * 3 / 4;
         _coverDy = coverSize;
-        _cover->setMinWidth(_coverDx);
-        _cover->setMaxWidth(_coverDx);
-        _cover->setMinHeight(_coverDy);
-        _cover->setMaxHeight(_coverDy);
+        _cover->setSize(_coverDx, _coverDy);
         //_cover->setBackground(0xC0808000);
         _cover->setBackground("home_frame.9.png");
-        _cover->setAlign(ALIGN_CENTER);
 		addChild(_cover);
 		_layout = new CRUILinearLayout(true);
 		addChild(_layout);
@@ -111,18 +97,7 @@ public:
     }
 
     void updateCover() {
-        if (_lastBook) {
-            LVDrawBuf * cover = coverPageManager->getIfReady(_lastBook, _coverDx, _coverDy);
-            if (cover) {
-                _coverImage = CRUIImageRef(new CRUIDrawBufImage(cover)) ; //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
-            } else {
-                _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
-                coverPageManager->prepare(_lastBook, _coverDx, _coverDy, new MainWidgetUpdateCallback(_home->getMain()));
-            }
-        } else {
-            _coverImage = CRUIImageRef();
-        }
-        _cover->setImage(_coverImage);
+        _cover->setBook(_lastBook);
     }
 
     void setLastBook(CRDirEntry * lastBook) {
@@ -416,4 +391,87 @@ void CRUIHomeWidget::setLastBook(CRDirEntry * lastBook) {
 
 const CRDirEntry * CRUIHomeWidget::getLastBook() {
     return _currentBook->getLastBook();
+}
+
+
+
+void CRCoverWidget::setSize(int width, int height) {
+    _dx = width;
+    _dy = height;
+    setMinWidth(width);
+    setMaxWidth(width);
+    setMinHeight(height);
+    setMaxHeight(height);
+    requestLayout();
+}
+
+void CRCoverWidget::setBook(CRDirEntry * book) {
+    if (_book)
+        delete _book;
+    _book = book ? book->clone() : NULL;
+}
+
+/// measure dimensions
+void CRCoverWidget::measure(int baseWidth, int baseHeight) {
+    _measuredWidth = _dx;
+    _measuredHeight = _dy;
+}
+
+/// updates widget position based on specified rectangle
+void CRCoverWidget::layout(int left, int top, int right, int bottom) {
+    _pos.left = left;
+    _pos.top = top;
+    _pos.right = right;
+    _pos.bottom = bottom;
+}
+/// draws widget with its children to specified surface
+void CRCoverWidget::draw(LVDrawBuf * buf) {
+    CRUIWidget::draw(buf);
+    if (!_book)
+        return;
+    LVDrawStateSaver saver(*buf);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+
+    int width = rc.width();
+    int height = rc.height();
+    // fix proportions
+    if (width > height * 3 / 4)
+        width = height * 3 / 4;
+    else if (height > width * 4 / 3)
+        height = width * 4 / 3;
+    if (width < 30 || height < 40)
+        return; // too small
+
+    LVDrawBuf * cover = coverPageManager->getIfReady(_book, width, height);
+    if (!cover) {
+        coverPageManager->prepare(_book, width, height, _main->createUpdateCallback());
+        return;
+    }
+    applyAlign(rc, width, height);
+    // don't scale
+    // draw
+    buf->DrawRescaled(cover, rc.left, rc.top, width, height, 0);
+}
+
+CRCoverWidget::CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy) : _main(main), _book(book) {
+    setSize(dx, dy);
+    setAlign(CRUI::ALIGN_CENTER);
+    setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+}
+
+lvPoint CRCoverWidget::calcCoverSize(int w, int h) {
+    lvRect padding;
+    getPadding(padding);
+    lvRect margin = getMargin();
+    int width = w - padding.left - padding.right - margin.left - margin.right;
+    int height = h - padding.top - padding.bottom - margin.top - margin.bottom;
+    // fix proportions
+    if (width > height * 3 / 4)
+        width = height * 3 / 4;
+    else if (height > width * 4 / 3)
+        height = width * 4 / 3;
+    return lvPoint(width, height);
 }
