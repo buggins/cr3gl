@@ -195,9 +195,13 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
         int progress;
         int oldpos;
         int newpos;
+        int oldimagex;
+        int newimagex;
+        LVDrawBuf * oldimage;
+        LVDrawBuf * newimage;
         lvPoint startPoint;
         lUInt64 startTs;
-        AnimationControl() : active(false) {}
+        AnimationControl() : active(false), oldimage(NULL), newimage(NULL) {}
     };
     AnimationControl _animation;
 

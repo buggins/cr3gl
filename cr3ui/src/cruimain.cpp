@@ -251,8 +251,21 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
         _animation.startPoint.x = event->getStartX();
         _animation.startPoint.y = event->getStartY();
     }
+
+    _animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+    _animation.oldimage->beforeDrawing();
+    oldWidget->measure(_pos.width(), _pos.height());
+    oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    oldWidget->draw(_animation.oldimage);
+    _animation.oldimage->afterDrawing();
+
+    _animation.newimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+    _animation.newimage->beforeDrawing();
     newWidget->measure(_pos.width(), _pos.height());
     newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    newWidget->draw(_animation.newimage);
+    _animation.newimage->afterDrawing();
+
     if (duration == 0) {
         stopAnimation();
     } else {
@@ -270,6 +283,14 @@ void CRUIMainWidget::stopAnimation() {
     CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
     oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+    if (_animation.oldimage) {
+        delete _animation.oldimage;
+        _animation.oldimage = NULL;
+    }
+    if (_animation.newimage) {
+        delete _animation.newimage;
+        _animation.newimage = NULL;
+    }
     _history.setPos(_animation.newpos);
     requestLayout();
     update();
@@ -288,23 +309,13 @@ void CRUIMainWidget::animate(lUInt64 millisPassed) {
         } else {
             int x = _pos.width() * p / _animation.duration;
             //CRLog::trace("animation position %d", x);
-            lvRect rc1 = _pos;
-            lvRect rc2 = _pos;
             if (_animation.direction < 0) {
-                rc1.left -= x;
-                rc1.right -= x;
-                rc2.left += _pos.width() - x;
-                rc2.right += _pos.width() - x;
+                _animation.oldimagex = _pos.left - x;
+                _animation.newimagex = _pos.right - x;
             } else {
-                rc1.left += x;
-                rc1.right += x;
-                rc2.left -= _pos.width() - x;
-                rc2.right -= _pos.width() - x;
+                _animation.oldimagex = _pos.left + x;
+                _animation.newimagex = _pos.left - _pos.width() + x;
             }
-            CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
-            CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
-            oldWidget->layout(rc1.left, rc1.top, rc1.right, rc1.bottom);
-            newWidget->layout(rc2.left, rc2.top, rc2.right, rc2.bottom);
         }
     }
 }
@@ -334,11 +345,9 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         //CRLog::trace("Drawing static background");
         _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
-        if (_animation.active) {
-            CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
-            CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
-            oldWidget->draw(buf);
-            newWidget->draw(buf);
+        if (_animation.active && _animation.oldimage && _animation.newimage) {
+            _animation.oldimage->DrawTo(buf, _animation.oldimagex, _pos.top, 0, NULL);
+            _animation.newimage->DrawTo(buf, _animation.newimagex, _pos.top, 0, NULL);
         } else {
             _history.currentWidget()->draw(buf);
         }
