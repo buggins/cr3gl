@@ -254,6 +254,39 @@ public:
         return _parent->getMain()->startDragging(event, vertical);
     }
 
+    /// returns true if all coverpages are available, false if background tasks are submitted
+    virtual bool requestAllVisibleCoverpages() {
+        coverPageManager->cancelAll();
+        lvRect rc = _pos;
+        applyMargin(rc);
+        applyPadding(rc);
+
+        lvRect clip = _pos;
+        bool foundNotReady = false;
+        for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
+            lvRect childRc = _itemRects[i];
+            if (_vertical) {
+                childRc.top -= _scrollOffset;
+                childRc.bottom -= _scrollOffset;
+            } else {
+                childRc.left -= _scrollOffset;
+                childRc.right -= _scrollOffset;
+            }
+            if (clip.intersects(childRc)) {
+                CRDirEntry * item = _dir->getItem(i);
+                if (!item->isDirectory()) {
+                    LVDrawBuf * buf = coverPageManager->getIfReady(item, _coverDx, _coverDy);
+                    if (buf) {
+                        // image is ready
+                    } else {
+                        foundNotReady = true;
+                        coverPageManager->prepare(item, _coverDx, _coverDy, NULL);
+                    }
+                }
+            }
+        }
+        return !foundNotReady;
+    }
 };
 
 void CRUIFolderWidget::setDirectory(CRDirCacheItem * dir)
@@ -298,6 +331,11 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
 CRUIFolderWidget::~CRUIFolderWidget()
 {
 
+}
+
+/// returns true if all coverpages are available, false if background tasks are submitted
+bool CRUIFolderWidget::requestAllVisibleCoverpages() {
+    return _fileList->requestAllVisibleCoverpages();
 }
 
 /// motion event handler, returns true if it handled event

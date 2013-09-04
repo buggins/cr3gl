@@ -217,13 +217,6 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 			delimiterSize = delimiter->originalWidth();
 	}
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
-		bool selected = _selectedItem == i;
-		bool enabled = isItemEnabled(i);
-		CRUIWidget * item = getItemWidget(i);
-		item->setState(selected ? STATE_FOCUSED : 0, STATE_FOCUSED);
-		item->setState(!enabled ? STATE_DISABLED : 0, STATE_DISABLED);
-		if (!item)
-			continue;
 		lvRect childRc = _itemRects[i];
 		lvRect delimiterRc;
 		if (_vertical) {
@@ -240,7 +233,14 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 			delimiterRc.right = delimiterRc.left + delimiterSize;
 		}
 		if (clip.intersects(childRc)) {
-			//CRLog::trace("drawing list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
+            bool selected = (_selectedItem == i);
+            bool enabled = isItemEnabled(i);
+            CRUIWidget * item = getItemWidget(i);
+            if (!item)
+                continue;
+            item->setState(selected ? STATE_FOCUSED : 0, STATE_FOCUSED);
+            item->setState(!enabled ? STATE_DISABLED : 0, STATE_DISABLED);
+            //CRLog::trace("drawing list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->draw(buf);
 		} else {
@@ -249,7 +249,6 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 		if (delimiterSize && i < getItemCount() - 1 && clip.intersects(delimiterRc))
 			delimiter->draw(buf, delimiterRc);
 	}
-	//_scrollOffset++;
 }
 
 lvPoint CRUIListWidget::getTileOffset() const {

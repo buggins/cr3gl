@@ -22,6 +22,8 @@ class CRUIFolderWidget : public CRUILinearLayout, public CRUIOnListItemClickList
 	CRDirCacheItem * _dir;
     CRUIMainWidget * _main;
 public:
+    /// returns true if all coverpages are available, false if background tasks are submitted
+    virtual bool requestAllVisibleCoverpages();
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
     virtual bool onClick(CRUIWidget * widget);

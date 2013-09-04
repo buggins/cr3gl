@@ -4,11 +4,26 @@
 #include "epubfmt.h"
 #include "pdbfmt.h"
 
-#define USE_GL_COVERPAGE_CACHE 0 // no GL context under this thread anyway
+//#define USE_GL_COVERPAGE_CACHE 0 // no GL context under this thread anyway
 
-#if USE_GL_COVERPAGE_CACHE
-#include "gldrawbuf.h"
-#endif
+//#if USE_GL_COVERPAGE_CACHE
+//#include "gldrawbuf.h"
+//#endif
+
+class CoverTask {
+public:
+    CRDirEntry * book;
+    int dx;
+    int dy;
+    CRRunnable * callback;
+    CoverTask(CRDirEntry * _book, int _dx, int _dy, CRRunnable * _callback) : book(_book->clone()), dx(_dx), dy(_dy), callback(_callback) {}
+    virtual ~CoverTask() {
+        delete book;
+    }
+    bool isSame(CRDirEntry * _book, int _dx, int _dy) {
+        return dx == _dx && dy == _dy && _book->getPathName() == book->getPathName();
+    }
+};
 
 void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, LVImageSourceRef image, int bpp)
 {
@@ -484,6 +499,26 @@ CRCoverImageCache::CRCoverImageCache(int maxitems, int maxsize) : _maxitems(maxi
 
 CRCoverImageCache * coverImageCache = NULL;
 
+void CRCoverPageManager::allTasksFinished() {
+    // already under lock in background thread
+    if (_allTasksFinishedCallback)
+        concurrencyProvider->executeGui(_allTasksFinishedCallback); // callback will be deleted in GUI thread
+}
+
+void CRCoverPageManager::setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback) {
+    // called from GUI thread
+    CRGuard guard(_monitor);
+    if (_stopped || (!_taskIsRunning && _queue.length() == 0)) {
+        // call immediately
+        allTasksFinishedCallback->run();
+        delete allTasksFinishedCallback;
+    }
+    /// set callback
+    if (_allTasksFinishedCallback)
+        delete _allTasksFinishedCallback;
+    _allTasksFinishedCallback = allTasksFinishedCallback;
+}
+
 
 void CRCoverPageManager::stop() {
     CRGuard guard(_monitor);
@@ -507,6 +542,7 @@ void CRCoverPageManager::run() {
             CRGuard guard(_monitor);
             //CRLog::trace("CRCoverPageManager::run :: lock acquired");
             if (_queue.length() == 0) {
+                allTasksFinished();
                 //CRLog::trace("CRCoverPageManager::run :: calling monitor wait");
                 _monitor->wait();
                 //CRLog::trace("CRCoverPageManager::run :: done monitor wait");
@@ -514,17 +550,25 @@ void CRCoverPageManager::run() {
             if (_stopped)
                 break;
             task = _queue.popFront();
-            if (task) {
-                //CRLog::trace("CRCoverPageManager: searching in cache");
-                CRCoverImageCache::Entry * entry = coverImageCache->find(task->book, task->dx, task->dy);
-                if (!entry) {
-                    //CRLog::trace("CRCoverPageManager: rendering new coverpage image ");
-                    entry = coverImageCache->draw(task->book, task->dx, task->dy);
-                }
-                //CRLog::trace("CRCoverPageManager: calling ready callback");
-                concurrencyProvider->executeGui(task->callback); // callback will be deleted in GUI thread
-                delete task;
+            if (task)
+                _taskIsRunning = true;
+            else
+                allTasksFinished();
+        }
+        /// execute w/o lock
+        if (task) {
+
+            //CRLog::trace("CRCoverPageManager: searching in cache");
+            CRCoverImageCache::Entry * entry = coverImageCache->find(task->book, task->dx, task->dy);
+            if (!entry) {
+                //CRLog::trace("CRCoverPageManager: rendering new coverpage image ");
+                entry = coverImageCache->draw(task->book, task->dx, task->dy);
             }
+            //CRLog::trace("CRCoverPageManager: calling ready callback");
+            if (task->callback)
+                concurrencyProvider->executeGui(task->callback); // callback will be deleted in GUI thread
+            delete task;
+            _taskIsRunning = false;
         }
         // process next event
     }
@@ -557,8 +601,10 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
     CRCoverImageCache::Entry * existing = coverImageCache->find(_book, dx, dy);
     if (existing) {
         // we are in GUI thread now
-        readyCallback->run();
-        delete readyCallback;
+        if (readyCallback) {
+            readyCallback->run();
+            delete readyCallback;
+        }
         return;
     }
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
@@ -576,6 +622,18 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
     CRLog::trace("CRCoverPageManager::prepare - added new task %s %dx%d", _book->getPathName().c_str(), dx, dy);
 }
 
+/// cancels all pending coverpage tasks
+void CRCoverPageManager::cancelAll() {
+    CRGuard guard(_monitor);
+    CRLog::trace("CRCoverPageManager::cancelAll");
+    for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        iterator.remove();
+        delete item->callback;
+        delete item;
+    }
+}
+
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);
@@ -591,7 +649,7 @@ void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
     }
 }
 
-CRCoverPageManager::CRCoverPageManager() : _stopped(false) {
+CRCoverPageManager::CRCoverPageManager() : _stopped(false), _allTasksFinishedCallback(NULL), _taskIsRunning(false) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
     _thread->start();

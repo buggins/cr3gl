@@ -87,28 +87,22 @@ public:
 
 extern CRCoverImageCache * coverImageCache;
 
+class CoverTask;
 
 class CRCoverPageManager : public CRRunnable {
-    class CoverTask {
-    public:
-        CRDirEntry * book;
-        int dx;
-        int dy;
-        CRRunnable * callback;
-        CoverTask(CRDirEntry * _book, int _dx, int _dy, CRRunnable * _callback) : book(_book->clone()), dx(_dx), dy(_dy), callback(_callback) {}
-        virtual ~CoverTask() {
-            delete book;
-        }
-        bool isSame(CRDirEntry * _book, int _dx, int _dy) {
-            return dx == _dx && dy == _dy && _book->getPathName() == book->getPathName();
-        }
-    };
 
-    bool _stopped;
+    volatile bool _stopped;
     CRMonitorRef _monitor;
     CRThreadRef _thread;
     LVQueue<CoverTask *> _queue;
+    CRRunnable * _allTasksFinishedCallback;
+    volatile bool _taskIsRunning;
+
+    void allTasksFinished();
 public:
+
+    void setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback);
+
     CRCoverPageManager();
     virtual ~CRCoverPageManager();
 
@@ -119,6 +113,8 @@ public:
     LVDrawBuf * getIfReady(CRDirEntry * _book, int dx, int dy);
     /// cancels pending coverpage task (if not yet started)
     void cancel(CRDirEntry * _book, int dx, int dy);
+    /// cancels all pending coverpage tasks
+    void cancelAll();
     /// prepares coverpage in background thread; calls readyCallback in GUI thread when done
     void prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback);
 };

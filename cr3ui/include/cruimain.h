@@ -253,6 +253,7 @@ public:
     void showHome();
     void back();
 
+    virtual void onAllCoverpagesReady();
     virtual void onDirectoryScanFinished(CRDirCacheItem * item);
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);

@@ -3,6 +3,7 @@
 using namespace CRUI;
 
 #include "gldrawbuf.h"
+#include "crcoverpages.h"
 
 #define WINDOW_ANIMATION_DELAY 300
 #define SLOW_OPERATION_POPUP_DELAY 300
@@ -40,11 +41,34 @@ void CRUIMainWidget::back() {
     }
 }
 
+class CoverpagesReadyCallback : public CRRunnable {
+    CRUIMainWidget * _main;
+public:
+    CoverpagesReadyCallback(CRUIMainWidget * main) : _main(main) {}
+    virtual void run() {
+        _main->onAllCoverpagesReady();
+    }
+};
+
+void CRUIMainWidget::onAllCoverpagesReady() {
+    if (_history.next() && _history.next()->getMode() == MODE_FOLDER) {
+        // animating move to folder view
+        hideSlowOperationPopup();
+        startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+    }
+}
+
 void CRUIMainWidget::onDirectoryScanFinished(CRDirCacheItem * item) {
     if (_history.next() && _history.next()->getMode() == MODE_FOLDER && _history.next()->getPathName() == item->getPathName()) {
         CRLog::info("Directory %s is ready", item->getPathName().c_str());
-        hideSlowOperationPopup();
-        startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+        CRUIFolderWidget * folder = dynamic_cast<CRUIFolderWidget *>(_history.next()->getWidget());
+        if (folder && !folder->requestAllVisibleCoverpages()) {
+            // initiate wait until all coverpages ready
+            coverPageManager->setAllTasksFinishedCallback(new CoverpagesReadyCallback(this));
+        } else {
+            hideSlowOperationPopup();
+            startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+        }
     } else {
         update();
     }
