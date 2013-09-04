@@ -11,10 +11,23 @@
 #include "cruitheme.h"
 #include "stringresource.h"
 #include "cruimain.h"
+#include "crcoverpages.h"
 
 using namespace CRUI;
 
 class CRUIMainWidget;
+
+class MainWidgetUpdateCallback : public CRRunnable {
+    CRUIMainWidget * _main;
+public:
+    MainWidgetUpdateCallback(CRUIMainWidget * main) : _main(main) {}
+    virtual void run() {
+        _main->requestLayout();
+        _main->update();
+    }
+};
+
+
 class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUIImageWidget * _cover;
 	CRUILinearLayout * _captionLayout;
@@ -26,16 +39,22 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUITextWidget * _authors;
 	CRUITextWidget * _info;
     CRUIHomeWidget * _home;
+    CRDirEntry * _lastBook;
+    int _coverDx;
+    int _coverDy;
 public:
-    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
-		_coverImage = resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
+
+    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home), _lastBook(NULL) {
+        _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
 		_cover = new CRUIImageWidget(_coverImage);
 		int coverSize = deviceInfo.shortSide / 4;
 		_cover->setMargin(PT_TO_PX(4));
-		_cover->setMinWidth(coverSize);
-		_cover->setMaxWidth(coverSize);
-		_cover->setMinHeight(coverSize * 3 / 4);
-		_cover->setMaxHeight(coverSize * 3 / 4);
+        _coverDx = coverSize * 3 / 4;
+        _coverDy = coverSize;
+        _cover->setMinWidth(_coverDx);
+        _cover->setMaxWidth(_coverDx);
+        _cover->setMinHeight(_coverDy);
+        _cover->setMaxHeight(_coverDy);
         //_cover->setBackground(0xC0808000);
         _cover->setBackground("home_frame.9.png");
         _cover->setAlign(ALIGN_CENTER);
@@ -82,7 +101,51 @@ public:
 //		_layout->addChild(testButton);
 
 		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+
+        setLastBook(NULL);
 	}
+
+    ~CRUINowReadingWidget() {
+        if (_lastBook)
+            delete _lastBook;
+    }
+
+    void updateCover() {
+        if (_lastBook) {
+            LVDrawBuf * cover = coverPageManager->getIfReady(_lastBook, _coverDx, _coverDy);
+            if (cover) {
+                _coverImage = CRUIImageRef(new CRUIDrawBufImage(cover)) ; //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
+            } else {
+                _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
+                coverPageManager->prepare(_lastBook, _coverDx, _coverDy, new MainWidgetUpdateCallback(_home->getMain()));
+            }
+        } else {
+            _coverImage = CRUIImageRef();
+        }
+        _cover->setImage(_coverImage);
+    }
+
+    void setLastBook(CRDirEntry * lastBook) {
+        if (_lastBook)
+            delete _lastBook;
+        _lastBook = lastBook ? lastBook->clone() : NULL;
+        if (_lastBook) {
+            _title->setText(_lastBook->getTitle());
+            _authors->setText(_lastBook->getAuthorNames(false));
+            _info->setText(_lastBook->getSeriesName(true));
+        } else {
+            _title->setText(lString16());
+            _authors->setText(lString16());
+            _info->setText(lString16());
+        }
+        updateCover();
+        invalidate();
+    }
+
+    const CRDirEntry * getLastBook() {
+        return _lastBook;
+    }
+
 };
 
 class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
@@ -261,7 +324,8 @@ CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : _main(main){
 /// measure dimensions
 void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 {
-	_measuredWidth = baseWidth;
+    _currentBook->updateCover();
+    _measuredWidth = baseWidth;
 	_measuredHeight = baseHeight;
 	bool vertical = baseWidth < baseHeight;
 	if (vertical) {
@@ -344,4 +408,12 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
         return CRUIWidget::onTouchEvent(event);
     }
     return true;
+}
+
+void CRUIHomeWidget::setLastBook(CRDirEntry * lastBook) {
+    _currentBook->setLastBook(lastBook);
+}
+
+const CRDirEntry * CRUIHomeWidget::getLastBook() {
+    return _currentBook->getLastBook();
 }

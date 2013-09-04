@@ -12,6 +12,7 @@
 #include "crui.h"
 #include "cruimain.h"
 #include "gldrawbuf.h"
+#include "fileinfo.h"
 
 using namespace CRUI;
 

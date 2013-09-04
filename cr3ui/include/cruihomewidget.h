@@ -10,6 +10,7 @@
 
 #include "cruilayout.h"
 #include "cruilist.h"
+#include "fileinfo.h"
 
 class CRUINowReadingWidget;
 class CRUIRecentBooksListWidget;
@@ -28,13 +29,15 @@ class CRUIHomeWidget : public CRUIContainerWidget {
 public:
     CRUIMainWidget * getMain() { return _main; }
     CRUIHomeWidget(CRUIMainWidget * main);
-	virtual ~CRUIHomeWidget() {}
+    virtual ~CRUIHomeWidget() {}
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
 	virtual void layout(int left, int top, int right, int bottom);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    void setLastBook(CRDirEntry * lastBook);
+    const CRDirEntry * getLastBook();
 };
 
 #endif /* CRUIHOMEWIDGET_H_ */
