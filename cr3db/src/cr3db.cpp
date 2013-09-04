@@ -690,6 +690,7 @@ void BookDBBookCache::moveToHead(Item * item) {
 		head->prev = item;
 	item->next = head;
 	item->prev = NULL;
+    head = item;
 }
 
 BookDBBook * BookDBBookCache::get(const DBString & path) {

@@ -14,7 +14,7 @@
 #include "lvref.h"
 #include "lvstring.h"
 #include "crconcurrent.h"
-
+#include "lvqueue.h"
 
 class BookDBEntity {
 public:
