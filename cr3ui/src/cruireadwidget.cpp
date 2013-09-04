@@ -50,6 +50,9 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
         CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+        lvRect rc = _pos;
+        rc.shrink(20);
+        buf->FillRect(rc, 0x80DDAABB);
     } else {
         // document render in progress; draw just page background
         CRLog::trace("Document is locked, just drawing background");

@@ -31,6 +31,7 @@ GLScene::~GLScene() {
 
 /// pushes new scene to scene stack, makes it current
 GLScene * LVGLPushScene(GLScene * scene) {
+    //CRLog::trace("LVGLPushScene(%08x) old stack size = %d", (lUInt32)scene, sceneStack.length());
     sceneStack.push(scene);
 	currentGLScene = scene;
 	return scene;
@@ -38,8 +39,10 @@ GLScene * LVGLPushScene(GLScene * scene) {
 
 /// pops last scene from scene stack, makes previous scene current, returns popped scene
 GLScene * LVGLPopScene() {
-	GLScene * res = currentGLScene;
-	currentGLScene = sceneStack.pop();
+    GLScene * res = sceneStack.pop();
+    //CRLog::trace("LVGLPopScene res %08x old stack size = %d", (lUInt32)res, sceneStack.length());
+    currentGLScene = sceneStack.peek();
+    //CRLog::trace("LVGLPopScene new current scene -> %08x, new stack size = %d", (lUInt32)currentGLScene, sceneStack.length());
     if (!res)
         CRLog::error("LVGLPopScene() returning NULL");
     return res;
@@ -52,5 +55,7 @@ GLScene * LVGLPeekScene() {
 void LVGLAddSceneItem(GLSceneItem * item) {
 	if (currentGLScene)
 		currentGLScene->add(item);
+    else
+        CRLog::error("LVGLAddSceneItem : no current scene");
 }
 

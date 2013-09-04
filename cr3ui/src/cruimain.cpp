@@ -267,6 +267,9 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     newWidget->measure(_pos.width(), _pos.height());
     newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     newWidget->draw(_animation.newimage);
+    lvRect rc = _pos;
+    rc.shrink(20);
+    _animation.newimage->FillRect(rc, 0x80DDAABB);
     _animation.newimage->afterDrawing();
 
     _animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
@@ -370,8 +373,8 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
         if (_animation.active && _animation.oldimage && _animation.newimage) {
-            _animation.oldimage->DrawTo(buf, _animation.oldimagex, _pos.top, 0, NULL);
             _animation.newimage->DrawTo(buf, _animation.newimagex, _pos.top, 0, NULL);
+            _animation.oldimage->DrawTo(buf, _animation.oldimagex, _pos.top, 0, NULL);
         } else {
             _history.currentWidget()->draw(buf);
         }
