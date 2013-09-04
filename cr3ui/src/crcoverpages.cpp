@@ -580,8 +580,10 @@ CRCoverImageCache * coverImageCache = NULL;
 
 void CRCoverPageManager::allTasksFinished() {
     // already under lock in background thread
-    if (_allTasksFinishedCallback)
+    if (_allTasksFinishedCallback) {
         concurrencyProvider->executeGui(_allTasksFinishedCallback); // callback will be deleted in GUI thread
+        _allTasksFinishedCallback = NULL;
+    }
 }
 
 void CRCoverPageManager::setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback) {
