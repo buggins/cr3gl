@@ -267,6 +267,7 @@ public:
 				commentText == v.commentText &&
 				timeElapsed == v.timeElapsed;
 	}
+    BookDBBookmark * clone() const { return new BookDBBookmark(*this); }
 };
 
 class BookDBAuthorCache {
@@ -391,7 +392,11 @@ class CRBookDB {
     /// reads single bookmark row fileds
     BookDBBookmark * loadBookmark(SQLiteStatement & stmt);
 
-	bool updateBook(BookDBBook * book, BookDBBook * fromCache);
+    bool updateBookmark(BookDBBookmark * bookmark, BookDBBookmark * fromCache);
+    bool insertBookmark(BookDBBookmark * bookmark);
+
+
+    bool updateBook(BookDBBook * book, BookDBBook * fromCache);
 	bool insertBook(BookDBBook * book);
 
     bool saveSeries(BookDBSeries * item);
@@ -424,9 +429,9 @@ public:
     /// protected by mutex
     BookDBBook * loadBook(lString8 pathname);
 
-    /// saves last position for book
+    /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
-    /// saves last position for book
+    /// loads last position for book, returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
 };
 

@@ -685,7 +685,100 @@ bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
     BookDBBook * cached = _bookCache.get(book->pathname);
     if (book->id == 0 && cached)
         book->id = cached->id;
+    if (!book->id)
+        return false;
+    pos->bookId = book->id;
+    pos->type = 0;
+    BookDBBookmark * existing = _lastPositionCache.find(book->id);
+    if (!existing) {
+        // insert new
+        bool res = insertBookmark(pos);
+        _lastPositionCache.put(pos->bookId, pos->clone());
+        return res;
+    } else {
+        // update
+        if (existing->operator ==(*pos))
+            return true; // the same
+        bool res = updateBookmark(pos, existing);
+        _lastPositionCache.put(pos->bookId, pos->clone());
+        return res;
+    }
+    return false;
+}
 
+bool CRBookDB::updateBookmark(BookDBBookmark * b, BookDBBookmark * fromCache)
+{
+    int typeIndex = -1;
+    int percentIndex = -1;
+    int shortcutIndex = -1;
+    int timestampIndex = -1;
+    int startPosIndex = -1;
+    int endPosIndex = -1;
+    int titleTextIndex = -1;
+    int posTextIndex = -1;
+    int commentTextIndex = -1;
+    int timeElapsedIndex = -1;
+
+    int index = 1;
+    lString8 buf;
+    if (b->type != fromCache->type) appendUpdateField(buf, "type", typeIndex, index);
+    if (b->percent != fromCache->percent) appendUpdateField(buf, "percent", percentIndex, index);
+    if (b->shortcut != fromCache->shortcut) appendUpdateField(buf, "shortcut", shortcutIndex, index);
+    if (b->timestamp != fromCache->timestamp) appendUpdateField(buf, "time_stamp", timestampIndex, index);
+    if (b->startPos != fromCache->startPos) appendUpdateField(buf, "start_pos", startPosIndex, index);
+    if (b->endPos != fromCache->endPos) appendUpdateField(buf, "end_pos", endPosIndex, index);
+    if (b->titleText != fromCache->titleText) appendUpdateField(buf, "title_text", titleTextIndex, index);
+    if (b->posText != fromCache->posText) appendUpdateField(buf, "pos_text", posTextIndex, index);
+    if (b->commentText != fromCache->commentText) appendUpdateField(buf, "comment_text", commentTextIndex, index);
+    if (b->timeElapsed != fromCache->timeElapsed) appendUpdateField(buf, "time_elapsed", timeElapsedIndex, index);
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    lString8 sql("UPDATE bookmark SET ");
+    sql += buf;
+    sql += " WHERE id = ?;";
+    stmt.prepare(sql.c_str());
+
+    stmt.bindInt64(index, b->id);
+    if (typeIndex >= 0) stmt.bindInt(typeIndex, b->type);
+    if (percentIndex >= 0) stmt.bindInt(percentIndex, b->percent);
+    if (shortcutIndex >= 0) stmt.bindInt(shortcutIndex, b->shortcut);
+    if (timestampIndex >= 0) stmt.bindInt64(timestampIndex, b->timestamp);
+    if (startPosIndex >= 0) stmt.bindText(startPosIndex, b->startPos);
+    if (endPosIndex >= 0) stmt.bindText(endPosIndex, b->endPos);
+    if (titleTextIndex >= 0) stmt.bindText(titleTextIndex, b->titleText);
+    if (posTextIndex >= 0) stmt.bindText(posTextIndex, b->posText);
+    if (commentTextIndex >= 0) stmt.bindText(commentTextIndex, b->commentText);
+    if (timeElapsedIndex >= 0) stmt.bindInt64(timeElapsedIndex, b->timeElapsed);
+
+    if (stmt.step() == DB_DONE) {
+        return true;
+    }
+    return false;
+}
+
+bool CRBookDB::insertBookmark(BookDBBookmark * b)
+{
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    err = stmt.prepare("INSERT INTO bookmark "
+                       "(book_fk, type, percent, shortcut, time_stamp, "
+                       "start_pos, end_pos, title_text, pos_text, comment_text, time_elapsed) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?,?);") != 0 || err;
+    stmt.bindKey(1, b->bookId);
+    stmt.bindInt(2, b->type);
+    stmt.bindInt(3, b->percent);
+    stmt.bindInt(4, b->shortcut);
+    stmt.bindInt64(5, b->timestamp);
+    stmt.bindText(6, b->startPos);
+    stmt.bindText(7, b->endPos);
+    stmt.bindText(8, b->titleText);
+    stmt.bindText(9, b->posText);
+    stmt.bindText(10, b->commentText);
+    stmt.bindInt64(11, b->timeElapsed);
+    if (stmt.step() == DB_DONE) {
+        b->id = stmt.lastInsertId();
+        return true;
+    }
     return false;
 }
 
@@ -697,8 +790,8 @@ BookDBBookmark * CRBookDB::loadLastPosition(BookDBBook * book) {
         book->id = cached->id;
     if (!book->id)
         return NULL;
-    BookDBBookmark *  res = _lastPositionCache.find(book->id);
-    return res;
+    BookDBBookmark * res = _lastPositionCache.find(book->id);
+    return res ? res->clone() : NULL;
 }
 
 BookDBBook * CRBookDB::loadBook(lString8 pathname) {
