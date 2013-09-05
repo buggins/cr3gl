@@ -284,10 +284,100 @@ public:
 	}
 };
 
-class CRUIRecentBooksListWidget : public CRUIHomeItemListWidget {
+class CRUIRecentBooksListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
+protected:
+    CRUITextWidget * _caption;
+    CRUIListWidget * _list;
+    CRUILinearLayout * _itemWidget;
+    CRCoverWidget  * _itemImage;
+    CRUITextWidget * _textWidget;
+    CRUIHomeWidget * _home;
 public:
-    CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_RECENT_BOOKS) {
-	}
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) { return false; }
+
+    CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUILinearLayout(true), _home(home) {
+        _caption = new CRUITextWidget(STR_RECENT_BOOKS);
+        _caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
+        _caption->setPadding(3);
+        _caption->setStyle("HOME_LIST_CAPTION");
+        addChild(_caption);
+        _list = new CRUIListWidget(false, this);
+        _list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+        _list->setBackground("home_frame.9.png");
+        _list->setPadding(PT_TO_PX(3));
+        _list->setOnItemClickListener(this);
+        addChild(_list);
+
+        _itemImage = new CRCoverWidget(home->getMain(), NULL, 75, 100);
+        _itemImage->setAlign(CRUI::ALIGN_CENTER);
+        _itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
+        _itemImage->setPadding(PT_TO_PX(1));
+
+        _textWidget = new CRUITextWidget(lString16());
+        _textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
+        _textWidget->setFontSize(CRUI::FONT_SIZE_XSMALL);
+        _textWidget->setPadding(PT_TO_PX(1));
+        _textWidget->setMaxLines(2);
+        _textWidget->setEllipsisMode(ELLIPSIS_MIDDLE);
+
+        _itemWidget = new CRUILinearLayout(true);
+        _itemWidget->addChild(_itemImage);
+        _itemWidget->addChild(_textWidget);
+        _itemWidget->setPadding(PT_TO_PX(2));
+        _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
+        _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
+        _itemWidget->setStyle("LIST_ITEM");
+
+        setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+    }
+
+    virtual int getItemCount(CRUIListWidget * list) {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        if (!dir)
+            return 0;
+        int count = dir->itemCount() - 1;
+        return count >= 0 ? count : 0;
+    }
+
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRDirEntry * item = dir ? dir->getItem(index + 1) : NULL;
+        if (item) {
+            lString16 text = item->getTitle();
+            if (text.empty())
+                text = Utf8ToUnicode(item->getFileName());
+            _textWidget->setText(text);
+            _itemImage->setBook(item);
+        } else {
+            _textWidget->setText(lString16("?"));
+            _itemImage->setBook(NULL);
+        }
+        return _itemWidget;
+    }
+
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight) {
+        /// calculate cover widget size
+        lvRect itempadding;
+        _itemWidget->getPadding(itempadding);
+        lvRect itemmargin = _itemWidget->getMargin();
+        lvRect textpadding;
+        _textWidget->getPadding(textpadding);
+        lvRect textmargin = _textWidget->getMargin();
+        int textH = _textWidget->getFontSize() * 2;
+        int coverH = baseHeight - textH - textpadding.top - textpadding.bottom - itempadding.top - itempadding.bottom -
+                textmargin.top - textmargin.bottom - itemmargin.top - itemmargin.bottom;
+        _itemImage->setSize(coverH * 3 / 4, coverH);
+
+        /// widget size constraints
+        int coverW = coverH * 3 / 4 + itempadding.left + itempadding.right + itemmargin.left + itemmargin.right;
+        _itemWidget->setMinWidth(coverW);
+        // TODO: get it working
+//        _itemWidget->setMaxWidth(coverW);
+
+        /// measure
+        CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
 };
 
 CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : _main(main){

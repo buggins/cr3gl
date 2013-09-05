@@ -59,6 +59,14 @@ void CRUIMainWidget::onAllCoverpagesReady() {
 }
 
 void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
+    if (item->getDirType() == DIR_TYPE_RECENT) {
+        // set recent book
+        if (item->itemCount() > 0) {
+            _home->setLastBook(item->getItem(0));
+        }
+        update();
+        return;
+    }
     item->sort(CRUI::BY_TITLE);
     if (_history.next() && _history.next()->getMode() == MODE_FOLDER && _history.next()->getPathName() == item->getPathName()) {
         CRLog::info("Directory %s is ready", item->getPathName().c_str());
@@ -173,7 +181,16 @@ void CRUIMainWidget::openBook(const CRFileItem * file) {
     _read->openBook(file);
 }
 
-CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
+void CRUIMainWidget::runStartupTasksIfNeeded() {
+    if (_initialized)
+        return;
+    _initialized = true;
+    dirCache->scan(lString8(RECENT_DIR_TAG), this);
+}
+
+CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL),
+    _screenUpdater(NULL), _lastAnimationTs(0), _initialized(false)
+{
     recreate();
 }
 
@@ -357,6 +374,9 @@ bool CRUIMainWidget::isAnimating() {
 
 /// draws widget with its children to specified surface
 void CRUIMainWidget::draw(LVDrawBuf * buf) {
+    if (!_initialized)
+        runStartupTasksIfNeeded();
+
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
     if (animating) {

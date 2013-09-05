@@ -47,6 +47,7 @@ protected:
     int _dx;
     int _dy;
 public:
+    /// will own passed book w/o cloning
     CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy);
     ~CRCoverWidget() { if (_book) delete _book; }
     /// calculates cover image size (to request in cache) by control size

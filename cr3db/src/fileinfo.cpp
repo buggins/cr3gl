@@ -319,7 +319,9 @@ int CRDirContentItem::itemCount() const {
 
 CRDirEntry * CRDirContentItem::getItem(int index) const {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    return _entries[index];
+    if (index >= 0 && index < _entries.length())
+        return _entries[index];
+    return NULL;
 }
 
 CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _scanning(false)
@@ -572,6 +574,8 @@ CRDirContentItem * CRDirCache::getOrAdd(const lString8 & pathname) {
 }
 
 CRDirContentItem * CRDirCache::find(lString8 pathname) {
+    if (pathname == RECENT_DIR_TAG)
+        return &_recentBooks;
     CRGuard guard(_monitor);
     CRDirCache::Item * item = findItem(pathname);
 	if (!item)
