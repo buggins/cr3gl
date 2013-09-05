@@ -259,7 +259,7 @@ public:
     void back();
 
     virtual void onAllCoverpagesReady();
-    virtual void onDirectoryScanFinished(CRDirCacheItem * item);
+    virtual void onDirectoryScanFinished(CRDirContentItem * item);
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);
 

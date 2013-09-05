@@ -204,7 +204,7 @@ static lString16 sizeToString(int size) {
 
 class CRUIFileListWidget : public CRUIListWidget {
 protected:
-	CRDirCacheItem * _dir;
+    CRDirContentItem * _dir;
     CRUIDirItemWidget * _folderWidget;
     CRUIBookItemWidget * _bookWidget;
     CRUIFolderWidget * _parent;
@@ -288,7 +288,7 @@ public:
 			return res;
 		}
 	}
-	virtual void setDirectory(CRDirCacheItem * dir)
+    virtual void setDirectory(CRDirContentItem * dir)
 	{
 		_dir = dir;
 		dir->sort(BY_TITLE);
@@ -336,7 +336,7 @@ public:
     }
 };
 
-void CRUIFolderWidget::setDirectory(CRDirCacheItem * dir)
+void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 {
 	_dir = dir;
 	_fileList->setDirectory(dir);

@@ -132,7 +132,10 @@ protected:
     LVPtrVector<CRDirEntry> _entries;
     CRMutexRef _mutex;
     bool _scanned;
+    volatile bool _scanning;
+    virtual bool needScan() { return !_scanned; }
     virtual bool scan() = 0;
+    virtual bool refresh();
 public:
     virtual void setParsed(bool parsed) { _scanned = parsed; }
     virtual bool isParsed() const { return _scanned; }
@@ -140,7 +143,7 @@ public:
     virtual CRDirEntry * getItem(int index) const;
     CRDirContentItem(CRDirEntry * item);
     CRDirContentItem(const lString8 & pathname, bool isArchive);
-    virtual void sort(int sortOrder) {}
+    virtual void sort(int sortOrder);
 };
 
 
@@ -148,10 +151,8 @@ public:
 class CRDirCacheItem : public CRDirContentItem {
     friend class CRDirCache;
 	lUInt64 _hash;
-    volatile bool _scanning;
     virtual bool scan();
-    bool needScan();
-    bool refresh();
+    virtual bool needScan();
 public:
     CRDirCacheItem(CRDirEntry * item);
     CRDirCacheItem(const lString8 & pathname, bool isArchive);
@@ -181,7 +182,7 @@ public:
 
 class CRDirScanCallback {
 public:
-    virtual void onDirectoryScanFinished(CRDirCacheItem * item) = 0;
+    virtual void onDirectoryScanFinished(CRDirContentItem * item) = 0;
     virtual ~CRDirScanCallback() {}
 };
 
@@ -192,9 +193,9 @@ class CRDirCache  : public CRRunnable {
 
     class DirectoryScanTask : public CRRunnable {
     public:
-        CRDirCacheItem * dir;
+        CRDirContentItem * dir;
         CRDirScanCallback * callback;
-        DirectoryScanTask(CRDirCacheItem * _dir, CRDirScanCallback * _callback) : dir(_dir), callback(_callback) {}
+        DirectoryScanTask(CRDirContentItem * _dir, CRDirScanCallback * _callback) : dir(_dir), callback(_callback) {}
         virtual ~DirectoryScanTask() {
         }
         bool isSame(lString8 _pathname) {
@@ -229,10 +230,10 @@ public:
 
     CRDirCache();
     ~CRDirCache();
-    CRDirCacheItem * find(lString8 pathname);
-	CRDirCacheItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
-	CRDirCacheItem * getOrAdd(CRDirItem * dir);
-    CRDirCacheItem * getOrAdd(const lString8 & pathname);
+    CRDirContentItem * find(lString8 pathname);
+    CRDirContentItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
+    CRDirContentItem * getOrAdd(CRDirItem * dir);
+    CRDirContentItem * getOrAdd(const lString8 & pathname);
     void scan(const lString8 & pathname, CRDirScanCallback * callback);
     CRFileItem * scanFile(const lString8 & pathname);
 };

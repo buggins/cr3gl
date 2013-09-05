@@ -322,25 +322,30 @@ CRDirEntry * CRDirContentItem::getItem(int index) const {
     return _entries[index];
 }
 
-CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false)
+CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _scanning(false)
 {
     _mutex = concurrencyProvider->createMutex();
 }
 
-CRDirContentItem::CRDirContentItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false)
+CRDirContentItem::CRDirContentItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _scanning(false)
 {
     _mutex = concurrencyProvider->createMutex();
 }
 
-CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirContentItem(item->getPathName(), item->isArchive()), _hash(0), _scanning(false)
+CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirContentItem(item->getPathName(), item->isArchive()), _hash(0)
 {
 }
 
-CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirContentItem(pathname, isArchive), _hash(0), _scanning(false)
+CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirContentItem(pathname, isArchive), _hash(0)
 {
 }
 
-bool CRDirCacheItem::refresh() {
+
+void CRDirContentItem::sort(int sortOrder)
+{
+
+}
+bool CRDirContentItem::refresh() {
     CRGuard guard(_mutex);
     _scanning = true;
     bool res = true;
@@ -469,7 +474,7 @@ void CRDirCache::stop() {
 
 void CRDirCache::scan(const lString8 & pathname, CRDirScanCallback * callback) {
     //CRLog::trace("CRDirCache::scan - entering");
-    CRDirCacheItem * dir = getOrAdd(pathname);
+    CRDirContentItem * dir = getOrAdd(pathname);
     //CRLog::trace("CRDirCache::scan - got dir");
     CRGuard guard(_monitor);
     //CRLog::trace("CRDirCache::scan - acquired lock");
@@ -513,7 +518,7 @@ void CRDirCache::run() {
             task = _queue.popFront();
         }
         if (task) {
-            CRDirCacheItem * item = task->dir;
+            CRDirContentItem * item = task->dir;
             //CRLog::trace("CRDirCache::run :: calling refresh()");
             item->refresh();
             //CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
@@ -535,8 +540,8 @@ CRDirCache::CRDirCache() : _head(NULL), _byName(1000), _stopped(false) {
     _thread->start();
 }
 
-CRDirCacheItem * CRDirCache::getOrAdd(CRDirItem * dir) {
-    CRDirCacheItem * existing = find(dir);
+CRDirContentItem * CRDirCache::getOrAdd(CRDirItem * dir) {
+    CRDirContentItem * existing = find(dir);
 	if (existing)
 		return existing;
     CRGuard guard(_monitor);
@@ -561,12 +566,12 @@ static bool isArchive(const lString8 & path) {
 	return true;
 }
 
-CRDirCacheItem * CRDirCache::getOrAdd(const lString8 & pathname) {
+CRDirContentItem * CRDirCache::getOrAdd(const lString8 & pathname) {
 	CRDirItem dir(pathname, isArchive(pathname));
 	return getOrAdd(&dir);
 }
 
-CRDirCacheItem * CRDirCache::find(lString8 pathname) {
+CRDirContentItem * CRDirCache::find(lString8 pathname) {
     CRGuard guard(_monitor);
     CRDirCache::Item * item = findItem(pathname);
 	if (!item)

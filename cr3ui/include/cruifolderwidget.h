@@ -19,7 +19,7 @@ class CRUIMainWidget;
 class CRUIFolderWidget : public CRUILinearLayout, public CRUIOnListItemClickListener, public CRUIOnClickListener {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
-	CRDirCacheItem * _dir;
+    CRDirContentItem * _dir;
     CRUIMainWidget * _main;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted
@@ -29,7 +29,7 @@ public:
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     CRUIMainWidget * getMain() { return _main; }
-    virtual void setDirectory(CRDirCacheItem * _dir);
+    virtual void setDirectory(CRDirContentItem * _dir);
     CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();
 };
