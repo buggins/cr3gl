@@ -406,7 +406,7 @@ public:
 
     /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
-    /// loads last position for book, returns NULL if not found
+    /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
 };
 

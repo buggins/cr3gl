@@ -122,6 +122,7 @@ public:
         concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
         CRLog::info("Rendering book in background thread");
         _read->getDocView()->Render();
+        _read->restorePosition();
 #ifdef SLOW_RENDER_SIMULATION
         concurrencyProvider->sleepMs(3000);
 #endif
@@ -150,6 +151,7 @@ public:
 };
 
 void CRUIReadWidget::closeBook() {
+    updatePosition();
     _scrollCache.clear();
     if (_fileItem)
         delete _fileItem;
@@ -158,6 +160,64 @@ void CRUIReadWidget::closeBook() {
     _fileItem = NULL;
     _lastPosition = NULL;
     _docview->close();
+}
+
+bool CRUIReadWidget::restorePosition() {
+    if (!_fileItem || !_fileItem->getBook())
+        return false;
+    BookDBBookmark * bmk = bookDB->loadLastPosition(_fileItem->getBook());
+    if (bmk) {
+        // found position
+        ldomXPointer bm = _docview->getDocument()->createXPointer(lString16(bmk->startPos.c_str()));
+        _docview->goToBookmark(bm);
+        if (!_lastPosition)
+            _lastPosition = bmk;
+        else
+            delete bmk;
+        return true;
+    }
+    return false;
+}
+
+void CRUIReadWidget::updatePosition() {
+    if (!_fileItem || !_fileItem->getBook())
+        return;
+    ldomXPointer ptr = _docview->getBookmark();
+    if ( ptr.isNull() )
+        return;
+    CRBookmark bm(ptr);
+    lString16 comment;
+    lString16 titleText;
+    lString16 posText;
+    bm.setType( bmkt_lastpos );
+    if ( _docview->getBookmarkPosText( ptr, titleText, posText ) ) {
+         bm.setTitleText( titleText );
+         bm.setPosText( posText );
+    }
+    bm.setStartPos( ptr.toString() );
+    int pos = ptr.toPoint().y;
+    int fh = _docview->getDocument()->getFullHeight();
+    int percent = fh > 0 ? (int)(pos * (lInt64)10000 / fh) : 0;
+    if ( percent<0 )
+        percent = 0;
+    if ( percent>10000 )
+        percent = 10000;
+    bm.setPercent( percent );
+    bm.setCommentText( comment );
+    if (!_lastPosition)
+        _lastPosition = new BookDBBookmark();
+    _lastPosition->bookId = _fileItem->getBook()->id;
+    _lastPosition->type = bm.getType();
+    _lastPosition->percent = bm.getPercent();
+    _lastPosition->shortcut = bm.getShortcut();
+    _lastPosition->timestamp = GetCurrentTimeMillis();
+    _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
+    _lastPosition->endPos = UnicodeToUtf8(bm.getEndPos()).c_str();
+    _lastPosition->titleText = UnicodeToUtf8(bm.getTitleText()).c_str();
+    _lastPosition->posText = UnicodeToUtf8(bm.getPosText()).c_str();
+    _lastPosition->commentText = UnicodeToUtf8(bm.getCommentText()).c_str();
+    _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
+    bookDB->saveLastPosition(_fileItem->getBook(), _lastPosition);
 }
 
 bool CRUIReadWidget::openBook(const CRFileItem * file) {
@@ -225,6 +285,8 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
             _scroll.stop();
         }
     }
+    if (!_scroll.isActive())
+        updatePosition();
 }
 
 bool CRUIReadWidget::isAnimating() {

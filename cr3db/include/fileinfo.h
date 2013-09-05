@@ -54,6 +54,14 @@ enum DIR_TYPE {
     DIR_TYPE_NORMAL
 };
 
+// same as bmk_type
+enum BOOKMARK_TYPE {
+    BOOKMARK_LASTPOS,
+    BOOKMARK_POS,
+    BOOKMARK_COMMENT,
+    BOOKMARK_CORRECTION
+};
+
 class CRDirEntry {
 	lString8 _pathName;
 	bool _isArchive;

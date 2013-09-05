@@ -77,7 +77,13 @@ class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public 
     CRFileItem * _fileItem; // owned
     BookDBBookmark * _lastPosition; // owned
 
+
 public:
+
+    /// restore last position from DB
+    bool restorePosition();
+    /// save current book position to DB
+    void updatePosition();
 
     const lString8 & getPathName() { return _fileItem ? _fileItem->getPathName() : lString8::empty_str; }
 
