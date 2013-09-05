@@ -184,6 +184,8 @@ protected:
     /// load from DB
     virtual bool scan();
 public:
+    /// returns true if order of books in list has been changed
+    bool onLastPositionUpdated(BookDBBook * book, BookDBBookmark * position);
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
     CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
 };
@@ -230,9 +232,17 @@ class CRDirCache  : public CRRunnable {
     CRMonitorRef _monitor;
     CRThreadRef _thread;
     LVQueue<DirectoryScanTask *> _queue;
+
+    CRDirScanCallback * _defCallback;
+
     void clear();
     CRFileItem * findBook(const lString8 & pathname);
+
+
 public:
+
+    void setDefaultCallback(CRDirScanCallback * callback) { _defCallback = callback; }
+
     void stop();
     virtual void run();
 
@@ -242,8 +252,13 @@ public:
     CRDirContentItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
     CRDirContentItem * getOrAdd(CRDirItem * dir);
     CRDirContentItem * getOrAdd(const lString8 & pathname);
-    void scan(const lString8 & pathname, CRDirScanCallback * callback);
+    void scan(const lString8 & pathname, CRDirScanCallback * callback = NULL);
     CRFileItem * scanFile(const lString8 & pathname);
+
+    /// saves last position for book; fills ids for inserted items
+    bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
+    /// loads last position for book (returns cloned value), returns NULL if not found
+    BookDBBookmark * loadLastPosition(BookDBBook * book);
 };
 
 /// directory contents cache

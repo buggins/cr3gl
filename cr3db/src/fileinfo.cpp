@@ -476,6 +476,8 @@ void CRDirCache::stop() {
 
 void CRDirCache::scan(const lString8 & pathname, CRDirScanCallback * callback) {
     //CRLog::trace("CRDirCache::scan - entering");
+    if (!callback)
+        callback = _defCallback;
     CRDirContentItem * dir = getOrAdd(pathname);
     //CRLog::trace("CRDirCache::scan - got dir");
     CRGuard guard(_monitor);
@@ -536,7 +538,7 @@ CRDirCache::~CRDirCache() {
     clear();
 }
 
-CRDirCache::CRDirCache() : _head(NULL), _byName(1000), _stopped(false) {
+CRDirCache::CRDirCache() : _head(NULL), _byName(1000), _stopped(false), _defCallback(NULL) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
     _thread->start();
@@ -550,6 +552,27 @@ CRDirContentItem * CRDirCache::getOrAdd(CRDirItem * dir) {
     CRDirCacheItem * newItem = new CRDirCacheItem(dir);
 	addItem(newItem);
 	return newItem;
+}
+
+/// saves last position for book; fills ids for inserted items
+bool CRDirCache::saveLastPosition(BookDBBook * book, BookDBBookmark * pos)
+{
+    CRGuard guard(_monitor);
+    bookDB->saveLastPosition(book, pos);
+    if (_recentBooks.onLastPositionUpdated(book, pos)) {
+        // notify
+        if (_defCallback)
+            _defCallback->onDirectoryScanFinished(&_recentBooks);
+        return true;
+    }
+    return false;
+}
+
+/// loads last position for book (returns cloned value), returns NULL if not found
+BookDBBookmark * CRDirCache::loadLastPosition(BookDBBook * book) {
+    CRGuard guard(_monitor);
+    BookDBBookmark * res = bookDB->loadLastPosition(book);
+    return res;
 }
 
 static bool isArchive(const lString8 & path) {
@@ -935,6 +958,34 @@ CRDirCache * dirCache = NULL;
 CRRecentBookItem::CRRecentBookItem(BookDBBook * book, BookDBBookmark * lastPosition) : CRFileItem(lString8(book->pathname.c_str()), false), _lastPosition(lastPosition->clone())
 {
     setBook(book->clone());
+}
+
+bool CRRecentBooksItem::onLastPositionUpdated(BookDBBook * book, BookDBBookmark * position)
+{
+    int pos = -1;
+    CRRecentBookItem * found = NULL;
+    for (int i = 0; i < _entries.length(); i++) {
+        CRRecentBookItem * item = dynamic_cast<CRRecentBookItem *>(_entries[i]);
+        if (item && item->getBook() && item->getBook()->id == book->id) {
+            pos = i;
+            found = item;
+            break;
+        }
+    }
+    if (pos == 0) {
+        /// already first
+        found->setLastPosition(position);
+        return false; // no update required
+    } else if (pos >= 0) {
+        CRDirEntry * item = _entries.remove(pos);
+        _entries.insert(0, item);
+        item->setLastPosition(position);
+    } else {
+        // new book
+        CRRecentBookItem * item = new CRRecentBookItem(book, position);
+        _entries.insert(0, item);
+    }
+    return true; // order changed
 }
 
 bool CRRecentBooksItem::scan() {

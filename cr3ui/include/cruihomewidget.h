@@ -36,8 +36,6 @@ public:
 	virtual void layout(int left, int top, int right, int bottom);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
-    void setLastBook(CRDirEntry * lastBook);
-    const CRDirEntry * getLastBook();
 };
 
 class CRCoverWidget : public CRUIWidget {
@@ -54,7 +52,7 @@ public:
     lvPoint calcCoverSize(int width, int height);
     virtual void setSize(int width, int height);
     /// sets book to clone of specified item
-    virtual void setBook(CRDirEntry * book);
+    virtual void setBook(const CRDirEntry * book);
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
     /// updates widget position based on specified rectangle

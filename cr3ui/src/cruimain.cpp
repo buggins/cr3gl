@@ -62,7 +62,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
     if (item->getDirType() == DIR_TYPE_RECENT) {
         // set recent book
         if (item->itemCount() > 0) {
-            _home->setLastBook(item->getItem(0));
+            //_home->setLastBook(item->getItem(0));
         }
         update();
         return;
@@ -93,10 +93,10 @@ void CRUIMainWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
 
     if (book) {
         CRFileItem * entry = dirCache->scanFile(pathname);
-        _home->setLastBook(entry);
+        //_home->setLastBook(entry);
         delete entry;
     } else {
-        _home->setLastBook(NULL);
+        //_home->setLastBook(NULL);
     }
 }
 
@@ -160,7 +160,7 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
         _history.setNext(new FolderItem(this, folder));
         //_popup->setBackground(0xC0000000); // dimming
         CRLog::info("Starting background directory scan for %s", folder.c_str());
-        dirCache->scan(folder, this);
+        dirCache->scan(folder);
     } else {
         // found existing
         // do nothing
@@ -185,7 +185,8 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     if (_initialized)
         return;
     _initialized = true;
-    dirCache->scan(lString8(RECENT_DIR_TAG), this);
+    dirCache->setDefaultCallback(this);
+    dirCache->scan(lString8(RECENT_DIR_TAG));
 }
 
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL),

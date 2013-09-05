@@ -166,7 +166,7 @@ void CRUIReadWidget::closeBook() {
 bool CRUIReadWidget::restorePosition() {
     if (!_fileItem || !_fileItem->getBook())
         return false;
-    BookDBBookmark * bmk = bookDB->loadLastPosition(_fileItem->getBook());
+    BookDBBookmark * bmk = dirCache->loadLastPosition(_fileItem->getBook());
     if (bmk) {
         // found position
         ldomXPointer bm = _docview->getDocument()->createXPointer(lString16(bmk->startPos.c_str()));
@@ -218,7 +218,7 @@ void CRUIReadWidget::updatePosition() {
     _lastPosition->posText = UnicodeToUtf8(bm.getPosText()).c_str();
     _lastPosition->commentText = UnicodeToUtf8(bm.getCommentText()).c_str();
     _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
-    bookDB->saveLastPosition(_fileItem->getBook(), _lastPosition);
+    dirCache->saveLastPosition(_fileItem->getBook(), _lastPosition);
 }
 
 bool CRUIReadWidget::openBook(const CRFileItem * file) {

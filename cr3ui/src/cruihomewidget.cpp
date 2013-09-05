@@ -29,12 +29,11 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUITextWidget * _authors;
 	CRUITextWidget * _info;
     CRUIHomeWidget * _home;
-    CRDirEntry * _lastBook;
     int _coverDx;
     int _coverDy;
 public:
 
-    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home), _lastBook(NULL) {
+    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
         _cover = new CRCoverWidget(_home->getMain(), NULL, _coverDx, _coverDy);
 		int coverSize = deviceInfo.shortSide / 4;
@@ -87,8 +86,6 @@ public:
 //		_layout->addChild(testButton);
 
 		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
-
-        setLastBook(NULL);
 	}
 
     /// measure dimensions
@@ -97,41 +94,36 @@ public:
         _coverDx = _coverDy * 3 / 4;
         _cover->setSize(_coverDx, _coverDy);
         CRUILinearLayout::measure(baseWidth, baseHeight);
+        updateLastBook(getLastBook());
     }
 
     ~CRUINowReadingWidget() {
-        if (_lastBook)
-            delete _lastBook;
     }
 
-    void updateCover() {
-        _cover->setBook(_lastBook);
-    }
-
-    void setLastBook(CRDirEntry * lastBook) {
-        if (_lastBook)
-            delete _lastBook;
-        _lastBook = lastBook ? lastBook->clone() : NULL;
-        if (_lastBook) {
-            _title->setText(_lastBook->getTitle());
-            _authors->setText(_lastBook->getAuthorNames(false));
-            _info->setText(_lastBook->getSeriesName(true));
+    void updateLastBook(const CRDirEntry * lastBook) {
+        if (lastBook) {
+            _title->setText(lastBook->getTitle());
+            _authors->setText(lastBook->getAuthorNames(false));
+            _info->setText(lastBook->getSeriesName(true));
         } else {
             _title->setText(lString16());
             _authors->setText(lString16());
             _info->setText(lString16());
         }
-        updateCover();
+        _cover->setBook(lastBook);
         invalidate();
     }
 
-    const CRDirEntry * getLastBook() {
-        return _lastBook;
+    const CRFileItem * getLastBook() {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+        return item;
     }
 
     virtual bool onClickEvent() {
-        if (_lastBook) {
-            _home->getMain()->openBook(dynamic_cast<CRFileItem*>(_lastBook));
+        const CRFileItem * lastBook = getLastBook();
+        if (lastBook) {
+            _home->getMain()->openBook(lastBook);
             return true;
         }
         return false;
@@ -393,7 +385,7 @@ public:
         /// widget size constraints
         int coverW = coverH * 3 / 4 + itempadding.left + itempadding.right + itemmargin.left + itemmargin.right;
 
-        CRLog::trace("Recent books cover size %d x %d  h=%d  texth=%d", coverW, coverH, baseHeight, textH);
+        //CRLog::trace("Recent books cover size %d x %d  h=%d  texth=%d", coverW, coverH, baseHeight, textH);
 
         int itemw = coverH; // + itempadding.left + itempadding.right + itemmargin.left +itemmargin.right;
         _itemWidget->setMinWidth(itemw);
@@ -409,7 +401,7 @@ public:
         _list->getPadding(listpadding);
 
         int h = baseHeight - _caption->getMeasuredHeight() - listmargin.top - listmargin.bottom - listpadding.top - listpadding.bottom;
-        CRLog::trace("Recent list measure: %d", h);
+        //CRLog::trace("Recent list measure: %d", h);
 
         updateCoverSize(h);
         /// measure
@@ -417,7 +409,7 @@ public:
     }
     /// updates widget position based on specified rectangle
     virtual void layout(int left, int top, int right, int bottom) {
-        CRLog::trace("Recent list layout: %d", bottom - top);
+        //CRLog::trace("Recent list layout: %d", bottom - top);
         //updateCoverSize(bottom - top);
         CRUILinearLayout::layout(left, top, right, bottom);
     }
@@ -440,7 +432,6 @@ CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : _main(main){
 /// measure dimensions
 void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 {
-    _currentBook->updateCover();
     _measuredWidth = baseWidth;
 	_measuredHeight = baseHeight;
     bool vertical = baseWidth < baseHeight * 85 / 100;
@@ -530,14 +521,6 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
-void CRUIHomeWidget::setLastBook(CRDirEntry * lastBook) {
-    _currentBook->setLastBook(lastBook);
-}
-
-const CRDirEntry * CRUIHomeWidget::getLastBook() {
-    return _currentBook->getLastBook();
-}
-
 
 
 void CRCoverWidget::setSize(int width, int height) {
@@ -550,7 +533,7 @@ void CRCoverWidget::setSize(int width, int height) {
     requestLayout();
 }
 
-void CRCoverWidget::setBook(CRDirEntry * book) {
+void CRCoverWidget::setBook(const CRDirEntry * book) {
     if (_book)
         delete _book;
     _book = book ? book->clone() : NULL;
