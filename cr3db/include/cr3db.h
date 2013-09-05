@@ -15,6 +15,7 @@
 #include "lvstring.h"
 #include "crconcurrent.h"
 #include "lvqueue.h"
+#include "lvhashtable.h"
 
 class BookDBEntity {
 public:
@@ -329,6 +330,49 @@ public:
 	~BookDBBookCache() { clear(); }
 };
 
+class CRBookLastPositionCache {
+    LVPtrVector<BookDBBookmark> _bookmarks;
+    LVHashTable<lUInt64, int> _indexByBookId;
+public:
+    CRBookLastPositionCache() : _indexByBookId(4096) {}
+    /// returns ptr to copy saved in cache
+    BookDBBookmark * find(lInt64 bookId) {
+        int index = -1;
+        if (_indexByBookId.get(bookId, index)) {
+            return _bookmarks[index];
+        }
+        return NULL;
+    }
+    /// item will be stored as is, owned by _bookmarks
+    void put (lInt64 bookId, BookDBBookmark * item) {
+        int index = -1;
+        if (_indexByBookId.get(bookId, index)) {
+            /// replace existing
+            if (item != _bookmarks[index]) {
+                delete _bookmarks[index];
+                _bookmarks[index] = item;
+            }
+        } else {
+            /// add new
+            index = _bookmarks.length();
+            _bookmarks.add(item);
+            _indexByBookId.set(bookId, index);
+        }
+    }
+    void remove(lInt64 bookId) {
+        int index = -1;
+        if (_indexByBookId.get(bookId, index)) {
+            /// replace existing
+            BookDBBookmark * item = _bookmarks.remove(index);
+            _indexByBookId.remove(bookId);
+            delete item;
+        }
+    }
+    void clear() {
+        _bookmarks.clear();
+        _indexByBookId.clear();
+    }
+};
 
 class CRBookDB {
     CRMutexRef _mutex;
@@ -337,9 +381,16 @@ class CRBookDB {
 	BookDBAuthorCache _authorCache;
 	BookDBFolderCache _folderCache;
 	BookDBBookCache _bookCache;
+    CRBookLastPositionCache _lastPositionCache;
 	BookDBBook * loadBookToCache(lInt64 id);
 	BookDBBook * loadBookToCache(const DBString & path);
 	BookDBBook * loadBookToCache(SQLiteStatement & stmt);
+
+    /// returns number of last positions loaded into cache
+    int loadLastPositionsToCache();
+    /// reads single bookmark row fileds
+    BookDBBookmark * loadBookmark(SQLiteStatement & stmt);
+
 	bool updateBook(BookDBBook * book, BookDBBook * fromCache);
 	bool insertBook(BookDBBook * book);
 
@@ -372,6 +423,11 @@ public:
 	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
     /// protected by mutex
     BookDBBook * loadBook(lString8 pathname);
+
+    /// saves last position for book
+    bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
+    /// saves last position for book
+    BookDBBookmark * loadLastPosition(BookDBBook * book);
 };
 
 extern CRBookDB * bookDB;

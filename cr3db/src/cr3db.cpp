@@ -193,7 +193,8 @@ bool CRBookDB::fillCaches() {
 		_authorCache.put(item);
 		authorCount++;
 	}
-	CRLog::info("DB::fillCaches - %d authors, %d series, %d folders read", authorCount, seriesCount, folderCount);
+    int lastPosCount = loadLastPositionsToCache();
+    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders, %d last positions read", authorCount, seriesCount, folderCount, lastPosCount);
 	return !err;
 }
 
@@ -332,6 +333,59 @@ bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 	return !err;
 }
 
+/*
+    err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS bookmark ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "book_fk INTEGER NOT NULL REFERENCES book (id),"
+            "type INTEGER NOT NULL DEFAULT 0,"
+            "percent INTEGER DEFAULT 0,"
+            "shortcut INTEGER DEFAULT 0,"
+            "time_stamp INTEGER DEFAULT 0,"
+            "start_pos VARCHAR NOT NULL,"
+            "end_pos VARCHAR,"
+            "title_text VARCHAR,"
+            "pos_text VARCHAR,"
+            "comment_text VARCHAR, "
+            "time_elapsed INTEGER DEFAULT 0"
+            ");") < 0 || err;
+ */
+
+BookDBBookmark * CRBookDB::loadBookmark(SQLiteStatement & stmt) {
+    BookDBBookmark * bmk = new BookDBBookmark();
+    bmk->id = stmt.getInt64(0);
+    bmk->bookId = stmt.getInt64(1); //"book_fk INTEGER NOT NULL REFERENCES book (id),"
+    bmk->type = stmt.getInt(2); //"type INTEGER NOT NULL DEFAULT 0,"
+    bmk->percent = stmt.getInt(3); //"percent INTEGER DEFAULT 0,"
+    bmk->shortcut = stmt.getInt(4); //"shortcut INTEGER DEFAULT 0,"
+    bmk->timestamp = stmt.getInt64(5); //"time_stamp INTEGER DEFAULT 0,"
+    bmk->startPos = stmt.getText(6); //"start_pos VARCHAR NOT NULL,"
+    bmk->endPos = stmt.getText(7); //"end_pos VARCHAR,"
+    bmk->titleText = stmt.getText(8); //"title_text VARCHAR,"
+    bmk->posText = stmt.getText(9); //"pos_text VARCHAR,"
+    bmk->commentText = stmt.getText(10); //"comment_text VARCHAR, "
+    bmk->timeElapsed = stmt.getInt64(11); //"time_elapsed INTEGER DEFAULT 0"
+    return bmk;
+}
+
+#define BOOKMARK_ALL_FIELDS "id, book_fk, type, percent, shortcut, time_stamp, " \
+        "start_pos, end_pos, title_text, pos_text, comment_text, time_elapsed"
+
+int CRBookDB::loadLastPositionsToCache() {
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+
+    _lastPositionCache.clear();
+
+    stmt.prepare("SELECT " BOOKMARK_ALL_FIELDS
+            " FROM bookmark WHERE type = 0;");
+    int count = 0;
+    while (stmt.step() == DB_ROW) {
+        BookDBBookmark * bmk = loadBookmark(stmt);
+        _lastPositionCache.put(bmk->bookId, bmk);
+        count++;
+    }
+    return count;
+}
 
 BookDBBook * CRBookDB::loadBookToCache(SQLiteStatement & stmt) {
 	if (stmt.step() == DB_ROW) {
@@ -623,6 +677,28 @@ bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
 		res = saveBook(books[i]) && res;
 	}
 	return res;
+}
+
+/// saves last position for book
+bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    BookDBBook * cached = _bookCache.get(book->pathname);
+    if (book->id == 0 && cached)
+        book->id = cached->id;
+
+    return false;
+}
+
+/// saves last position for book
+BookDBBookmark * CRBookDB::loadLastPosition(BookDBBook * book) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    BookDBBook * cached = _bookCache.get(book->pathname);
+    if (book->id == 0 && cached)
+        book->id = cached->id;
+    if (!book->id)
+        return NULL;
+    BookDBBookmark *  res = _lastPositionCache.find(book->id);
+    return res;
 }
 
 BookDBBook * CRBookDB::loadBook(lString8 pathname) {
