@@ -336,43 +336,15 @@ class CRBookLastPositionCache {
     LVHashTable<lUInt64, int> _indexByBookId;
 public:
     CRBookLastPositionCache() : _indexByBookId(4096) {}
+    void sort();
+    int length() { return _bookmarks.length(); }
+    BookDBBookmark * operator[] (int index) { return _bookmarks[index]; }
     /// returns ptr to copy saved in cache
-    BookDBBookmark * find(lInt64 bookId) {
-        int index = -1;
-        if (_indexByBookId.get(bookId, index)) {
-            return _bookmarks[index];
-        }
-        return NULL;
-    }
+    BookDBBookmark * find(lInt64 bookId);
     /// item will be stored as is, owned by _bookmarks
-    void put (lInt64 bookId, BookDBBookmark * item) {
-        int index = -1;
-        if (_indexByBookId.get(bookId, index)) {
-            /// replace existing
-            if (item != _bookmarks[index]) {
-                delete _bookmarks[index];
-                _bookmarks[index] = item;
-            }
-        } else {
-            /// add new
-            index = _bookmarks.length();
-            _bookmarks.add(item);
-            _indexByBookId.set(bookId, index);
-        }
-    }
-    void remove(lInt64 bookId) {
-        int index = -1;
-        if (_indexByBookId.get(bookId, index)) {
-            /// replace existing
-            BookDBBookmark * item = _bookmarks.remove(index);
-            _indexByBookId.remove(bookId);
-            delete item;
-        }
-    }
-    void clear() {
-        _bookmarks.clear();
-        _indexByBookId.clear();
-    }
+    void put (lInt64 bookId, BookDBBookmark * item);
+    void remove(lInt64 bookId);
+    void clear();
 };
 
 class CRBookDB {
@@ -428,6 +400,9 @@ public:
 	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
     /// protected by mutex
     BookDBBook * loadBook(lString8 pathname);
+
+    /// protected by mutex
+    bool loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions);
 
     /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);

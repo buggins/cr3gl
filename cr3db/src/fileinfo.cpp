@@ -322,21 +322,21 @@ CRDirEntry * CRDirContentItem::getItem(int index) const {
     return _entries[index];
 }
 
-CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive())
+CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false)
 {
     _mutex = concurrencyProvider->createMutex();
 }
 
-CRDirContentItem::CRDirContentItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive)
+CRDirContentItem::CRDirContentItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false)
 {
     _mutex = concurrencyProvider->createMutex();
 }
 
-CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirContentItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0), _scanning(false)
+CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirContentItem(item->getPathName(), item->isArchive()), _hash(0), _scanning(false)
 {
 }
 
-CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirContentItem(pathname, isArchive), _scanned(false), _hash(0), _scanning(false)
+CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirContentItem(pathname, isArchive), _hash(0), _scanning(false)
 {
 }
 
@@ -923,6 +923,41 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 CRDirCache * dirCache = NULL;
 
 
+CRRecentBookItem::CRRecentBookItem(BookDBBook * book, BookDBBookmark * lastPosition) : CRFileItem(lString8(book->pathname.c_str()), false), _lastPosition(lastPosition->clone())
+{
+    setBook(book->clone());
+}
+
+bool CRRecentBooksItem::scan() {
+    if (_scanned)
+        return true;
+    LVPtrVector<BookDBBook> books;
+    LVPtrVector<BookDBBookmark> lastPositions;
+    bookDB->loadRecentBooks(books, lastPositions);
+    for (int i = 0; i < lastPositions.length(); i++) {
+        if (books[i] && lastPositions[i]) {
+            // item loaded completely
+            lString16 pathname = Utf8ToUnicode(books[i]->pathname.c_str());
+            bool exists = false;
+            lString16 arc, file;
+            if (LVSplitArcName(pathname, arc, file)) {
+                exists = LVFileExists(arc);
+            } else {
+                exists = LVFileExists(pathname);
+            }
+            if (exists) {
+                CRRecentBookItem * item = new CRRecentBookItem(books[i], lastPositions[i]);
+                _entries.add(item);
+            } else {
+                CRLog::warn("Recent book file does not exist %s", LCSTR(pathname));
+            }
+        }
+    }
+    _scanned = true;
+    return true;
+}
+
+
 void CRSetupDirectoryCacheManager() {
     CRStopDirectoryCacheManager();
     dirCache = new CRDirCache();
@@ -935,3 +970,4 @@ void CRStopDirectoryCacheManager() {
         dirCache = NULL;
     }
 }
+

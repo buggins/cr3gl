@@ -193,8 +193,7 @@ bool CRBookDB::fillCaches() {
 		_authorCache.put(item);
 		authorCount++;
 	}
-    int lastPosCount = loadLastPositionsToCache();
-    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders, %d last positions read", authorCount, seriesCount, folderCount, lastPosCount);
+    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders", authorCount, seriesCount, folderCount);
 	return !err;
 }
 
@@ -384,6 +383,7 @@ int CRBookDB::loadLastPositionsToCache() {
         _lastPositionCache.put(bmk->bookId, bmk);
         count++;
     }
+    _lastPositionCache.sort();
     return count;
 }
 
@@ -408,14 +408,17 @@ BookDBBook * CRBookDB::loadBookToCache(SQLiteStatement & stmt) {
 		item->language = stmt.getText(14);
 		item->folder = _folderCache.getClone(folderId);
 		item->series = _seriesCache.getClone(seriesId);
-		stmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?;");
-		stmt.bindInt64(1, item->id);
-		while (stmt.step() == DB_ROW) {
-			lInt64 authorId = stmt.getInt64(0);
-			BookDBAuthor * author = _authorCache.getClone(authorId);
-			if (author)
-				item->authors.add(author);
-		}
+        {
+            SQLiteStatement astmt(&_db);
+            astmt.prepare("SELECT author_fk FROM book_author WHERE book_fk = ?;");
+            astmt.bindInt64(1, item->id);
+            while (astmt.step() == DB_ROW) {
+                lInt64 authorId = astmt.getInt64(0);
+                BookDBAuthor * author = _authorCache.getClone(authorId);
+                if (author)
+                    item->authors.add(author);
+            }
+        }
 		_bookCache.put(item);
 		return item;
 	}
@@ -807,6 +810,109 @@ BookDBBook * CRBookDB::loadBook(lString8 pathname) {
     if (loaded.length() == 1)
         return loaded[0]->clone();
     return NULL;
+}
+
+/// returns ptr to copy saved in cache
+BookDBBookmark * CRBookLastPositionCache::find(lInt64 bookId) {
+    int index = -1;
+    if (_indexByBookId.get(bookId, index)) {
+        return _bookmarks[index];
+    }
+    return NULL;
+}
+/// item will be stored as is, owned by _bookmarks
+void CRBookLastPositionCache::put (lInt64 bookId, BookDBBookmark * item) {
+    int index = -1;
+    if (_indexByBookId.get(bookId, index)) {
+        /// replace existing
+        if (item != _bookmarks[index]) {
+            delete _bookmarks[index];
+            _bookmarks[index] = item;
+        }
+    } else {
+        /// add new
+        index = _bookmarks.length();
+        _bookmarks.add(item);
+        _indexByBookId.set(bookId, index);
+    }
+}
+
+void CRBookLastPositionCache::remove(lInt64 bookId) {
+    int index = -1;
+    if (_indexByBookId.get(bookId, index)) {
+        /// replace existing
+        BookDBBookmark * item = _bookmarks.remove(index);
+        _indexByBookId.remove(bookId);
+        delete item;
+    }
+}
+
+void CRBookLastPositionCache::clear() {
+    _bookmarks.clear();
+    _indexByBookId.clear();
+}
+static int last_position_comparator(const BookDBBookmark ** b1, const BookDBBookmark ** b2) {
+    if ((*b1)->timestamp > (*b2)->timestamp)
+        return -1;
+    if ((*b1)->timestamp < (*b2)->timestamp)
+        return 1;
+    return 0;
+}
+
+void CRBookLastPositionCache::sort() {
+    _bookmarks.sort(&last_position_comparator);
+    /// fix map
+    _indexByBookId.clear();
+    for (int i = 0; i < _bookmarks.length(); i++) {
+        _indexByBookId.set(_bookmarks[i]->bookId, i);
+    }
+}
+
+/// protected by mutex
+bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    books.clear();
+    lastPositions.clear();
+    if (!_lastPositionCache.length()) {
+        int lastPosCount = loadLastPositionsToCache();
+        CRLog::info("Loaded %d last position items", lastPosCount);
+    }
+    LVHashTable<lUInt64,int> indexByBook(_lastPositionCache.length() * 4);
+    lString8 bookIdsToLoad;
+    bookIdsToLoad.reserve(_lastPositionCache.length() * 10);
+    books.reserve(_lastPositionCache.length());
+    lastPositions.reserve(_lastPositionCache.length());
+    for (int i = 0; i < _lastPositionCache.length(); i++) {
+        books.add(NULL);
+        lastPositions.add(_lastPositionCache[i]->clone());
+        indexByBook.set(_lastPositionCache[i]->bookId, i);
+    }
+    for (int i = 0; i < _lastPositionCache.length(); i++) {
+        lInt64 bookId = _lastPositionCache[i]->bookId;
+        BookDBBook * cached = _bookCache.get(bookId);
+        if (cached) {
+            books[i] = cached->clone();
+        } else {
+            if (!bookIdsToLoad.empty())
+                bookIdsToLoad += ",";
+            char s[30];
+            sprintf(s, "%lld", bookId);
+            bookIdsToLoad += s;
+        }
+    }
+    if (!bookIdsToLoad.empty()) {
+        lString8 sql = lString8("SELECT " BOOK_TABLE_ALL_FIELDS " FROM book WHERE id IN (") + bookIdsToLoad + ");";
+        SQLiteStatement stmt(&_db);
+        bool err = false;
+        stmt.prepare(sql.c_str());
+        for (;;) {
+            BookDBBook * book = loadBookToCache(stmt);
+            if (!book)
+                break;
+            books[indexByBook.get(book->id)] = book->clone();
+        }
+    }
+    return true;
 }
 
 bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {

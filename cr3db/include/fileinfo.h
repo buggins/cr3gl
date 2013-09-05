@@ -71,7 +71,9 @@ public:
 	virtual bool isArchive() const { return _isArchive; }
 	virtual BookDBBook * getBook() const { return NULL; }
 	virtual void setBook(BookDBBook * book) { }
-	virtual bool isParsed() const { return false; }
+    virtual BookDBBookmark * getLastPosition() const { return NULL; }
+    virtual void setLastPosition(BookDBBookmark * bookmark) { }
+    virtual bool isParsed() const { return false; }
 	virtual void setParsed(bool parsed) {}
     virtual CRDirEntry * clone() const { return NULL; }
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_NORMAL; }
@@ -129,7 +131,11 @@ class CRDirContentItem : public CRDirItem {
 protected:
     LVPtrVector<CRDirEntry> _entries;
     CRMutexRef _mutex;
+    bool _scanned;
+    virtual bool scan() = 0;
 public:
+    virtual void setParsed(bool parsed) { _scanned = parsed; }
+    virtual bool isParsed() const { return _scanned; }
     virtual int itemCount() const;
     virtual CRDirEntry * getItem(int index) const;
     CRDirContentItem(CRDirEntry * item);
@@ -141,31 +147,37 @@ public:
 /// directory cache item
 class CRDirCacheItem : public CRDirContentItem {
     friend class CRDirCache;
-	bool _scanned;
 	lUInt64 _hash;
     volatile bool _scanning;
-    bool scan();
+    virtual bool scan();
     bool needScan();
     bool refresh();
 public:
     CRDirCacheItem(CRDirEntry * item);
     CRDirCacheItem(const lString8 & pathname, bool isArchive);
-    virtual void setParsed(bool parsed) { _scanned = parsed; }
-	virtual bool isParsed() const { return _scanned; }
     virtual bool isScanning() const { return _scanning; }
     void sort(int sortOrder);
 };
 
 #define RECENT_DIR_TAG "@recent"
 
+
+class CRRecentBookItem : public CRFileItem {
+    BookDBBookmark * _lastPosition;
+public:
+    virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
+    /// creates new item; clones book and position inside
+    CRRecentBookItem(BookDBBook * book, BookDBBookmark * lastPosition);
+};
+
 class CRRecentBooksItem : public CRDirContentItem {
 protected:
-    bool load();
+    /// load from DB
+    virtual bool scan();
 public:
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
     CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
 };
-
 
 class CRDirScanCallback {
 public:
