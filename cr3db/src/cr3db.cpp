@@ -784,10 +784,14 @@ bool CRBookDB::insertBookmark(BookDBBookmark * b)
 
 /// saves last position for book
 BookDBBookmark * CRBookDB::loadLastPosition(BookDBBook * book) {
+    if (!book)
+        return NULL;
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    BookDBBook * cached = _bookCache.get(book->pathname);
-    if (book->id == 0 && cached)
-        book->id = cached->id;
+    if (!book->id) {
+        BookDBBook * cached = _bookCache.get(book->pathname);
+        if (cached)
+            book->id = cached->id;
+    }
     if (!book->id)
         return NULL;
     BookDBBookmark * res = _lastPositionCache.find(book->id);

@@ -371,7 +371,7 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
         getMain()->showFolder(entry->getPathName(), true);
     } else {
         // Book? open book
-        getMain()->openBook(entry->getPathName());
+        getMain()->openBook(dynamic_cast<CRFileItem *>(entry));
     }
 }
 

@@ -253,7 +253,7 @@ public:
     void showSlowOperationPopup();
     void hideSlowOperationPopup();
 
-    void openBook(lString8 pathname);
+    void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
     void showHome();
     void back();

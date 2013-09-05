@@ -10,6 +10,7 @@
 
 
 #include "cruiwidget.h"
+#include "fileinfo.h"
 
 class CRUIMainWidget;
 
@@ -72,9 +73,13 @@ class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public 
     void animateScrollTo(int newpos, int speed);
 
     bool _locked;
-    lString8 _pathname;
+
+    CRFileItem * _fileItem; // owned
+    BookDBBookmark * _lastPosition; // owned
 
 public:
+
+    const lString8 & getPathName() { return _fileItem ? _fileItem->getPathName() : lString8::empty_str; }
 
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);
@@ -84,7 +89,7 @@ public:
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();
 
-    bool openBook(lString8 pathname);
+    bool openBook(const CRFileItem * file);
     void closeBook();
 
     /// returns true if document is ready, false if background rendering is in progress

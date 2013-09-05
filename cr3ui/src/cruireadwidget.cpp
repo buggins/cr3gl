@@ -17,14 +17,20 @@
 using namespace CRUI;
 
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
-    _isDragging(false), _dragStartOffset(0), _locked(false)
+    _isDragging(false), _dragStartOffset(0), _locked(false),
+    _fileItem(NULL), _lastPosition(NULL)
 {
     _docview = new LVDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
     _docview->setFontSize(26);
 }
 
-CRUIReadWidget::~CRUIReadWidget() {}
+CRUIReadWidget::~CRUIReadWidget() {
+    if (_fileItem)
+        delete _fileItem;
+    if (_lastPosition)
+        delete _lastPosition;
+}
 
 /// measure dimensions
 void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
@@ -145,26 +151,39 @@ public:
 
 void CRUIReadWidget::closeBook() {
     _scrollCache.clear();
-    _pathname.clear();
+    if (_fileItem)
+        delete _fileItem;
+    if (_lastPosition)
+        delete _lastPosition;
+    _fileItem = NULL;
+    _lastPosition = NULL;
     _docview->close();
 }
 
-bool CRUIReadWidget::openBook(lString8 pathname) {
+bool CRUIReadWidget::openBook(const CRFileItem * file) {
     if (_locked)
+        return false;
+    if (!file)
         return false;
     closeBook();
     _locked = true;
     _scrollCache.clear();
     _main->showSlowOperationPopup();
-    _pathname = pathname;
-    _pathname.modify();
-    _main->executeBackground(new OpenBookTask(Utf8ToUnicode(pathname), _main, this));
+    _fileItem = dynamic_cast<CRFileItem*>(file->clone());
+    _lastPosition = bookDB->loadLastPosition(file->getBook());
+    _main->executeBackground(new OpenBookTask(Utf8ToUnicode(getPathName()), _main, this));
     return true;
 }
 
 void CRUIReadWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
-    if (!success)
-        _pathname.clear();
+    if (!success) {
+        if (_fileItem)
+            delete _fileItem;
+        if (_lastPosition)
+            delete _lastPosition;
+        _fileItem = NULL;
+        _lastPosition = NULL;
+    }
 }
 
 void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
@@ -184,7 +203,7 @@ bool CRUIReadWidget::renderIfNecessary() {
     _locked = true;
     _scrollCache.clear();
     _main->showSlowOperationPopup();
-    _main->executeBackground(new RenderBookTask(Utf8ToUnicode(_pathname), _main, this));
+    _main->executeBackground(new RenderBookTask(Utf8ToUnicode(getPathName()), _main, this));
     return false;
 }
 

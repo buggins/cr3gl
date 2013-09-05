@@ -160,15 +160,17 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
     }
 }
 
-void CRUIMainWidget::openBook(lString8 pathname) {
-    CRLog::debug("Opening book %s", pathname.c_str());
+void CRUIMainWidget::openBook(const CRFileItem * file) {
+    if (!file)
+        return;
+    CRLog::debug("Opening book %s", file->getPathName().c_str());
     if (_animation.active) {
         CRLog::debug("Animation is active. Stopping.");
         stopAnimation();
     }
     _read->measure(_measuredWidth, _measuredHeight);
     _read->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    _read->openBook(pathname);
+    _read->openBook(file);
 }
 
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL), _screenUpdater(NULL), _lastAnimationTs(0) {
