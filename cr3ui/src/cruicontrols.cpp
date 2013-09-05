@@ -80,36 +80,36 @@ void CRUITextWidget::layoutText(lString16 text, int maxWidth, lString16 & line1,
     height = height * 2;
     if (_ellipsisMode == ELLIPSIS_LEFT) {
         int p = findBestSplitPosition(text, text.length() - s2.length(), 1);
-        if (text.length() - p >= s2.length() / 3) {
-            line1 = text.substr(0, p + 1);
-            line2 = text.substr(p + 1);
+        if (text.length() - p >= s2.length() / 7) {
+            line1 = text.substr(0, p + 1).trim();
+            line2 = text.substr(p + 1).trim();
             line1 = applyEllipsis(line1, maxWidth, ELLIPSIS_LEFT, ellipsis);
         } else {
-            line1 = s1;
-            line2 = text.substr(s1.length());
+            line1 = s1.trim();
+            line2 = text.substr(s1.length()).trim();
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
         }
     } else if (_ellipsisMode == ELLIPSIS_MIDDLE) {
         int p = findBestSplitPosition(text, s1.length() - 1, -1);
-        if (p > s1.length() / 3) {
-            line1 = text.substr(0, p + 1);
-            line2 = text.substr(p + 1);
+        if (p > s1.length() / 7) {
+            line1 = text.substr(0, p + 1).trim();
+            line2 = text.substr(p + 1).trim();
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_LEFT, ellipsis);
         } else {
-            line1 = s1;
-            line2 = text.substr(s1.length());
+            line1 = s1.trim();
+            line2 = text.substr(s1.length()).trim();
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_LEFT, ellipsis);
         }
     } else {
         // ELLIPSIS_RIGHT
         int p = findBestSplitPosition(text, s1.length() - 1, -1);
-        if (p > s1.length() / 3) {
-            line1 = text.substr(0, p + 1);
-            line2 = text.substr(p + 1);
+        if (p > s1.length() / 7) {
+            line1 = text.substr(0, p + 1).trim();
+            line2 = text.substr(p + 1).trim();
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
         } else {
-            line1 = s1;
-            line2 = text.substr(s1.length());
+            line1 = s1.trim();
+            line2 = text.substr(s1.length()).trim();
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
         }
     }

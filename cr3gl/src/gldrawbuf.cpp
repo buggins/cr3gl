@@ -109,7 +109,11 @@ public:
 		if (_drawbuf)
 			delete _drawbuf;
         if (_textureId != 0) {
-			glDeleteTextures(1, &_textureId);
+            if (glIsTexture(_textureId) != GL_TRUE) {
+                CRLog::error("Invalid texture %d", _textureId);
+                return;
+            }
+            glDeleteTextures(1, &_textureId);
             checkError("~GLImageCachePage - glDeleteTextures");
         }
 	}
@@ -141,6 +145,7 @@ public:
 	    checkError("updateTexture - glTexImage2D");
 	    if (glGetError() != GL_NO_ERROR) {
 	        glDeleteTextures(1, &_textureId);
+            _textureId = 0;
 	        return;
 	    }
 	    _needUpdateTexture = false;
@@ -231,12 +236,12 @@ public:
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
-        if (glIsTexture(_textureId) != GL_TRUE) {
-            CRLog::error("Invalid texture %d", _textureId);
-            return;
-        }
 		if (_textureId != 0) {
-			float dstx0 = x;
+            if (glIsTexture(_textureId) != GL_TRUE) {
+                CRLog::error("Invalid texture %d", _textureId);
+                return;
+            }
+            float dstx0 = x;
 			float dsty0 = y;
 			float dstx1 = x + dx;
 			float dsty1 = y - dy;
@@ -286,20 +291,27 @@ public:
 	    	glActiveTexture(GL_TEXTURE0);
             checkError("glActiveTexture");
             glEnable(GL_TEXTURE_2D);
-	    	glBindTexture(GL_TEXTURE_2D, _textureId);
+            checkError("glEnable(GL_TEXTURE_2D)");
+            glBindTexture(GL_TEXTURE_2D, _textureId);
             checkError("glBindTexture");
 
 	    	glEnable(GL_BLEND);
 	    	//GL_SRC_ALPHA
 	    	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	    	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	    	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+            //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	    	glDisableClientState(GL_COLOR_ARRAY);
-	    	glEnableClientState(GL_VERTEX_ARRAY);
-	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+            checkError("glDisableClientState(GL_COLOR_ARRAY)");
+            glEnableClientState(GL_VERTEX_ARRAY);
+            checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+            glVertexPointer(3, GL_FLOAT, 0, vertices);
+            checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+            glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+            checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
 
 	    	glDrawArrays(GL_TRIANGLES, 0, 6);
             checkError("glDrawArrays");
@@ -635,13 +647,20 @@ public:
     	GLfloat colors[6 * 4];
     	LVGLFillColor(color, colors, 6);
     	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    	glEnable(GL_BLEND);
-    	glEnableClientState(GL_VERTEX_ARRAY);
-    	glEnableClientState(GL_COLOR_ARRAY);
-    	glVertexPointer(3, GL_FLOAT, 0, vertices);
-    	glColorPointer(4, GL_FLOAT, 0, colors);
+        checkError("glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+        glEnable(GL_BLEND);
+        checkError("glEnable(GL_BLEND)");
+        glEnableClientState(GL_VERTEX_ARRAY);
+        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+        glEnableClientState(GL_COLOR_ARRAY);
+        checkError("glEnableClientState(GL_COLOR_ARRAY)");
+        glVertexPointer(3, GL_FLOAT, 0, vertices);
+        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+        glColorPointer(4, GL_FLOAT, 0, colors);
+        checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
 
     	glDrawArrays(GL_TRIANGLES, 0, 6);
+        checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
 
     	glDisableClientState(GL_COLOR_ARRAY);
     	glDisableClientState(GL_VERTEX_ARRAY);
@@ -821,21 +840,30 @@ public:
     	//LVGLSetColor(0xFFFFFF);
     	glColor4f(1,1,1,1);
     	glActiveTexture(GL_TEXTURE0);
-    	glBindTexture(GL_TEXTURE_2D, textureId);
-    	glEnable(GL_TEXTURE_2D);
-    	glEnableClientState(GL_VERTEX_ARRAY);
-    	//glEnableClientState(GL_COLOR_ARRAY);
+        checkError("glActiveTexture");
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        checkError("glBindTexture");
+        glEnable(GL_TEXTURE_2D);
+        checkError("glEnable(GL_TEXTURE_2D)");
+        glEnableClientState(GL_VERTEX_ARRAY);
+        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+        //glEnableClientState(GL_COLOR_ARRAY);
     	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    	glVertexPointer(3, GL_FLOAT, 0, vertices);
-    	//glColorPointer(4, GL_FLOAT, 0, colors);
+        checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+        glVertexPointer(3, GL_FLOAT, 0, vertices);
+        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+        //glColorPointer(4, GL_FLOAT, 0, colors);
     	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+        checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
 
     	glDrawArrays(GL_TRIANGLES, 0, 6);
+        checkError("glDrawArrays");
 
     	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     	//glDisableClientState(GL_COLOR_ARRAY);
     	glDisableClientState(GL_VERTEX_ARRAY);
     	glDisable(GL_TEXTURE_2D);
+        checkError("glDisable(GL_TEXTURE_2D)");
     }
 };
 
@@ -941,7 +969,8 @@ void GLDrawBuf::createFramebuffer()
 		if (checkError("createFramebuffer glBindFramebuffer")) return;
 
 		glBindTexture(GL_TEXTURE_2D, _textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
 		checkError("glTexImage2D");
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -973,7 +1002,11 @@ void GLDrawBuf::deleteFramebuffer()
 	if (_textureBuf) {
 		//CRLog::debug("GLDrawBuf::deleteFramebuffer");
 		if (_textureId != 0) {
-			glDeleteTextures(1, &_textureId);
+            if (glIsTexture(_textureId) != GL_TRUE) {
+                CRLog::error("Invalid texture %d", _textureId);
+                return;
+            }
+            glDeleteTextures(1, &_textureId);
 			checkError("deleteFramebuffer - glDeleteTextures");
 		}
 		if (_framebufferId != 0) {

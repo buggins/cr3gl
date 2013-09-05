@@ -123,6 +123,7 @@ public:
         CRLog::info("Rendering book in background thread");
         _read->getDocView()->Render();
         _read->restorePosition();
+        _read->getDocView()->updateCache();
 #ifdef SLOW_RENDER_SIMULATION
         concurrencyProvider->sleepMs(3000);
 #endif

@@ -5,9 +5,9 @@ using namespace CRUI;
 #include "gldrawbuf.h"
 #include "crcoverpages.h"
 
-#define WINDOW_ANIMATION_DELAY 300
-#define SLOW_OPERATION_POPUP_DELAY 300
-#define SLOW_OPERATION_POPUP_DIMMING_DURATION 1200
+#define WINDOW_ANIMATION_DELAY 250
+#define SLOW_OPERATION_POPUP_DELAY 250
+#define SLOW_OPERATION_POPUP_DIMMING_DURATION 2000
 
 void CRUIMainWidget::recreate() {
     if (!_history.length()) {

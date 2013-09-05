@@ -129,6 +129,14 @@ public:
         return _lastBook;
     }
 
+    virtual bool onClickEvent() {
+        if (_lastBook) {
+            _home->getMain()->openBook(dynamic_cast<CRFileItem*>(_lastBook));
+            return true;
+        }
+        return false;
+    }
+
 };
 
 class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
@@ -293,7 +301,15 @@ protected:
     CRUITextWidget * _textWidget;
     CRUIHomeWidget * _home;
 public:
-    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) { return false; }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(itemIndex + 1)) : NULL;
+        if (item) {
+            _home->getMain()->openBook(item);
+            return true;
+        }
+        return false;
+    }
 
     CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUILinearLayout(true), _home(home) {
         _caption = new CRUITextWidget(STR_RECENT_BOOKS);
@@ -311,7 +327,9 @@ public:
         _itemImage = new CRCoverWidget(home->getMain(), NULL, 75, 100);
         _itemImage->setAlign(CRUI::ALIGN_CENTER);
         _itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
+        //_itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::WRAP_CONTENT);
         _itemImage->setPadding(PT_TO_PX(1));
+        //_itemImage->setBackground(0x0000C0C0);
 
         _textWidget = new CRUITextWidget(lString16());
         _textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
@@ -319,13 +337,15 @@ public:
         _textWidget->setPadding(PT_TO_PX(1));
         _textWidget->setMaxLines(2);
         _textWidget->setEllipsisMode(ELLIPSIS_MIDDLE);
+        //_textWidget->setBackground(0xC0C000C0);
+        _textWidget->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::WRAP_CONTENT);
 
         _itemWidget = new CRUILinearLayout(true);
         _itemWidget->addChild(_itemImage);
         _itemWidget->addChild(_textWidget);
         _itemWidget->setPadding(PT_TO_PX(2));
-        _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
-        _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
+//        _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
+//        _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
         _itemWidget->setStyle("LIST_ITEM");
 
         setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
@@ -341,7 +361,7 @@ public:
 
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
-        CRDirEntry * item = dir ? dir->getItem(index + 1) : NULL;
+        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(index + 1)) : NULL;
         if (item) {
             lString16 text = item->getTitle();
             if (text.empty())
@@ -355,8 +375,7 @@ public:
         return _itemWidget;
     }
 
-    /// measure dimensions
-    virtual void measure(int baseWidth, int baseHeight) {
+    virtual void updateCoverSize(int baseHeight) {
         /// calculate cover widget size
         lvRect itempadding;
         _itemWidget->getPadding(itempadding);
@@ -364,19 +383,43 @@ public:
         lvRect textpadding;
         _textWidget->getPadding(textpadding);
         lvRect textmargin = _textWidget->getMargin();
-        int textH = _textWidget->getFontSize() * 2;
+        int textH = _textWidget->getFont()->getHeight() * 2;
         int coverH = baseHeight - textH - textpadding.top - textpadding.bottom - itempadding.top - itempadding.bottom -
                 textmargin.top - textmargin.bottom - itemmargin.top - itemmargin.bottom;
         _itemImage->setSize(coverH * 3 / 4, coverH);
 
+        //_textWidget->setBackground(0xC060C0A0);
+
         /// widget size constraints
         int coverW = coverH * 3 / 4 + itempadding.left + itempadding.right + itemmargin.left + itemmargin.right;
-        _itemWidget->setMinWidth(coverW);
-        // TODO: get it working
-//        _itemWidget->setMaxWidth(coverW);
 
+        CRLog::trace("Recent books cover size %d x %d  h=%d  texth=%d", coverW, coverH, baseHeight, textH);
+
+        int itemw = coverH; // + itempadding.left + itempadding.right + itemmargin.left +itemmargin.right;
+        _itemWidget->setMinWidth(itemw);
+        // TODO: get it working
+        _itemWidget->setMaxWidth(itemw);
+    }
+
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight) {
+        _caption->measure(baseWidth, baseHeight);
+        lvRect listmargin = _list->getMargin();
+        lvRect listpadding;
+        _list->getPadding(listpadding);
+
+        int h = baseHeight - _caption->getMeasuredHeight() - listmargin.top - listmargin.bottom - listpadding.top - listpadding.bottom;
+        CRLog::trace("Recent list measure: %d", h);
+
+        updateCoverSize(h);
         /// measure
         CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom) {
+        CRLog::trace("Recent list layout: %d", bottom - top);
+        //updateCoverSize(bottom - top);
+        CRUILinearLayout::layout(left, top, right, bottom);
     }
 };
 
@@ -400,10 +443,10 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
     _currentBook->updateCover();
     _measuredWidth = baseWidth;
 	_measuredHeight = baseHeight;
-	bool vertical = baseWidth < baseHeight;
+    bool vertical = baseWidth < baseHeight * 85 / 100;
 	if (vertical) {
-		int nowReadingH = baseHeight / 4;
-		int recentH = baseHeight / 5;
+        int nowReadingH = baseHeight * 20 / 100;
+        int recentH = baseHeight * 25 / 100;
 		int otherH = (baseHeight - nowReadingH - recentH) / 3;
 		_currentBook->measure(baseWidth, nowReadingH);
 		_recentBooksList->measure(baseWidth, recentH);
@@ -411,11 +454,12 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 		_library->measure(baseWidth, otherH);
 		_onlineCatalogsList->measure(baseWidth, otherH);
 	} else {
-		int nowReadingH = baseHeight / 3;
-		int otherH = (baseHeight - nowReadingH) / 2;
+        int nowReadingH = baseHeight * 30 / 100;
+        int recentH = baseHeight * 40 / 100;
+        int otherH = (baseHeight - nowReadingH - recentH);
 		_currentBook->measure(baseWidth, nowReadingH);
-        _recentBooksList->measure(baseWidth * 3 / 5, otherH);
-        _fileSystem->measure(baseWidth * 2 / 5, otherH);
+        _recentBooksList->measure(baseWidth * 3 / 5, recentH);
+        _fileSystem->measure(baseWidth * 2 / 5, recentH);
         _library->measure(baseWidth * 3 / 5, otherH);
         _onlineCatalogsList->measure(baseWidth * 2 / 5, otherH);
 	}
@@ -427,10 +471,10 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 	CRUIWidget::layout(left, top, right, bottom);
 	int w = (right - left);
 	int h = (bottom - top);
-	bool vertical = w < h;
+    bool vertical = w < h * 85 / 100;
 	if (vertical) {
-		int nowReadingH = h / 4;
-		int recentH = h / 5;
+        int nowReadingH = h * 20 / 100;
+        int recentH = h * 25 / 100;
 		int otherH = (h - nowReadingH - recentH) / 3;
 		int y = top;
 		_currentBook->layout(left, y, right, y + nowReadingH);
@@ -441,14 +485,17 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 		_library->layout(left, y, right, y + otherH); y += otherH;
 		_onlineCatalogsList->layout(left, y, right, y + otherH);
 	} else {
-		int nowReadingH = h / 3;
-		int otherH = (h - nowReadingH) / 2;
+        int nowReadingH = h * 30 / 100;
+        int recentH = h * 40 / 100;
+        int otherH = (h - nowReadingH - recentH);
+//		int nowReadingH = h / 3;
+//		int otherH = (h - nowReadingH) / 2;
 		int y = top;
 		_currentBook->layout(left, y, right, y + nowReadingH);
 		y += nowReadingH;
-		_recentBooksList->layout(left, y, (left + right) / 2, y + otherH);
-		_fileSystem->layout((left + right) / 2, y, right, y + otherH);
-		y += otherH;
+        _recentBooksList->layout(left, y, (left + right) / 2, y + recentH);
+        _fileSystem->layout((left + right) / 2, y, right, y + recentH);
+        y += recentH;
 		_library->layout(left, y, (left + right) / 2, y + otherH);
 		_onlineCatalogsList->layout((left + right) / 2, y, right, y + otherH);
 	}
