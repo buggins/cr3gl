@@ -47,15 +47,12 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
     if (renderIfNecessary()) {
-        CRLog::trace("Document is ready, drawing");
+        //CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
-        lvRect rc = _pos;
-        rc.shrink(20);
-        buf->FillRect(rc, 0x80DDAABB);
     } else {
         // document render in progress; draw just page background
-        CRLog::trace("Document is locked, just drawing background");
+        //CRLog::trace("Document is locked, just drawing background");
         _docview->drawPageBackground(*buf, 0, 0);
     }
 }
