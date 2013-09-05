@@ -312,24 +312,32 @@ lString16 CRDirEntry::getAuthorNames(bool fileAs) const {
     return lString16();
 }
 
-int CRDirCacheItem::itemCount() const {
+int CRDirContentItem::itemCount() const {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
     return _entries.length();
 }
 
-CRDirEntry * CRDirCacheItem::getItem(int index) const {
+CRDirEntry * CRDirContentItem::getItem(int index) const {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
     return _entries[index];
 }
 
-CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0), _scanning(false)
+CRDirContentItem::CRDirContentItem(CRDirEntry * item) :  CRDirItem(item->getPathName(), item->isArchive())
 {
     _mutex = concurrencyProvider->createMutex();
 }
 
-CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive), _scanned(false), _hash(0), _scanning(false)
+CRDirContentItem::CRDirContentItem(const lString8 & pathname, bool isArchive) : CRDirItem(pathname, isArchive)
 {
     _mutex = concurrencyProvider->createMutex();
+}
+
+CRDirCacheItem::CRDirCacheItem(CRDirEntry * item) :  CRDirContentItem(item->getPathName(), item->isArchive()), _scanned(false), _hash(0), _scanning(false)
+{
+}
+
+CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDirContentItem(pathname, isArchive), _scanned(false), _hash(0), _scanning(false)
+{
 }
 
 bool CRDirCacheItem::refresh() {

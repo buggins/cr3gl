@@ -50,6 +50,7 @@ enum DIR_TYPE {
     DIR_TYPE_CURRENT_BOOK_DIR,
     DIR_TYPE_DOWNLOADS,
     DIR_TYPE_FAVORITE,
+    DIR_TYPE_RECENT,
     DIR_TYPE_NORMAL
 };
 
@@ -123,26 +124,48 @@ public:
 };
 
 /// directory cache item
-class CRDirCacheItem : public CRDirItem {
+class CRDirContentItem : public CRDirItem {
     friend class CRDirCache;
-	LVPtrVector<CRDirEntry> _entries;
+protected:
+    LVPtrVector<CRDirEntry> _entries;
+    CRMutexRef _mutex;
+public:
+    virtual int itemCount() const;
+    virtual CRDirEntry * getItem(int index) const;
+    CRDirContentItem(CRDirEntry * item);
+    CRDirContentItem(const lString8 & pathname, bool isArchive);
+    virtual void sort(int sortOrder) {}
+};
+
+
+/// directory cache item
+class CRDirCacheItem : public CRDirContentItem {
+    friend class CRDirCache;
 	bool _scanned;
 	lUInt64 _hash;
-    CRMutexRef _mutex;
     volatile bool _scanning;
     bool scan();
     bool needScan();
     bool refresh();
 public:
-    int itemCount() const;
-    CRDirEntry * getItem(int index) const;
     CRDirCacheItem(CRDirEntry * item);
     CRDirCacheItem(const lString8 & pathname, bool isArchive);
-	virtual void setParsed(bool parsed) { _scanned = parsed; }
+    virtual void setParsed(bool parsed) { _scanned = parsed; }
 	virtual bool isParsed() const { return _scanned; }
     virtual bool isScanning() const { return _scanning; }
     void sort(int sortOrder);
 };
+
+#define RECENT_DIR_TAG "@recent"
+
+class CRRecentBooksItem : public CRDirContentItem {
+protected:
+    bool load();
+public:
+    virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
+    CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
+};
+
 
 class CRDirScanCallback {
 public:
@@ -152,6 +175,9 @@ public:
 
 /// directory contents and file properties scanning manager
 class CRDirCache  : public CRRunnable {
+
+    CRRecentBooksItem _recentBooks;
+
     class DirectoryScanTask : public CRRunnable {
     public:
         CRDirCacheItem * dir;
@@ -166,6 +192,7 @@ class CRDirCache  : public CRRunnable {
             callback->onDirectoryScanFinished(dir);
         }
     };
+
     struct Item {
 		CRDirCacheItem * dir;
 		Item * next;
