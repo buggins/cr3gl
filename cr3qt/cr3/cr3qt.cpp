@@ -188,6 +188,7 @@ void InitCREngine(lString16 exePath) {
     CRLog::setLogLevel(CRLog::LL_TRACE);
     // Concurrency
     concurrencyProvider = new QtConcurrencyProvider();
+    CRSetupEngineConcurrency();
 
     InitFontManager(lString8());
     LVInitGLFontManager(fontMan);

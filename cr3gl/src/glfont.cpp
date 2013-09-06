@@ -609,7 +609,7 @@ public:
     }
     virtual ~GLFont() { }
     /// set fallback font for this font
-    void setFallbackFont( LVFastRef<LVFont> font ) { _base->setFallbackFont(font); }
+    void setFallbackFont( LVFontRef font ) { _base->setFallbackFont(font); }
     /// get fallback font for this font
     LVFont * getFallbackFont() { return _base->getFallbackFont(); }
 };
