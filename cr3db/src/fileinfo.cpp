@@ -507,15 +507,15 @@ void CRDirCache::run() {
             break;
         DirectoryScanTask * task = NULL;
         {
-            //CRLog::trace("CRDirCache::run :: wait for lock");
+            CRLog::trace("CRDirCache::run :: wait for lock");
             CRGuard guard(_monitor);
             if (_stopped)
                 break;
-            //CRLog::trace("CRDirCache::run :: lock acquired");
+            CRLog::trace("CRDirCache::run :: lock acquired");
             if (_queue.length() == 0) {
-                //CRLog::trace("CRDirCache::run :: calling monitor wait");
+                CRLog::trace("CRDirCache::run :: calling monitor wait");
                 _monitor->wait();
-                //CRLog::trace("CRDirCache::run :: done monitor wait");
+                CRLog::trace("CRDirCache::run :: done monitor wait");
             }
             if (_stopped)
                 break;
@@ -523,9 +523,9 @@ void CRDirCache::run() {
         }
         if (task) {
             CRDirContentItem * item = task->dir;
-            //CRLog::trace("CRDirCache::run :: calling refresh()");
+            CRLog::trace("CRDirCache::run :: calling refresh()");
             item->refresh();
-            //CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
+            CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
             concurrencyProvider->executeGui(task); // callback will be deleted in GUI thread
         }
     }

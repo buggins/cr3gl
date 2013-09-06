@@ -162,7 +162,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libjpeg"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/chmlib/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3db/src"/>
@@ -172,6 +171,7 @@
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
 						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -312,11 +312,11 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3gl/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libjpeg"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
 						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -463,7 +463,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/freetype/src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
@@ -476,6 +475,7 @@
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
 						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -94,17 +94,17 @@ GlRendererTemplate::TerminateGl(void)
 bool
 GlRendererTemplate::Draw(void)
 {
-	//CRLog::debug("GlRendererTemplate::Draw is called");
+	CRLog::debug("GlRendererTemplate::Draw is called");
 	glClearColor(0.7f, 0.7f, 0.7f, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	GLDrawBuf pagebuf(300, 400, 32, true);
-	pagebuf.beforeDrawing();
-	_docview->Draw(pagebuf, false);
-	pagebuf.afterDrawing();
+//	GLDrawBuf pagebuf(300, 400, 32, true);
+//	pagebuf.beforeDrawing();
+//	_docview->Draw(pagebuf, false);
+//	pagebuf.afterDrawing();
 
 
-	LVFontRef font = fontMan->GetFont(24, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
+//	LVFontRef font = fontMan->GetFont(24, 400, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
 //	GLDrawBuf backbuf(300, 400, 32, true);
 //	backbuf.beforeDrawing();
 //	backbuf.SetBackgroundColor(0x000000);
@@ -203,6 +203,7 @@ GlRendererTemplate::Draw(void)
 
 	buf.afterDrawing();
 	glFlush();
+	CRLog::debug("GlRendererTemplate::Draw exiting");
 	return true;
 }
 

@@ -619,7 +619,15 @@ void CRCoverPageManager::stop() {
 }
 
 void CRCoverPageManager::run() {
-    CRLog::info("CRCoverPageManager thread started");
+    CRLog::info("CRCoverPageManager::run thread started");
+    // testing tizen concurrency
+    CRMonitor * monitor = concurrencyProvider->createMonitor();
+    monitor->acquire();
+    monitor->release();
+    monitor->acquire();
+    CRLog::info("CRCoverPageManager trying to wait - just for test");
+    monitor->wait();
+
     for (;;) {
         if (_stopped)
             break;

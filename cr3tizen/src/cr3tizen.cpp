@@ -73,12 +73,33 @@ public:
     class TizenMonitor : public CRMonitor {
     	Tizen::Base::Runtime::Monitor monitor;
     public:
-        TizenMonitor() { monitor.Construct(); }
-        virtual void acquire() { monitor.Enter(); }
-        virtual void release() { monitor.Exit(); }
-        virtual void wait() { monitor.Wait(); }
-        virtual void notify() { monitor.Notify(); }
-        virtual void notifyAll() { monitor.NotifyAll(); }
+        TizenMonitor() {
+        	result r;
+        	r = monitor.Construct();
+        	CRLog::trace("TizenMonitor construct result %d", (int)r);
+        }
+        virtual void acquire() {
+        	result r = monitor.Enter();
+        	CRLog::trace("TizenMonitor acquire result %d", (int)r);
+        }
+        virtual void release() {
+        	CRLog::trace("TizenMonitor release");
+        	result r = monitor.Exit();
+        	CRLog::trace("TizenMonitor release result %d", (int)r);
+        }
+        virtual void wait() {
+        	CRLog::trace("TizenMonitor before wait");
+        	monitor.Wait();
+        	CRLog::trace("TizenMonitor after wait");
+        }
+        virtual void notify() {
+        	CRLog::trace("TizenMonitor notify");
+        	monitor.Notify();
+        }
+        virtual void notifyAll() {
+        	CRLog::trace("TizenMonitor notifyAll");
+        	monitor.NotifyAll();
+        }
     };
 
     class TizenThread : public CRThread, public Tizen::Base::Runtime::Thread {
@@ -97,24 +118,30 @@ public:
             Join();
         }
         Object * Run(void) {
+    		CRLog::debug("Tizen - thread started");
         	runnable->run();
+    		CRLog::debug("Tizen - thread finished");
         	return NULL;
         }
     };
 
 public:
     virtual CRMutex * createMutex() {
+		CRLog::debug("Tizen - create mutex");
         return new TizenMutex();
     }
 
     virtual CRMonitor * createMonitor() {
+		CRLog::debug("Tizen - create monitor");
         return new TizenMonitor();
     }
 
     virtual CRThread * createThread(CRRunnable * threadTask) {
+		CRLog::debug("Tizen - create thread");
         return new TizenThread(threadTask);
     }
     virtual void executeGui(CRRunnable * task) {
+		CRLog::debug("Tizen - execute GUI");
         guiExecutor->execute(task);
     }
 
@@ -154,6 +181,7 @@ public:
 	}
 
 	virtual void execute(CRRunnable * runnable) {
+		CRLog::debug("TizenGuiExecutor execute task");
 		   // ArrayList parameters put on the String object
 		   ArrayList* pList = new ArrayList();
 		   pList->Construct();
@@ -165,6 +193,7 @@ public:
 		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
 		   if (pFrame)
 			   pFrame->SendUserEvent(12345, pList);
+			CRLog::debug("TizenGuiExecutor execute task - done");
 	}
 };
 
@@ -183,6 +212,21 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	deviceInfo.setScreenDimensions(phys.width, phys.height, dpi);
 
 	concurrencyProvider = new TizenConcurrencyProvider(new TizenGuiExecutor());
+
+	CRLog::trace("testing concurrency provider");
+	CRThreadExecutor * executor = new CRThreadExecutor();
+	class SampleRunnable : public CRRunnable {
+	public:
+		virtual void run() {
+			CRLog::trace("inside runnable");
+		}
+	};
+	executor->execute(new SampleRunnable());
+	executor->execute(new SampleRunnable());
+	executor->execute(new SampleRunnable());
+//	CRMonitor * monitor = concurrencyProvider->createMonitor();
+//	monitor->acquire();
+//	monitor->wait();
 
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
