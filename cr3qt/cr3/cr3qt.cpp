@@ -147,26 +147,6 @@ void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     delete ev;
 }
 
-lString16 resourceDir;
-void setupResourcesForScreenSize() {
-    lString8 resDir8 = UnicodeToUtf8(resourceDir);
-    lString8Collection dirs;
-    if (deviceInfo.shortSide <= 320) {
-        dirs.add(resDir8 + "screen-density-normal");
-        dirs.add(resDir8 + "screen-density-high");
-        dirs.add(resDir8 + "screen-density-xhigh");
-    } else if (deviceInfo.shortSide <= 480) {
-        dirs.add(resDir8 + "screen-density-high");
-        dirs.add(resDir8 + "screen-density-xhigh");
-        dirs.add(resDir8 + "screen-density-normal");
-    } else {
-        dirs.add(resDir8 + "screen-density-xhigh");
-        dirs.add(resDir8 + "screen-density-high");
-        dirs.add(resDir8 + "screen-density-normal");
-    }
-    resourceResolver->setDirList(dirs);
-}
-
 QOpenGLFunctions * _qtgl = NULL;
 
 
@@ -186,11 +166,9 @@ void InitCREngine(lString16 exePath) {
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbd.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbi.ttf");
 
-    resourceDir = exePath + L"res\\";
-
     crconfig.setupUserDir(UnicodeToUtf8(exePath));
 
-    crconfig.setupResources(UnicodeToUtf8(resourceDir));
+    crconfig.setupResources(UnicodeToUtf8(exePath + L"res\\"));
 
     deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
     deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));

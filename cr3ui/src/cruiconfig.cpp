@@ -19,6 +19,7 @@ CRUIConfig::CRUIConfig() {
     coverDirMaxSize = 16*1024*1024;
     coverRenderCacheMaxItems = 1000;
     coverRenderCacheMaxBytes = 16 * 1024 * 1024;
+    uiFontFace = "Arial";
 }
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {
@@ -39,6 +40,36 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     crconfig.i18nDir = baseDir + "i18n";
     crconfig.hyphDir = baseDir + "hyph";
 }
+
+void CRUIConfig::setupResourcesForScreenSize() {
+    lString8Collection dirs;
+    if (deviceInfo.shortSide <= 320) {
+        dirs.add(resourceDir + "screen-density-normal");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-xhigh");
+    } else if (deviceInfo.shortSide <= 480) {
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-xhigh");
+        dirs.add(resourceDir + "screen-density-normal");
+    } else {
+        dirs.add(resourceDir + "screen-density-xhigh");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-normal");
+    }
+    resourceResolver->setDirList(dirs);
+    int sz = deviceInfo.shortSide;
+    int sz1 = sz / 35;
+    int sz2 = sz / 26;
+    int sz3 = sz / 22;
+    int sz4 = sz / 17;
+    int sz5 = sz / 14;
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+}
+
 
 void createDefaultTheme() {
     currentTheme = new CRUITheme(lString8("BLACK"));

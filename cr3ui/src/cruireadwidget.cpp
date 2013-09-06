@@ -143,6 +143,7 @@ public:
     virtual void run() {
         CRLog::info("Rendering in background thread");
         _read->getDocView()->Render();
+        _read->getDocView()->updateCache();
 #ifdef SLOW_RENDER_SIMULATION
         concurrencyProvider->sleepMs(3000);
 #endif

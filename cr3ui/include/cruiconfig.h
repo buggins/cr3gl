@@ -12,6 +12,7 @@ struct CRUIConfig {
     lString8 coverCacheDir;
     lString8 docCacheDir;
     lString8 i18nDir;
+    lString8 uiFontFace;
 
     int docCacheMaxBytes;
     int coverDirMaxItems;
@@ -29,6 +30,8 @@ struct CRUIConfig {
     void setupResources(lString8 baseDir);
     /// sets coverCache, docCache, iniFile, dbFile
     void setupUserDir(lString8 baseDir);
+
+    void setupResourcesForScreenSize();
 
     void initEngine();
     void uninitEngine();

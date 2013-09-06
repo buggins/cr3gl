@@ -88,18 +88,7 @@ void OpenGLWindow::initialize()
 }
 
 void adaptThemeForScreenSize() {
-    int sz = deviceInfo.shortSide;
-    int sz1 = sz / 35;
-    int sz2 = sz / 26;
-    int sz3 = sz / 22;
-    int sz4 = sz / 17;
-    int sz5 = sz / 14;
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    setupResourcesForScreenSize();
+    crconfig.setupResourcesForScreenSize();
 }
 
 void OpenGLWindow::mousePressEvent(QMouseEvent * event) {

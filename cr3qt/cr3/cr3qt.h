@@ -11,12 +11,7 @@
 #include <QMouseEvent>
 #include <glwrapper.h>
 
-extern lString16 resourceDir;
-void setupResourcesForScreenSize();
-
 class CRUIEventAdapter;
-
-
 
 class CRQtThread : public QThread {
     Q_OBJECT
