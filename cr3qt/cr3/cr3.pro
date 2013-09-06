@@ -49,6 +49,7 @@ DEFINES += USE_FREETYPE=1 \
 
 INCLUDEPATH += ../../../cr3/crengine/include
 SOURCES += \
+    ../../../cr3/crengine/src/crconcurrent.cpp \
     ../../../cr3/crengine/src/wordfmt.cpp \
     ../../../cr3/crengine/src/wolutil.cpp \
     ../../../cr3/crengine/src/txtselector.cpp \
@@ -83,6 +84,7 @@ SOURCES += \
     ../../../cr3/crengine/src/chmfmt.cpp
 
 HEADERS += \
+    ../../../cr3/crengine/include/crconcurrent.h \
     ../../../cr3/crengine/include/wordfmt.h \
     ../../../cr3/crengine/include/wolutil.h \
     ../../../cr3/crengine/include/txtselector.h \
@@ -352,7 +354,6 @@ SOURCES += \
     ../../cr3gl/src/glscene.cpp \
     ../../cr3ui/src/cruimain.cpp \
     ../../cr3ui/src/crui.cpp \
-    ../../cr3ui/src/crconcurrent.cpp \
     ../../cr3ui/src/cruicontrols.cpp \
     ../../cr3ui/src/cruievent.cpp \
     ../../cr3ui/src/cruifolderwidget.cpp \
@@ -387,5 +388,4 @@ HEADERS += \
     ../../cr3ui/include/cruiwidget.h \
     ../../cr3ui/include/cruipopup.h \
     ../../cr3ui/include/crcoverpages.h \
-    ../../cr3ui/include/stringresource.h \
-    ../../cr3ui/include/crconcurrent.h
+    ../../cr3ui/include/stringresource.h
