@@ -267,7 +267,7 @@ public:
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);
 
-    void recreate();
+    virtual void onThemeChanged();
     CRUIMainWidget();
     virtual ~CRUIMainWidget();
 };

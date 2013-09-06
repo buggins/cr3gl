@@ -186,8 +186,9 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 // Image Widget
 /// measure dimensions
 void CRUIImageWidget::measure(int baseWidth, int baseHeight) {
-	int width = !_image ? 0 : _image->originalWidth();
-	int height = !_image ? 0 : _image->originalHeight();
+    CRUIImageRef image = getImage();
+    int width = !image ? 0 : image->originalWidth();
+    int height = !image ? 0 : image->originalHeight();
 	defMeasure(baseWidth, baseHeight, width, height);
 }
 
@@ -206,15 +207,18 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
-	if (!_image.isNull()) {
+    CRUIImageRef image = getImage();
+    int width = !image ? 0 : image->originalWidth();
+    int height = !image ? 0 : image->originalHeight();
+    if (!image.isNull()) {
 		//CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), _image->originalWidth(), _image->originalHeight());
-		applyAlign(rc, _image->originalWidth(), _image->originalHeight());
+        applyAlign(rc, width, height);
 		// don't scale
-		rc.right = rc.left + _image->originalWidth();
-		rc.bottom = rc.top + _image->originalHeight();
+        rc.right = rc.left + width;
+        rc.bottom = rc.top + height;
 		//CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
 		// draw
-		_image->draw(buf, rc);
+        image->draw(buf, rc);
 	}
 }
 

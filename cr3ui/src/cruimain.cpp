@@ -9,19 +9,29 @@ using namespace CRUI;
 #define SLOW_OPERATION_POPUP_DELAY 250
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 2000
 
-void CRUIMainWidget::recreate() {
+void applyThemeChange(CRUIWidget * widget) {
+    if (!widget)
+        return;
+    widget->onThemeChanged();
+    for (int i = 0; i < widget->getChildCount(); i++)
+        applyThemeChange(widget->getChild(i));
+}
+
+void CRUIMainWidget::onThemeChanged()
+{
     if (!_history.length()) {
         _home = new CRUIHomeWidget(this);
         _read = new CRUIReadWidget(this);
         _history.add(new HomeItem(this, _home));
         return;
+    } else {
+        applyThemeChange(_home);
+        applyThemeChange(_read);
     }
 
     for (int i = 0; i < _history.length(); i++) {
-        CRUIWidget * oldwidget = _history[i]->getWidget();
-        CRUIWidget * newwidget = _history[i]->recreate();
-        if (oldwidget == _home)
-            _home = (CRUIHomeWidget*)newwidget;
+        CRUIWidget * widget = _history[i]->getWidget();
+        applyThemeChange(widget);
     }
     requestLayout();
 }
@@ -192,7 +202,7 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
 CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL),
     _screenUpdater(NULL), _lastAnimationTs(0), _initialized(false)
 {
-    recreate();
+    onThemeChanged();
 }
 
 CRUIMainWidget::~CRUIMainWidget() {

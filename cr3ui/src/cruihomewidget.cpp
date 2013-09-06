@@ -35,12 +35,12 @@ public:
 
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
-        _cover = new CRCoverWidget(_home->getMain(), NULL, _coverDx, _coverDy);
-		int coverSize = deviceInfo.shortSide / 4;
-		_cover->setMargin(PT_TO_PX(4));
+        int coverSize = deviceInfo.shortSide / 4;
         _coverDx = coverSize * 3 / 4;
         _coverDy = coverSize;
+        _cover = new CRCoverWidget(_home->getMain(), NULL, _coverDx, _coverDy);
         _cover->setSize(_coverDx, _coverDy);
+        _cover->setMargin(PT_TO_PX(4));
         //_cover->setBackground(0xC0808000);
         //_cover->setBackground("home_frame.9.png");
 		addChild(_cover);
@@ -87,6 +87,15 @@ public:
 
 		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 	}
+
+    void onThemeChanged() {
+        _caption->setPadding(PT_TO_PX(4));
+        lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
+        _title->setPadding(pad);
+        _authors->setPadding(pad);
+        _info->setPadding(pad);
+        requestLayout();
+    }
 
     /// measure dimensions
     void CRUINowReadingWidget::measure(int baseWidth, int baseHeight) {
@@ -189,7 +198,19 @@ public:
         setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
 	}
 
-	virtual int getItemCount(CRUIListWidget * list) {
+    void onThemeChanged() {
+        _caption->setPadding(3);
+        _list->setPadding(PT_TO_PX(3));
+        _itemImage->setPadding(PT_TO_PX(1));
+        _textWidget->setPadding(PT_TO_PX(1));
+        _itemWidget->setPadding(PT_TO_PX(2));
+        _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
+        _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
+        setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+        requestLayout();
+    }
+
+    virtual int getItemCount(CRUIListWidget * list) {
 		return 10;
 	}
 	virtual lString16 getItemText(int index) {
@@ -341,6 +362,16 @@ public:
         _itemWidget->setStyle("LIST_ITEM");
 
         setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+    }
+
+    void onThemeChanged() {
+        _caption->setPadding(3);
+        _list->setPadding(PT_TO_PX(3));
+        _itemImage->setPadding(PT_TO_PX(1));
+        _textWidget->setPadding(PT_TO_PX(1));
+        _itemWidget->setPadding(PT_TO_PX(2));
+        setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+        requestLayout();
     }
 
     virtual int getItemCount(CRUIListWidget * list) {

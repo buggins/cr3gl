@@ -50,6 +50,8 @@ protected:
 
 public:
 
+    virtual void onThemeChanged() {}
+
     /// correct rectangle bounds according to alignment
     virtual void applyAlign(lvRect & rc, int contentWidth, int contentHeight);
 

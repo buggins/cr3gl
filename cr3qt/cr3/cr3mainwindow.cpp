@@ -173,7 +173,7 @@ void OpenGLWindow::render()
         deviceInfo.setScreenDimensions(sz.width(), sz.height(), dpi);
         adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");
-        _widget->recreate();
+        _widget->onThemeChanged();
     }
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
