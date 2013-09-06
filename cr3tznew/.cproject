@@ -95,13 +95,36 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.723200527" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/chmlib/src}&quot;"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.362220472" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
 									<listOptionValue builtIn="false" value="osp"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.208296006" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_DEBUG"/>
+									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
 								</option>
+								<option id="gnu.c.compiler.option.preprocessor.preprocess.1828964409" name="Preprocess only (-E)" superClass="gnu.c.compiler.option.preprocessor.preprocess" value="false" valueType="boolean"/>
 								<inputType id="sbi.gnu.c.compiler.tizen.inputType.1049309788" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
 							</tool>
 							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.1778854072" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base"/>
@@ -145,6 +168,9 @@
 								<option id="gnu.cpp.link.option.paths.805062876" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 								</option>
+								<option id="gnu.cpp.link.option.libs.2082230304" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1936901892" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -170,8 +196,8 @@
 						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
+						<entry excluding="xml.c|postscript.c|draw.c|startup.c|saveas.c|imgtrans.c|icons.c|findtext.c|drawfile.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|fonts_r.c|dib2sprt.c|dib2eps.c|Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -315,8 +341,8 @@
 						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
+						<entry excluding="xml.c|postscript.c|draw.c|startup.c|saveas.c|imgtrans.c|icons.c|findtext.c|drawfile.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|fonts_r.c|dib2sprt.c|dib2eps.c|Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -474,8 +500,8 @@
 						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
 						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
 						<entry excluding="xutils.cpp|w32utils.cpp|s32utils.cpp|crgui.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
-						<entry excluding="Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
+						<entry excluding="xml.c|postscript.c|draw.c|startup.c|saveas.c|imgtrans.c|icons.c|findtext.c|drawfile.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|fonts_r.c|dib2sprt.c|dib2eps.c|Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
