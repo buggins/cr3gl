@@ -131,9 +131,7 @@ void CRUIConfig::initEngine() {
     LVAppendPathDelimiter(i18nDir);
 
     // Logger
-    if (logFile.empty())
-        CRLog::setStderrLogger();
-    else
+    if (!logFile.empty())
         CRLog::setFileLogger(logFile.c_str(), true);
     CRLog::setLogLevel(CRLog::LL_TRACE);
 

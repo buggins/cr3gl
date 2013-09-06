@@ -8,6 +8,21 @@
 #include <FUiIme.h>
 #include <FGraphics.h>
 #include <gl.h>
+#include "crconcurrent.h"
+
+
+class CRRunnableContainer : public Tizen::Base::Object
+{
+	CRRunnable * _runnable;
+public:
+	CRRunnableContainer(CRRunnable * runnable) : _runnable(runnable) {}
+	void run() {
+		_runnable->run();
+	}
+	~CRRunnableContainer() {
+		delete _runnable;
+	}
+};
 
 class CoolReaderForm;
 class CoolReaderFrame

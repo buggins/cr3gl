@@ -4,6 +4,8 @@
 #include <crengine.h>
 #include "crui.h"
 #include "fileinfo.h"
+#include "cruimain.h"
+#include "cruiwidget.h"
 
 using namespace CRUI;
 
@@ -50,49 +52,7 @@ GlRendererTemplate::GlRendererTemplate(void)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
-	_docview = new LVDocView(32);
-	_docview->Resize(300, 400);
-	_docview->createDefaultDocument(lString16(L"Test document"), lString16(L"Just testing if GL rendering is working ok"));
-#if 0
-	//LVFontRef bigfont = fontMan->GetFont(38, 800, false, css_ff_sans_serif, lString8("Tizen Sans"), 0);
-	CRUIWidget * layout = new CRUIVerticalLayout();
-	CRUIButton * button = new CRUIButton(lString16(L"Normal with icon"), "cancel");
-	layout->addChild(button);
-	button = new CRUIButton(lString16(L"Pressed"));
-	layout->addChild(button->setState(STATE_PRESSED));
-	button = new CRUIButton(lString16(L"Focused"));
-	layout->addChild(button->setState(STATE_FOCUSED));
-	button = new CRUIButton(lString16(L"Disabled"));
-	layout->addChild(button->setState(STATE_DISABLED));
-	button = new CRUIButton(lString16(L"Vertical"), "cancel", true);
-	layout->addChild(button);
-
-	CRUIStringListAdapter * adapter = new CRUIStringListAdapter();
-	adapter->addItem(L"item 1")->addItem(L"item 2")->
-			addItem(L"item 3")->addItem(L"item 4")->addItem(L"item 5")->addItem(L"item 6")->
-			addItem(L"item 7")->addItem(L"item 8")->addItem(L"item 9")->addItem(L"item 10");
-	CRUIListWidget * list = new CRUIListWidget(false, adapter);
-	list->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
-	list->setPadding(5)->setMargin(5);
-	//list->setScrollOffset(10);
-	layout->addChild(list);
-
-	adapter = new CRUIStringListAdapter();
-	adapter->addItem(L"item 1")->addItem(L"item 2")->
-			addItem(L"item 3")->addItem(L"Very long item 4")->addItem(L"item 5")->addItem(L"item 6")->
-			addItem(L"item 7")->addItem(L"item 8")->addItem(L"item 9")->addItem(L"item 10");
-	list = new CRUIListWidget(true, adapter);
-	list->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
-	list->setPadding(5)->setMargin(5);
-	//list->setScrollOffset(10);
-	layout->addChild(list);
-
-	_widget = layout;
-#endif
-	//_widget = new CRUIHomeWidget();
-	CRUIFolderWidget * folder = new CRUIFolderWidget();
-	folder->setDirectory(dirCache->find(lString8("/mnt/ums/Downloads")));
-	_widget = folder;
+	_widget = new CRUIMainWidget();
 	_eventManager->setRootWidget(_widget);
 }
 
@@ -211,8 +171,8 @@ GlRendererTemplate::Draw(void)
 //	layout->addChild((new CRUIButton(lString16("Focused button"), resourceResolver->getIcon("cancel")))->setState(STATE_FOCUSED));
 //	layout->addChild((new CRUIButton(lString16("Normal button"), resourceResolver->getIcon("cancel"))));
 //	//text->setBa
-	bool needLayout, needDraw;
-	CRUICheckUpdateOptions(_widget, needLayout, needDraw);
+	bool needLayout, needDraw, animating;
+	CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
 	_widget->invalidate();
 	if (needLayout) {
 		//CRLog::trace("need layout");

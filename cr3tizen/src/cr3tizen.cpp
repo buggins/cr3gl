@@ -14,7 +14,11 @@
 #include "cr3db.h"
 #include "fileinfo.h"
 #include <lvhashtable.h>
+#include "cruiconfig.h"
+#include "crconcurrent.h"
 #include <sys/time.h>
+#include <FBaseColArrayList.h>
+#include "CoolReaderFrame.h"
 
 using namespace CRUI;
 
@@ -54,6 +58,116 @@ void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
 }
 
+class TizenConcurrencyProvider : public CRConcurrencyProvider {
+    CRExecutor * guiExecutor;
+public:
+
+    class TizenMutex : public CRMutex {
+    	Tizen::Base::Runtime::Mutex mutex;
+    public:
+        TizenMutex() { mutex.Create(Tizen::Base::Runtime::NonRecursiveMutexTag()); }
+        virtual void acquire() { mutex.Acquire(); }
+        virtual void release() { mutex.Release(); }
+    };
+
+    class TizenMonitor : public CRMonitor {
+    	Tizen::Base::Runtime::Monitor monitor;
+    public:
+        TizenMonitor() { monitor.Construct(); }
+        virtual void acquire() { monitor.Enter(); }
+        virtual void release() { monitor.Exit(); }
+        virtual void wait() { monitor.Wait(); }
+        virtual void notify() { monitor.Notify(); }
+        virtual void notifyAll() { monitor.NotifyAll(); }
+    };
+
+    class TizenThread : public CRThread, public Tizen::Base::Runtime::Thread {
+    	CRRunnable * runnable;
+    public:
+        TizenThread(CRRunnable * _runnable) : runnable(_runnable) {
+        	Construct();
+        }
+        virtual ~TizenThread() {
+            Join();
+        }
+        virtual void start() {
+            Start();
+        }
+        virtual void join() {
+            Join();
+        }
+        Object * Run(void) {
+        	runnable->run();
+        	return NULL;
+        }
+    };
+
+public:
+    virtual CRMutex * createMutex() {
+        return new TizenMutex();
+    }
+
+    virtual CRMonitor * createMonitor() {
+        return new TizenMonitor();
+    }
+
+    virtual CRThread * createThread(CRRunnable * threadTask) {
+        return new TizenThread(threadTask);
+    }
+    virtual void executeGui(CRRunnable * task) {
+        guiExecutor->execute(task);
+    }
+
+    TizenConcurrencyProvider(CRExecutor * _guiExecutor) {
+        guiExecutor = _guiExecutor;
+    }
+    /// sleep current thread
+    virtual void sleepMs(int durationMs) {
+    	Tizen::Base::Runtime::Thread::Sleep(durationMs);
+    }
+
+    virtual ~TizenConcurrencyProvider() {}
+};
+
+
+//class MyEvent : public Event
+//{
+//	CRRunnable * _runnable;
+//protected:
+//    virtual void FireImpl(IEventListener& listener, const IEventArg& arg);
+//public:
+//    MyEvent(CRRunnable * runnable) : _runnable(runnable) {}
+//};
+//
+//void
+//MyEvent::FireImpl(IEventListener& listener, const IEventArg& arg)
+//{
+//	_runnable->run();
+//	delete _runnable;
+//}
+
+using namespace Tizen::Base::Collection;
+
+class TizenGuiExecutor : public CRExecutor {
+public:
+	TizenGuiExecutor() {
+	}
+
+	virtual void execute(CRRunnable * runnable) {
+		   // ArrayList parameters put on the String object
+		   ArrayList* pList = new ArrayList();
+		   pList->Construct();
+		   //String* pData = new String(L"Inter thread communication");
+		   pList->Add(new CRRunnableContainer(runnable));
+
+		   // Send messages using the SendUserEvent() function
+		   Tizen::Ui::Controls::Frame* pFrame = Tizen::App::UiApp::GetInstance()->GetAppFrame()->GetFrame();
+		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
+		   if (pFrame)
+			   pFrame->SendUserEvent(12345, pList);
+	}
+};
+
 void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
@@ -68,87 +182,20 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("Logical resolution: %dx%d  physical resolution %dx%d using dpi=%d", phys.width, phys.height, logical.width, logical.height, dpi);
 	deviceInfo.setScreenDimensions(phys.width, phys.height, dpi);
 
-	InitFontManager(lString8());
-	LVInitGLFontManager(fontMan);
-	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansMeduim.ttf"));
-	fontMan->RegisterFont(lString8("/usr/share/fonts/TizenSansRegular.ttf"));
-	fontMan->RegisterFont(lString8("/usr/share/fallback_fonts/TizenSansFallback.ttf"));
-	fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
-	lString8Collection dirs;
-	//dirs.add(UnicodeToUtf8(resourceDir));
-	lString8 resDir8 = UnicodeToUtf8(resourceDir);
-	dirs.add(resDir8 + "screen-density-xhigh");
-	LVCreateResourceResolver(dirs);
-	LVGLCreateImageCache();
-	CRIniFileTranslator * fallbackTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/en.ini").c_str());
-	CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create((resDir8 + "/i18n/ru.ini").c_str());
-	CRI18NTranslator::setTranslator(mainTranslator);
-	CRI18NTranslator::setDefTranslator(fallbackTranslator);
+	concurrencyProvider = new TizenConcurrencyProvider(new TizenGuiExecutor());
 
-	lString8 dbFile = UnicodeToUtf8(dbDir) + "cr3db.sqlite13";
-	bookDB = new CRBookDB();
-	if (bookDB->open(dbFile.c_str()))
-		CRLog::error("Error while opening DB file");
-	if (!bookDB->updateSchema())
-		CRLog::error("Error while updating DB schema");
-	if (!bookDB->fillCaches())
-		CRLog::error("Error while filling caches");
+	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
+	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
+	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 
-//	BookDBFolder * folder0 = new BookDBFolder("folder0");
+    crconfig.setupUserDir(UnicodeToUtf8(dbDir));
+    crconfig.setupResources(UnicodeToUtf8(resourceDir));
 
-//	LVHashTable<DBString, BookDBFolder *> map(1000);
-//	DBString key = "folder0";
-//	map.set(key, folder0);
-//	//map.set(folder0->name, folder0);
-//	CRLog::trace("item %s by key %s; removing...", map.get(key) ? "found" : "not found", key.get());
-//	map.remove(key);
-//	CRLog::trace("after removal: item %s by key %s ... %s", map.get(key) ? "found" : "not found", key.get(), folder0->name.get());
+    deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("/mnt/ums"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("/mnt/ums/Downloads"));
+    deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
 
-//	bookDB->saveFolder(folder0);
-//	bookDB->saveFolder(new BookDBFolder("folder1"));
-//	bookDB->saveFolder(new BookDBFolder("folder2"));
-//	bookDB->saveSeries(new BookDBSeries("series name"));
-//	bookDB->saveAuthor(new BookDBAuthor("Basil Pupkin"));
-
-	dirCache = new CRDirCache();
-	lString8 dir("/mnt/ums/Downloads");
-	CRDirCacheItem * cachedir = dirCache->getOrAdd(dir);
-	cachedir->refresh();
-
-	currentTheme = new CRUITheme(lString8("BLACK"));
-	currentTheme->setTextColor(0x000000);
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-	currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-
-	currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
-	CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
-	//keyboard_key_feedback_background.9
-	buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
-	//buttonStyle->setBackground("keyboard_key_feedback_background.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
-	//buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
-	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");
-	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
-	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-	buttonStyle = currentTheme->addSubstyle("BUTTON_NOBACKGROUND");
-	buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground(0xC0C0C080);
-	buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0xE0C0C080);
-	buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-	CRUIStyle * listItemStyle = currentTheme->addSubstyle("LIST_ITEM");
-	listItemStyle->setMargin(0)->setPadding(7);
-	listItemStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0x40C0C080);
-	listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-	CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
-	homeStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
-
-	CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
-	fileListStyle->setBackground(resourceResolver->getIcon("tx_wood_v3.jpg", true));
-	fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+    crconfig.initEngine();
 }
 
 
@@ -167,15 +214,15 @@ int CRUIEventAdapter::findPointer(lUInt64 id) {
 	return -1;
 }
 
-lUInt64 GetCurrentTimeMillis() {
-#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
-	timeval ts;
-	gettimeofday(&ts, NULL);
-	return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
-#else
-	#error * You should define GetCurrentTimeMillis() *
-#endif
-}
+//lUInt64 GetCurrentTimeMillis() {
+//#if defined(LINUX) || defined(ANDROID) || defined(_LINUX)
+//	timeval ts;
+//	gettimeofday(&ts, NULL);
+//	return ts.tv_sec * (lUInt64)1000 + ts.tv_usec / 1000;
+//#else
+//	#error * You should define GetCurrentTimeMillis() *
+//#endif
+//}
 
 void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touchInfo)
 {

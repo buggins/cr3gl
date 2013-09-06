@@ -17,7 +17,7 @@ class GlRendererTemplate :
 	public Tizen::Graphics::Opengl::IGlRenderer
 {
 		LVDocView * _docview;
-		CRUIWidget * _widget;
+	    CRUIMainWidget * _widget;
 		CRUIEventManager * _eventManager;
 		CRUIEventAdapter * _eventAdapter;
 public:

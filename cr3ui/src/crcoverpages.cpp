@@ -3,6 +3,7 @@
 #include "lvdocview.h"
 #include "epubfmt.h"
 #include "pdbfmt.h"
+#include "lvqueue.h"
 
 //#define USE_GL_COVERPAGE_CACHE 0 // no GL context under this thread anyway
 
@@ -455,7 +456,8 @@ bool CRCoverFileCache::open() {
                         LVDeleteFile(coverfile);
                     continue;
                 }
-                add(pathname, t, sz, lString8(s));
+                lString8 s8(s);
+                add(pathname, t, sz, s8);
             }
         }
     }
@@ -694,6 +696,7 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
         }
         return;
     }
+    _queue.iterator();
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         if (item->isSame(_book, dx, dy)) {
