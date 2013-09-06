@@ -17,8 +17,7 @@ SOURCES += main.cpp\
         cr3mainwindow.cpp
 
 HEADERS  += cr3mainwindow.h \
-            cr3qt.h \
-    ../../../cr3/crengine/include/crlocks.h
+            cr3qt.h
             
 win32 {
     DEFINES += _WIN32=1 \
@@ -135,7 +134,8 @@ HEADERS += \
     ../../../cr3/crengine/include/cr3version.h \
     ../../../cr3/crengine/include/cp_stats.h \
     ../../../cr3/crengine/include/chmfmt.h \
-    ../../../cr3/thirdparty/antiword/antiword.h
+    ../../../cr3/crengine/include/crlocks.h \
+    ../../../cr3/crengine/include/lvautoptr.h
 
 
 !win32 {
