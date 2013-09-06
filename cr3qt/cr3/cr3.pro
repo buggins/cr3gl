@@ -366,6 +366,7 @@ SOURCES += \
     ../../cr3ui/src/cruiwidget.cpp \
     ../../cr3ui/src/cruipopup.cpp \
     ../../cr3ui/src/crcoverpages.cpp \
+    ../../cr3ui/src/cruiconfig.cpp \
     ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
@@ -389,4 +390,5 @@ HEADERS += \
     ../../cr3ui/include/cruiwidget.h \
     ../../cr3ui/include/cruipopup.h \
     ../../cr3ui/include/crcoverpages.h \
+    ../../cr3ui/include/cruiconfig.h \
     ../../cr3ui/include/stringresource.h

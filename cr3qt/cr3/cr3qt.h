@@ -3,6 +3,7 @@
 
 #include <crui.h>
 #include <crconcurrent.h>
+#include <cruiconfig.h>
 #include <QApplication>
 #include <QMutex>
 #include <QThread>
@@ -131,6 +132,5 @@ public:
 
 
 void InitCREngine(lString16 exePath);
-void UninitCREngine();
 
 #endif // CR3QT_H

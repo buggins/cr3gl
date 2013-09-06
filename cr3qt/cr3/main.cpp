@@ -16,6 +16,6 @@ int main(int argc, char *argv[])
     w.show();
     
     int res = a.exec();
-    UninitCREngine();
+    crconfig.uninitEngine();
     return res;
 }

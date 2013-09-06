@@ -748,11 +748,11 @@ CRCoverPageManager::~CRCoverPageManager() {
 
 CRCoverPageManager * coverPageManager = NULL;
 
-void CRSetupCoverpageManager(lString16 coverCacheDir) {
+void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles, int maxsize, int maxRenderCacheItems, int maxRenderCacheBytes) {
     CRStopCoverpageManager();
-    coverCache = new CRCoverFileCache(coverCacheDir);
+    coverCache = new CRCoverFileCache(coverCacheDir, maxitems, maxfiles, maxsize);
     coverCache->open();
-    coverImageCache = new CRCoverImageCache();
+    coverImageCache = new CRCoverImageCache(maxRenderCacheItems, maxRenderCacheBytes);
     coverPageManager = new CRCoverPageManager();
 }
 

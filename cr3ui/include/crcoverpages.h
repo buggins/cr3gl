@@ -49,7 +49,7 @@ public:
 
 };
 
-void CRSetupCoverpageManager(lString16 coverCacheDir);
+void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems = 1000, int maxfiles = 200, int maxsize = 16*1024*1024, int maxRenderCacheItems = 1000, int maxRenderCacheBytes = 16 * 1024 * 1024);
 void CRStopCoverpageManager();
 
 extern CRCoverPageManager * coverPageManager;
