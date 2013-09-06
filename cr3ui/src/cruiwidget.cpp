@@ -381,6 +381,7 @@ static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & ne
     for (int i = 0; i < widget->getChildCount(); i++)
         checkUpdateOptions(widget->getChild(i), needLayout, needRedraw, animating);
 }
+
 void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
 	needLayout = false;
 	needRedraw = false;
@@ -389,7 +390,6 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
     if (needLayout || animating)
 		needRedraw = true;
 }
-
 
 void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
     active = true;

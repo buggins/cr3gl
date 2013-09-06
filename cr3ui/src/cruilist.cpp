@@ -199,8 +199,8 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
-	setClipRect(buf, rc);
 	applyPadding(rc);
+    setClipRect(buf, rc);
 
 	lvRect clip;
 	buf->GetClipRect(&clip);

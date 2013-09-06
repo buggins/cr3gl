@@ -672,7 +672,12 @@ public:
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
 	if (_scene) {
-		_scene->add(new GLFillRectItem(x0, _dy - y0, x1, _dy - y1, color));
+        lvRect rc(x0, y0, x1, y1);
+        lvRect clip;
+        GetClipRect(&clip);
+        if (rc.intersect(clip)) {
+            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color));
+        }
 	}
 }
 
