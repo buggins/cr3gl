@@ -74,11 +74,11 @@ class CRUIButton : public CRUILinearLayout {
 protected:
 	CRUIImageWidget * _icon;
 	CRUITextWidget * _label;
-	void init(lString16 text, CRUIImageRef image, bool vertical);
+    void init(lString16 text, const char * imageRes, bool vertical);
 public:
 	/// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
-	CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
+    //CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
 	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
 };
 
@@ -86,6 +86,7 @@ class CRUIImageButton : public CRUIButton {
 protected:
 public:
 	CRUIImageButton(const char * imageResource, const char * styleName = "BUTTON_NOBACKGROUND");
+    void onThemeChanged();
 };
 
 

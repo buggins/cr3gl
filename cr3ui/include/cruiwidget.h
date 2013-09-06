@@ -11,6 +11,9 @@
 #include "cruievent.h"
 #include "cri18n.h"
 
+#define LONG_TOUCH_THRESHOLD 500
+#define DRAG_THRESHOLD_X 15
+
 /// base class for all UI elements
 class CRUIWidget {
 protected:

@@ -264,17 +264,20 @@ CRUIImageButton::CRUIImageButton(const char * imageResource, const char * styleN
 	setAlign(CRUI::ALIGN_CENTER);
 }
 
-CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
-	CRUIImageRef image;
-	if (imageRes && imageRes[0])
-		image = resourceResolver->getIcon(imageRes);
-	init(text, image, vertical);
+void CRUIImageButton::onThemeChanged() {
+    setMinWidth(deviceInfo.minListItemSize);
+    setMinHeight(deviceInfo.minListItemSize);
 }
 
-void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
+CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
+    init(text, imageRes, vertical);
+}
+
+void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {
 	_styleId = "BUTTON";
-	if (!image.isNull()) {
-		_icon = new CRUIImageWidget(image);
+    bool hasImage = imageRes && imageRes[0];
+    if (hasImage) {
+        _icon = new CRUIImageWidget(imageRes);
 		if (text.empty()) {
 			_icon->setAlign(ALIGN_CENTER);
 			//_icon->setLayoutParams(FILL_PARENT, FILL_PARENT);
@@ -286,14 +289,14 @@ void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	}
 	if (!text.empty()) {
 		_label = new CRUITextWidget(text);
-		if (image.isNull()) {
+        if (!hasImage) {
 			_label->setAlign(ALIGN_CENTER);
 			//_label->setLayoutParams(FILL_PARENT, FILL_PARENT);
 		} else if (vertical)
 			_label->setAlign(ALIGN_TOP | ALIGN_HCENTER);
 		else
 			_label->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
-		if (!image.isNull()) {
+        if (hasImage) {
 			lvRect padding;
 			getPadding(padding);
 			lvRect lblPadding;
@@ -311,11 +314,11 @@ void CRUIButton::init(lString16 text, CRUIImageRef image, bool vertical) {
 	}
 }
 
-CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
-: CRUILinearLayout(vertical), _icon(NULL), _label(NULL)
-{
-	init(text, image, vertical);
-}
+//CRUIButton::CRUIButton(lString16 text, CRUIImageRef image, bool vertical)
+//: CRUILinearLayout(vertical), _icon(NULL), _label(NULL)
+//{
+//	init(text, image, vertical);
+//}
 
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {

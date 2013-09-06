@@ -15,6 +15,8 @@
 
 using namespace CRUI;
 
+
+
 class CRUIMainWidget;
 
 
@@ -29,17 +31,12 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUITextWidget * _authors;
 	CRUITextWidget * _info;
     CRUIHomeWidget * _home;
-    int _coverDx;
-    int _coverDy;
 public:
 
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
         int coverSize = deviceInfo.shortSide / 4;
-        _coverDx = coverSize * 3 / 4;
-        _coverDy = coverSize;
-        _cover = new CRCoverWidget(_home->getMain(), NULL, _coverDx, _coverDy);
-        _cover->setSize(_coverDx, _coverDy);
+        _cover = new CRCoverWidget(_home->getMain(), NULL, 75, 100);
         _cover->setMargin(PT_TO_PX(4));
         //_cover->setBackground(0xC0808000);
         //_cover->setBackground("home_frame.9.png");
@@ -57,6 +54,7 @@ public:
         _caption->setStyle("HOME_LIST_CAPTION");
 		_captionLayout->addChild(_caption);
 		_captionLayout->addChild(_menuButton);
+        _captionLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 
 		_layout->addChild(_captionLayout);
 		lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
@@ -89,6 +87,7 @@ public:
 	}
 
     void onThemeChanged() {
+        _cover->setMargin(PT_TO_PX(4));
         _caption->setPadding(PT_TO_PX(4));
         lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
         _title->setPadding(pad);
@@ -97,16 +96,29 @@ public:
         requestLayout();
     }
 
-    /// measure dimensions
-    void CRUINowReadingWidget::measure(int baseWidth, int baseHeight) {
-        _coverDy = baseHeight;
-        _coverDx = _coverDy * 3 / 4;
-        _cover->setSize(_coverDx, _coverDy);
-        CRUILinearLayout::measure(baseWidth, baseHeight);
-        updateLastBook(getLastBook());
+    void updateCoverSize(int baseHeight) {
+        lvRect margin = getMargin();
+        lvRect padding;
+        getPadding(padding);
+        int coverDy = baseHeight - margin.top - margin.bottom - padding.top - padding.bottom;
+        int coverDx = coverDy * 3 / 4;
+        _cover->setSize(coverDx, coverDy);
     }
 
-    ~CRUINowReadingWidget() {
+    /// measure dimensions
+    void measure(int baseWidth, int baseHeight) {
+        updateLastBook(getLastBook());
+        updateCoverSize(baseHeight);
+        CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
+
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom) {
+        updateCoverSize(bottom - top);
+        CRUILinearLayout::layout(left, top, right, bottom);
+    }
+
+    virtual ~CRUINowReadingWidget() {
     }
 
     void updateLastBook(const CRDirEntry * lastBook) {
@@ -138,6 +150,40 @@ public:
         return false;
     }
 
+    /// motion event handler, returns true if it handled event
+    bool onTouchEvent(const CRUIMotionEvent * event) {
+        int action = event->getAction();
+        int delta = event->getX() - event->getStartX();
+        //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
+        switch (action) {
+        case ACTION_DOWN:
+            break;
+        case ACTION_UP:
+            if ((delta < DRAG_THRESHOLD_X * 2) && (-delta < DRAG_THRESHOLD_X * 2)) {
+                bool isLong = event->getDownDuration() < LONG_TOUCH_THRESHOLD;
+                if (isLong) {
+                    if (onLongClickEvent())
+                        return true;
+                }
+                onClickEvent();
+            }
+            break;
+        case ACTION_FOCUS_IN:
+            break;
+        case ACTION_FOCUS_OUT:
+            return false; // to continue tracking
+            break;
+        case ACTION_CANCEL:
+            break;
+        case ACTION_MOVE:
+            if ((delta > DRAG_THRESHOLD_X) || (-delta > DRAG_THRESHOLD_X))
+                _home->getMain()->startDragging(event, false);
+            break;
+        default:
+            return CRUIWidget::onTouchEvent(event);
+        }
+        return true;
+    }
 };
 
 class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
@@ -522,8 +568,6 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 		_onlineCatalogsList->layout((left + right) / 2, y, right, y + otherH);
 	}
 }
-
-#define DRAG_THRESHOLD_X 15
 
 /// motion event handler, returns true if it handled event
 bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {

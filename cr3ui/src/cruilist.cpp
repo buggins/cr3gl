@@ -7,7 +7,6 @@
 
 #include "cruilist.h"
 
-#define LONG_TOUCH_THRESHOLD 1000
 
 using namespace CRUI;
 
