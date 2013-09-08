@@ -65,9 +65,24 @@ public:
     class TizenMutex : public CRMutex {
     	Tizen::Base::Runtime::Mutex mutex;
     public:
-        TizenMutex() { mutex.Create(Tizen::Base::Runtime::NonRecursiveMutexTag()); }
-        virtual void acquire() { mutex.Acquire(); }
-        virtual void release() { mutex.Release(); }
+        TizenMutex() {
+        	result r = mutex.Create(Tizen::Base::Runtime::NonRecursiveMutexTag());
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Mutex::create failed");
+        	}
+        }
+        virtual void acquire() {
+        	result r = mutex.Acquire();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Mutex::acquire failed");
+        	}
+        }
+        virtual void release() {
+        	result r = mutex.Release();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Mutex::release failed");
+        	}
+        }
     };
 
     class TizenMonitor : public CRMonitor {
@@ -80,25 +95,37 @@ public:
         }
         virtual void acquire() {
         	result r = monitor.Enter();
-        	CRLog::trace("TizenMonitor acquire result %d", (int)r);
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Monitor::acquire failed");
+        	}
         }
         virtual void release() {
-        	CRLog::trace("TizenMonitor release");
+        	//CRLog::trace("TizenMonitor release");
         	result r = monitor.Exit();
-        	CRLog::trace("TizenMonitor release result %d", (int)r);
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Monitor::release failed");
+        	}
         }
         virtual void wait() {
-        	CRLog::trace("TizenMonitor before wait");
-        	monitor.Wait();
-        	CRLog::trace("TizenMonitor after wait");
+        	//CRLog::trace("TizenMonitor before wait");
+        	result r = monitor.Wait();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Monitor::wait failed");
+        	}
         }
         virtual void notify() {
-        	CRLog::trace("TizenMonitor notify");
-        	monitor.Notify();
+        	//CRLog::trace("TizenMonitor notify");
+        	result r = monitor.Notify();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Monitor::notify failed");
+        	}
         }
         virtual void notifyAll() {
         	CRLog::trace("TizenMonitor notifyAll");
-        	monitor.NotifyAll();
+        	result r = monitor.NotifyAll();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Monitor::notifyAll failed");
+        	}
         }
     };
 
@@ -106,16 +133,28 @@ public:
     	CRRunnable * runnable;
     public:
         TizenThread(CRRunnable * _runnable) : runnable(_runnable) {
-        	Construct();
+        	result r = Construct();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Thread::create failed");
+        	}
         }
         virtual ~TizenThread() {
-            Join();
+            result r = Join();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Thread::join failed");
+        	}
         }
         virtual void start() {
-            Start();
+            result r = Start();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Thread::start failed");
+        	}
         }
         virtual void join() {
-            Join();
+            result r = Join();
+        	if (r != E_SUCCESS) {
+        		CRLog::fatal("Thread::join failed");
+        	}
         }
         Object * Run(void) {
     		CRLog::debug("Tizen - thread started");
