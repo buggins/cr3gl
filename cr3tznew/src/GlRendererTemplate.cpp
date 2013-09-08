@@ -54,6 +54,8 @@ GlRendererTemplate::GlRendererTemplate(void)
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
 	_widget = new CRUIMainWidget();
 	_eventManager->setRootWidget(_widget);
+	_widget->setScreenUpdater(this);
+
 }
 
 GlRendererTemplate::~GlRendererTemplate(void)
@@ -259,4 +261,9 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 	// Assign target control height
 
 	__controlHeight = height;
+}
+
+/// set animation fps (0 to disable) and/or update screen instantly
+void GlRendererTemplate::setScreenUpdateMode(bool updateNow, int animationFps) {
+	Draw();
 }

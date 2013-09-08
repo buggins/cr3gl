@@ -24,6 +24,8 @@ public:
 	}
 };
 
+#define UI_UPDATE_REQUEST 12345
+
 class CoolReaderForm;
 class CoolReaderFrame
 	: public Tizen::Ui::Controls::Frame
@@ -34,6 +36,7 @@ public:
 //	CoolReaderForm* _pCoolReaderForm;
 //	CoolReaderForm* getForm() { return _pCoolReaderForm; }
 public:
+	virtual void OnUserEventReceivedN (RequestId requestId, Tizen::Base::Collection::IList *pArgs);
 	virtual result OnInitializing(void);
 	virtual result OnTerminating(void);
 };

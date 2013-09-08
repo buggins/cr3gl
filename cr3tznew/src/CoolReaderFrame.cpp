@@ -1,5 +1,6 @@
 #include "CoolReaderFrame.h"
 #include "CoolReaderForm.h"
+#include "lvstring.h"
 
 using namespace Tizen::Base;
 using namespace Tizen::Ui;
@@ -11,6 +12,20 @@ CoolReaderFrame::CoolReaderFrame(void)// : _pCoolReaderForm(NULL)
 
 CoolReaderFrame::~CoolReaderFrame(void)
 {
+}
+
+void CoolReaderFrame::OnUserEventReceivedN (RequestId requestId, Tizen::Base::Collection::IList *pArgs) {
+	CRLog::trace("UserEvent %d received", requestId);
+	if (requestId == UI_UPDATE_REQUEST) {
+		//
+		if (pArgs != NULL && pArgs->GetCount() == 1) {
+			CRRunnableContainer * param = dynamic_cast<CRRunnableContainer*>(pArgs->GetAt(0));
+			if (param) {
+				CRLog::trace("Executing UI_UPDATE_REQUEST in UI thread");
+				param->run();
+			}
+		}
+	}
 }
 
 result

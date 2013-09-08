@@ -192,7 +192,7 @@ public:
 		   Tizen::Ui::Controls::Frame* pFrame = Tizen::App::UiApp::GetInstance()->GetAppFrame()->GetFrame();
 		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
 		   if (pFrame)
-			   pFrame->SendUserEvent(12345, pList);
+			   pFrame->SendUserEvent(UI_UPDATE_REQUEST, pList);
 			CRLog::debug("TizenGuiExecutor execute task - done");
 	}
 };
@@ -213,21 +213,22 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 
 	concurrencyProvider = new TizenConcurrencyProvider(new TizenGuiExecutor());
 
-	CRLog::trace("testing concurrency provider");
-	CRThreadExecutor * executor = new CRThreadExecutor();
-	class SampleRunnable : public CRRunnable {
-	public:
-		virtual void run() {
-			CRLog::trace("inside runnable");
-		}
-	};
-	executor->execute(new SampleRunnable());
-	executor->execute(new SampleRunnable());
-	executor->execute(new SampleRunnable());
+//	CRLog::trace("testing concurrency provider");
+//	CRThreadExecutor * executor = new CRThreadExecutor();
+//	class SampleRunnable : public CRRunnable {
+//	public:
+//		virtual void run() {
+//			CRLog::trace("inside runnable");
+//		}
+//	};
+//	executor->execute(new SampleRunnable());
+//	executor->execute(new SampleRunnable());
+//	executor->execute(new SampleRunnable());
 //	CRMonitor * monitor = concurrencyProvider->createMonitor();
 //	monitor->acquire();
 //	monitor->wait();
 
+	crconfig.fontFiles.add("/usr/share/fonts/TizenSansRegular.ttf");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
 	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));

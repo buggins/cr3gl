@@ -11,10 +11,12 @@
 #include <FGrpIGlRenderer.h>
 #include <crui.h>
 #include "cr3tizen.h"
+#include "cruimain.h"
 
 class LVDocView;
 class GlRendererTemplate :
-	public Tizen::Graphics::Opengl::IGlRenderer
+	public Tizen::Graphics::Opengl::IGlRenderer,
+	public CRUIScreenUpdateManagerCallback
 {
 		LVDocView * _docview;
 	    CRUIMainWidget * _widget;
@@ -39,6 +41,9 @@ public:
 	virtual int GetTargetControlHeight(void);
 	virtual void SetTargetControlWidth(int width);
 	virtual void SetTargetControlHeight(int height);
+
+    /// set animation fps (0 to disable) and/or update screen instantly
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps);
 
 private:
 	int __controlWidth;

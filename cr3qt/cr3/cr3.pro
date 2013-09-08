@@ -22,6 +22,7 @@ HEADERS  += cr3mainwindow.h \
 win32 {
     DEFINES += _WIN32=1 \
         WIN32=1 \
+        _CRT_SECURE_NO_WARNINGS \
         CR_EMULATE_GETTEXT=1
     LIBS += -lgdi32
 }
@@ -285,6 +286,8 @@ HEADERS += \
     ../../../cr3/thirdparty/chmlib/src/chm_lib.h \
     ../../../cr3/thirdparty/chmlib/src/lzx.h
 
+INCLUDEPATH += \
+    ../../../cr3/thirdparty/chmlib/src
 
 SOURCES += \
     ../../../cr3/thirdparty/antiword/xmalloc.c \
@@ -334,6 +337,8 @@ HEADERS += \
     ../../../cr3/thirdparty/antiword/antiword.h \
     ../../../cr3/thirdparty/antiword/version.h
 
+INCLUDEPATH += \
+    ../../../cr3/thirdparty/antiword
 
 INCLUDEPATH += ../../../cr3/thirdparty/sqlite
 SOURCES += \
@@ -346,6 +351,7 @@ HEADERS += \
 INCLUDEPATH += ../../cr3db\include \
     ../../cr3gl\include \
     ../../cr3ui\include
+
 SOURCES += \
     ../../cr3db/src/basedb.cpp \
     ../../cr3db/src/cr3db.cpp \
