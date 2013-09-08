@@ -265,5 +265,5 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void GlRendererTemplate::setScreenUpdateMode(bool updateNow, int animationFps) {
-	Draw();
+	//Draw();
 }
