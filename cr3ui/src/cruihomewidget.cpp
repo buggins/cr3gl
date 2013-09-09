@@ -195,7 +195,11 @@ protected:
 	CRUITextWidget * _textWidget;
     CRUIHomeWidget * _home;
 public:
-    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) { return false; }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        CR_UNUSED(itemIndex);
+        return false;
+    }
     CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
@@ -257,7 +261,8 @@ public:
     }
 
     virtual int getItemCount(CRUIListWidget * list) {
-		return 10;
+        CR_UNUSED(list);
+        return 10;
 	}
 	virtual lString16 getItemText(int index) {
 		char s[100];
@@ -265,10 +270,12 @@ public:
 		return lString16(s);
 	}
 	virtual CRUIImageRef getItemIcon(int index) {
-		return resourceResolver->getIcon("folder_blue");
+        CR_UNUSED(index);
+        return resourceResolver->getIcon("folder_blue");
 	}
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
-		CRUIImageRef icon = getItemIcon(index);
+        CR_UNUSED(list);
+        CRUIImageRef icon = getItemIcon(index);
 		lString16 text = getItemText(index);
 		_textWidget->setText(text);
 		_itemImage->setImage(icon);
@@ -279,6 +286,7 @@ public:
 class CRUIFileSystemDirsWidget : public CRUIHomeItemListWidget {
 public:
     virtual int getItemCount(CRUIListWidget * list) {
+        CR_UNUSED(list);
         return deviceInfo.topDirs.itemCount();
     }
     virtual lString16 getItemText(int index) {
@@ -331,6 +339,7 @@ public:
         deviceInfo.topDirs.sort(0);
     }
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
         CRTopDirItem * item = deviceInfo.topDirs.getItem(itemIndex);
         _home->getMain()->showFolder(item->getPathName(), true);
         return true;
@@ -338,10 +347,99 @@ public:
 };
 
 class CRUILibraryWidget : public CRUIHomeItemListWidget {
+    LVPtrVector<CRDirEntry> _entries;
 public:
-    CRUILibraryWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_LIBRARY) {
+    const BookDBBook * getLastBook() {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+        return item ? item->getBook() : NULL;
+    }
 
-	}
+    void init() {
+        const BookDBBook * currentBook = getLastBook();
+        _entries.clear();
+        _entries.add(new CRDirItem(lString8(BOOKS_BY_AUTHOR_TAG), false));
+        _entries.add(new CRDirItem(lString8(BOOKS_BY_TITLE_TAG), false));
+        _entries.add(new CRDirItem(lString8(BOOKS_BY_SERIES_TAG), false));
+        _entries.add(new CRDirItem(lString8(BOOKS_BY_FILENAME_TAG), false));
+        _entries.add(new CRDirItem(lString8(SEARCH_RESULTS_TAG), false));
+        if (currentBook) {
+            for (int i = 0; i < currentBook->authors.length(); i++) {
+                lString8 author(currentBook->authors[i]->fileAs.c_str());
+                if (author.length()) {
+                    _entries.add(new CRDirItem(lString8(BOOKS_BY_AUTHOR_TAG_PREFIX) + author, false));
+                }
+            }
+            if (!currentBook->series.isNull()) {
+                lString8 series(currentBook->series->name.c_str());
+                if (series.length()) {
+                    _entries.add(new CRDirItem(lString8(BOOKS_BY_SERIES_TAG_PREFIX) + series, false));
+                }
+            }
+        }
+    }
+
+    virtual int getItemCount(CRUIListWidget * list) {
+        return _entries.length();
+    }
+    virtual lString16 getItemText(int index) {
+        if (index < 0 || index >= _entries.length())
+            return lString16();
+        CRDirEntry * item = _entries[index];
+        lString16 pattern = item->getFilterString();
+        if (pattern.length())
+            return pattern;
+        switch(item->getDirType()) {
+        case DIR_TYPE_BOOKS_BY_AUTHOR:
+            return _16(STR_BOOKS_BY_AUTHOR);
+        case DIR_TYPE_BOOKS_BY_TITLE:
+            return _16(STR_BOOKS_BY_TITLE);
+        case DIR_TYPE_BOOKS_BY_FILENAME:
+            return _16(STR_BOOKS_BY_FILENAME);
+        case DIR_TYPE_BOOKS_BY_SERIES:
+            return _16(STR_BOOKS_BY_SERIES);
+        case DIR_TYPE_BOOKS_SEARCH_RESULT:
+            return _16(STR_BOOKS_SEARCH);
+        default:
+            return Utf8ToUnicode(item->getPathName());
+        }
+    }
+    virtual CRUIImageRef getItemIcon(int index) {
+        if (index < 0 || index >= _entries.length())
+            return CRUIImageRef();
+        CRDirEntry * item = _entries[index];
+        switch(item->getDirType()) {
+        case DIR_TYPE_BOOKS_BY_AUTHOR:
+            return resourceResolver->getIcon("folder_bookmark");
+        case DIR_TYPE_BOOKS_BY_TITLE:
+            return resourceResolver->getIcon("folder_bookmark");
+        case DIR_TYPE_BOOKS_BY_FILENAME:
+            return resourceResolver->getIcon("folder_bookmark");
+        case DIR_TYPE_BOOKS_BY_SERIES:
+            return resourceResolver->getIcon("folder_bookmark");
+        case DIR_TYPE_BOOKS_SEARCH_RESULT:
+            return resourceResolver->getIcon("folder_bookmark");
+        default:
+            return resourceResolver->getIcon("folder_blue");
+        }
+    }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight) {
+        init();
+        CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
+
+    CRUILibraryWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_LIBRARY) {
+        init();
+    }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        if (itemIndex < 0 || itemIndex >= _entries.length())
+            return false;
+        CRDirEntry * item = _entries[itemIndex];
+        _home->getMain()->showFolder(item->getPathName(), true);
+        return true;
+    }
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {

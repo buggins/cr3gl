@@ -270,6 +270,25 @@ public:
     BookDBBookmark * clone() const { return new BookDBBookmark(*this); }
 };
 
+class PrefixCollection {
+    int _maxSize;
+    int _level;
+    lString16Collection _values;
+    LVHashTable<lString16, int> _map;
+
+    int itemsForLevel(int level);
+    void compact();
+    static lString16 truncate(const lString16 & s, int level);
+public:
+
+    void get(lString16Collection & res);
+
+    PrefixCollection(int maxSize) : _maxSize(maxSize), _level(0), _map(1000) {
+    }
+
+    void add(const lString16 & value);
+};
+
 class BookDBAuthorCache {
 	LVHashTable<lUInt64, BookDBAuthor *> _byId;
 	LVHashTable<DBString, BookDBAuthor *> _byName;
@@ -278,7 +297,8 @@ public:
 	BookDBAuthor * get(lInt64 key);
 	BookDBAuthor * getClone(lInt64 key) { BookDBAuthor * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
 	BookDBAuthor * get(const DBString & name);
-	void put(BookDBAuthor * item);
+    void find(lString16 prefix, int maxSize, lString16Collection & values);
+    void put(BookDBAuthor * item);
 	void clear();
 	~BookDBAuthorCache() { clear(); }
 };
@@ -291,7 +311,8 @@ public:
 	BookDBSeries * get(lInt64 key);
 	BookDBSeries * getClone(lInt64 key) { BookDBSeries * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
 	BookDBSeries * get(const DBString & name);
-	void put(BookDBSeries * item);
+    void find(lString16 prefix, int maxSize, lString16Collection & values);
+    void put(BookDBSeries * item);
 	void clear();
 	~BookDBSeriesCache() { clear(); }
 };
@@ -345,6 +366,13 @@ public:
     void put (lInt64 bookId, BookDBBookmark * item);
     void remove(lInt64 bookId);
     void clear();
+};
+
+enum SEARCH_FIELD {
+    SEARCH_FIELD_AUTHOR,
+    SEARCH_FIELD_TITLE,
+    SEARCH_FIELD_SERIES,
+    SEARCH_FIELD_FILENAME
 };
 
 class CRBookDB {
@@ -408,6 +436,8 @@ public:
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
     /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
+
+    bool findBy(SEARCH_FIELD field, lString16 searchString, lString8Collection & prefixes, LVPtrVector<BookDBBook> & books);
 };
 
 extern CRBookDB * bookDB;

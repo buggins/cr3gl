@@ -812,6 +812,81 @@ BookDBBook * CRBookDB::loadBook(lString8 pathname) {
     return NULL;
 }
 
+lString16 PrefixCollection::truncate(const lString16 & s, int level) {
+    if (!level)
+        return s;
+    if (s.length() > level && (s.length() != level + 1 || s[level] != '%'))
+        return s.substr(0, level) + "%";
+    return s;
+}
+
+int PrefixCollection::itemsForLevel(int level) {
+    LVHashTable<lString16, int> map(_values.length() * 2);
+    for (int i = 0; i <_values.length(); i++) {
+        lString16 s = truncate(_values[i], level);
+        map.set(s, 1);
+    }
+    return map.length();
+}
+
+void PrefixCollection::get(lString16Collection & res) {
+    res.clear();
+    res.addAll(_values);
+    _values.sort();
+}
+
+void PrefixCollection::compact() {
+    int startLevel = _level ? _level - 1 : 7;
+    int bestLevel = 1;
+    for (int i = startLevel; i >= 1; i--) {
+        int cnt = itemsForLevel(i);
+        if (cnt < _maxSize) {
+            bestLevel = cnt;
+            break;
+        }
+    }
+    if (bestLevel != _level) {
+        lString16Collection tmp;
+        tmp.addAll(_values);
+        _values.clear();
+        _map.clear();
+        _level = bestLevel;
+        for (int i = 0; i < tmp.length(); i++) {
+            lString16 s = truncate(tmp[i], _level);
+            if (!_map.get(s)) {
+                _values.add(s);
+                _map.set(s, 1);
+            }
+        }
+    }
+}
+
+void PrefixCollection::add(const lString16 & value) {
+    lString16 s = truncate(value, _level);
+    if (!_map.get(s)) {
+        _values.add(s);
+        _map.set(s, 1);
+    }
+    if (_values.length() > _maxSize)
+        compact();
+}
+
+#define MAX_FIND_LEVEL_SIZE 40
+bool CRBookDB::findBy(SEARCH_FIELD field, lString16 searchString, lString8Collection & prefixes, LVPtrVector<BookDBBook> & books) {
+    if (field == SEARCH_FIELD_AUTHOR) {
+        lString16Collection found;
+        _authorCache.find(searchString, MAX_FIND_LEVEL_SIZE, found);
+    } else if (field == SEARCH_FIELD_TITLE) {
+
+    } else if (field == SEARCH_FIELD_SERIES) {
+        lString16Collection found;
+        _seriesCache.find(searchString, MAX_FIND_LEVEL_SIZE, found);
+    } else if (field == SEARCH_FIELD_FILENAME) {
+
+    }
+    return false;
+}
+
 /// returns ptr to copy saved in cache
 BookDBBookmark * CRBookLastPositionCache::find(lInt64 bookId) {
     int index = -1;
@@ -1021,6 +1096,46 @@ void BookDBAuthorCache::put(BookDBAuthor * item) {
 	_byId.set(item->id, item);
 	_byName.set(item->name, item);
 }
+
+static bool matchPrefix(const lString16 & s, const lString16 & prefix) {
+    if (prefix.empty() || prefix == L"%")
+        return true;
+    if (prefix.endsWith("%")) {
+        return s.startsWith(prefix.substr(prefix.length() - 1));
+    }
+    return s == prefix;
+}
+
+void BookDBAuthorCache::find(lString16 prefix, int maxSize, lString16Collection & values) {
+    PrefixCollection pref(maxSize);
+    LVHashTable<lUInt64, BookDBAuthor *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBAuthor *>::pair * item = iter.next();
+        if (!item)
+            break;
+        lString16 s = Utf8ToUnicode(item->value->fileAs.c_str());
+        if (matchPrefix(s, prefix)) {
+            pref.add(s);
+        }
+    }
+    pref.get(values);
+}
+
+void BookDBSeriesCache::find(lString16 prefix, int maxSize, lString16Collection & values) {
+    PrefixCollection pref(maxSize);
+    LVHashTable<lUInt64, BookDBSeries *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBSeries *>::pair * item = iter.next();
+        if (!item)
+            break;
+        lString16 s = Utf8ToUnicode(item->value->name.c_str());
+        if (matchPrefix(s, prefix)) {
+            pref.add(s);
+        }
+    }
+    pref.get(values);
+}
+
 
 void BookDBAuthorCache::clear() {
 	LVPtrVector<BookDBAuthor> items;

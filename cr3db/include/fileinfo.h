@@ -116,7 +116,8 @@ public:
 
 class CRDirItem : public CRDirEntry {
 public:
-	CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
+    virtual DIR_TYPE getDirType() const;
+    CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
 	virtual bool isDirectory() const { return true; }
     virtual CRDirEntry * clone() const { CRDirItem * res = new CRDirItem(this->getPathName(), this->isArchive()); return res; }
 };
@@ -223,7 +224,6 @@ protected:
     /// load from DB
     virtual bool scan();
 public:
-    virtual DIR_TYPE getDirType() const;
     CRBookDBLookupItem(lString8 path) : CRDirContentItem(path, false) {}
 };
 

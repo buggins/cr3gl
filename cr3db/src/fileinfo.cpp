@@ -1064,7 +1064,7 @@ bool CRBookDBLookupItem::scan() {
     return true;
 }
 
-DIR_TYPE CRBookDBLookupItem::getDirType() const {
+DIR_TYPE CRDirItem::getDirType() const {
     if (_pathName.startsWith(BOOKS_BY_AUTHOR_TAG_PREFIX))
         return DIR_TYPE_BOOKS_BY_AUTHOR;
     if (_pathName.startsWith(BOOKS_BY_TITLE_TAG_PREFIX))
