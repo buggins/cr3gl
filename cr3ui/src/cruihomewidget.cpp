@@ -218,7 +218,7 @@ public:
 		_list = new CRUIListWidget(false, this);
 		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
         _list->setBackground("home_frame.9.png");
-		_list->setPadding(PT_TO_PX(3));
+		_list->setPadding(PT_TO_PX(1));
         _list->setOnItemClickListener(this);
         addChild(_list);
 
@@ -237,7 +237,7 @@ public:
 		_itemWidget = new CRUILinearLayout(true);
 		_itemWidget->addChild(_itemImage);
 		_itemWidget->addChild(_textWidget);
-		_itemWidget->setPadding(PT_TO_PX(2));
+		_itemWidget->setPadding(PT_TO_PX(1));
 		_itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
 		_itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
 		_itemWidget->setStyle("LIST_ITEM");
@@ -379,7 +379,7 @@ public:
         _list = new CRUIListWidget(false, this);
         _list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
         _list->setBackground("home_frame.9.png");
-        _list->setPadding(PT_TO_PX(3));
+        _list->setPadding(PT_TO_PX(1));
         _list->setOnItemClickListener(this);
         addChild(_list);
 
@@ -402,7 +402,7 @@ public:
         _itemWidget = new CRUILinearLayout(true);
         _itemWidget->addChild(_itemImage);
         _itemWidget->addChild(_textWidget);
-        _itemWidget->setPadding(PT_TO_PX(2));
+        _itemWidget->setPadding(PT_TO_PX(1));
 //        _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
 //        _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
         _itemWidget->setStyle("LIST_ITEM");

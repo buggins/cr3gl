@@ -304,8 +304,10 @@ void CRUIListWidget::animate(lUInt64 millisPassed) {
     if (_scroll.animate(millisPassed)) {
         int oldpos = getScrollOffset();
         setScrollOffset(_scroll.pos());
-        if (oldpos == getScrollOffset())
+        if (oldpos == getScrollOffset()) {
             _scroll.stop();
+            invalidate();
+        }
     }
 }
 
@@ -340,17 +342,21 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
             if (_dragStartOffset != NO_DRAG) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 int spd = isVertical() ? speed.y : speed.x;
+                _dragStartOffset = NO_DRAG;
                 if (spd < -SCROLL_MIN_SPEED || spd > SCROLL_MIN_SPEED) {
                     _scroll.start(_scrollOffset, -spd, SCROLL_FRICTION);
                     CRLog::trace("Starting scroll with speed %d", _scroll.speed());
+                } else {
+        			setScrollOffset(_scrollOffset);
                 }
-                _dragStartOffset = NO_DRAG;
+                invalidate();
             }
             if (itemIndex != -1) {
                 //CRLog::trace("UP ts=%lld downTs=%lld downDuration=%lld", event->getEventTimestamp(), event->getDownEventTimestamp(), event->getDownDuration());
                 bool isLong = event->getDownDuration() > LONG_TOUCH_THRESHOLD; // 0.5 seconds threshold
 				if (isLong && onItemLongClickEvent(itemIndex))
 					return true;
+	            invalidate();
 				onItemClickEvent(itemIndex);
             } else {
             }

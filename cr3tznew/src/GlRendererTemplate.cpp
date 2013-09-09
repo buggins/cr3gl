@@ -174,14 +174,14 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 void GlRendererTemplate::setScreenUpdateMode(bool updateNow, int animationFps) {
 	CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if (!animationFps) {
+		if (updateNow) {
+			CRLog::trace("Updating player");
+			__player->Redraw();
+		}
 		if (__playerStarted) {
 			CRLog::trace("Pausing player");
 			__player->Pause();
 			__playerStarted = false;
-		}
-		if (updateNow) {
-			CRLog::trace("Updating player");
-			__player->Redraw();
 		}
 	} else {
 		if (!__playerStarted) {
