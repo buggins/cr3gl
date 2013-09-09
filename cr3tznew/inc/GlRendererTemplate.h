@@ -25,6 +25,7 @@ class GlRendererTemplate :
 		CRUIEventManager * _eventManager;
 		CRUIEventAdapter * _eventAdapter;
 		GLDrawBuf * _backbuffer;
+		bool _updateRequested;
 public:
 
 	GlRendererTemplate(void);

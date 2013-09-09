@@ -15,6 +15,7 @@ const GLfloat ZERO = GLfloat( 0.0f);
 
 GlRendererTemplate::GlRendererTemplate(void)
 	: _backbuffer(NULL)
+	, _updateRequested(false)
 	, __controlWidth(0)
 	, __controlHeight(0)
 	, __angle(0)
@@ -68,6 +69,8 @@ GlRendererTemplate::Draw(void)
 {
 	CRLog::debug("GlRendererTemplate::Draw is called");
 
+	_updateRequested = false;
+
 	glShadeModel(GL_SMOOTH);
 	glViewport(0, 0, GetTargetControlWidth(), GetTargetControlHeight());
 	glEnable (GL_BLEND);
@@ -112,7 +115,7 @@ GlRendererTemplate::Draw(void)
 	glFlush();
 
 
-	CRLog::debug("GlRendererTemplate::Draw exiting");
+	//CRLog::debug("GlRendererTemplate::Draw exiting");
 	return true;
 }
 
@@ -172,20 +175,23 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void GlRendererTemplate::setScreenUpdateMode(bool updateNow, int animationFps) {
-	CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
+	//CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if (!animationFps) {
 		if (updateNow) {
-			CRLog::trace("Updating player");
-			__player->Redraw();
+			//CRLog::trace("Updating player");
+			if (!_updateRequested) {
+				_updateRequested = true;
+				__player->Redraw();
+			}
 		}
 		if (__playerStarted) {
-			CRLog::trace("Pausing player");
+			//CRLog::trace("Pausing player");
 			__player->Pause();
 			__playerStarted = false;
 		}
 	} else {
 		if (!__playerStarted) {
-			CRLog::trace("Resuming player");
+			//CRLog::trace("Resuming player");
 			__player->SetFps(animationFps);
 			__player->Resume();
 			__playerStarted = true;
