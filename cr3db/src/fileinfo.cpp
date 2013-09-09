@@ -246,6 +246,23 @@ bool CRDirCacheItem::scan() {
 	return res;
 }
 
+/// returns true for items like book-by-author, etc.
+bool CRDirEntry::isSpecialItem() {
+    if (_pathName.startsWith("@"))
+        return true;
+    return false;
+}
+
+/// for pathname like  @authors:ABC returns ABC
+lString16 CRDirEntry::getFilterString() {
+    if (_pathName.startsWith("@")) {
+        int pos = _pathName.pos(":");
+        if (pos >= 0)
+            return Utf8ToUnicode(_pathName.substr(pos + 1));
+    }
+    return lString16::empty_str;
+}
+
 lString8 CRDirEntry::getFileName() const {
 	return UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(_pathName)));
 }
@@ -1017,6 +1034,60 @@ bool CRRecentBooksItem::scan() {
     return true;
 }
 
+
+bool CRBookDBLookupItem::scan() {
+    if (_scanned)
+        return true;
+//    LVPtrVector<BookDBBook> books;
+//    LVPtrVector<BookDBBookmark> lastPositions;
+//    bookDB->loadRecentBooks(books, lastPositions);
+//    for (int i = 0; i < lastPositions.length(); i++) {
+//        if (books[i] && lastPositions[i]) {
+//            // item loaded completely
+//            lString16 pathname = Utf8ToUnicode(books[i]->pathname.c_str());
+//            bool exists = false;
+//            lString16 arc, file;
+//            if (LVSplitArcName(pathname, arc, file)) {
+//                exists = LVFileExists(arc);
+//            } else {
+//                exists = LVFileExists(pathname);
+//            }
+//            if (exists) {
+//                CRRecentBookItem * item = new CRRecentBookItem(books[i], lastPositions[i]);
+//                _entries.add(item);
+//            } else {
+//                CRLog::warn("Recent book file does not exist %s", LCSTR(pathname));
+//            }
+//        }
+//    }
+    _scanned = true;
+    return true;
+}
+
+DIR_TYPE CRBookDBLookupItem::getDirType() const {
+    if (_pathName.startsWith(BOOKS_BY_AUTHOR_TAG_PREFIX))
+        return DIR_TYPE_BOOKS_BY_AUTHOR;
+    if (_pathName.startsWith(BOOKS_BY_TITLE_TAG_PREFIX))
+        return DIR_TYPE_BOOKS_BY_TITLE;
+    if (_pathName.startsWith(BOOKS_BY_FILENAME_TAG_PREFIX))
+        return DIR_TYPE_BOOKS_BY_FILENAME;
+    if (_pathName.startsWith(BOOKS_BY_SERIES_TAG_PREFIX))
+        return DIR_TYPE_BOOKS_BY_SERIES;
+
+    if (_pathName == BOOKS_BY_AUTHOR_TAG)
+        return DIR_TYPE_BOOKS_BY_AUTHOR;
+    if (_pathName == BOOKS_BY_TITLE_TAG)
+        return DIR_TYPE_BOOKS_BY_TITLE;
+    if (_pathName == BOOKS_BY_FILENAME_TAG)
+        return DIR_TYPE_BOOKS_BY_FILENAME;
+    if (_pathName == BOOKS_BY_SERIES_TAG)
+        return DIR_TYPE_BOOKS_BY_SERIES;
+
+    if (_pathName.startsWith(SEARCH_RESULTS_PREFIX))
+        return DIR_TYPE_BOOKS_SEARCH_RESULT;
+    if (_pathName == SEARCH_RESULTS_TAG)
+        return DIR_TYPE_BOOKS_SEARCH_RESULT;
+}
 
 void CRSetupDirectoryCacheManager() {
     CRStopDirectoryCacheManager();

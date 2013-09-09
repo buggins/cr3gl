@@ -51,6 +51,11 @@ enum DIR_TYPE {
     DIR_TYPE_DOWNLOADS,
     DIR_TYPE_FAVORITE,
     DIR_TYPE_RECENT,
+    DIR_TYPE_BOOKS_BY_AUTHOR,
+    DIR_TYPE_BOOKS_BY_TITLE,
+    DIR_TYPE_BOOKS_BY_SERIES,
+    DIR_TYPE_BOOKS_BY_FILENAME,
+    DIR_TYPE_BOOKS_SEARCH_RESULT,
     DIR_TYPE_NORMAL
 };
 
@@ -63,6 +68,7 @@ enum BOOKMARK_TYPE {
 };
 
 class CRDirEntry {
+protected:
 	lString8 _pathName;
 	bool _isArchive;
 public:
@@ -87,6 +93,10 @@ public:
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_NORMAL; }
     virtual bool isRootDir() { DIR_TYPE t = getDirType(); return t == DIR_TYPE_SD_CARD || t == DIR_TYPE_INTERNAL_STORAGE || t == DIR_TYPE_FS_ROOT; }
     virtual lUInt64 getLastAccessTime() const { return 0; }
+    /// for pathname like  @authors:ABC returns ABC
+    virtual lString16 getFilterString();
+    /// returns true for items like book-by-author, etc.
+    virtual bool isSpecialItem();
 };
 
 class CRFileItem : public CRDirEntry {
@@ -173,6 +183,20 @@ public:
 
 #define RECENT_DIR_TAG "@recent"
 
+#define SEARCH_RESULTS_TAG "@search"
+
+#define BOOKS_BY_AUTHOR_TAG "@authors"
+#define BOOKS_BY_TITLE_TAG "@titles"
+#define BOOKS_BY_FILENAME_TAG "@filenames"
+#define BOOKS_BY_SERIES_TAG "@series"
+
+#define BOOKS_BY_AUTHOR_TAG_PREFIX "@authors:"
+#define BOOKS_BY_TITLE_TAG_PREFIX "@titles:"
+#define BOOKS_BY_FILENAME_TAG_PREFIX "@filenames:"
+#define BOOKS_BY_SERIES_TAG_PREFIX "@series:"
+
+#define SEARCH_RESULTS_PREFIX "@search:"
+
 
 class CRRecentBookItem : public CRFileItem {
     BookDBBookmark * _lastPosition;
@@ -186,11 +210,21 @@ class CRRecentBooksItem : public CRDirContentItem {
 protected:
     /// load from DB
     virtual bool scan();
+
 public:
     /// returns true if order of books in list has been changed
     bool onLastPositionUpdated(BookDBBook * book, BookDBBookmark * position);
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
     CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
+};
+
+class CRBookDBLookupItem : public CRDirContentItem {
+protected:
+    /// load from DB
+    virtual bool scan();
+public:
+    virtual DIR_TYPE getDirType() const;
+    CRBookDBLookupItem(lString8 path) : CRDirContentItem(path, false) {}
 };
 
 class CRDirScanCallback {
