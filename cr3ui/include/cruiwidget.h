@@ -134,8 +134,8 @@ public:
 
 	virtual CRUIWidget * setText(lString16 text) { return this; }
 	virtual CRUIWidget * setText(lString8 textResourceId) { return this; }
-	virtual CRUIWidget * setText(const wchar_t * text) { return this; }
-	virtual CRUIWidget * setText(const char * textResourceId) { return this; }
+    virtual CRUIWidget * setText(const wchar_t * text) { CR_UNUSED(text); return this; }
+    virtual CRUIWidget * setText(const char * textResourceId) { CR_UNUSED(textResourceId); return this; }
 	virtual lString16 getText() { return lString16::empty_str; }
 
 	virtual CRUIWidget * setFont(LVFontRef font) { _font = font; requestLayout(); return this; }
@@ -161,9 +161,9 @@ public:
 	virtual int getChildCount() { return 0; }
 	virtual CRUIWidget * childById(const lString8 & id);
 	virtual CRUIWidget * childById(const char * id);
-	virtual CRUIWidget * getChild(int index) { return NULL; }
-	virtual CRUIWidget * addChild(CRUIWidget * child) { return NULL; }
-	virtual CRUIWidget * removeChild(int index) { return NULL; }
+    virtual CRUIWidget * getChild(int index) { CR_UNUSED(index); return NULL; }
+    virtual CRUIWidget * addChild(CRUIWidget * child) { CR_UNUSED(child); return NULL; }
+    virtual CRUIWidget * removeChild(int index) { CR_UNUSED(index); return NULL; }
 	virtual CRUIWidget * setParent(CRUIWidget * parent) { _parent = parent; return this; }
 	/// returns parent widget pointer, NULL if it's top level widget
 	virtual CRUIWidget * getParent() { return _parent; }

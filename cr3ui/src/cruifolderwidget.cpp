@@ -53,7 +53,9 @@ public:
         _backButton->setId(lString8("BACK"));
         _backButton->setOnClickListener(buttonListener);
 	}
-
+    void setTitle(lString16 title) {
+        _caption->setText(title);
+    }
 };
 
 class CRUIDirItemWidget : public CRUILinearLayout {
@@ -70,10 +72,10 @@ public:
     CRDirEntry * _entry;
     CRUIDirItemWidget(int iconDx, int iconDy, const char * iconRes) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
         _icon = new CRUIImageWidget(iconRes);
-        _icon->setMinWidth(iconDx);
-        _icon->setMinHeight(iconDy);
-        _icon->setMaxWidth(iconDx);
-        _icon->setMaxHeight(iconDy);
+        //_icon->setMinWidth(iconDx);
+        //_icon->setMinHeight(iconDy);
+        //_icon->setMaxWidth(iconDx);
+        //_icon->setMaxHeight(iconDy);
         _icon->setAlign(ALIGN_CENTER);
         _icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         addChild(_icon);
@@ -102,10 +104,10 @@ public:
         _layout->addChild(_line2);
         _layout->addChild(_infolayout);
         _layout->addChild(spacer2);
-        _layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
+        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
         _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-        _layout->setMaxHeight(_iconDy);
-        _layout->setMinHeight(_iconDy);
+        _layout->setMaxHeight(deviceInfo.minListItemSize * 3 / 2);
+        //_layout->setMinHeight(_iconDy);
         //_layout->setBackground(0x80C0C0C0);
         addChild(_layout);
         setMinWidth(MIN_ITEM_PX);
@@ -117,12 +119,19 @@ public:
     void setDir(CRDirEntry * entry, int iconDx, int iconDy) {
         _iconDx = iconDx;
         _iconDy = iconDy;
-        _icon->setMinWidth(iconDx);
-        _icon->setMinHeight(iconDy);
-        _icon->setMaxWidth(iconDx);
-        _icon->setMaxHeight(iconDy);
-        _layout->setMaxHeight(_iconDy);
-        _layout->setMinHeight(_iconDy);
+        //_icon->setMinWidth(iconDx);
+        //_icon->setMinHeight(iconDy);
+        //_icon->setMaxWidth(iconDx);
+        //_icon->setMaxHeight(iconDy);
+        //_layout->setMaxHeight(_iconDy);
+        //_layout->setMinHeight(_iconDy);
+        int maxHeight = deviceInfo.minListItemSize * 3 / 2;
+        CRUIImageRef icon = _icon->getImage();
+        if (!icon.isNull())
+            if (maxHeight < icon->originalHeight() + PT_TO_PX(2))
+                maxHeight = icon->originalHeight() + PT_TO_PX(2);
+        _layout->setMaxHeight(maxHeight);
+
         _entry = entry;
     }
 };
@@ -168,7 +177,7 @@ public:
 		_layout->addChild(_line2);
 		_layout->addChild(_infolayout);
         _layout->addChild(spacer2);
-        _layout->setPadding(lvRect(PT_TO_PX(2), 0, PT_TO_PX(1), 0));
+        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
 		_layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _layout->setMaxHeight(_iconDy);
         _layout->setMinHeight(_iconDy);
@@ -338,11 +347,15 @@ public:
 
 void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 {
+    if (_dir)
+        _dir->unlock();
 	_dir = dir;
+    if (_dir)
+        _dir->lock();
+    _title->setTitle(Utf8ToUnicode(dir->getFileName()));
 	_fileList->setDirectory(dir);
 	requestLayout();
 }
-
 
 CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUILinearLayout(true), 	_title(NULL), _fileList(NULL), _dir(NULL), _main(main)
 {
@@ -377,7 +390,8 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
 
 CRUIFolderWidget::~CRUIFolderWidget()
 {
-
+    if (_dir)
+        _dir->unlock();
 }
 
 /// returns true if all coverpages are available, false if background tasks are submitted

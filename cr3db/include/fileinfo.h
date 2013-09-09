@@ -78,11 +78,11 @@ public:
 	virtual bool isDirectory() const = 0;
 	virtual bool isArchive() const { return _isArchive; }
 	virtual BookDBBook * getBook() const { return NULL; }
-	virtual void setBook(BookDBBook * book) { }
+    virtual void setBook(BookDBBook * book) { CR_UNUSED(book); }
     virtual BookDBBookmark * getLastPosition() const { return NULL; }
     virtual void setLastPosition(BookDBBookmark * bookmark) { }
     virtual bool isParsed() const { return false; }
-	virtual void setParsed(bool parsed) {}
+    virtual void setParsed(bool parsed) { CR_UNUSED(parsed); }
     virtual CRDirEntry * clone() const { return NULL; }
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_NORMAL; }
     virtual bool isRootDir() { DIR_TYPE t = getDirType(); return t == DIR_TYPE_SD_CARD || t == DIR_TYPE_INTERNAL_STORAGE || t == DIR_TYPE_FS_ROOT; }
@@ -141,10 +141,13 @@ protected:
     CRMutexRef _mutex;
     bool _scanned;
     volatile bool _scanning;
+    int _lockCount; // to protect from cache cleanup while folder is opened
     virtual bool needScan() { return !_scanned; }
     virtual bool scan() = 0;
     virtual bool refresh();
 public:
+    void lock() { _lockCount++; }
+    void unlock() { _lockCount--; }
     virtual void setParsed(bool parsed) { _scanned = parsed; }
     virtual bool isParsed() const { return _scanned; }
     virtual int itemCount() const;

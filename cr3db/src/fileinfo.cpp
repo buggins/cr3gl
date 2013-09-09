@@ -6,7 +6,7 @@
  */
 
 // uncomment for simulation of long directory scan operation
-#define SLOW_SCAN_SIMULATION_FOR_TEST
+//#define SLOW_SCAN_SIMULATION_FOR_TEST
 
 #include "fileinfo.h"
 #include <lvstream.h>
