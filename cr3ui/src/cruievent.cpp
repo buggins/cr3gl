@@ -7,6 +7,7 @@
 
 #include "cruievent.h"
 #include "cruiwidget.h"
+#include "cruimain.h"
 
 using namespace CRUI;
 
@@ -100,6 +101,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
             if (!event->getWidget())
                 event->setWidget(widget);
         }
+        updateScreen();
         return true;
     }
 	if (!event->getWidget()) { // if not not assigned on widget
@@ -111,6 +113,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 					if (!event->getWidget())
 						event->setWidget(child);
 				}
+		        updateScreen();
 				return true;
 			}
 		}
@@ -151,7 +154,13 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
         if (!event->getWidget())
             event->setWidget(widget);
     }
+    if (res)
+    	updateScreen();
     return res;
+}
+
+void CRUIEventManager::updateScreen() {
+	_rootWidget->update();
 }
 
 bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {

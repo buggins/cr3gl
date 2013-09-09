@@ -69,7 +69,8 @@ CoolReaderApp::OnAppInitialized(void)
 
 	{
 		__player = new Tizen::Graphics::Opengl::GlPlayer;
-		__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
+		//__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
+		__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame);
 
 		__player->SetFps(5);
 		__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_RGB565);
@@ -79,8 +80,10 @@ CoolReaderApp::OnAppInitialized(void)
 
 	__renderer = new GlRendererTemplate();
 	__player->SetIGlRenderer(__renderer);
-	if (pCoolReaderFrame->GetCurrentForm())
-		pCoolReaderFrame->GetCurrentForm()->AddTouchEventListener(*__renderer->getEventAdapter());
+//	if (pCoolReaderFrame->GetCurrentForm())
+//		pCoolReaderFrame->GetCurrentForm()->AddTouchEventListener(*__renderer->getEventAdapter());
+	pCoolReaderFrame->AddTouchEventListener(*__renderer->getEventAdapter());
+	__renderer->setPlayer(__player);
 
 	return true;
 }

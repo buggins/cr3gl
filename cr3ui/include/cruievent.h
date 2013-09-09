@@ -172,16 +172,18 @@ public:
     ~CRUIKeyEvent() {}
 };
 
+class CRUIMainWidget;
 class CRUIEventManager {
 protected:
-	CRUIWidget * _rootWidget;
+	CRUIMainWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
     LVHashTable<lUInt32, CRUIKeyEvent*> _keyDownEvents;
 	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event);
+    void updateScreen();
 public:
 	CRUIEventManager();
-	void setRootWidget(CRUIWidget * rootWidget) { _rootWidget = rootWidget; }
+	void setRootWidget(CRUIMainWidget * rootWidget) { _rootWidget = rootWidget; }
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);
 };

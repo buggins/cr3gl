@@ -9,9 +9,11 @@
 #include <FGraphics.h>
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
+#include <FGrpGlPlayer.h>
 #include <crui.h>
 #include "cr3tizen.h"
 #include "cruimain.h"
+#include "gldrawbuf.h"
 
 class LVDocView;
 class GlRendererTemplate :
@@ -22,6 +24,7 @@ class GlRendererTemplate :
 	    CRUIMainWidget * _widget;
 		CRUIEventManager * _eventManager;
 		CRUIEventAdapter * _eventAdapter;
+		GLDrawBuf * _backbuffer;
 public:
 
 	GlRendererTemplate(void);
@@ -45,10 +48,15 @@ public:
     /// set animation fps (0 to disable) and/or update screen instantly
     virtual void setScreenUpdateMode(bool updateNow, int animationFps);
 
+    void setPlayer(Tizen::Graphics::Opengl::GlPlayer * player) {
+    	__player = player;
+    }
 private:
 	int __controlWidth;
 	int __controlHeight;
 	int __angle;
+	Tizen::Graphics::Opengl::GlPlayer * __player;
+	bool __playerStarted;
 };
 
 #endif /* _GLRENDERERTEMPLATE_H_ */
