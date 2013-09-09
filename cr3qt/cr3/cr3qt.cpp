@@ -116,6 +116,11 @@ static int translateKeyCode(int key) {
     case Qt::Key_Up: return CR_KEY_UP;
     case Qt::Key_Right: return CR_KEY_RIGHT;
     case Qt::Key_Down: return CR_KEY_DOWN;
+
+    case Qt::Key_Escape: return CR_KEY_ESC;
+    case Qt::Key_Delete: return CR_KEY_DELETE;
+    case Qt::Key_Backspace: return CR_KEY_BACKSPACE;
+    case Qt::Key_Back: return CR_KEY_BACK;
     default:
         return 0;
     }

@@ -357,6 +357,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_DOWN:
             doCommand(DCMD_LINEDOWN, 1);
             break;
+        case CR_KEY_ESC:
+        case CR_KEY_BACK:
+            _main->back();
+            return true;
         default:
             break;
         }
@@ -546,3 +550,5 @@ void CRUIReadWidget::ScrollModePageCache::clear() {
     minpos = 0;
     maxpos = 0;
 }
+
+

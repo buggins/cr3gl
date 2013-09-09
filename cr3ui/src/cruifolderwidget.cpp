@@ -385,6 +385,21 @@ bool CRUIFolderWidget::requestAllVisibleCoverpages() {
     return _fileList->requestAllVisibleCoverpages();
 }
 
+bool CRUIFolderWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    int key = event->key();
+    if (event->getType() == KEY_ACTION_PRESS) {
+        if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
+            return true;
+        }
+    } else if (event->getType() == KEY_ACTION_RELEASE) {
+        if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
+            _main->back();
+            return true;
+        }
+    }
+    return false;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIFolderWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int action = event->getAction();
