@@ -45,8 +45,9 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     _pos.bottom = bottom;
     _pos.right = right;
     if (!_locked) {
-        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top)
+        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top) {
             _docview->Resize(right-left, bottom-top);
+        }
     }
 }
 
@@ -259,6 +260,9 @@ bool CRUIReadWidget::renderIfNecessary() {
         CRLog::trace("Document is locked");
         return false;
     }
+    if (_docview->GetWidth() != _pos.width() || _docview->GetHeight() != _pos.height()) {
+        _docview->Resize(_pos.width(), _pos.height());
+    }
     if (_docview->IsRendered())
         return true;
     CRLog::info("Render is required! Starting render task");
@@ -276,6 +280,11 @@ bool CRUIReadWidget::renderIfNecessary() {
 #define SCROLL_FRICTION 13
 
 void CRUIReadWidget::animate(lUInt64 millisPassed) {
+    if (_locked) {
+        if (_scroll.isActive())
+            _scroll.stop();
+        return;
+    }
     bool changed = _scroll.animate(millisPassed);
     if (changed) {
         int oldpos = _docview->GetPos();
@@ -296,6 +305,8 @@ bool CRUIReadWidget::isAnimating() {
 }
 
 void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
+    if (_locked)
+        return;
     CRLog::trace("animateScrollTo( %d -> %d )", _docview->GetPos(), newpos);
     _scroll.start(_docview->GetPos(), newpos, speed, SCROLL_FRICTION);
     //invalidate();
@@ -303,6 +314,8 @@ void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
 }
 
 bool CRUIReadWidget::doCommand(int cmd, int param) {
+    if (_locked)
+        return false;
     int pos = _docview->GetPos();
     int newpos = pos;
     int speed = 0;
@@ -332,6 +345,8 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
 }
 
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    if (_locked)
+        return false;
     if (event->getType() == KEY_ACTION_PRESS) {
         if (_scroll.isActive())
             _scroll.stop();
@@ -372,6 +387,8 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
 
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    if (_locked)
+        return false;
     int action = event->getAction();
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
     int dx = event->getX() - event->getStartX();
