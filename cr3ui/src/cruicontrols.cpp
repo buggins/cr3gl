@@ -238,15 +238,16 @@ void CRUISpinnerWidget::draw(LVDrawBuf * buf) {
     applyMargin(rc);
     setClipRect(buf, rc);
     applyPadding(rc);
-    if (!_image.isNull()) {
+    CRUIImageRef image = getImage();
+    if (!image.isNull()) {
         //CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), _image->originalWidth(), _image->originalHeight());
-        applyAlign(rc, _image->originalWidth(), _image->originalHeight());
+        applyAlign(rc, image->originalWidth(), image->originalHeight());
         // don't scale
-        rc.right = rc.left + _image->originalWidth();
-        rc.bottom = rc.top + _image->originalHeight();
+        rc.right = rc.left + image->originalWidth();
+        rc.bottom = rc.top + image->originalHeight();
         //CRLog::trace("aligned %d,%d %dx%d align=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign());
         // draw
-        _image->drawRotated(buf, rc, 360 - _angle / 1000);
+        image->drawRotated(buf, rc, 360 - _angle / 1000);
         //_image->draw(buf, rc);
     }
 }

@@ -8,7 +8,7 @@ using namespace CRUI;
 #define WINDOW_ANIMATION_DELAY 250
 #define SLOW_OPERATION_POPUP_DELAY 150
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000
-#define LONG_OPERATION_DIM_COLOR 0x80404040
+#define SLOW_OPERATION_DIM_COLOR 0x80404040
 
 void applyThemeChange(CRUIWidget * widget) {
     if (!widget)
@@ -151,7 +151,7 @@ void CRUIMainWidget::showSlowOperationPopup()
     _history.currentWidget()->draw(buf);
     buf->afterDrawing();
     _popupBackground = buf;
-    _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, 0xA0000000);
+    _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, SLOW_OPERATION_DIM_COLOR);
     _popup->measure(_pos.width(), _pos.height());
     _popup->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     update();
