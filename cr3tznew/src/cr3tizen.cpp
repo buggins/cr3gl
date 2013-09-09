@@ -284,7 +284,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 
 
 
-CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager)
+CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager), _keyModifiers(0), _keyModifiersRight(0)
 {
 
 }
@@ -368,6 +368,104 @@ void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touch
 	}
 }
 
+static bool checkModifier(int & modifiers, int flag, KEY_EVENT_TYPE action, Tizen::Ui::KeyCode keyCode, Tizen::Ui::KeyCode expectedKeyCode) {
+	if (keyCode == expectedKeyCode) {
+		if (action == KEY_ACTION_PRESS)
+			modifiers |= flag;
+		else if (action == KEY_ACTION_RELEASE)
+			modifiers = modifiers & (~flag);
+		return true;
+	}
+}
+
+static int translateKey(Tizen::Ui::KeyCode keyCode) {
+	switch (keyCode) {
+	case KEY_LEFT_SHIFT:
+	case KEY_RIGHT_SHIFT:
+		return CR_KEY_SHIFT;
+	case KEY_LEFT_ALT:
+	case KEY_RIGHT_ALT:
+		return CR_KEY_ALT;
+	case KEY_LEFT_CTRL:
+	case KEY_RIGHT_CTRL:
+		return CR_KEY_CONTROL;
+	case KEY_ESC:
+		return CR_KEY_ESC;
+	case KEY_MENU:
+		return CR_KEY_MENU;
+	case KEY_BACK:
+		return CR_KEY_BACK;
+	case KEY_SPACE:
+		return CR_KEY_SPACE;
+	case KEY_ENTER:
+		return CR_KEY_RETURN;
+	case KEY_DELETE:
+		return CR_KEY_DELETE;
+	case KEY_BACKSPACE:
+		return CR_KEY_BACKSPACE;
+	case KEY_0:
+	case KEY_1:
+	case KEY_2:
+	case KEY_3:
+	case KEY_4:
+	case KEY_5:
+	case KEY_6:
+	case KEY_7:
+	case KEY_8:
+	case KEY_9:
+		return CR_KEY_0 + (keyCode - KEY_0);
+	case KEY_A:
+	case KEY_B:
+	case KEY_C:
+	case KEY_D:
+	case KEY_E:
+	case KEY_F:
+	case KEY_G:
+	case KEY_H:
+	case KEY_I:
+	case KEY_J:
+	case KEY_K:
+	case KEY_L:
+	case KEY_M:
+	case KEY_N:
+	case KEY_O:
+	case KEY_P:
+	case KEY_Q:
+	case KEY_R:
+	case KEY_S:
+	case KEY_T:
+	case KEY_U:
+	case KEY_V:
+	case KEY_W:
+	case KEY_X:
+	case KEY_Y:
+	case KEY_Z:
+		return CR_KEY_A + (keyCode - KEY_A);
+	default:
+		return 0;
+	}
+}
+
+bool CRUIEventAdapter::dispatchKeyEvent(KEY_EVENT_TYPE action, Tizen::Ui::KeyCode keyCode) {
+	int oldModifiers = _keyModifiers | _keyModifiersRight;
+	bool isModifier = false;
+	isModifier = checkModifier(_keyModifiers, CR_KEY_MODIFIER_SHIFT, action, keyCode, KEY_LEFT_SHIFT) || isModifier;
+	isModifier = checkModifier(_keyModifiers, CR_KEY_MODIFIER_ALT, action, keyCode, KEY_LEFT_ALT) || isModifier;
+	isModifier = checkModifier(_keyModifiers, CR_KEY_MODIFIER_CONTROL, action, keyCode, KEY_LEFT_CTRL) || isModifier;
+	isModifier = checkModifier(_keyModifiersRight, CR_KEY_MODIFIER_SHIFT, action, keyCode, KEY_RIGHT_SHIFT) || isModifier;
+	isModifier = checkModifier(_keyModifiersRight, CR_KEY_MODIFIER_ALT, action, keyCode, KEY_RIGHT_ALT) || isModifier;
+	isModifier = checkModifier(_keyModifiersRight, CR_KEY_MODIFIER_CONTROL, action, keyCode, KEY_RIGHT_CTRL) || isModifier;
+	int newModifiers = _keyModifiers | _keyModifiersRight;
+	if (isModifier && oldModifiers == newModifiers)
+		return true; // ignore
+	int crKey = translateKey(keyCode);
+	if (crKey) {
+		CRUIKeyEvent * event = new CRUIKeyEvent(action, crKey, false, 0, newModifiers);
+		return _eventManager->dispatchKeyEvent(event);
+	}
+	return false;
+}
+
 void  CRUIEventAdapter::OnTouchCanceled (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo)
 {
 	dispatchTouchEvent(touchInfo);
@@ -398,3 +496,18 @@ void  CRUIEventAdapter::OnTouchReleased (const Tizen::Ui::Control &source, const
 	dispatchTouchEvent(touchInfo);
 }
 
+void  CRUIEventAdapter::OnKeyLongPressed (const Tizen::Ui::Control &source, Tizen::Ui::KeyCode keyCode)
+{
+	// ignore
+
+}
+
+void  CRUIEventAdapter::OnKeyPressed (const Tizen::Ui::Control &source, Tizen::Ui::KeyCode keyCode)
+{
+	dispatchKeyEvent(KEY_ACTION_PRESS, keyCode);
+}
+
+void  CRUIEventAdapter::OnKeyReleased (const Tizen::Ui::Control &source, Tizen::Ui::KeyCode keyCode)
+{
+	dispatchKeyEvent(KEY_ACTION_RELEASE, keyCode);
+}

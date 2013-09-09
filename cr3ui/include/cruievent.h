@@ -123,6 +123,33 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_8 '8'
 #define CR_KEY_9 '9'
 
+#define CR_KEY_A 'A'
+#define CR_KEY_B 'B'
+#define CR_KEY_C 'C'
+#define CR_KEY_D 'D'
+#define CR_KEY_E 'E'
+#define CR_KEY_F 'F'
+#define CR_KEY_G 'G'
+#define CR_KEY_H 'H'
+#define CR_KEY_I 'I'
+#define CR_KEY_J 'J'
+#define CR_KEY_K 'K'
+#define CR_KEY_L 'L'
+#define CR_KEY_M 'M'
+#define CR_KEY_N 'N'
+#define CR_KEY_O 'O'
+#define CR_KEY_P 'P'
+#define CR_KEY_Q 'Q'
+#define CR_KEY_R 'R'
+#define CR_KEY_S 'S'
+#define CR_KEY_T 'T'
+#define CR_KEY_U 'U'
+#define CR_KEY_V 'V'
+#define CR_KEY_W 'W'
+#define CR_KEY_X 'X'
+#define CR_KEY_Y 'Y'
+#define CR_KEY_Z 'Z'
+
 #define CR_KEY_SHIFT 0x101
 #define CR_KEY_CONTROL 0x102
 #define CR_KEY_ALT 0x103
@@ -137,7 +164,16 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_UP 0x116
 #define CR_KEY_DOWN 0x117
 
+#define CR_KEY_ESC 0x118
+
+#define CR_KEY_DELETE 0x119
+#define CR_KEY_BACKSPACE 0x11A
+
 #define CR_KEY_RETURN 0x120
+
+#define CR_KEY_BACK 0x130
+#define CR_KEY_MENU 0x131
+
 
 class CRUIKeyEvent {
     KEY_EVENT_TYPE _type;
