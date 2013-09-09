@@ -415,7 +415,8 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
 
     if (_popupBackground) {
         //CRLog::trace("Drawing static background");
-        _popupBackground->DrawTo(buf, 0, 0, 0, NULL);
+        buf->DrawRescaled(_popupBackground, 0, 0, _pos.width(), _pos.height(), 0);
+        //_popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
         if (_animation.active) {
             if (_animation.oldimage)

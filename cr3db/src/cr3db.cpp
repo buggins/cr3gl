@@ -821,18 +821,35 @@ lString16 PrefixCollection::truncate(const lString16 & s, int level) {
 }
 
 int PrefixCollection::itemsForLevel(int level) {
-    LVHashTable<lString16, int> map(_values.length() * 2);
-    for (int i = 0; i <_values.length(); i++) {
-        lString16 s = truncate(_values[i], level);
-        map.set(s, 1);
+    LVHashTable<lString16, int> map(1000);
+    LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+    for (;;) {
+        LVHashTable<lString16, int>::pair * item = i.next();
+        if (!item)
+            break;
+        lString16 s = truncate(item->key, level);
+        map.set(s, item->value + map.get(s));
     }
     return map.length();
 }
 
-void PrefixCollection::get(lString16Collection & res) {
+static int compare_prefixes(const BookDBPrefixStats ** p1, const BookDBPrefixStats ** p2) {
+    return (*p1)->prefix.compare((*p2)->prefix);
+}
+
+void PrefixCollection::get(LVPtrVector<BookDBPrefixStats> & res) {
     res.clear();
-    res.addAll(_values);
-    _values.sort();
+    LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+    for (;;) {
+        LVHashTable<lString16, int>::pair * item = i.next();
+        if (!item)
+            break;
+        BookDBPrefixStats * p = new BookDBPrefixStats();
+        p->prefix = item->key;
+        p->bookCount = item->value;
+        res.add(p);
+    }
+    res.sort(&compare_prefixes);
 }
 
 void PrefixCollection::compact() {
@@ -841,50 +858,115 @@ void PrefixCollection::compact() {
     for (int i = startLevel; i >= 1; i--) {
         int cnt = itemsForLevel(i);
         if (cnt < _maxSize) {
-            bestLevel = cnt;
+            bestLevel = i;
             break;
         }
     }
     if (bestLevel != _level) {
-        lString16Collection tmp;
-        tmp.addAll(_values);
-        _values.clear();
+        /// create tmp reduced map
+        LVHashTable<lString16, int> tmp(1000);
+        {
+            LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+            for (;;) {
+                LVHashTable<lString16, int>::pair * item = i.next();
+                if (!item)
+                    break;
+                lString16 s = truncate(item->key, bestLevel);
+                tmp.set(s, item->value + tmp.get(s));
+            }
+        }
+        /// copy tmp to current
         _map.clear();
         _level = bestLevel;
-        for (int i = 0; i < tmp.length(); i++) {
-            lString16 s = truncate(tmp[i], _level);
-            if (!_map.get(s)) {
-                _values.add(s);
-                _map.set(s, 1);
+        {
+            LVHashTable<lString16, int>::iterator i = tmp.forwardIterator();
+            for (;;) {
+                LVHashTable<lString16, int>::pair * item = i.next();
+                if (!item)
+                    break;
+                _map.set(item->key, item->value);
             }
         }
     }
 }
 
-void PrefixCollection::add(const lString16 & value) {
+void PrefixCollection::add(const lString16 & value, int count) {
     lString16 s = truncate(value, _level);
-    if (!_map.get(s)) {
-        _values.add(s);
-        _map.set(s, 1);
-    }
-    if (_values.length() > _maxSize)
+    _map.set(s, _map.get(s) + count);
+    if (_map.length() > _maxSize && _level != 1)
         compact();
 }
 
 #define MAX_FIND_LEVEL_SIZE 40
-bool CRBookDB::findBy(SEARCH_FIELD field, lString16 searchString, lString8Collection & prefixes, LVPtrVector<BookDBBook> & books) {
+bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes) {
+    // SELECT a.file_as, count(*) FROM author a JOIN book_authors ba ON a.id=ba.author_fk
+    // JOIN book b ON b.id=ba.book_fk JOIN folder f ON f.id=b.folder_fk
+    // WHERE a.file_as LIKE ?
+    // GROUP BY a.file_as
+    DBString pattern(UnicodeToUtf8(searchString).c_str());
+    DBString folder(folderFilter.c_str());
+    bool err = false;
+    PrefixCollection pref(MAX_FIND_LEVEL_SIZE);
+    SQLiteStatement stmt(&_db);
+    lString8 sql;
     if (field == SEARCH_FIELD_AUTHOR) {
-        lString16Collection found;
-        _authorCache.find(searchString, MAX_FIND_LEVEL_SIZE, found);
+        sql += "SELECT a.file_as, count(*) FROM author a"
+                " JOIN book_authors ba ON a.id=ba.author_fk"
+                " JOIN book b ON b.id=ba.book_fk"
+                " JOIN folder f ON f.id=b.folder_fk"
+                " WHERE a.file_as IS NOT NULL AND a.file_as != ''";
+        if (pattern.length())
+            sql += " AND a.file_as LIKE ?";
+        if (folder.length())
+            sql += " AND f.name LIKE ?";
+        sql += " GROUP BY a.file_as;";
     } else if (field == SEARCH_FIELD_TITLE) {
-
+        sql +=
+                "SELECT b.title, count(*) FROM book b"
+                " JOIN folder f ON f.id=b.folder_fk"
+                " WHERE b.title IS NOT NULL AND b.title != ''";
+        if (pattern.length())
+            sql += " AND b.title LIKE ?";
+        if (folder.length())
+            sql += " AND f.name LIKE ?";
+        sql += " GROUP BY b.title;";
     } else if (field == SEARCH_FIELD_SERIES) {
-        lString16Collection found;
-        _seriesCache.find(searchString, MAX_FIND_LEVEL_SIZE, found);
+        sql +=
+                "SELECT s.name, count(*) FROM series s"
+                " JOIN book b ON b.series_fk = s.id"
+                " JOIN folder f ON f.id=b.folder_fk"
+                " WHERE s.name IS NOT NULL AND s.name != ''";
+        if (pattern.length())
+            sql += " AND s.name LIKE ?";
+        if (folder.length())
+            sql += " AND f.name LIKE ?";
+        sql += " GROUP BY s.name;";
     } else if (field == SEARCH_FIELD_FILENAME) {
-
+        sql +=
+                "SELECT b.filename, count(*) FROM book b"
+                " JOIN folder f ON f.id=b.folder_fk"
+                " WHERE b.title IS NOT NULL AND b.title != ''";
+        if (pattern.length())
+            sql += " AND b.filename LIKE ?";
+        if (folder.length())
+            sql += " AND f.name LIKE ?";
+        sql += " GROUP BY b.filename;";
+    } else {
+        return false;
     }
-    return false;
+    err = stmt.prepare(sql.c_str()) != 0 || err;
+    int param = 1;
+    if (pattern.length())
+        stmt.bindText(param++, pattern.c_str());
+    if (folder.length())
+        stmt.bindText(param++, folder.c_str());
+    while(stmt.step() == DB_ROW) {
+        lString16 value = Utf8ToUnicode(stmt.getText(0));
+        int count = stmt.getInt(1);
+        pref.add(value, count);
+    }
+    pref.get(prefixes);
+    return true;
 }
 
 /// returns ptr to copy saved in cache
@@ -1104,36 +1186,6 @@ static bool matchPrefix(const lString16 & s, const lString16 & prefix) {
         return s.startsWith(prefix.substr(prefix.length() - 1));
     }
     return s == prefix;
-}
-
-void BookDBAuthorCache::find(lString16 prefix, int maxSize, lString16Collection & values) {
-    PrefixCollection pref(maxSize);
-    LVHashTable<lUInt64, BookDBAuthor *>::iterator iter = _byId.forwardIterator();
-    for (;;) {
-        LVHashTable<lUInt64, BookDBAuthor *>::pair * item = iter.next();
-        if (!item)
-            break;
-        lString16 s = Utf8ToUnicode(item->value->fileAs.c_str());
-        if (matchPrefix(s, prefix)) {
-            pref.add(s);
-        }
-    }
-    pref.get(values);
-}
-
-void BookDBSeriesCache::find(lString16 prefix, int maxSize, lString16Collection & values) {
-    PrefixCollection pref(maxSize);
-    LVHashTable<lUInt64, BookDBSeries *>::iterator iter = _byId.forwardIterator();
-    for (;;) {
-        LVHashTable<lUInt64, BookDBSeries *>::pair * item = iter.next();
-        if (!item)
-            break;
-        lString16 s = Utf8ToUnicode(item->value->name.c_str());
-        if (matchPrefix(s, prefix)) {
-            pref.add(s);
-        }
-    }
-    pref.get(values);
 }
 
 
