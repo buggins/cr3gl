@@ -27,7 +27,7 @@ public:
 };
 
 
-class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback
+class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
 {
     CRUIMainWidget * _main;
     LVDocView * _docview;
@@ -116,6 +116,34 @@ public:
     bool onKeyEvent(const CRUIKeyEvent * event);
     bool doCommand(int cmd, int param = 0);
 
+
+    // DocView callback
+    /// on starting file loading
+    virtual void OnLoadFileStart( lString16 filename );
+    /// format detection finished
+    virtual void OnLoadFileFormatDetected(doc_format_t fileFormat);
+    /// file loading is finished successfully - drawCoveTo() may be called there
+    virtual void OnLoadFileEnd();
+    /// first page is loaded from file an can be formatted for preview
+    virtual void OnLoadFileFirstPagesReady();
+    /// file progress indicator, called with values 0..100
+    virtual void OnLoadFileProgress( int percent);
+    /// document formatting started
+    virtual void OnFormatStart();
+    /// document formatting finished
+    virtual void OnFormatEnd();
+    /// format progress, called with values 0..100
+    virtual void OnFormatProgress(int percent);
+    /// format progress, called with values 0..100
+    virtual void OnExportProgress(int percent);
+    /// file load finiished with error
+    virtual void OnLoadFileError(lString16 message);
+    /// Override to handle external links
+    virtual void OnExternalLink(lString16 url, ldomNode * node);
+    /// Called when page images should be invalidated (clearImageCache() called in LVDocView)
+    virtual void OnImageCacheClear();
+    /// return true if reload will be processed by external code, false to let internal code process it
+    virtual bool OnRequestReload();
 };
 
 

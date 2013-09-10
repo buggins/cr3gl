@@ -13,6 +13,7 @@ struct CRUIConfig {
     lString8 docCacheDir;
     lString8 i18nDir;
     lString8 uiFontFace;
+    lString8 cssDir;
 
     int docCacheMaxBytes;
     int coverDirMaxItems;

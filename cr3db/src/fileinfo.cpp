@@ -25,43 +25,6 @@
 
 using namespace CRUI;
 
-lString16 LVDocFormatName(int fmt) {
-	switch (fmt) {
-	case FB2: return lString16("FB2");
-	case TXT: return lString16("TXT");
-	case RTF: return lString16("RTF");
-	case EPUB: return lString16("EPUB");
-	case HTML: return lString16("HTML");
-	case TXT_BOOKMARK: return lString16("BMK");
-	case CHM: return lString16("CHM");
-	case DOC: return lString16("DOC");
-	case PDB: return lString16("PDB");
-	default: return lString16("?");
-	}
-}
-
-int LVDocFormatFromExtension(lString16 &pathName) {
-	if (pathName.endsWith(".fb2"))
-		return FB2;
-	if (pathName.endsWith(".txt") || pathName.endsWith(".tcr") || pathName.endsWith(".pml"))
-		return TXT;
-	if (pathName.endsWith(".rtf"))
-		return RTF;
-	if (pathName.endsWith(".epub"))
-		return EPUB;
-	if (pathName.endsWith(".htm") || pathName.endsWith(".html") || pathName.endsWith(".shtml") || pathName.endsWith(".xhtml"))
-		return HTML;
-	if (pathName.endsWith(".txt.bmk"))
-		return TXT_BOOKMARK;
-	if (pathName.endsWith(".chm"))
-		return CHM;
-	if (pathName.endsWith(".doc"))
-		return DOC;
-	if (pathName.endsWith(".pdb") || pathName.endsWith(".prc") || pathName.endsWith(".mobi") || pathName.endsWith(".azw"))
-		return PDB;
-	return UNKNOWN_FORMAT;
-}
-
 static int find(const LVPtrVector<CRDirEntry> & entries, const lString8 & pathname) {
 	for (int i = 0; i<entries.length(); i++) {
 		if (!entries[i]->isDirectory() && entries[i]->getPathName() == pathname)
@@ -144,7 +107,7 @@ static bool GetEPUBBookProperties(LVStreamRef stream, BookDBBook * pBookProps)
 
     delete doc;
 
-    pBookProps->format = EPUB;
+    pBookProps->format = doc_format_epub;
 
     return true;
 }
@@ -231,7 +194,7 @@ bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
     if (series.length())
     	props->series = new BookDBSeries(LCSTR(series));
     props->language = CONVERT_STR(language);
-    props->format = FB2;
+    props->format = doc_format_fb2;
 	return true;
 }
 

@@ -39,6 +39,7 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     crconfig.resourceDir = baseDir;
     crconfig.i18nDir = baseDir + "i18n";
     crconfig.hyphDir = baseDir + "hyph";
+    crconfig.cssDir = baseDir + "hyph";
 }
 
 void CRUIConfig::setupResourcesForScreenSize() {
@@ -125,6 +126,7 @@ void createDefaultTheme() {
 void CRUIConfig::initEngine() {
 
     LVAppendPathDelimiter(hyphDir);
+    LVAppendPathDelimiter(cssDir);
     LVAppendPathDelimiter(resourceDir);
     LVAppendPathDelimiter(coverCacheDir);
     LVAppendPathDelimiter(docCacheDir);

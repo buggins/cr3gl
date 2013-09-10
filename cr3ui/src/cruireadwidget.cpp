@@ -13,6 +13,8 @@
 #include "cruimain.h"
 #include "gldrawbuf.h"
 #include "fileinfo.h"
+#include "cruiconfig.h"
+#include "lvstsheet.h"
 
 using namespace CRUI;
 
@@ -478,6 +480,91 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+
+/// on starting file loading
+void CRUIReadWidget::OnLoadFileStart( lString16 filename ) {
+
+}
+
+/// format detection finished
+void CRUIReadWidget::OnLoadFileFormatDetected(doc_format_t fileFormat) {
+    lString8 cssFile = crconfig.cssDir + LVDocFormatCssFileName(fileFormat);
+
+    lString8 css;
+    if (!LVLoadStylesheetFile(Utf8ToUnicode(cssFile), css)) {
+        // todo: fallback
+    }
+    _docview->setStyleSheet(css);
+}
+
+/// file loading is finished successfully - drawCoveTo() may be called there
+void CRUIReadWidget::OnLoadFileEnd() {
+
+}
+
+/// first page is loaded from file an can be formatted for preview
+void CRUIReadWidget::OnLoadFileFirstPagesReady() {
+
+}
+
+/// file progress indicator, called with values 0..100
+void CRUIReadWidget::OnLoadFileProgress( int percent) {
+
+}
+
+/// document formatting started
+void CRUIReadWidget::OnFormatStart() {
+
+}
+
+/// document formatting finished
+void CRUIReadWidget::OnFormatEnd() {
+
+}
+
+/// format progress, called with values 0..100
+void CRUIReadWidget::OnFormatProgress(int percent) {
+
+}
+
+/// format progress, called with values 0..100
+void CRUIReadWidget::OnExportProgress(int percent) {
+
+}
+
+/// file load finiished with error
+void CRUIReadWidget::OnLoadFileError(lString16 message) {
+
+}
+
+/// Override to handle external links
+void CRUIReadWidget::OnExternalLink(lString16 url, ldomNode * node) {
+
+}
+
+/// Called when page images should be invalidated (clearImageCache() called in LVDocView)
+void CRUIReadWidget::OnImageCacheClear() {
+    class ClearCache : public CRRunnable {
+        CRUIReadWidget * _widget;
+    public:
+        ClearCache(CRUIReadWidget * widget) : _widget(widget) {}
+        virtual void run() {
+            _widget->_scrollCache.clear();
+        }
+    };
+    concurrencyProvider->executeGui(new ClearCache(this));
+}
+
+/// return true if reload will be processed by external code, false to let internal code process it
+bool CRUIReadWidget::OnRequestReload() {
+    return false;
+}
+
+
+
+
+//================================================================
+// Scroll Mode page image cache
 
 CRUIReadWidget::ScrollModePageCache::ScrollModePageCache() : minpos(0), maxpos(0) {
 

@@ -82,6 +82,7 @@ SOURCES += \
     ../../../cr3/crengine/src/crskin.cpp \
     ../../../cr3/crengine/src/cri18n.cpp \
     ../../../cr3/crengine/src/cp_stats.cpp \
+    ../../../cr3/crengine/src/bookformats.cpp \
     ../../../cr3/crengine/src/chmfmt.cpp
 
 HEADERS += \
@@ -136,6 +137,7 @@ HEADERS += \
     ../../../cr3/crengine/include/cp_stats.h \
     ../../../cr3/crengine/include/chmfmt.h \
     ../../../cr3/crengine/include/crlocks.h \
+    ../../../cr3/crengine/include/bookformats.h \
     ../../../cr3/crengine/include/lvautoptr.h
 
 

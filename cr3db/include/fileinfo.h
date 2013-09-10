@@ -10,21 +10,9 @@
 
 #include <cr3db.h>
 #include <crconcurrent.h>
+#include <bookformats.h>
 
 namespace CRUI {
-	enum DocFormat {
-		UNKNOWN_FORMAT,
-		FB2,
-		TXT,
-		RTF,
-		EPUB,
-		HTML,
-		TXT_BOOKMARK,
-		CHM,
-		DOC,
-		PDB
-	};
-
 	enum FolderSortOrder {
 		BY_TITLE,
 		BY_TITLE_DESC,
