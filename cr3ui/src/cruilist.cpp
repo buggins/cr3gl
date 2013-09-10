@@ -245,7 +245,8 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 		} else {
 			//CRLog::trace("list item out of clip rect");
 		}
-        if (delimiterSize && i < getItemCount() - _colCount && clip.intersects(delimiterRc))
+        int maxItemWithDelimiter = (getItemCount() - _colCount + 1) / _colCount * _colCount;
+        if (delimiterSize && i < maxItemWithDelimiter && clip.intersects(delimiterRc))
 			delimiter->draw(buf, delimiterRc);
 	}
 }
