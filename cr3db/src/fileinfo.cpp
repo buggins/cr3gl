@@ -1076,6 +1076,7 @@ bool CRBookDBLookupItem::scan() {
             if (!nonOneBookFound && (pattern.length() > 1 || pattern != "%" || type == SEARCH_FIELD_TITLE || type == SEARCH_FIELD_FILENAME)) {
                 // only books (request contains non-empty pattern)
                 // load books instead of prefixes
+                CRLog::trace("only single boook items for prefix %s - loading %d items", LCSTR(pattern), prefixes.length());
                 if (prefixes.length()) {
                     LVArray<lInt64> ids;
                     LVPtrVector<BookDBBook> loaded;

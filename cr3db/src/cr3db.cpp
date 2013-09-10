@@ -1091,7 +1091,7 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
                 sql += " AND a.file_as LIKE ?";
             if (folder.length())
                 sql += " AND f.name LIKE ?";
-            sql += " GROUP BY a.file_as;";
+            sql += ";";
         } else if (field == SEARCH_FIELD_TITLE) {
             sql +=
                     "SELECT b.id FROM book b"
@@ -1101,7 +1101,7 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
                 sql += " AND b.title LIKE ?";
             if (folder.length())
                 sql += " AND f.name LIKE ?";
-            sql += " GROUP BY b.title;";
+            sql += ";";
         } else if (field == SEARCH_FIELD_SERIES) {
             sql +=
                     "SELECT b.id FROM series s"
@@ -1112,7 +1112,7 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
                 sql += " AND s.name LIKE ?";
             if (folder.length())
                 sql += " AND f.name LIKE ?";
-            sql += " GROUP BY s.name;";
+            sql += ";";
         } else if (field == SEARCH_FIELD_FILENAME) {
             sql +=
                     "SELECT b.id FROM book b"
@@ -1122,7 +1122,7 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
                 sql += " AND b.filename LIKE ?";
             if (folder.length())
                 sql += " AND f.filename LIKE ?";
-            sql += " GROUP BY b.filename;";
+            sql += ";";
         } else {
             return false;
         }
