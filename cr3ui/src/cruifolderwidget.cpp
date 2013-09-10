@@ -386,6 +386,7 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
         // Book? open book
         getMain()->openBook(dynamic_cast<CRFileItem *>(entry));
     }
+    return true;
 }
 
 CRUIFolderWidget::~CRUIFolderWidget()

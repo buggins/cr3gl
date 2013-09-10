@@ -27,7 +27,7 @@ protected:
     CRUIWidget * widget;
 public:
     virtual CRUIWidget * recreate() = 0;
-    virtual void setDirectory(CRDirCacheItem * item) { }
+    virtual void setDirectory(CRDirCacheItem * item) { CR_UNUSED(item); }
     virtual const lString8 & getPathName() { return lString8::empty_str; }
     virtual VIEW_MODE getMode() = 0;
     virtual CRUIWidget * getWidget() { return widget; }

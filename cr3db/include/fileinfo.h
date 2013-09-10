@@ -86,7 +86,7 @@ public:
 	virtual BookDBBook * getBook() const { return NULL; }
     virtual void setBook(BookDBBook * book) { CR_UNUSED(book); }
     virtual BookDBBookmark * getLastPosition() const { return NULL; }
-    virtual void setLastPosition(BookDBBookmark * bookmark) { }
+    virtual void setLastPosition(BookDBBookmark * bookmark) { CR_UNUSED(bookmark); }
     virtual bool isParsed() const { return false; }
     virtual void setParsed(bool parsed) { CR_UNUSED(parsed); }
     virtual CRDirEntry * clone() const { return NULL; }

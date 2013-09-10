@@ -17,7 +17,7 @@ public:
 	virtual const CR9PatchInfo * getNinePatchInfo() { return NULL; }
 	virtual bool isTiled() { return false; }
 	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) = 0;
-    virtual void drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) { draw(buf, rect); }
+    virtual void drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) { draw(buf, rect); CR_UNUSED(angle); }
     virtual ~CRUIImage() { }
 };
 typedef LVRef<CRUIImage> CRUIImageRef;
@@ -25,7 +25,7 @@ typedef LVRef<CRUIImage> CRUIImageRef;
 class CRUISolidFillImage : public CRUIImage {
 	lUInt32 _color;
 public:
-	virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) { buf->FillRect(rect, _color); }
+    virtual void draw(LVDrawBuf * buf, lvRect & rect, int xoffset = 0, int yoffset = 0) { buf->FillRect(rect, _color); CR_UNUSED2(xoffset, yoffset); }
 	CRUISolidFillImage(lUInt32 color) : _color(color) { }
 	virtual ~CRUISolidFillImage() { }
 };

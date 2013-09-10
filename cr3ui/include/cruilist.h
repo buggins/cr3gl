@@ -18,7 +18,7 @@ class CRUIListAdapter {
 public:
 	virtual int getItemCount(CRUIListWidget * list) = 0;
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) = 0;
-	virtual bool isEnabled(CRUIListWidget * list, int index) { return true; }
+    virtual bool isEnabled(CRUIListWidget * list, int index) { CR_UNUSED2(list, index); return true; }
 	virtual ~CRUIListAdapter() {}
 };
 

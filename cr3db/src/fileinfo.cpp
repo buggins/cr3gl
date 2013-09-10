@@ -362,7 +362,8 @@ CRDirCacheItem::CRDirCacheItem(const lString8 & pathname, bool isArchive) : CRDi
 
 void CRDirContentItem::sort(int sortOrder)
 {
-
+    CR_UNUSED(sortOrder);
+    // not implemented
 }
 bool CRDirContentItem::refresh() {
     CRGuard guard(_mutex);
@@ -413,6 +414,7 @@ static int title_comparator(const CRDirEntry ** item1, const CRDirEntry ** item2
 }
 
 void CRDirCacheItem::sort(int sortOrder) {
+    CR_UNUSED(sortOrder);
     CRGuard guard(_mutex);
     _entries.sort(title_comparator);
 }
@@ -433,6 +435,7 @@ static int access_time_comparator(const CRTopDirItem ** item1, const CRTopDirIte
 }
 
 void CRTopDirList::sort(int sortOrder) {
+    CR_UNUSED(sortOrder);
     _entries.sort(access_time_comparator);
 }
 
@@ -1087,6 +1090,7 @@ DIR_TYPE CRDirItem::getDirType() const {
         return DIR_TYPE_BOOKS_SEARCH_RESULT;
     if (_pathName == SEARCH_RESULTS_TAG)
         return DIR_TYPE_BOOKS_SEARCH_RESULT;
+    return DIR_TYPE_NORMAL;
 }
 
 void CRSetupDirectoryCacheManager() {

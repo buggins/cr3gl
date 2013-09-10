@@ -35,7 +35,7 @@ public:
 
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
-        int coverSize = deviceInfo.shortSide / 4;
+        //int coverSize = deviceInfo.shortSide / 4;
         _cover = new CRCoverWidget(_home->getMain(), NULL, 75, 100);
         _cover->setMargin(PT_TO_PX(4));
         //_cover->setBackground(0xC0808000);
@@ -380,6 +380,7 @@ public:
     }
 
     virtual int getItemCount(CRUIListWidget * list) {
+        CR_UNUSED(list);
         return _entries.length();
     }
     virtual lString16 getItemText(int index) {
@@ -459,6 +460,7 @@ protected:
     CRUIHomeWidget * _home;
 public:
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
         CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(itemIndex + 1)) : NULL;
         if (item) {
@@ -519,6 +521,7 @@ public:
     }
 
     virtual int getItemCount(CRUIListWidget * list) {
+        CR_UNUSED(list);
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
         if (!dir)
             return 0;
@@ -527,6 +530,7 @@ public:
     }
 
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
+        CR_UNUSED(list);
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
         CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(index + 1)) : NULL;
         if (item) {
@@ -558,7 +562,7 @@ public:
         //_textWidget->setBackground(0xC060C0A0);
 
         /// widget size constraints
-        int coverW = coverH * 3 / 4 + itempadding.left + itempadding.right + itemmargin.left + itemmargin.right;
+        //int coverW = coverH * 3 / 4 + itempadding.left + itempadding.right + itemmargin.left + itemmargin.right;
 
         //CRLog::trace("Recent books cover size %d x %d  h=%d  texth=%d", coverW, coverH, baseHeight, textH);
 
@@ -714,6 +718,7 @@ void CRCoverWidget::setBook(const CRDirEntry * book) {
 
 /// measure dimensions
 void CRCoverWidget::measure(int baseWidth, int baseHeight) {
+    CR_UNUSED2(baseWidth, baseHeight);
     _measuredWidth = _dx;
     _measuredHeight = _dy;
 }

@@ -101,7 +101,7 @@ lUInt64 GetCurrentTimeMillis() {
     } else {
         LARGE_INTEGER queryTime;
         QueryPerformanceCounter(&queryTime);
-        __timeAbsolute = queryTime.QuadPart / __timeTicksPerMillis;
+        __timeAbsolute = (lUInt64)(queryTime.QuadPart / __timeTicksPerMillis);
         return __startTimeMillis + (lUInt64)(__timeAbsolute - __timeStart);
     }
  #else

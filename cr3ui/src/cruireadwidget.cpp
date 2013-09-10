@@ -342,6 +342,7 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     if (pos != newpos) {
         animateScrollTo(newpos, speed);
     }
+    return true;
 }
 
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
