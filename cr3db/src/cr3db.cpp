@@ -878,12 +878,20 @@ public:
     void add(const lString16 & value, int count, lInt64 bookId);
 };
 
+void uppercaseASCII(lString16 & str) {
+    for (int i = 0; i < str.length(); i++) {
+        lChar16 ch = str[i];
+        if (ch >= 'a' && ch <='z')
+            str[i] = ch - 'a' + 'A';
+    }
+}
+
 lString16 PrefixCollection::truncate(const lString16 & s, int level) {
     if (!level)
         return s;
     if (s.length() > level && (s.length() != level + 1 || s[level] != '%')) {
         lString16 res = s.substr(0, level) + "%";
-        res.uppercase();
+        uppercaseASCII(res);
         return res;
     }
     return s;

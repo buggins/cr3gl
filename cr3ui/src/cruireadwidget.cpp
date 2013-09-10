@@ -15,6 +15,7 @@
 #include "fileinfo.h"
 #include "cruiconfig.h"
 #include "lvstsheet.h"
+#include "hyphman.h"
 
 using namespace CRUI;
 
@@ -225,6 +226,37 @@ void CRUIReadWidget::updatePosition() {
     dirCache->saveLastPosition(_fileItem->getBook(), _lastPosition);
 }
 
+lString8 lastBookLang;
+lString8 lastSettingsLang;
+bool setHyph(lString8 bookLang, lString8 settingsLang) {
+    if (bookLang == lastBookLang && settingsLang == lastSettingsLang) // don't set duplicate
+        return false;
+    lastBookLang = bookLang;
+    lastSettingsLang = settingsLang;
+    LVStreamRef stream;
+    if (!bookLang.empty()) {
+        stream = LVOpenFileStream((crconfig.hyphDir + bookLang + ".pattern").c_str(), LVOM_READ);
+    }
+    if (stream.isNull() && bookLang.length() > 2) {
+        bookLang = bookLang.substr(0, 2);
+        stream = LVOpenFileStream((crconfig.hyphDir + bookLang + ".pattern").c_str(), LVOM_READ);
+    }
+    if (stream.isNull() && !settingsLang.empty() && settingsLang[0] != '@') {
+        stream = LVOpenFileStream((crconfig.hyphDir + settingsLang + ".pattern").c_str(), LVOM_READ);
+        if (stream.isNull() && settingsLang.length() > 2) {
+            settingsLang = settingsLang.substr(0, 2);
+            stream = LVOpenFileStream((crconfig.hyphDir + settingsLang + ".pattern").c_str(), LVOM_READ);
+        }
+    }
+    if (stream.isNull() && settingsLang[0] != '@')
+        settingsLang = UnicodeToUtf8(HYPH_DICT_ID_NONE);
+    if (!stream.isNull()) {
+        return HyphMan::activateDictionaryFromStream(stream);
+    } else {
+        return HyphMan::activateDictionary(Utf8ToUnicode(settingsLang));
+    }
+}
+
 bool CRUIReadWidget::openBook(const CRFileItem * file) {
     if (_locked)
         return false;
@@ -236,6 +268,9 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     _main->showSlowOperationPopup();
     _fileItem = dynamic_cast<CRFileItem*>(file->clone());
     _lastPosition = bookDB->loadLastPosition(file->getBook());
+    lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");
+    lString8 systemLang = crconfig.systemLanguage;
+    setHyph(bookLang, systemLang);
     _main->executeBackground(new OpenBookTask(Utf8ToUnicode(getPathName()), _main, this));
     return true;
 }

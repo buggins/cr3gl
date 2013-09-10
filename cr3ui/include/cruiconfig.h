@@ -15,6 +15,8 @@ struct CRUIConfig {
     lString8 uiFontFace;
     lString8 cssDir;
 
+    lString8 systemLanguage;
+
     int docCacheMaxBytes;
     int coverDirMaxItems;
     int coverDirMaxFiles;

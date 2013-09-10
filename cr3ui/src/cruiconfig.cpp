@@ -125,6 +125,9 @@ void createDefaultTheme() {
 
 void CRUIConfig::initEngine() {
 
+    if (systemLanguage.empty())
+        systemLanguage = "en";
+
     LVAppendPathDelimiter(hyphDir);
     LVAppendPathDelimiter(cssDir);
     LVAppendPathDelimiter(resourceDir);
