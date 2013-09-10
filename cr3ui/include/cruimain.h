@@ -184,7 +184,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     LVDrawBuf * _popupBackground;
     //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
-    lString8Collection _folderStack;
+    lString8 _pendingFolder;
     lUInt64 _lastAnimationTs;
 
     struct AnimationControl {
@@ -262,7 +262,7 @@ public:
     void showHome();
     void back();
 
-    virtual void onAllCoverpagesReady();
+    virtual void onAllCoverpagesReady(int newpos);
     virtual void onDirectoryScanFinished(CRDirContentItem * item);
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);

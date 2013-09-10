@@ -54,18 +54,19 @@ void CRUIMainWidget::back() {
 
 class CoverpagesReadyCallback : public CRRunnable {
     CRUIMainWidget * _main;
+    int _newpos;
 public:
-    CoverpagesReadyCallback(CRUIMainWidget * main) : _main(main) {}
+    CoverpagesReadyCallback(CRUIMainWidget * main, int newpos) : _main(main), _newpos(newpos) {}
     virtual void run() {
-        _main->onAllCoverpagesReady();
+        _main->onAllCoverpagesReady(_newpos);
     }
 };
 
-void CRUIMainWidget::onAllCoverpagesReady() {
+void CRUIMainWidget::onAllCoverpagesReady(int newpos) {
     if (_history.next() && _history.next()->getMode() == MODE_FOLDER) {
         // animating move to folder view
         hideSlowOperationPopup();
-        startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
     }
 }
 
@@ -78,18 +79,24 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
         update();
         return;
     }
-    item->sort(CRUI::BY_TITLE);
-    if (_history.next() && _history.next()->getMode() == MODE_FOLDER && _history.next()->getPathName() == item->getPathName()) {
+    if (_pendingFolder == item->getPathName()) {
+        item->sort(CRUI::BY_TITLE);
+        int newpos = _history.findPosByMode(MODE_FOLDER, _pendingFolder);
+        if (newpos < 0) {
+            _history.setNext(new FolderItem(this, _pendingFolder));
+            newpos = _history.pos() + 1;
+        }
         CRLog::info("Directory %s is ready", item->getPathName().c_str());
+        _pendingFolder.clear();
         CRUIFolderWidget * folder = dynamic_cast<CRUIFolderWidget *>(_history.next()->getWidget());
         folder->measure(_pos.width(), _pos.height());
         folder->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
         if (folder && !folder->requestAllVisibleCoverpages()) {
             // initiate wait until all coverpages ready
-            coverPageManager->setAllTasksFinishedCallback(new CoverpagesReadyCallback(this));
+            coverPageManager->setAllTasksFinishedCallback(new CoverpagesReadyCallback(this, newpos));
         } else {
             hideSlowOperationPopup();
-            startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY);
+            startAnimation(newpos, WINDOW_ANIMATION_DELAY);
         }
     } else {
         update();
@@ -175,18 +182,23 @@ void CRUIMainWidget::hideSlowOperationPopup()
 
 void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
-    int newpos = _history.findPosByMode(MODE_FOLDER, folder);
-    if (newpos < 0) {
-        showSlowOperationPopup();
-        _history.setNext(new FolderItem(this, folder));
-        //_popup->setBackground(0xC0000000); // dimming
-        CRLog::info("Starting background directory scan for %s", folder.c_str());
-        dirCache->scan(folder);
-    } else {
-        // found existing
-        // do nothing
-        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
-    }
+    _pendingFolder = folder;
+    showSlowOperationPopup();
+    CRLog::info("Starting background directory scan for %s", folder.c_str());
+    dirCache->scan(folder);
+
+//    int newpos = _history.findPosByMode(MODE_FOLDER, folder);
+//    if (newpos < 0) {
+//        showSlowOperationPopup();
+//        _history.setNext(new FolderItem(this, folder));
+//        //_popup->setBackground(0xC0000000); // dimming
+//        CRLog::info("Starting background directory scan for %s", folder.c_str());
+//        dirCache->scan(folder);
+//    } else {
+//        // found existing
+//        // do nothing
+//        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+//    }
 }
 
 void CRUIMainWidget::openBook(const CRFileItem * file) {
