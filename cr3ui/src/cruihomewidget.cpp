@@ -367,13 +367,13 @@ public:
             for (int i = 0; i < currentBook->authors.length(); i++) {
                 lString8 author(currentBook->authors[i]->fileAs.c_str());
                 if (author.length()) {
-                    _entries.add(new CRDirItem(lString8(BOOKS_BY_AUTHOR_TAG_PREFIX) + author, false));
+                    _entries.add(new CRDirItem(lString8(BOOKS_BY_AUTHOR_TAG) + author, false));
                 }
             }
             if (!currentBook->series.isNull()) {
                 lString8 series(currentBook->series->name.c_str());
                 if (series.length()) {
-                    _entries.add(new CRDirItem(lString8(BOOKS_BY_SERIES_TAG_PREFIX) + series, false));
+                    _entries.add(new CRDirItem(lString8(BOOKS_BY_SERIES_TAG) + series, false));
                 }
             }
         }

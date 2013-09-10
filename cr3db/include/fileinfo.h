@@ -75,7 +75,7 @@ public:
 	CRDirEntry(const lString8 & pathname, bool archive) : _pathName(pathname), _isArchive(archive) {}
 	virtual ~CRDirEntry() {}
 	const lString8 & getPathName() const { return _pathName; }
-	lString8 getFileName() const;
+    lString8 getFileName() const;
 	lString16 getTitle() const;
     lString16 getSeriesName(bool numberFirst) const;
     lString16 getSeriesNameOnly() const;
@@ -94,9 +94,11 @@ public:
     virtual bool isRootDir() { DIR_TYPE t = getDirType(); return t == DIR_TYPE_SD_CARD || t == DIR_TYPE_INTERNAL_STORAGE || t == DIR_TYPE_FS_ROOT; }
     virtual lUInt64 getLastAccessTime() const { return 0; }
     /// for pathname like  @authors:ABC returns ABC
-    virtual lString16 getFilterString();
+    virtual lString16 getFilterString() const;
     /// returns true for items like book-by-author, etc.
     virtual bool isSpecialItem();
+    virtual int getBookCount() const { return 0; }
+    virtual void setBookCount(int count) { CR_UNUSED(count); }
 };
 
 class CRFileItem : public CRDirEntry {
@@ -115,11 +117,17 @@ public:
 };
 
 class CRDirItem : public CRDirEntry {
+    int _bookCount;
+    int _folderCount;
 public:
     virtual DIR_TYPE getDirType() const;
-    CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive) {}
+    CRDirItem(const lString8 & pathname, bool isArchive) : CRDirEntry(pathname, isArchive), _bookCount(0), _folderCount(0) {}
 	virtual bool isDirectory() const { return true; }
     virtual CRDirEntry * clone() const { CRDirItem * res = new CRDirItem(this->getPathName(), this->isArchive()); return res; }
+    virtual int getBookCount() const { return _bookCount; }
+    virtual void setBookCount(int count) { _bookCount = count; }
+    virtual int getFolderCount() const { return _folderCount; }
+    virtual void setFolderCount(int count) { _folderCount = count; }
 };
 
 class CRTopDirItem : public CRDirItem {
@@ -186,15 +194,10 @@ public:
 
 #define SEARCH_RESULTS_TAG "@search"
 
-#define BOOKS_BY_AUTHOR_TAG "@authors"
-#define BOOKS_BY_TITLE_TAG "@titles"
-#define BOOKS_BY_FILENAME_TAG "@filenames"
-#define BOOKS_BY_SERIES_TAG "@series"
-
-#define BOOKS_BY_AUTHOR_TAG_PREFIX "@authors:"
-#define BOOKS_BY_TITLE_TAG_PREFIX "@titles:"
-#define BOOKS_BY_FILENAME_TAG_PREFIX "@filenames:"
-#define BOOKS_BY_SERIES_TAG_PREFIX "@series:"
+#define BOOKS_BY_AUTHOR_TAG "@authors:"
+#define BOOKS_BY_TITLE_TAG "@titles:"
+#define BOOKS_BY_FILENAME_TAG "@filenames:"
+#define BOOKS_BY_SERIES_TAG "@series:"
 
 #define SEARCH_RESULTS_PREFIX "@search:"
 
@@ -254,14 +257,14 @@ class CRDirCache  : public CRRunnable {
     };
 
     struct Item {
-		CRDirCacheItem * dir;
+        CRDirContentItem * dir;
 		Item * next;
 		Item * prev;
-		Item(CRDirCacheItem * _dir) : dir(_dir), next(NULL), prev(NULL) { }
+        Item(CRDirContentItem * _dir) : dir(_dir), next(NULL), prev(NULL) { }
 	};
 	Item * _head;
 	LVHashTable<lString8, Item*> _byName;
-	void addItem(CRDirCacheItem * dir);
+    void addItem(CRDirContentItem * dir);
 	Item * findItem(const lString8 & pathname);
 	void moveToHead(Item * item);
 
@@ -274,7 +277,6 @@ class CRDirCache  : public CRRunnable {
 
     void clear();
     CRFileItem * findBook(const lString8 & pathname);
-
 
 public:
 

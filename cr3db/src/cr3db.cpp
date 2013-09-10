@@ -140,6 +140,7 @@ bool CRBookDB::updateSchema()
 	return !err;
 }
 
+
 /// open database file; returns 0 on success, error code otherwise
 int CRBookDB::open(const char * pathname) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
@@ -812,6 +813,30 @@ BookDBBook * CRBookDB::loadBook(lString8 pathname) {
     return NULL;
 }
 
+
+//=================================================================
+// PREFIX COLLECTION
+class PrefixCollection {
+    int _minLevel;
+    int _maxSize;
+    int _level;
+    LVHashTable<lString16, int> _map;
+
+    int itemsForLevel(int level);
+    void compact();
+    static lString16 truncate(const lString16 & s, int level);
+public:
+
+    void get(LVPtrVector<BookDBPrefixStats> & res);
+
+    PrefixCollection(int minLevel, int maxSize) : _minLevel(minLevel), _maxSize(maxSize), _level(0), _map(1000) {
+    }
+
+    /// add pattern with number of books
+    void add(const lString16 & value, int count);
+};
+
+
 lString16 PrefixCollection::truncate(const lString16 & s, int level) {
     if (!level)
         return s;
@@ -855,7 +880,7 @@ void PrefixCollection::get(LVPtrVector<BookDBPrefixStats> & res) {
 void PrefixCollection::compact() {
     int startLevel = _level ? _level - 1 : 7;
     int bestLevel = 1;
-    for (int i = startLevel; i >= 1; i--) {
+    for (int i = startLevel; i >= _minLevel; i--) {
         int cnt = itemsForLevel(i);
         if (cnt < _maxSize) {
             bestLevel = i;
@@ -898,20 +923,23 @@ void PrefixCollection::add(const lString16 & value, int count) {
 }
 
 #define MAX_FIND_LEVEL_SIZE 40
-bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes) {
-    // SELECT a.file_as, count(*) FROM author a JOIN book_authors ba ON a.id=ba.author_fk
-    // JOIN book b ON b.id=ba.book_fk JOIN folder f ON f.id=b.folder_fk
-    // WHERE a.file_as LIKE ?
-    // GROUP BY a.file_as
+bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes)
+{
+    bool err = false;
+    int searchStringLen = searchString.endsWith("%") ? searchString.length() - 1 : searchString.length();
+    if (searchStringLen > 0 && !searchString.endsWith("%"))
+        searchString += "%";
+    int minLevel = searchStringLen + 1;
+
     DBString pattern(UnicodeToUtf8(searchString).c_str());
     DBString folder(folderFilter.c_str());
-    bool err = false;
-    PrefixCollection pref(MAX_FIND_LEVEL_SIZE);
+
+    PrefixCollection pref(minLevel, MAX_FIND_LEVEL_SIZE);
     SQLiteStatement stmt(&_db);
     lString8 sql;
     if (field == SEARCH_FIELD_AUTHOR) {
         sql += "SELECT a.file_as, count(*) FROM author a"
-                " JOIN book_authors ba ON a.id=ba.author_fk"
+                " JOIN book_author ba ON a.id=ba.author_fk"
                 " JOIN book b ON b.id=ba.book_fk"
                 " JOIN folder f ON f.id=b.folder_fk"
                 " WHERE a.file_as IS NOT NULL AND a.file_as != ''";
@@ -949,7 +977,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
         if (pattern.length())
             sql += " AND b.filename LIKE ?";
         if (folder.length())
-            sql += " AND f.name LIKE ?";
+            sql += " AND f.filename LIKE ?";
         sql += " GROUP BY b.filename;";
     } else {
         return false;

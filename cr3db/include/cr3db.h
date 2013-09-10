@@ -276,25 +276,6 @@ public:
     int bookCount;
 };
 
-class PrefixCollection {
-    int _maxSize;
-    int _level;
-    LVHashTable<lString16, int> _map;
-
-    int itemsForLevel(int level);
-    void compact();
-    static lString16 truncate(const lString16 & s, int level);
-public:
-
-    void get(LVPtrVector<BookDBPrefixStats> & res);
-
-    PrefixCollection(int maxSize) : _maxSize(maxSize), _level(0), _map(1000) {
-    }
-
-    /// add pattern with number of books
-    void add(const lString16 & value, int count);
-};
-
 class BookDBAuthorCache {
 	LVHashTable<lUInt64, BookDBAuthor *> _byId;
 	LVHashTable<DBString, BookDBAuthor *> _byName;
@@ -373,6 +354,7 @@ public:
 };
 
 enum SEARCH_FIELD {
+    SEARCH_FIELD_INVALID,
     SEARCH_FIELD_AUTHOR,
     SEARCH_FIELD_TITLE,
     SEARCH_FIELD_SERIES,

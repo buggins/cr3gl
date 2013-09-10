@@ -13,8 +13,48 @@
 #include "crcoverpages.h"
 #include "cruimain.h"
 #include "cruihomewidget.h"
+#include "stringresource.h"
 
 using namespace CRUI;
+
+
+lString16 makeDirName(const CRDirEntry * entry, bool shortForm) {
+    DIR_TYPE type = entry->getDirType();
+    if (type == DIR_TYPE_BOOKS_BY_AUTHOR || type == DIR_TYPE_BOOKS_BY_FILENAME
+             || type == DIR_TYPE_BOOKS_BY_TITLE || type == DIR_TYPE_BOOKS_BY_SERIES) {
+        lString16 pattern = entry->getFilterString();
+        lString16 title;
+        switch(type) {
+        case DIR_TYPE_BOOKS_BY_TITLE:
+            title = _16(STR_BOOKS_BY_TITLE);
+            break;
+        case DIR_TYPE_BOOKS_BY_FILENAME:
+            title = _16(STR_BOOKS_BY_FILENAME);
+            break;
+        case DIR_TYPE_BOOKS_BY_SERIES:
+            title = _16(STR_BOOKS_BY_SERIES);
+            break;
+        case DIR_TYPE_BOOKS_BY_AUTHOR:
+        default:
+            title = _16(STR_BOOKS_BY_AUTHOR);
+            break;
+        }
+        lString16 suffix;
+        if (pattern.endsWith("%")) {
+            suffix = L"...";
+            pattern = pattern.substr(0, pattern.length() - 1);
+        }
+        if (shortForm && !pattern.empty())
+            return pattern + suffix;
+        if (!pattern.empty()) {
+            title += L": ";
+            title += pattern + suffix;
+        }
+        return title;
+    } else {
+        return Utf8ToUnicode(entry->getFileName());
+    }
+}
 
 class CoverReadyCallback : public CRRunnable {
     CRUIWidget * _callbackWidget;
@@ -265,8 +305,13 @@ public:
             CRUIDirItemWidget * res = _folderWidget;
             res->setDir(item, _coverDx, _coverDy);
             res->_line1->setText(L"");
-			res->_line2->setText(Utf8ToUnicode(item->getFileName()));
-			res->_line3->setText(L"");
+            res->_line2->setText(makeDirName(item, true));
+            if (item->getBookCount()) {
+                lString16 info = _16(STR_BOOK_COUNT);
+                res->_line3->setText(info + lString16::itoa(item->getBookCount()));
+            } else {
+                res->_line3->setText(L"");
+            }
 			//CRLog::trace("returning folder item");
 			return res;
 		} else {
@@ -352,7 +397,7 @@ void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 	_dir = dir;
     if (_dir)
         _dir->lock();
-    _title->setTitle(Utf8ToUnicode(dir->getFileName()));
+    _title->setTitle(makeDirName(dir, false));
 	_fileList->setDirectory(dir);
 	requestLayout();
 }

@@ -15,6 +15,8 @@
 #include <pdbfmt.h>
 
 #include <fb2def.h>
+#include <stringresource.h>
+#include <cri18n.h>
 
 #define XS_IMPLEMENT_SCHEME 1
 #include <fb2def.h>
@@ -254,7 +256,7 @@ bool CRDirEntry::isSpecialItem() {
 }
 
 /// for pathname like  @authors:ABC returns ABC
-lString16 CRDirEntry::getFilterString() {
+lString16 CRDirEntry::getFilterString() const {
     if (_pathName.startsWith("@")) {
         int pos = _pathName.pos(":");
         if (pos >= 0)
@@ -452,7 +454,7 @@ CRTopDirItem * CRTopDirList::itemByType(DIR_TYPE t) {
     return NULL;
 }
 
-void CRDirCache::addItem(CRDirCacheItem * dir) {
+void CRDirCache::addItem(CRDirContentItem * dir) {
 	Item * item = new Item(dir);
 	item->next = _head;
 	if (_head)
@@ -569,7 +571,13 @@ CRDirContentItem * CRDirCache::getOrAdd(CRDirItem * dir) {
 	if (existing)
 		return existing;
     CRGuard guard(_monitor);
-    CRDirCacheItem * newItem = new CRDirCacheItem(dir);
+    CRDirContentItem * newItem = NULL;
+    DIR_TYPE type = dir->getDirType();
+    if (type == DIR_TYPE_BOOKS_BY_AUTHOR || type == DIR_TYPE_BOOKS_BY_TITLE || type == DIR_TYPE_BOOKS_BY_SERIES || type == DIR_TYPE_BOOKS_BY_FILENAME) {
+        newItem = new CRBookDBLookupItem(dir->getPathName());
+    } else {
+        newItem = new CRDirCacheItem(dir);
+    }
 	addItem(newItem);
 	return newItem;
 }
@@ -1041,49 +1049,46 @@ bool CRRecentBooksItem::scan() {
 bool CRBookDBLookupItem::scan() {
     if (_scanned)
         return true;
-//    LVPtrVector<BookDBBook> books;
-//    LVPtrVector<BookDBBookmark> lastPositions;
-//    bookDB->loadRecentBooks(books, lastPositions);
-//    for (int i = 0; i < lastPositions.length(); i++) {
-//        if (books[i] && lastPositions[i]) {
-//            // item loaded completely
-//            lString16 pathname = Utf8ToUnicode(books[i]->pathname.c_str());
-//            bool exists = false;
-//            lString16 arc, file;
-//            if (LVSplitArcName(pathname, arc, file)) {
-//                exists = LVFileExists(arc);
-//            } else {
-//                exists = LVFileExists(pathname);
-//            }
-//            if (exists) {
-//                CRRecentBookItem * item = new CRRecentBookItem(books[i], lastPositions[i]);
-//                _entries.add(item);
-//            } else {
-//                CRLog::warn("Recent book file does not exist %s", LCSTR(pathname));
-//            }
-//        }
-//    }
+    SEARCH_FIELD type = SEARCH_FIELD_INVALID;
+    lString16 pattern = getFilterString();
+    const char * tag = NULL;
+    if (_pathName.startsWith(BOOKS_BY_AUTHOR_TAG)) {
+        tag = BOOKS_BY_AUTHOR_TAG;
+        type = SEARCH_FIELD_AUTHOR;
+    } else if (_pathName.startsWith(BOOKS_BY_TITLE_TAG)) {
+        tag = BOOKS_BY_TITLE_TAG;
+        type = SEARCH_FIELD_TITLE;
+    } else if (_pathName.startsWith(BOOKS_BY_SERIES_TAG)) {
+        tag = BOOKS_BY_SERIES_TAG;
+        type = SEARCH_FIELD_SERIES;
+    } else if (_pathName.startsWith(BOOKS_BY_FILENAME_TAG)) {
+        tag = BOOKS_BY_FILENAME_TAG;
+        type = SEARCH_FIELD_FILENAME;
+    }
+    if (type != SEARCH_FIELD_INVALID) {
+        LVPtrVector<BookDBPrefixStats> prefixes;
+        bookDB->findPrefixes(type, pattern, lString8(), prefixes);
+        _entries.clear();
+        for (int i = 0; i < prefixes.length(); i++) {
+            BookDBPrefixStats * item = prefixes[i];
+            lString8 pathname = lString8(tag) + UnicodeToUtf8(item->prefix);
+            CRDirItem * p = new CRDirItem(pathname, false);
+            p->setBookCount(item->bookCount);
+            _entries.add(p);
+        }
+    }
     _scanned = true;
     return true;
 }
 
 DIR_TYPE CRDirItem::getDirType() const {
-    if (_pathName.startsWith(BOOKS_BY_AUTHOR_TAG_PREFIX))
+    if (_pathName.startsWith(BOOKS_BY_AUTHOR_TAG))
         return DIR_TYPE_BOOKS_BY_AUTHOR;
-    if (_pathName.startsWith(BOOKS_BY_TITLE_TAG_PREFIX))
+    if (_pathName.startsWith(BOOKS_BY_TITLE_TAG))
         return DIR_TYPE_BOOKS_BY_TITLE;
-    if (_pathName.startsWith(BOOKS_BY_FILENAME_TAG_PREFIX))
+    if (_pathName.startsWith(BOOKS_BY_FILENAME_TAG))
         return DIR_TYPE_BOOKS_BY_FILENAME;
-    if (_pathName.startsWith(BOOKS_BY_SERIES_TAG_PREFIX))
-        return DIR_TYPE_BOOKS_BY_SERIES;
-
-    if (_pathName == BOOKS_BY_AUTHOR_TAG)
-        return DIR_TYPE_BOOKS_BY_AUTHOR;
-    if (_pathName == BOOKS_BY_TITLE_TAG)
-        return DIR_TYPE_BOOKS_BY_TITLE;
-    if (_pathName == BOOKS_BY_FILENAME_TAG)
-        return DIR_TYPE_BOOKS_BY_FILENAME;
-    if (_pathName == BOOKS_BY_SERIES_TAG)
+    if (_pathName.startsWith(BOOKS_BY_SERIES_TAG))
         return DIR_TYPE_BOOKS_BY_SERIES;
 
     if (_pathName.startsWith(SEARCH_RESULTS_PREFIX))
