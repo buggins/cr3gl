@@ -842,9 +842,24 @@ class PrefixCollection {
     struct Item {
         int count;
         lInt64 bookId;
+        lString16 name;
         Item() : count(0), bookId(0) {}
-        Item(int cnt, lInt64 book) : count(cnt), bookId(book) {}
-        Item operator + (Item & v) { return Item(count + v.count, count + v.count == 1 ? bookId + v.bookId : 0); }
+        Item(int cnt, lInt64 book, const lString16 & fullname) : count(cnt), bookId(book), name(fullname) {}
+        Item(const Item & v) : count(v.count), bookId(v.bookId), name(v.name) { }
+        Item & operator = (const Item & v) {
+            count = v.count;
+            bookId = v.bookId;
+            if (!v.name.empty())
+                name = v.name;
+            return *this;
+        }
+
+        Item operator + (Item & v) {
+            return Item(count + v.count,
+                        count + v.count == 1 ? bookId + v.bookId : 0,
+                        count + v.count == 1 ? name + v.name : lString16()
+                        );
+        }
     };
 
     LVHashTable<lString16, Item> _map;
@@ -880,7 +895,7 @@ int PrefixCollection::itemsForLevel(int level) {
         if (!item)
             break;
         lString16 s = truncate(item->key, level);
-        map.set(s, item->value + map.get(s));
+        map.set(s, Item());
     }
     return map.length();
 }
@@ -897,25 +912,31 @@ void PrefixCollection::get(LVPtrVector<BookDBPrefixStats> & res) {
         if (!item)
             break;
         BookDBPrefixStats * p = new BookDBPrefixStats();
-        p->prefix = item->key;
+        p->prefix = item->value.count == 1 ? item->value.name : item->key;
         p->bookCount = item->value.count;
         p->bookId = item->value.bookId;
         res.add(p);
+        CRLog::trace("returning prefix %s count=%d", LCSTR(p->prefix), p->bookCount);
     }
     res.sort(&compare_prefixes);
 }
 
 void PrefixCollection::compact() {
     int startLevel = _level ? _level - 1 : 7;
-    int bestLevel = 1;
+    int bestLevel = _minLevel;
+    int bestLevelItems = 0;
     for (int i = startLevel; i >= _minLevel; i--) {
         int cnt = itemsForLevel(i);
         if (cnt < _maxSize) {
             bestLevel = i;
-            break;
+            bestLevelItems = cnt;
+            if (cnt < _maxSize) {
+                break;
+            }
         }
     }
-    if (bestLevel != _level) {
+    if (bestLevel != _level && bestLevelItems < _map.length()) {
+        CRLog::trace("Before compact %d->%d: %d items in map, expecting %d items after compact", _level, bestLevel, _map.length(), bestLevelItems);
         /// create tmp reduced map
         LVHashTable<lString16, Item> tmp(1000);
         {
@@ -940,17 +961,18 @@ void PrefixCollection::compact() {
                 _map.set(item->key, item->value);
             }
         }
+        CRLog::trace("After compact: %d items in map, expected %d items after compact", _map.length(), bestLevelItems);
     }
 }
 
 void PrefixCollection::add(const lString16 & value, int count, lInt64 bookId) {
     lString16 s = truncate(value, _level);
-    _map.set(s, _map.get(s) + Item(count, bookId));
-    if (_map.length() > _maxSize && _level != 1)
+    _map.set(s, _map.get(s) + Item(count, bookId, value));
+    if (_map.length() > _maxSize && (_level == 0 || _level > _minLevel))
         compact();
 }
 
-#define MAX_FIND_LEVEL_SIZE 40
+#define MAX_FIND_LEVEL_SIZE 20
 
 
 bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes)
@@ -1029,6 +1051,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
         }
         pref.get(prefixes);
     }
+    CRLog::trace("found %d prefix items for %s", prefixes.length(), LCSTR(searchString));
     return !err;
 }
 
@@ -1042,15 +1065,10 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
     {
         CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
         CR_UNUSED(guard);
-        int searchStringLen = searchString.endsWith("%") ? searchString.length() - 1 : searchString.length();
-        if (searchStringLen > 0 && !searchString.endsWith("%"))
-            searchString += "%";
-        int minLevel = searchStringLen + 1;
 
         DBString pattern(UnicodeToUtf8(searchString).c_str());
         DBString folder(folderFilter.c_str());
 
-        PrefixCollection pref(minLevel, MAX_FIND_LEVEL_SIZE);
         SQLiteStatement stmt(&_db);
         lString8 sql;
         if (field == SEARCH_FIELD_AUTHOR) {
@@ -1112,7 +1130,8 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
         }
     }
     if (ids.length())
-        err = loadBooks(ids, loaded) || !err;
+        err = !loadBooks(ids, loaded) || err;
+    CRLog::trace("found %d books for %s", loaded.length(), LCSTR(searchString));
     return !err;
 }
 
