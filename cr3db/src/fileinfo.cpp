@@ -463,6 +463,24 @@ void CRDirCache::addItem(CRDirContentItem * dir) {
 	_byName.set(dir->getPathName(), item);
 }
 
+void CRDirCache::removeItem(const lString8 & pathname) {
+    Item * item = _byName.get(pathname);
+    if (!item)
+        return;
+    if (item == _head)
+        return;
+    // remove from middle of list
+    _byName.remove(pathname);
+    if (item->prev)
+        item->prev->next = item->next;
+    else
+        _head = item->next;
+    if (item->next)
+        item->next->prev = item->prev;
+    delete item->dir;
+    delete item;
+}
+
 CRDirCache::Item * CRDirCache::findItem(const lString8 &  pathname) {
 	Item * res = _byName.get(pathname);
 	return res;
@@ -622,6 +640,14 @@ static bool isArchive(const lString8 & path) {
 CRDirContentItem * CRDirCache::getOrAdd(const lString8 & pathname) {
 	CRDirItem dir(pathname, isArchive(pathname));
 	return getOrAdd(&dir);
+}
+
+/// remove item from cache
+void CRDirCache::remove(const lString8 & pathname) {
+    if (pathname == RECENT_DIR_TAG)
+        return;
+    CRGuard guard(_monitor);
+    removeItem(pathname);
 }
 
 CRDirContentItem * CRDirCache::find(lString8 pathname) {
@@ -1045,6 +1071,12 @@ bool CRRecentBooksItem::scan() {
     return true;
 }
 
+
+void CRBookDBLookupItem::unlock() {
+    _lockCount--;
+    if (!_lockCount)
+        dirCache->remove(_pathName);
+}
 
 bool CRBookDBLookupItem::scan() {
     if (_scanned)

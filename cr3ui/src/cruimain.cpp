@@ -183,6 +183,11 @@ void CRUIMainWidget::hideSlowOperationPopup()
 void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     _pendingFolder = folder;
+    int newpos = _history.findPosByMode(MODE_FOLDER, folder);
+    if (newpos < 0) {
+        // create page now, to lock corresponding folder
+        _history.setNext(new FolderItem(this, folder));
+    }
     showSlowOperationPopup();
     CRLog::info("Starting background directory scan for %s", folder.c_str());
     dirCache->scan(folder);

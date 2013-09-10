@@ -165,8 +165,8 @@ protected:
     virtual bool scan() = 0;
     virtual bool refresh();
 public:
-    void lock() { _lockCount++; }
-    void unlock() { _lockCount--; }
+    virtual void lock() { _lockCount++; }
+    virtual void unlock() { _lockCount--; }
     virtual void setParsed(bool parsed) { _scanned = parsed; }
     virtual bool isParsed() const { return _scanned; }
     virtual int itemCount() const;
@@ -227,6 +227,7 @@ protected:
     /// load from DB
     virtual bool scan();
 public:
+    virtual void unlock();
     CRBookDBLookupItem(lString8 path) : CRDirContentItem(path, false) {}
 };
 
@@ -266,7 +267,8 @@ class CRDirCache  : public CRRunnable {
 	LVHashTable<lString8, Item*> _byName;
     void addItem(CRDirContentItem * dir);
 	Item * findItem(const lString8 & pathname);
-	void moveToHead(Item * item);
+    void removeItem(const lString8 & pathname);
+    void moveToHead(Item * item);
 
     bool _stopped;
     CRMonitorRef _monitor;
@@ -298,6 +300,9 @@ public:
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
     /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
+
+    /// remove item from cache
+    void remove(const lString8 & pathname);
 };
 
 /// directory contents cache
