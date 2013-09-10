@@ -168,6 +168,8 @@ void CRUIConfig::initEngine() {
     CRI18NTranslator::setTranslator(mainTranslator);
     CRI18NTranslator::setDefTranslator(fallbackTranslator);
 
+    HyphMan::initDictionaries(lString16(), true);
+
     bookDB = new CRBookDB();
     if (bookDB->open(dbFile.c_str()))
         CRLog::error("Error while opening DB file");
