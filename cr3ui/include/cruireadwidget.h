@@ -26,11 +26,12 @@ public:
     virtual ~CRDocumentRenderCallback() {}
 };
 
+class CRUIDocView;
 
 class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
 {
     CRUIMainWidget * _main;
-    LVDocView * _docview;
+    CRUIDocView * _docview;
     bool _isDragging;
     lvPoint _dragStart;
     int _dragStartOffset;
@@ -90,7 +91,7 @@ public:
     virtual void onDocumentLoadFinished(lString8 pathname, bool success);
     virtual void onDocumentRenderFinished(lString8 pathname);
 
-    LVDocView * getDocView() { return _docview; }
+    CRUIDocView * getDocView() { return _docview; }
 
     CRUIReadWidget(CRUIMainWidget * main);
 	virtual ~CRUIReadWidget();

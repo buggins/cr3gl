@@ -19,11 +19,28 @@
 
 using namespace CRUI;
 
+
+class CRUIDocView : public LVDocView {
+    CRUIImageRef background;
+    CRUIImageRef backgroundScrollLeft;
+    CRUIImageRef backgroundScrollRight;
+public:
+    CRUIDocView() : LVDocView() {
+        background = resourceResolver->getIcon("leather.jpg", true);
+    }
+    /// clears page background
+    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
+        lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+        background->draw(&drawbuf, rc, offsetX, offsetY);
+    }
+};
+
+
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
     _isDragging(false), _dragStartOffset(0), _locked(false),
     _fileItem(NULL), _lastPosition(NULL)
 {
-    _docview = new LVDocView();
+    _docview = new CRUIDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
     _docview->setFontSize(26);
 }
@@ -544,7 +561,7 @@ void CRUIReadWidget::OnLoadFileFirstPagesReady() {
 
 /// file progress indicator, called with values 0..100
 void CRUIReadWidget::OnLoadFileProgress( int percent) {
-
+    CR_UNUSED(percent);
 }
 
 /// document formatting started
@@ -559,12 +576,12 @@ void CRUIReadWidget::OnFormatEnd() {
 
 /// format progress, called with values 0..100
 void CRUIReadWidget::OnFormatProgress(int percent) {
-
+    CR_UNUSED(percent);
 }
 
 /// format progress, called with values 0..100
 void CRUIReadWidget::OnExportProgress(int percent) {
-
+    CR_UNUSED(percent);
 }
 
 /// file load finiished with error
@@ -574,7 +591,7 @@ void CRUIReadWidget::OnLoadFileError(lString16 message) {
 
 /// Override to handle external links
 void CRUIReadWidget::OnExternalLink(lString16 url, ldomNode * node) {
-
+    CR_UNUSED2(url, node);
 }
 
 /// Called when page images should be invalidated (clearImageCache() called in LVDocView)
