@@ -878,12 +878,14 @@ public:
     void add(const lString16 & value, int count, lInt64 bookId);
 };
 
-
 lString16 PrefixCollection::truncate(const lString16 & s, int level) {
     if (!level)
         return s;
-    if (s.length() > level && (s.length() != level + 1 || s[level] != '%'))
-        return s.substr(0, level) + "%";
+    if (s.length() > level && (s.length() != level + 1 || s[level] != '%')) {
+        lString16 res = s.substr(0, level) + "%";
+        res.uppercase();
+        return res;
+    }
     return s;
 }
 
