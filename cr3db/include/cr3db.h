@@ -11,6 +11,7 @@
 #include "basedb.h"
 #include "lvhashtable.h"
 #include "lvptrvec.h"
+#include "lvarray.h"
 #include "lvref.h"
 #include "lvstring.h"
 #include "crconcurrent.h"
@@ -274,6 +275,7 @@ class BookDBPrefixStats {
 public:
     lString16 prefix;
     int bookCount;
+    lInt64 bookId; // valid only for book count = 1
 };
 
 class BookDBAuthorCache {
@@ -410,8 +412,10 @@ public:
 
     /// protected by mutex
 	bool saveBooks(LVPtrVector<BookDBBook> & books);
-    /// protected by mutex
+    /// load books by pathnames; protected by mutex
 	bool loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound);
+    /// load books by keys;  protected by mutex
+    bool loadBooks(LVArray<lInt64> & keys, LVPtrVector<BookDBBook> & loaded);
     /// protected by mutex
     BookDBBook * loadBook(lString8 pathname);
 
@@ -423,7 +427,10 @@ public:
     /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
 
+    /// searches BookDB by field - return prefixes
     bool findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes);
+    /// searches BookDB by field - return files
+    bool findBooks(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBBook> & loaded);
 };
 
 extern CRBookDB * bookDB;

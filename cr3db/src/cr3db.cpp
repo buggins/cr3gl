@@ -17,6 +17,7 @@ CRBookDB * bookDB = NULL;
 bool CRBookDB::updateSchema()
 {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     int currentVersion = _db.getVersion();
 	bool err = false;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS author ("
@@ -144,6 +145,7 @@ bool CRBookDB::updateSchema()
 /// open database file; returns 0 on success, error code otherwise
 int CRBookDB::open(const char * pathname) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     CRLog::info("Opening database %s", pathname);
 	int res = _db.open(pathname, false);
 	return res;
@@ -152,6 +154,7 @@ int CRBookDB::open(const char * pathname) {
 /// read DB content to caches
 bool CRBookDB::fillCaches() {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     if (!isOpened())
 		return false;
 	CRLog::trace("Filling caches");
@@ -376,15 +379,17 @@ int CRBookDB::loadLastPositionsToCache() {
 
     _lastPositionCache.clear();
 
-    stmt.prepare("SELECT " BOOKMARK_ALL_FIELDS
-            " FROM bookmark WHERE type = 0;");
+    err = stmt.prepare("SELECT " BOOKMARK_ALL_FIELDS
+            " FROM bookmark WHERE type = 0;") != DB_OK || err;
     int count = 0;
-    while (stmt.step() == DB_ROW) {
-        BookDBBookmark * bmk = loadBookmark(stmt);
-        _lastPositionCache.put(bmk->bookId, bmk);
-        count++;
+    if (!err) {
+        while (stmt.step() == DB_ROW) {
+            BookDBBookmark * bmk = loadBookmark(stmt);
+            _lastPositionCache.put(bmk->bookId, bmk);
+            count++;
+        }
+        _lastPositionCache.sort();
     }
-    _lastPositionCache.sort();
     return count;
 }
 
@@ -433,19 +438,27 @@ BookDBBook * CRBookDB::loadBookToCache(SQLiteStatement & stmt) {
 BookDBBook * CRBookDB::loadBookToCache(const DBString & path) {
 	SQLiteStatement stmt(&_db);
 	bool err = false;
-	stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
-			" FROM book WHERE pathname = ?;");
-	stmt.bindText(1, path);
-	return loadBookToCache(stmt);
+    err = stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
+            " FROM book WHERE pathname = ?;") != DB_OK || err;
+    if (!err) {
+        stmt.bindText(1, path);
+        return loadBookToCache(stmt);
+    } else {
+        return NULL;
+    }
 }
 
 BookDBBook * CRBookDB::loadBookToCache(lInt64 id) {
 	SQLiteStatement stmt(&_db);
 	bool err = false;
-	stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
-			" FROM book WHERE id = ?;");
-	stmt.bindInt64(1, id);
-	return loadBookToCache(stmt);
+    err = stmt.prepare("SELECT " BOOK_TABLE_ALL_FIELDS
+            " FROM book WHERE id = ?;") != DB_OK || err;
+    if (!err) {
+        stmt.bindInt64(1, id);
+        return loadBookToCache(stmt);
+    } else {
+        return NULL;
+    }
 }
 
 static void appendUpdateField(lString8 & buf, const char * paramName, int & fieldIndex, int & index) {
@@ -676,6 +689,7 @@ bool CRBookDB::saveBook(BookDBBook * book) {
 
 bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     bool res = true;
 	for (int i = 0; i<books.length(); i++) {
 		res = saveBook(books[i]) && res;
@@ -686,6 +700,7 @@ bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
 /// saves last position for book
 bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     BookDBBook * cached = _bookCache.get(book->pathname);
     if (book->id == 0 && cached)
         book->id = cached->id;
@@ -740,22 +755,24 @@ bool CRBookDB::updateBookmark(BookDBBookmark * b, BookDBBookmark * fromCache)
     lString8 sql("UPDATE bookmark SET ");
     sql += buf;
     sql += " WHERE id = ?;";
-    stmt.prepare(sql.c_str());
+    err = stmt.prepare(sql.c_str()) != DB_OK || err;
 
-    stmt.bindInt64(index, b->id);
-    if (typeIndex >= 0) stmt.bindInt(typeIndex, b->type);
-    if (percentIndex >= 0) stmt.bindInt(percentIndex, b->percent);
-    if (shortcutIndex >= 0) stmt.bindInt(shortcutIndex, b->shortcut);
-    if (timestampIndex >= 0) stmt.bindInt64(timestampIndex, b->timestamp);
-    if (startPosIndex >= 0) stmt.bindText(startPosIndex, b->startPos);
-    if (endPosIndex >= 0) stmt.bindText(endPosIndex, b->endPos);
-    if (titleTextIndex >= 0) stmt.bindText(titleTextIndex, b->titleText);
-    if (posTextIndex >= 0) stmt.bindText(posTextIndex, b->posText);
-    if (commentTextIndex >= 0) stmt.bindText(commentTextIndex, b->commentText);
-    if (timeElapsedIndex >= 0) stmt.bindInt64(timeElapsedIndex, b->timeElapsed);
+    if (!err) {
+        stmt.bindInt64(index, b->id);
+        if (typeIndex >= 0) stmt.bindInt(typeIndex, b->type);
+        if (percentIndex >= 0) stmt.bindInt(percentIndex, b->percent);
+        if (shortcutIndex >= 0) stmt.bindInt(shortcutIndex, b->shortcut);
+        if (timestampIndex >= 0) stmt.bindInt64(timestampIndex, b->timestamp);
+        if (startPosIndex >= 0) stmt.bindText(startPosIndex, b->startPos);
+        if (endPosIndex >= 0) stmt.bindText(endPosIndex, b->endPos);
+        if (titleTextIndex >= 0) stmt.bindText(titleTextIndex, b->titleText);
+        if (posTextIndex >= 0) stmt.bindText(posTextIndex, b->posText);
+        if (commentTextIndex >= 0) stmt.bindText(commentTextIndex, b->commentText);
+        if (timeElapsedIndex >= 0) stmt.bindInt64(timeElapsedIndex, b->timeElapsed);
 
-    if (stmt.step() == DB_DONE) {
-        return true;
+        if (stmt.step() == DB_DONE) {
+            return true;
+        }
     }
     return false;
 }
@@ -791,6 +808,7 @@ BookDBBookmark * CRBookDB::loadLastPosition(BookDBBook * book) {
     if (!book)
         return NULL;
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     if (!book->id) {
         BookDBBook * cached = _bookCache.get(book->pathname);
         if (cached)
@@ -820,7 +838,16 @@ class PrefixCollection {
     int _minLevel;
     int _maxSize;
     int _level;
-    LVHashTable<lString16, int> _map;
+
+    struct Item {
+        int count;
+        lInt64 bookId;
+        Item() : count(0), bookId(0) {}
+        Item(int cnt, lInt64 book) : count(cnt), bookId(book) {}
+        Item operator + (Item & v) { return Item(count + v.count, count + v.count == 1 ? bookId + v.bookId : 0); }
+    };
+
+    LVHashTable<lString16, Item> _map;
 
     int itemsForLevel(int level);
     void compact();
@@ -833,7 +860,7 @@ public:
     }
 
     /// add pattern with number of books
-    void add(const lString16 & value, int count);
+    void add(const lString16 & value, int count, lInt64 bookId);
 };
 
 
@@ -846,10 +873,10 @@ lString16 PrefixCollection::truncate(const lString16 & s, int level) {
 }
 
 int PrefixCollection::itemsForLevel(int level) {
-    LVHashTable<lString16, int> map(1000);
-    LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+    LVHashTable<lString16, Item> map(1000);
+    LVHashTable<lString16, Item>::iterator i = _map.forwardIterator();
     for (;;) {
-        LVHashTable<lString16, int>::pair * item = i.next();
+        LVHashTable<lString16, Item>::pair * item = i.next();
         if (!item)
             break;
         lString16 s = truncate(item->key, level);
@@ -864,14 +891,15 @@ static int compare_prefixes(const BookDBPrefixStats ** p1, const BookDBPrefixSta
 
 void PrefixCollection::get(LVPtrVector<BookDBPrefixStats> & res) {
     res.clear();
-    LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+    LVHashTable<lString16, Item>::iterator i = _map.forwardIterator();
     for (;;) {
-        LVHashTable<lString16, int>::pair * item = i.next();
+        LVHashTable<lString16, Item>::pair * item = i.next();
         if (!item)
             break;
         BookDBPrefixStats * p = new BookDBPrefixStats();
         p->prefix = item->key;
-        p->bookCount = item->value;
+        p->bookCount = item->value.count;
+        p->bookId = item->value.bookId;
         res.add(p);
     }
     res.sort(&compare_prefixes);
@@ -889,11 +917,11 @@ void PrefixCollection::compact() {
     }
     if (bestLevel != _level) {
         /// create tmp reduced map
-        LVHashTable<lString16, int> tmp(1000);
+        LVHashTable<lString16, Item> tmp(1000);
         {
-            LVHashTable<lString16, int>::iterator i = _map.forwardIterator();
+            LVHashTable<lString16, Item>::iterator i = _map.forwardIterator();
             for (;;) {
-                LVHashTable<lString16, int>::pair * item = i.next();
+                LVHashTable<lString16, Item>::pair * item = i.next();
                 if (!item)
                     break;
                 lString16 s = truncate(item->key, bestLevel);
@@ -904,9 +932,9 @@ void PrefixCollection::compact() {
         _map.clear();
         _level = bestLevel;
         {
-            LVHashTable<lString16, int>::iterator i = tmp.forwardIterator();
+            LVHashTable<lString16, Item>::iterator i = tmp.forwardIterator();
             for (;;) {
-                LVHashTable<lString16, int>::pair * item = i.next();
+                LVHashTable<lString16, Item>::pair * item = i.next();
                 if (!item)
                     break;
                 _map.set(item->key, item->value);
@@ -915,16 +943,20 @@ void PrefixCollection::compact() {
     }
 }
 
-void PrefixCollection::add(const lString16 & value, int count) {
+void PrefixCollection::add(const lString16 & value, int count, lInt64 bookId) {
     lString16 s = truncate(value, _level);
-    _map.set(s, _map.get(s) + count);
+    _map.set(s, _map.get(s) + Item(count, bookId));
     if (_map.length() > _maxSize && _level != 1)
         compact();
 }
 
 #define MAX_FIND_LEVEL_SIZE 40
+
+
 bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes)
 {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     bool err = false;
     int searchStringLen = searchString.endsWith("%") ? searchString.length() - 1 : searchString.length();
     if (searchStringLen > 0 && !searchString.endsWith("%"))
@@ -938,7 +970,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
     SQLiteStatement stmt(&_db);
     lString8 sql;
     if (field == SEARCH_FIELD_AUTHOR) {
-        sql += "SELECT a.file_as, count(*) FROM author a"
+        sql += "SELECT a.file_as, count(*) cnt, min(b.id) FROM author a"
                 " JOIN book_author ba ON a.id=ba.author_fk"
                 " JOIN book b ON b.id=ba.book_fk"
                 " JOIN folder f ON f.id=b.folder_fk"
@@ -950,7 +982,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
         sql += " GROUP BY a.file_as;";
     } else if (field == SEARCH_FIELD_TITLE) {
         sql +=
-                "SELECT b.title, count(*) FROM book b"
+                "SELECT b.title, count(*) cnt, min(b.id) FROM book b"
                 " JOIN folder f ON f.id=b.folder_fk"
                 " WHERE b.title IS NOT NULL AND b.title != ''";
         if (pattern.length())
@@ -960,7 +992,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
         sql += " GROUP BY b.title;";
     } else if (field == SEARCH_FIELD_SERIES) {
         sql +=
-                "SELECT s.name, count(*) FROM series s"
+                "SELECT s.name, count(*) cnt, min(b.id) FROM series s"
                 " JOIN book b ON b.series_fk = s.id"
                 " JOIN folder f ON f.id=b.folder_fk"
                 " WHERE s.name IS NOT NULL AND s.name != ''";
@@ -971,7 +1003,7 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
         sql += " GROUP BY s.name;";
     } else if (field == SEARCH_FIELD_FILENAME) {
         sql +=
-                "SELECT b.filename, count(*) FROM book b"
+                "SELECT b.filename, count(*) cnt, min(b.id) FROM book b"
                 " JOIN folder f ON f.id=b.folder_fk"
                 " WHERE b.title IS NOT NULL AND b.title != ''";
         if (pattern.length())
@@ -982,19 +1014,106 @@ bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8
     } else {
         return false;
     }
-    err = stmt.prepare(sql.c_str()) != 0 || err;
-    int param = 1;
-    if (pattern.length())
-        stmt.bindText(param++, pattern.c_str());
-    if (folder.length())
-        stmt.bindText(param++, folder.c_str());
-    while(stmt.step() == DB_ROW) {
-        lString16 value = Utf8ToUnicode(stmt.getText(0));
-        int count = stmt.getInt(1);
-        pref.add(value, count);
+    err = stmt.prepare(sql.c_str()) != DB_OK || err;
+    if (!err) {
+        int param = 1;
+        if (pattern.length())
+            stmt.bindText(param++, pattern.c_str());
+        if (folder.length())
+            stmt.bindText(param++, folder.c_str());
+        while(stmt.step() == DB_ROW) {
+            lString16 value = Utf8ToUnicode(stmt.getText(0));
+            int count = stmt.getInt(1);
+            lInt64 bookId = stmt.getInt64(2);
+            pref.add(value, count, bookId);
+        }
+        pref.get(prefixes);
     }
-    pref.get(prefixes);
-    return true;
+    return !err;
+}
+
+/// searches BookDB by field - return files
+bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBBook> & loaded)
+{
+
+    bool err = false;
+    LVArray<lInt64> ids;
+
+    {
+        CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+        CR_UNUSED(guard);
+        int searchStringLen = searchString.endsWith("%") ? searchString.length() - 1 : searchString.length();
+        if (searchStringLen > 0 && !searchString.endsWith("%"))
+            searchString += "%";
+        int minLevel = searchStringLen + 1;
+
+        DBString pattern(UnicodeToUtf8(searchString).c_str());
+        DBString folder(folderFilter.c_str());
+
+        PrefixCollection pref(minLevel, MAX_FIND_LEVEL_SIZE);
+        SQLiteStatement stmt(&_db);
+        lString8 sql;
+        if (field == SEARCH_FIELD_AUTHOR) {
+            sql += "SELECT b.id FROM author a"
+                    " JOIN book_author ba ON a.id=ba.author_fk"
+                    " JOIN book b ON b.id=ba.book_fk"
+                    " JOIN folder f ON f.id=b.folder_fk"
+                    " WHERE a.file_as IS NOT NULL AND a.file_as != ''";
+            if (pattern.length())
+                sql += " AND a.file_as LIKE ?";
+            if (folder.length())
+                sql += " AND f.name LIKE ?";
+            sql += " GROUP BY a.file_as;";
+        } else if (field == SEARCH_FIELD_TITLE) {
+            sql +=
+                    "SELECT b.id FROM book b"
+                    " JOIN folder f ON f.id=b.folder_fk"
+                    " WHERE b.title IS NOT NULL AND b.title != ''";
+            if (pattern.length())
+                sql += " AND b.title LIKE ?";
+            if (folder.length())
+                sql += " AND f.name LIKE ?";
+            sql += " GROUP BY b.title;";
+        } else if (field == SEARCH_FIELD_SERIES) {
+            sql +=
+                    "SELECT b.id FROM series s"
+                    " JOIN book b ON b.series_fk = s.id"
+                    " JOIN folder f ON f.id=b.folder_fk"
+                    " WHERE s.name IS NOT NULL AND s.name != ''";
+            if (pattern.length())
+                sql += " AND s.name LIKE ?";
+            if (folder.length())
+                sql += " AND f.name LIKE ?";
+            sql += " GROUP BY s.name;";
+        } else if (field == SEARCH_FIELD_FILENAME) {
+            sql +=
+                    "SELECT b.id FROM book b"
+                    " JOIN folder f ON f.id=b.folder_fk"
+                    " WHERE b.title IS NOT NULL AND b.title != ''";
+            if (pattern.length())
+                sql += " AND b.filename LIKE ?";
+            if (folder.length())
+                sql += " AND f.filename LIKE ?";
+            sql += " GROUP BY b.filename;";
+        } else {
+            return false;
+        }
+        err = stmt.prepare(sql.c_str()) != DB_OK || err;
+        if (!err) {
+            int param = 1;
+            if (pattern.length())
+                stmt.bindText(param++, pattern.c_str());
+            if (folder.length())
+                stmt.bindText(param++, folder.c_str());
+            while(stmt.step() == DB_ROW) {
+                lInt64 bookId = stmt.getInt64(0);
+                ids.add(bookId);
+            }
+        }
+    }
+    if (ids.length())
+        err = loadBooks(ids, loaded) || !err;
+    return !err;
 }
 
 /// returns ptr to copy saved in cache
@@ -1056,6 +1175,7 @@ void CRBookLastPositionCache::sort() {
 /// protected by mutex
 bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     books.clear();
     lastPositions.clear();
     if (!_lastPositionCache.length()) {
@@ -1089,19 +1209,43 @@ bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<Book
         lString8 sql = lString8("SELECT " BOOK_TABLE_ALL_FIELDS " FROM book WHERE id IN (") + bookIdsToLoad + ");";
         SQLiteStatement stmt(&_db);
         bool err = false;
-        stmt.prepare(sql.c_str());
-        for (;;) {
-            BookDBBook * book = loadBookToCache(stmt);
-            if (!book)
-                break;
-            books[indexByBook.get(book->id)] = book->clone();
+        err = stmt.prepare(sql.c_str()) != DB_OK || err;
+        if (!err) {
+            for (;;) {
+                BookDBBook * book = loadBookToCache(stmt);
+                if (!book)
+                    break;
+                books[indexByBook.get(book->id)] = book->clone();
+            }
         }
+    }
+    return true;
+}
+
+/// protected by mutex
+bool CRBookDB::loadBooks(LVArray<lInt64> & keys, LVPtrVector<BookDBBook> & loaded) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
+    LVArray<lInt64> forLoad;
+    for (int i = 0; i<keys.length(); i++) {
+        BookDBBook * cached = _bookCache.get(keys[i]);
+        if (cached)
+            loaded.add(cached->clone());
+        else
+            forLoad.add(keys[i]);
+    }
+    for (int i = 0; i<forLoad.length(); i++) {
+        // not found in cache
+        BookDBBook * cached = loadBookToCache(forLoad[i]);
+        if (cached)
+            loaded.add(cached->clone());
     }
     return true;
 }
 
 bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
     for (int i = 0; i<pathnames.length(); i++) {
 		BookDBBook * cached = _bookCache.get(pathnames[i].c_str());
 		if (cached)

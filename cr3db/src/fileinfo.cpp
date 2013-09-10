@@ -1066,15 +1066,54 @@ bool CRBookDBLookupItem::scan() {
         type = SEARCH_FIELD_FILENAME;
     }
     if (type != SEARCH_FIELD_INVALID) {
-        LVPtrVector<BookDBPrefixStats> prefixes;
-        bookDB->findPrefixes(type, pattern, lString8(), prefixes);
         _entries.clear();
-        for (int i = 0; i < prefixes.length(); i++) {
-            BookDBPrefixStats * item = prefixes[i];
-            lString8 pathname = lString8(tag) + UnicodeToUtf8(item->prefix);
-            CRDirItem * p = new CRDirItem(pathname, false);
-            p->setBookCount(item->bookCount);
-            _entries.add(p);
+        if (pattern.endsWith("%") || pattern.empty()) {
+            LVPtrVector<BookDBPrefixStats> prefixes;
+            bookDB->findPrefixes(type, pattern, lString8(), prefixes);
+            bool nonOneBookFound = false;
+            for (int i = 0; i < prefixes.length(); i++) {
+                BookDBPrefixStats * item = prefixes[i];
+                if (item->bookCount != 1 || !item->bookId) {
+                    nonOneBookFound = true;
+                    break;
+                }
+            }
+            if (!nonOneBookFound && (pattern.length() > 1 || pattern != "%" || type == SEARCH_FIELD_TITLE || type == SEARCH_FIELD_FILENAME)) {
+                // only books (request contains non-empty pattern)
+                // load books instead of prefixes
+                if (prefixes.length()) {
+                    LVArray<lInt64> ids;
+                    LVPtrVector<BookDBBook> loaded;
+                    for (int i = 0; i < prefixes.length(); i++) {
+                        BookDBPrefixStats * item = prefixes[i];
+                        ids.add(item->bookId);
+                    }
+                    bookDB->loadBooks(ids, loaded);
+                    for (int i = 0; i < loaded.length(); i++) {
+                        CRFileItem * item = new CRFileItem(lString8(loaded[i]->pathname.c_str()), false);
+                        item->setBook(loaded[i]->clone());
+                        _entries.add(item);
+                    }
+                }
+            } else {
+                for (int i = 0; i < prefixes.length(); i++) {
+                    BookDBPrefixStats * item = prefixes[i];
+                    lString8 pathname = lString8(tag) + UnicodeToUtf8(item->prefix);
+                    CRDirItem * p = new CRDirItem(pathname, false);
+                    p->setBookCount(item->bookCount);
+                    _entries.add(p);
+                }
+            }
+        } else {
+            // individual books
+            LVPtrVector<BookDBBook> loaded;
+            if (bookDB->findBooks(type, pattern, lString8(), loaded)) {
+                for (int i = 0; i < loaded.length(); i++) {
+                    CRFileItem * item = new CRFileItem(lString8(loaded[i]->pathname.c_str()), false);
+                    item->setBook(loaded[i]->clone());
+                    _entries.add(item);
+                }
+            }
         }
     }
     _scanned = true;
