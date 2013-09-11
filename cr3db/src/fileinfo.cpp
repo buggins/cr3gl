@@ -8,18 +8,19 @@
 // uncomment for simulation of long directory scan operation
 //#define SLOW_SCAN_SIMULATION_FOR_TEST
 
+#include <fb2def.h>
+#define XS_IMPLEMENT_SCHEME 1
+#include <fb2def.h>
+
 #include "fileinfo.h"
 #include <lvstream.h>
 
 #include <epubfmt.h>
 #include <pdbfmt.h>
 
-#include <fb2def.h>
 #include <stringresource.h>
 #include <cri18n.h>
 
-#define XS_IMPLEMENT_SCHEME 1
-#include <fb2def.h>
 #include <sys/stat.h>
 
 

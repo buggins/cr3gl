@@ -28,5 +28,11 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	public void onSurfaceCreated(GL10 gl, EGLConfig cfg) {
 		// do nothing
 	}
-
+	
+	private int mNativeObject; // holds pointer to native object instance
+	native public boolean initInternal(CRConfig config);
+	
+	static {
+		System.loadLibrary("crenginegl");
+	}
 }

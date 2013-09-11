@@ -254,7 +254,8 @@ NEWUI_FILES += \
 
     
 JNI_SRC_FILES := \
-    crenginegl.cpp 
+    crenginegl.cpp \
+    cr3java.cpp
 
 LOCAL_SRC_FILES := \
     $(JNI_SRC_FILES) \
