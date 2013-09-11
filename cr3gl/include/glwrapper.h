@@ -42,7 +42,7 @@ extern QOpenGLFunctions * _qtgl;
 #if defined(ANDROID)
 #include <GLES/gl.h>
 #include <GLES/glext.h>
-#include <EGL/egl.h>
+//#include <EGL/egl.h>
 //#define glGenFramebuffersOES glGenFramebuffers
 //#define glBindFramebufferOES glBindFramebuffer
 //#define glFramebufferTexture2DOES glFramebufferTexture2D

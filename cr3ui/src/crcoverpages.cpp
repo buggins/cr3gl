@@ -85,7 +85,7 @@ public:
     Entry * draw(CRDirEntry * _book, int dx, int dy);
     Entry * find(CRDirEntry * _book, int dx, int dy);
     CRCoverImageCache(int maxitems = 1000, int maxsize = 16*1024*1024);
-    ~CRCoverImageCache() { clear(); }
+    virtual ~CRCoverImageCache() { clear(); }
 };
 
 extern CRCoverImageCache * coverImageCache;

@@ -1384,15 +1384,15 @@ void BookDBAuthorCache::put(BookDBAuthor * item) {
 	_byName.set(item->name, item);
 }
 
-static bool matchPrefix(const lString16 & s, const lString16 & prefix) {
-    if (prefix.empty() || prefix == L"%")
-        return true;
-    if (prefix.endsWith("%")) {
-        return s.startsWith(prefix.substr(prefix.length() - 1));
-    }
-    return s == prefix;
-}
-
+//static bool matchPrefix(const lString16 & s, const lString16 & prefix) {
+//    if (prefix.empty() || prefix == L"%")
+//        return true;
+//    if (prefix.endsWith("%")) {
+//        return s.startsWith(prefix.substr(prefix.length() - 1));
+//    }
+//    return s == prefix;
+//}
+//
 
 void BookDBAuthorCache::clear() {
 	LVPtrVector<BookDBAuthor> items;

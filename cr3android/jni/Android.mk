@@ -29,7 +29,7 @@ CRENGINE_INCLUDES := \
     -I$(LOCAL_PATH)/cr3/cr3gl/include \
     -I$(LOCAL_PATH)/cr3/cr3ui/include
     
-LOCAL_CFLAGS += $(CRFLAGS) $(CRENGINE_INCLUDES) -Wno-psabi -Wno-unused-variable -Wno-sign-compare -Wno-write-strings -Wno-main -Wno-unused-but-set-variable -Wno-unused-function -Werror -Wall
+LOCAL_CFLAGS += $(CRFLAGS) $(CRENGINE_INCLUDES) -Wno-psabi -Wno-unused-variable -Wno-sign-compare -Wno-write-strings -Wno-main -Wno-unused-but-set-variable -Wno-unused-function -Wall
 
 
 CRENGINE_SRC_FILES := \

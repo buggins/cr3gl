@@ -8,10 +8,17 @@ public class CoolReader extends Activity {
 	
 	public CRView crview;
 
+	private CRConfig createConfig() {
+		CRConfig cfg = new CRConfig();
+		
+		return cfg;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		crview = new CRView(this);
+		crview.initInternal(createConfig());
 		setContentView(crview);
 	}
 
