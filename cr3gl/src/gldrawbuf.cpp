@@ -897,7 +897,8 @@ public:
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
 {
-	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(buf);
+    // workaround for no-rtti builds
+	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (_textureBuf && _textureId != 0) {
 			if (glbuf->_scene)
@@ -915,7 +916,8 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
 {
     if (dx <= 0 || dy <= 0 || !src)
         return;
-    GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf*>(src);
+    // workaround for no-rtti builds
+	GLDrawBuf * glbuf = src->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
 			if (_scene)

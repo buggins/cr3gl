@@ -12,7 +12,7 @@
 using namespace CRUI;
 
 
-int CRUIMotionEvent::findPointerId(int pointerId) {
+int CRUIMotionEvent::findPointerId(lUInt64 pointerId) {
 	for (int i=0; i<_data.length(); i++)
 		if (_data[i]->getPointerId() == pointerId)
 			return i;

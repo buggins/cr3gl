@@ -10,6 +10,7 @@
 #include <lvstring.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #if USE_LSTRING8_FOR_DB != 1
 DBString::DBString(const char * s)

@@ -479,7 +479,8 @@ public:
     {
 		if (len <= 0)
 			return;
-    	GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf *>(buf);
+        // workaround for no-rtti builds
+    	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     	if (glbuf) {
     		// use specific rendering for GL buffer
         	GLGlyphCache * cache = _fontMan->getCache();

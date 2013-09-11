@@ -137,7 +137,7 @@ public:
 
     const CRFileItem * getLastBook() {
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
-        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+        CRFileItem * item = dir ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
         return item;
     }
 
@@ -351,7 +351,7 @@ class CRUILibraryWidget : public CRUIHomeItemListWidget {
 public:
     const BookDBBook * getLastBook() {
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
-        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+        CRFileItem * item = dir ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
         return item ? item->getBook() : NULL;
     }
 
@@ -462,7 +462,7 @@ public:
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
-        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(itemIndex + 1)) : NULL;
+        CRFileItem * item = dir ? static_cast<CRFileItem*>(dir->getItem(itemIndex + 1)) : NULL;
         if (item) {
             _home->getMain()->openBook(item);
             return true;
@@ -532,7 +532,7 @@ public:
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
         CR_UNUSED(list);
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
-        CRFileItem * item = dir ? dynamic_cast<CRFileItem*>(dir->getItem(index + 1)) : NULL;
+        CRFileItem * item = dir ? static_cast<CRFileItem*>(dir->getItem(index + 1)) : NULL;
         if (item) {
             lString16 text = item->getTitle();
             if (text.empty())

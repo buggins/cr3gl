@@ -88,7 +88,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
         }
         CRLog::info("Directory %s is ready", item->getPathName().c_str());
         _pendingFolder.clear();
-        CRUIFolderWidget * folder = dynamic_cast<CRUIFolderWidget *>(_history.next()->getWidget());
+        CRUIFolderWidget * folder = static_cast<CRUIFolderWidget *>(_history[newpos]->getWidget());
         folder->measure(_pos.width(), _pos.height());
         folder->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
         if (folder && !folder->requestAllVisibleCoverpages()) {

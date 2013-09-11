@@ -7,6 +7,7 @@
 
 #include "cr3db.h"
 #include <lvstring.h>
+#include <stdio.h>
 
 CRBookDB * bookDB = NULL;
 
@@ -875,7 +876,7 @@ public:
     }
 
     /// add pattern with number of books
-    void add(const lString16 & value, int count, lInt64 bookId);
+    void add(lString16 value, int count, lInt64 bookId);
 };
 
 void uppercaseASCII(lString16 & str) {
@@ -956,7 +957,8 @@ void PrefixCollection::compact() {
                 if (!item)
                     break;
                 lString16 s = truncate(item->key, bestLevel);
-                tmp.set(s, item->value + tmp.get(s));
+                Item tmpitem = tmp.get(s); // to fix build error
+                tmp.set(s, item->value + tmpitem);
             }
         }
         /// copy tmp to current
@@ -975,9 +977,11 @@ void PrefixCollection::compact() {
     }
 }
 
-void PrefixCollection::add(const lString16 & value, int count, lInt64 bookId) {
+void PrefixCollection::add(lString16 value, int count, lInt64 bookId) {
     lString16 s = truncate(value, _level);
-    _map.set(s, _map.get(s) + Item(count, bookId, value));
+    Item olditem = _map.get(s);
+    Item newitem(count, bookId, value);
+    _map.set(s, olditem + newitem);
     if (_map.length() > _maxSize && (_level == 0 || _level > _minLevel))
         compact();
 }

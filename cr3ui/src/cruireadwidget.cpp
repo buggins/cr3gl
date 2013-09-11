@@ -283,7 +283,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     _locked = true;
     _scrollCache.clear();
     _main->showSlowOperationPopup();
-    _fileItem = dynamic_cast<CRFileItem*>(file->clone());
+    _fileItem = static_cast<CRFileItem*>(file->clone());
     _lastPosition = bookDB->loadLastPosition(file->getBook());
     lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");
     lString8 systemLang = crconfig.systemLanguage;
@@ -688,7 +688,8 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
 }
 
 void CRUIReadWidget::ScrollModePageCache::draw(LVDrawBuf * dst, int pos, int x, int y) {
-    GLDrawBuf * glbuf = dynamic_cast<GLDrawBuf *>(dst);
+    // workaround for no-rtti builds
+	GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
         //glbuf->beforeDrawing();
         for (int k = pages.length() - 1; k >= 0; k--) {

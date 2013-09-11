@@ -36,6 +36,8 @@ protected:
 	int _prepareStage;
 	GLScene * _scene;
 public:
+    virtual GLDrawBuf * asGLDrawBuf() { return this; }
+
 	virtual void createFramebuffer();
 	virtual void deleteFramebuffer();
 	virtual void beforeDrawing();

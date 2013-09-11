@@ -94,7 +94,7 @@ public:
 	lUInt64 getPointerId(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getPointerId() : 0; }
 	CRUIWidget * getWidget(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getWidget() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found
-	int findPointerId(int pointerId);
+	int findPointerId(lUInt64 pointerId);
 };
 
 enum KEY_EVENT_TYPE {

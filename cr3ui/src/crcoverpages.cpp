@@ -424,7 +424,7 @@ bool CRCoverFileCache::open() {
     buf.append(sz, ' ');
     lvsize_t bytesRead;
     in->Read(buf.modify(), buf.length(), &bytesRead);
-    if (bytesRead != buf.length())
+    if ((int)bytesRead != buf.length())
         return false;
     lString8Collection lines;
     lines.split(buf, lString8("\n"));
@@ -490,7 +490,7 @@ bool CRCoverFileCache::save() {
     }
     lvsize_t bytesWritten = 0;
     out->Write(buf.c_str(), buf.length(), &bytesWritten);
-    return bytesWritten == buf.length();
+    return (int)bytesWritten == buf.length();
 }
 
 

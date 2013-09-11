@@ -19,8 +19,8 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
 : _vertical(vertical), _adapter(adapter),
   _ownAdapter(false), _scrollOffset(0),
   _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG),
-  _onItemClickListener(NULL), _onItemLongClickListener(NULL),
-  _colCount(1)
+  _colCount(1),
+  _onItemClickListener(NULL), _onItemLongClickListener(NULL)
 {
 
 }

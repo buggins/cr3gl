@@ -982,7 +982,8 @@ bool CRRecentBooksItem::onLastPositionUpdated(BookDBBook * book, BookDBBookmark 
     int pos = -1;
     CRRecentBookItem * found = NULL;
     for (int i = 0; i < _entries.length(); i++) {
-        CRRecentBookItem * item = dynamic_cast<CRRecentBookItem *>(_entries[i]);
+        //CRRecentBookItem * item = dynamic_cast<CRRecentBookItem *>(_entries[i]);
+        CRRecentBookItem * item = static_cast<CRRecentBookItem *>(_entries[i]);
         if (item && item->getBook() && item->getBook()->id == book->id) {
             pos = i;
             found = item;
