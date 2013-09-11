@@ -23,7 +23,7 @@ extern QOpenGLFunctions * _qtgl;
 #define GL_FRAMEBUFFER_COMPLETE_OES GL_FRAMEBUFFER_COMPLETE
 #define glOrthof _qtgl->glOrthofOES
 #define glDeleteFramebuffersOES _qtgl->glDeleteFramebuffers
-#define glActiveTexture qglActiveTexture
+#define glActiveTexture _qtgl->glActiveTexture
 
 #else
 //#ifdef _WIN32
