@@ -23,6 +23,14 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
 JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    callCRRunnableInternal
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
+  (JNIEnv *, jclass, jlong);
+
 #ifdef __cplusplus
 }
 #endif

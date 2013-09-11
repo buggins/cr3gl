@@ -84,6 +84,11 @@ public:
     {
     	cls = env->FindClass(className);
     }
+    jobject newObject() {
+        jmethodID mid = env->GetMethodID(cls, "<init>", "()V");
+        jobject obj = env->NewObject(cls, mid);
+        return obj;
+    }
 };
 
 class CRObjectAccessor : public CRClassAccessor {
@@ -131,6 +136,10 @@ public:
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid ); 
 	}
+	jobject callObj(jlong v)
+	{
+		return objacc->CallObjectMethod( objacc.getObject(), methodid, v );
+	}
 	jobject callObj(jobject obj)
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj ); 
@@ -146,6 +155,14 @@ public:
 	jint callInt()
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid ); 
+	}
+	void callVoid()
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid );
+	}
+	void callVoid(jlong v)
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid, v);
 	}
 };
 

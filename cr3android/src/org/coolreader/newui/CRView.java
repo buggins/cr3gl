@@ -1,5 +1,7 @@
 package org.coolreader.newui;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -21,7 +23,21 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
-		
+		java.util.concurrent.Semaphore s;
+		java.util.concurrent.locks.ReentrantLock l;
+		java.lang.Thread t;
+	}
+	
+	/**
+	 * Call from JNI to execute CRRunnable in GUI (GL) thread
+	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
+	 */
+	public void runInGLThread(long crRunnablePtr) {
+		queueEvent(new CRRunnable(crRunnablePtr));
+	}
+	
+	public Thread createCRThread(long crRunnablePtr) {
+		return new Thread(new CRRunnable(crRunnablePtr));
 	}
 
 	@Override
@@ -38,6 +54,12 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 * @return path link points to if specified directory is link (symlink), null for regular file/dir
 	 */
 	public native static String isLink(String pathName);
+
+	/**
+	 * Calls CRRunnable.run() method.
+	 * @param ptr is actually C pointer to CRRunnable
+	 */
+	public native static void callCRRunnableInternal(long ptr);
 	
 	
 	static {

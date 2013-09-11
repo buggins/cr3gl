@@ -68,6 +68,110 @@ void cr3androidFatalErrorHandler(int errorCode, const char * errorText )
 	LOGASSERTFAILED(errorText, str);
 }
 
+class AndroidGuiExecutorObject;
+
+class AndroidConcurrencyProvider : public CRConcurrencyProvider {
+    JNIEnv * _env;
+    CRJNIEnv env;
+    CRObjectAccessor crviewObject;
+    CRMethodAccessor crviewRunInGLThread;
+    CRMethodAccessor crviewCreateCRThread;
+    CRClassAccessor lockClass;
+    CRClassAccessor threadClass;
+public:
+
+    class AndroidMutex : public CRMutex {
+        CRObjectAccessor mutex;
+        CRMethodAccessor lock;
+        CRMethodAccessor unlock;
+    public:
+        AndroidMutex(JNIEnv * _env, jobject object)
+        		: mutex(_env, object),
+        		  lock(mutex, "lock", "()V"),
+        		  unlock(mutex, "unlock", "()V") {}
+        virtual void acquire() { lock.callVoid(); }
+        virtual void release() { unlock.callVoid(); }
+    };
+
+    class AndroidMonitor : public CRMonitor {
+        CRObjectAccessor mutex;
+        CRMethodAccessor lock;
+        CRMethodAccessor unlock;
+        CRMethodAccessor newCondition;
+        CRObjectAccessor condition;
+        CRMethodAccessor waitMethod;
+        CRMethodAccessor notifyMethod;
+        CRMethodAccessor notifyAllMethod;
+    public:
+        AndroidMonitor(JNIEnv * _env, jobject object) : mutex(_env, object),
+        	lock(mutex, "lock", "()V"),
+        	unlock(mutex, "unlock", "()V"),
+        	newCondition(mutex, "newCondition", "()Ljava/util/concurrent/locks/Condition;"),
+        	condition(_env, newCondition.callObj()),
+        	waitMethod(condition, "await", "()V"),
+        	notifyMethod(condition, "signal", "()V"),
+        	notifyAllMethod(condition, "signalAll", "()V")
+        	{}
+        virtual void acquire() { lock.callVoid(); }
+        virtual void release() { unlock.callVoid(); }
+        virtual void wait() { waitMethod.callVoid(); }
+        virtual void notify() { notifyMethod.callVoid(); }
+        virtual void notifyAll() { notifyAllMethod.callVoid(); }
+    };
+
+    class AndroidThread : public CRThread {
+        CRObjectAccessor thread;
+        CRMethodAccessor startMethod;
+        CRMethodAccessor joinMethod;
+    public:
+        AndroidThread(JNIEnv * _env, jobject object) :
+        	thread(_env, object),
+        	startMethod(thread, "start", "()V"),
+        	joinMethod(thread, "join", "()V")
+        	{}
+        virtual ~AndroidThread() {
+        }
+        virtual void start() {
+        	startMethod.callVoid();
+        }
+        virtual void join() {
+        	joinMethod.callVoid();
+        }
+    };
+
+public:
+    virtual CRMutex * createMutex() {
+        return new AndroidMutex(_env, lockClass.newObject());
+    }
+
+    virtual CRMonitor * createMonitor() {
+        return new AndroidMonitor(_env, lockClass.newObject());
+    }
+
+    virtual CRThread * createThread(CRRunnable * threadTask) {
+        return new AndroidThread(_env, crviewRunInGLThread.callObj((jlong)threadTask));
+    }
+    virtual void executeGui(CRRunnable * task) {
+    	crviewRunInGLThread.callVoid((jlong)task);
+    }
+
+    AndroidConcurrencyProvider(JNIEnv * environment, jobject _crviewObject) : _env(environment), env(environment),
+    		crviewObject(_env, _crviewObject),
+    		crviewRunInGLThread(crviewObject, "runInGLThread", "(J)V"),
+    		crviewCreateCRThread(crviewObject, "createCRThread", "(J)Ljava/lang/Thread;"),
+    		lockClass(_env, "java/util/concurrent/locks/ReentrantLock"),
+    		threadClass(_env, "java/lang/Thread")
+    {
+    }
+    /// sleep current thread
+    virtual void sleepMs(int durationMs) {
+        //QThread::msleep(durationMs);
+    }
+
+    virtual ~AndroidConcurrencyProvider() {}
+};
+
+
 /*
  * Class:     org_coolreader_newui_CRView
  * Method:    initInternal
@@ -90,6 +194,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
 
 	CRLog::trace("Setting crash handler");
 	crSetSignalHandler();
+
+	concurrencyProvider = new AndroidConcurrencyProvider(_env, _this);
 
     // init config
     CRObjectAccessor cfg(_env, _config);
@@ -154,13 +260,26 @@ JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
 	return !path.empty() ? (jstring)env->NewGlobalRef(env->NewStringUTF(path.c_str())) : NULL;
 }
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    callCRRunnableInternal
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
+	(JNIEnv * env, jclass obj, jlong ptr)
+{
+	CRRunnable * runnable = (CRRunnable*)ptr;
+	runnable->run();
+}
+
 //============================================================================================================
 // register JNI methods
 
 static JNINativeMethod sCRViewMethods[] = {
   /* name, signature, funcPtr */
   {"initInternal", "(Lorg/coolreader/newui/CRConfig;)Z", (void*)Java_org_coolreader_newui_CRView_initInternal},
-  {"isLink", "(Ljava/lang/String;)Ljava/lang/String;", (void*)Java_org_coolreader_newui_CRView_isLink}
+  {"isLink", "(Ljava/lang/String;)Ljava/lang/String;", (void*)Java_org_coolreader_newui_CRView_isLink},
+  {"callCRRunnableInternal", "(J)V", (void*)Java_org_coolreader_newui_CRView_callCRRunnableInternal}
 };
 
 /*
