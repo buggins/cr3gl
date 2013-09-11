@@ -31,6 +31,14 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	
 	private int mNativeObject; // holds pointer to native object instance
 	native public boolean initInternal(CRConfig config);
+	/**
+	 * Checks whether specified directlry or file is symbolic link.
+	 * (thread-safe)
+	 * @param pathName is path to check
+	 * @return path link points to if specified directory is link (symlink), null for regular file/dir
+	 */
+	public native static String isLink(String pathName);
+	
 	
 	static {
 		System.loadLibrary("crenginegl");

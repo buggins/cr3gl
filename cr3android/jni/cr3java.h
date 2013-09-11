@@ -161,7 +161,11 @@ public:
 		objacc.env->DeleteLocalRef(str);
 		return res;
 	}
+	lString8 get8() {
+		return UnicodeToUtf8(get());
+	}
 	void set( const lString16& str) { objacc->SetObjectField(objacc.getObject(), fieldid, objacc.toJavaString(str)); } 
+	void set( const lString8& str) { set(Utf8ToUnicode(str)); }
 };
 
 class CRIntField : public CRFieldAccessor {

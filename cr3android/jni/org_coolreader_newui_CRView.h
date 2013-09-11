@@ -15,6 +15,14 @@ extern "C" {
 JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
   (JNIEnv *, jobject, jobject);
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    isLink
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
