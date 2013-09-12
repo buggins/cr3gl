@@ -28,6 +28,85 @@ public class CoolReader extends Activity {
 	public static final String TAG = "cr3";
 	public static final Logger log = L.create(TAG);
 
+
+	private CRConfig createConfig() {
+		CRConfig cfg = new CRConfig();
+		DisplayMetrics metrics = getResources().getDisplayMetrics();
+		cfg.screenDPI = (int)(metrics.density * 160);
+		cfg.screenX = metrics.widthPixels;
+		cfg.screenY = metrics.heightPixels;
+		
+		initMountRoots();
+		
+		String dataDir = null;
+		PackageManager m = getPackageManager();
+		String s = getPackageName();
+	    String externalFilesDir = getExternalFilesDir(null).getAbsolutePath();
+		try {
+		    PackageInfo p = m.getPackageInfo(s, 0);
+		    
+		    dataDir = p.applicationInfo.dataDir;
+		    log.i("DataDir = " + dataDir);
+		    log.i("ExternalFilesDir = " + dataDir);
+		} catch (NameNotFoundException e) {
+		    Log.w(TAG, "Error Package name not found ", e);
+		}
+		
+		cfg.assetManager = getAssets();
+
+		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+		cfg.coverCacheDir = externalFilesDir + "/coverpages";
+		cfg.cssDir = "@css";
+		cfg.docCacheDir = externalFilesDir + "/doccache";
+		cfg.dbFile = externalFilesDir + "/cr3new.sqlite";
+		cfg.iniFile = externalFilesDir + "/cr3new.ini";
+		
+		
+		cfg.hyphDir = "@hyph";
+		cfg.i18nDir = "@i18n";
+		cfg.resourceDir = "@"; // TODO
+		
+		cfg.systemLanguage = "en"; // TODO
+		cfg.uiFontFace = "Droid Sans";
+		cfg.fontFiles = findFonts();
+		
+		return cfg;
+	}
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		crview = new CRView(this);
+		crview.init(createConfig());
+		setContentView(crview);
+	}
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        crview.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        crview.onResume();
+    }	
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.cool_reader, menu);
+		return true;
+	}
+
+	
+	
+	
+	//=================================================================================================
+	
+	
 	/**
 	 * Returns array of writable data directories on external storage
 	 * 
@@ -357,67 +436,6 @@ public class CoolReader extends Activity {
 //		testPathNormalization("/sdcard/books/test.fb2");
 //		testPathNormalization("/mnt/sdcard/downloads/test.fb2");
 //		testPathNormalization("/mnt/sd/dir/test.fb2");
-	}
-
-	private CRConfig createConfig() {
-		CRConfig cfg = new CRConfig();
-		DisplayMetrics metrics = getResources().getDisplayMetrics();
-		cfg.screenDPI = (int)(metrics.density * 160);
-		cfg.screenX = metrics.widthPixels;
-		cfg.screenY = metrics.heightPixels;
-		
-		initMountRoots();
-		
-		String dataDir = null;
-		PackageManager m = getPackageManager();
-		String s = getPackageName();
-		try {
-		    PackageInfo p = m.getPackageInfo(s, 0);
-		    dataDir = p.applicationInfo.dataDir;
-		} catch (NameNotFoundException e) {
-		    Log.w(TAG, "Error Package name not found ", e);
-		}
-		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-		cfg.coverCacheDir = externalStorageDir + "/.cr3/coverpages";
-		cfg.cssDir = externalStorageDir + "/.cr3/css";
-		cfg.docCacheDir = externalStorageDir + "/.cr3/doccache";
-		cfg.dbFile = externalStorageDir + "/.cr3/cr3new.sqlite";
-		cfg.hyphDir = externalStorageDir + "/.cr3/hyph";
-		cfg.i18nDir = externalStorageDir + "/.cr3/i18n";
-		cfg.iniFile = externalStorageDir + "/.cr3/cr3new.ini";
-		cfg.resourceDir = externalStorageDir + "/.cr3/res"; // TODO
-		cfg.systemLanguage = "en"; // TODO
-		cfg.uiFontFace = "Droid Sans";
-		cfg.fontFiles = findFonts();
-		
-		return cfg;
-	}
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		crview = new CRView(this);
-		crview.initInternal(createConfig());
-		setContentView(crview);
-	}
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        crview.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        crview.onResume();
-    }	
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.cool_reader, menu);
-		return true;
 	}
 
 }

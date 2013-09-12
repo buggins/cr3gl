@@ -17,6 +17,38 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    uninitInternal
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_uninitInternal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    drawInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    surfaceChangedInternal
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceChangedInternal
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    surfaceDestroyedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceDestroyedInternal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    isLink
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */

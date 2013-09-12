@@ -51,24 +51,35 @@ public:
 	virtual ~BitmapAccessorInterface() {}
 };
 
+void SaveJVMPointer(JNIEnv *env);
 
 //====================================================================
 
 class CRJNIEnv {
+	JNIEnv * __env;
 public:
-	JNIEnv * env;
-    CRJNIEnv(JNIEnv * pEnv) : env(pEnv) { }
-    JNIEnv * operator -> () { return env; }
+	// pass NULL to get environment for current thread automatically
+    CRJNIEnv(JNIEnv * pEnv) : __env(pEnv) { }
+    // to get environment for current thread
+    CRJNIEnv() : __env(NULL) { }
+    JNIEnv * env() {
+    	if (__env)
+    		return __env;
+    	else
+    		return currentThreadEnv();
+    }
+
+    static JNIEnv * currentThreadEnv();
+
+    JNIEnv * operator -> () { return env(); }
 	lString16 fromJavaString( jstring str );
 	jstring toJavaString( const lString16 & str );
 	void fromJavaStringArray( jobjectArray array, lString16Collection & dst );
 	jobjectArray toJavaStringArray( lString16Collection & dst );
 	LVStreamRef jbyteArrayToStream( jbyteArray array ); 
 	jbyteArray streamToJByteArray( LVStreamRef stream ); 
-	jobject enumByNativeId( const char * classname, int id ); 
 	CRPropRef fromJavaProperties( jobject jprops );
 	jobject toJavaProperties( CRPropRef props );
-	jobject toJavaTOCItem( LVTocItem * toc );
 };
 
 class CRClassAccessor : public CRJNIEnv {
@@ -78,15 +89,31 @@ public:
 	jclass getClass() { return cls; }
     CRClassAccessor(JNIEnv * pEnv, jclass _class) : CRJNIEnv(pEnv)
     {
-    	cls = _class;
+    	cls = (jclass)env()->NewGlobalRef(_class);
+    }
+    CRClassAccessor(jclass _class) : CRJNIEnv(NULL)
+    {
+    	cls = (jclass)currentThreadEnv()->NewGlobalRef(_class);
     }
     CRClassAccessor(JNIEnv * pEnv, const char * className) : CRJNIEnv(pEnv)
     {
-    	cls = env->FindClass(className);
+    	cls = (jclass)env()->NewGlobalRef(env()->FindClass(className));
+    }
+    CRClassAccessor(const char * className) : CRJNIEnv(NULL)
+    {
+    	cls = (jclass)currentThreadEnv()->NewGlobalRef(currentThreadEnv()->FindClass(className));
+    }
+    ~CRClassAccessor() {
+    	env()->DeleteGlobalRef(cls);
     }
     jobject newObject() {
-        jmethodID mid = env->GetMethodID(cls, "<init>", "()V");
-        jobject obj = env->NewObject(cls, mid);
+        jmethodID mid = env()->GetMethodID(cls, "<init>", "()V");
+        jobject obj = env()->NewObject(cls, mid);
+        return obj;
+    }
+    jobject newObject(jlong v) {
+        jmethodID mid = env()->GetMethodID(cls, "<init>", "(J)V");
+        jobject obj = env()->NewObject(cls, mid, v);
         return obj;
     }
 };
@@ -98,8 +125,16 @@ public:
 	CRObjectAccessor(JNIEnv * pEnv, jobject _obj)
     : CRClassAccessor(pEnv, pEnv->GetObjectClass(_obj))
     {
-    	obj = _obj;
+    	obj = env()->NewGlobalRef(_obj);
     }
+	CRObjectAccessor(jobject _obj)
+    : CRClassAccessor(NULL, currentThreadEnv()->GetObjectClass(_obj))
+    {
+    	obj = env()->NewGlobalRef(_obj);
+    }
+	~CRObjectAccessor() {
+    	env()->DeleteGlobalRef(obj);
+	}
 };
 
 class CRFieldAccessor {
@@ -144,6 +179,10 @@ public:
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj ); 
 	}
+	jobjectArray callObjArray(jobject obj)
+	{
+		return (jobjectArray)objacc->CallObjectMethod( objacc.getObject(), methodid, obj );
+	}
 	jobject callObj(jobject obj1, jobject obj2)
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj1, obj2 ); 
@@ -155,6 +194,18 @@ public:
 	jint callInt()
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid ); 
+	}
+	jint callInt(jbyteArray array)
+	{
+		return objacc->CallIntMethod( objacc.getObject(), methodid, array );
+	}
+	jlong callLong()
+	{
+		return objacc->CallLongMethod( objacc.getObject(), methodid );
+	}
+	jlong callLong(jlong v)
+	{
+		return objacc->CallLongMethod( objacc.getObject(), methodid, v );
 	}
 	void callVoid()
 	{
@@ -175,7 +226,7 @@ public:
 	lString16 get() {
 		jstring str = (jstring)objacc->GetObjectField(objacc.getObject(), fieldid);
 		lString16 res = objacc.fromJavaString(str);
-		objacc.env->DeleteLocalRef(str);
+		objacc.env()->DeleteLocalRef(str);
 		return res;
 	}
 	lString8 get8() {
@@ -183,6 +234,39 @@ public:
 	}
 	void set( const lString16& str) { objacc->SetObjectField(objacc.getObject(), fieldid, objacc.toJavaString(str)); } 
 	void set( const lString8& str) { set(Utf8ToUnicode(str)); }
+};
+
+class CRStringArrayField : public CRFieldAccessor {
+public:
+	CRStringArrayField( CRObjectAccessor & acc, const char * fieldName )
+	: CRFieldAccessor( acc, fieldName, "[Ljava/lang/String;" )
+	{
+	}
+	lString16 get(int index) {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		jstring str = (jstring)objacc->GetObjectArrayElement(array, index);
+		lString16 res = objacc.fromJavaString(str);
+		objacc.env()->DeleteLocalRef(str);
+		objacc.env()->DeleteLocalRef(array);
+		return res;
+	}
+	lString8 get8(int index) {
+		return UnicodeToUtf8(get(index));
+	}
+	void set(int index, const lString16& str) {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		jstring local = objacc.toJavaString(str);
+		objacc->SetObjectArrayElement(array, index, local);
+		objacc->DeleteLocalRef(local);
+		objacc->DeleteLocalRef(array);
+	}
+	void set(int index, const lString8& str) { set(index, Utf8ToUnicode(str)); }
+	int length() {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		int res = objacc->GetArrayLength(array);
+		objacc->DeleteLocalRef(array);
+		return res;
+	}
 };
 
 class CRIntField : public CRFieldAccessor {
@@ -203,29 +287,6 @@ public:
 	}
 	lInt64 get() { return objacc->GetLongField(objacc.getObject(), fieldid); } 
 	void set(lInt64 v) { objacc->SetLongField(objacc.getObject(), fieldid, v); } 
-};
-
-class BitmapAccessor : public CRJNIEnv {
-private:
-    jobject bitmap;
-	int width;
-	int height;
-	int format;
-	int stride;
-	lUInt8 * pixels;
-#ifndef USE_JNIGRAPHICS
-    jintArray array; 
-#endif
-public:
-	int getWidth() { return width; }
-	int getHeight() { return height; }
-	int getFormat() { return format; }
-    void draw(LVDrawBuf * buf, int x, int y); 
-    void setRowRGB( int x, int y, lUInt32 * rgb, int dx ); 
-    void setRowGray( int x, int y, lUInt8 * gray, int dx, int bpp ); 
-	bool isOk();
-	BitmapAccessor( JNIEnv * pEnv, jobject bmp );
-	~BitmapAccessor();
 };
 
 #endif

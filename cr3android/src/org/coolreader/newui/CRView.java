@@ -1,52 +1,75 @@
 package org.coolreader.newui;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.io.IOException;
+import java.io.InputStream;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.view.SurfaceHolder;
 
 public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
+	public static final String TAG = "cr3v";
+	public static final Logger log = L.create(TAG);
+	
 	public CRView(Context context) {
 		super(context);
+		mAssetManager = context.getAssets();
 		setRenderer(this);
 	}
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		drawInternal();
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
-		java.util.concurrent.Semaphore s;
-		java.util.concurrent.locks.ReentrantLock l;
-		java.lang.Thread t;
+		log.i("Java: onSurfaceChanged(" + w + "," + h + ")");
+		surfaceChangedInternal(w, h);
 	}
 	
-	/**
-	 * Call from JNI to execute CRRunnable in GUI (GL) thread
-	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
-	 */
-	public void runInGLThread(long crRunnablePtr) {
-		queueEvent(new CRRunnable(crRunnablePtr));
-	}
-	
-	public Thread createCRThread(long crRunnablePtr) {
-		return new Thread(new CRRunnable(crRunnablePtr));
-	}
-
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig cfg) {
 		// do nothing
 	}
+
 	
-	private int mNativeObject; // holds pointer to native object instance
-	native public boolean initInternal(CRConfig config);
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		surfaceDestroyedInternal();
+		super.surfaceDestroyed(holder);
+	}
+
+	// accessible from Java
+	public boolean init(CRConfig config) {
+		log.i("calling initInternal");
+		return initInternal(config);
+	}
+	
+	//=======================================================================================
+	// JNI interfacing methods
+
+	// accessible from Java
+	native private boolean initInternal(CRConfig config);
+	
+	native private boolean uninitInternal();
+
+	native private void drawInternal();
+
+	native private void surfaceChangedInternal(int x, int y);
+	
+	native private void surfaceDestroyedInternal();
+	
+	// accessible from Java JNI calls
+	
 	/**
 	 * Checks whether specified directlry or file is symbolic link.
 	 * (thread-safe)
@@ -61,6 +84,59 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 */
 	public native static void callCRRunnableInternal(long ptr);
 	
+	
+	// accessible from JNI only
+	
+	/**
+	 * Call from JNI to execute CRRunnable in GUI (GL) thread
+	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
+	 */
+	private final void runInGLThread(long crRunnablePtr) {
+		log.d("runInGLThread - in Java");
+		queueEvent(new CRRunnable(crRunnablePtr));
+	}
+
+	/**
+	 * Call from JNI to create thread with JNI CRRunnable callback.
+	 * @param crRunnablePtr
+	 * @return newly created thread
+	 */
+	private final CRThread createCRThread(long crRunnablePtr) {
+		return new CRThread(crRunnablePtr);
+	}
+	
+	/**
+	 * Call from JNI thread to sleep current thread for specified time
+	 * @param ms is millis to sleep
+	 */
+	private final void sleepMs(long ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			// ignore
+		}
+	}
+
+	private final InputStream openResourceStream(String path) {
+		try {
+			return mAssetManager.open(path, AssetManager.ACCESS_RANDOM);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	private final String[] listResourceDir(String path) {
+		try {
+			return mAssetManager.list(path);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	private long mNativeObject; // holds pointer to native object instance
+	private AssetManager mAssetManager;
+
+	// ======================================================================================================================
 	
 	static {
 		System.loadLibrary("crenginegl");
