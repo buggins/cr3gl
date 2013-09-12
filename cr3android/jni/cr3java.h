@@ -179,6 +179,10 @@ public:
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj ); 
 	}
+	jobjectArray callObjArray(jobject obj)
+	{
+		return (jobjectArray)objacc->CallObjectMethod( objacc.getObject(), methodid, obj );
+	}
 	jobject callObj(jobject obj1, jobject obj2)
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj1, obj2 ); 
