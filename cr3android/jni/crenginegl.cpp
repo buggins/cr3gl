@@ -11,30 +11,29 @@
 
 static jfieldID gNativeObjectID = 0;
 
-class DocViewNative {
+class DocViewNative : public LVAssetContainerFactory {
     CRJNIEnv _env;
     CRObjectAccessor _obj;
     CRMethodAccessor _openResourceStreamMethod;
     CRMethodAccessor _listResourceDirMethod;
     CRUIMainWidget * _widget;
-    LVContainerRef _assets;
 public:
-    DocViewNative(jobject obj)
-    : _obj(obj)
-    , _openResourceStreamMethod(_obj, "openResourceStream", "(Ljava/lang/String;)Ljava/io/InputStream;")
-    , _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
-    , _widget(NULL) {}
+    DocViewNative(jobject obj);
+
     bool create() {
     	_widget = new CRUIMainWidget();
+    	LVSetAssetContainerFactory(this);
     	return true;
     }
 
-    LVStreamRef openResource(const lString16 & path);
+    // LVAssetContainerFactory implementation
+	virtual LVContainerRef openAssetContainer(lString16 path);
 
-    LVContainerRef openResourceDir(const lString16 & path);
+	virtual LVStreamRef openAssetStream(lString16 path);
 
     ~DocViewNative() {
     	delete _widget;
+    	LVSetAssetContainerFactory(NULL);
     }
 };
 
@@ -43,10 +42,10 @@ class CRAssetDir : public LVContainer {
 	lString16 _path;
 	LVPtrVector<LVContainerItemInfo> _items;
 public:
-	class ItemInfo : public LVContainerItemInfo {
+	class FileItem : public LVContainerItemInfo {
 		lString16 _name;
 	public:
-		ItemInfo(lString16 name) : _name(name) { }
+		FileItem(lString16 name) : _name(name) { }
 		virtual lvsize_t        GetSize() const { return 0; }
 	    virtual const lChar16 * GetName() const {
 	    	return _name.c_str();
@@ -58,10 +57,37 @@ public:
 	    	return false;
 	    }
 	};
+	class DirItem : public LVContainerItemInfo {
+		lString16 _name;
+	public:
+		DirItem(lString16 name) : _name(name) { }
+		virtual lvsize_t        GetSize() const { return 0; }
+	    virtual const lChar16 * GetName() const {
+	    	return _name.c_str();
+	    }
+	    virtual lUInt32         GetFlags() const {
+	    	return 0;
+	    }
+	    virtual bool            IsContainer() const {
+	    	return true;
+	    }
+	};
 	CRAssetDir(DocViewNative * native, lString16 path, lString16Collection & items) : _native(native), _path(path) {
+		lString16 lastDir;
 		for (int i = 0; i < items.length(); i++) {
-			ItemInfo * item = new ItemInfo(items[i]);
-			_items.add(item);
+			lString16 itemPath = items[i];
+			int p = itemPath.pos("/");
+			if (p >= 0) {
+				itemPath = itemPath.substr(0, p);
+				if (itemPath == lastDir)
+					continue;
+				DirItem * item = new DirItem(itemPath);
+				lastDir = itemPath;
+				_items.add(item);
+			} else {
+				FileItem * item = new FileItem(itemPath);
+				_items.add(item);
+			}
 		}
 	}
     virtual LVContainer * GetParentContainer() { return NULL; }
@@ -78,7 +104,10 @@ public:
     	if (mode != LVOM_READ)
     		return LVStreamRef();
     	lString16 path(fname);
-    	return _native->openResource(path);
+    	lString16 base = _path;
+    	if (base.length())
+    		base += "/";
+    	return _native->openAssetStream(base + path);
     }
     /// returns object size (file size or directory entry count)
     virtual lverror_t GetSize( lvsize_t * pSize ) {
@@ -242,7 +271,7 @@ Skips at most n bytes in this stream.
      */
 };
 
-LVStreamRef DocViewNative::openResource(const lString16 & path) {
+LVStreamRef DocViewNative::openAssetStream(lString16 path) {
 	jstring str = _env.toJavaString(path);
 	jobject obj = _openResourceStreamMethod.callObj((jobject)str);
 	_env->DeleteLocalRef(str);
@@ -251,7 +280,7 @@ LVStreamRef DocViewNative::openResource(const lString16 & path) {
 	return LVStreamRef(new CRInputStream(obj));
 }
 
-LVContainerRef DocViewNative::openResourceDir(const lString16 & path) {
+LVContainerRef DocViewNative::openAssetContainer(lString16 path) {
 	jstring str = _obj.toJavaString(path);
 	jobjectArray array = _listResourceDirMethod.callObjArray(str);
 	if (!array)
@@ -270,7 +299,6 @@ DocViewNative::DocViewNative(jobject obj)
 	, _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
 	, _widget(NULL)
 {
-	_assets = openResourceDir(lString16());
 }
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
