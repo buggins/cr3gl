@@ -56,6 +56,8 @@ public class CoolReader extends Activity {
 
 		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
+		cfg.internalStorageDir = externalStorageDir;
+		
 		cfg.coverCacheDir = externalFilesDir + "/coverpages";
 		cfg.cssDir = "@css";
 		cfg.docCacheDir = externalFilesDir + "/doccache";
@@ -68,10 +70,38 @@ public class CoolReader extends Activity {
 		cfg.resourceDir = "@"; // TODO
 		
 		cfg.systemLanguage = "en"; // TODO
-		cfg.uiFontFace = "Droid Sans";
+		cfg.uiFontFace = getSDKLevel() >= ICE_CREAM_SANDWICH ? "Roboto" : "Droid Sans";
+		cfg.fallbackFontFace = "Droid Sans Fallback";
 		cfg.fontFiles = findFonts();
 		
 		return cfg;
+	}
+	
+	public final static int ICE_CREAM_SANDWICH = 14;
+	public final static int HONEYCOMB = 11;
+
+	private static int sdkInt = 0;
+	public static int getSDKLevel() {
+		if (sdkInt > 0)
+			return sdkInt;
+		// hack for Android 1.5
+		sdkInt = android.os.Build.VERSION.SDK_INT;
+//		Field fld;
+//		try {
+//			Class<?> cl = android.os.Build.VERSION.class;
+//			fld = cl.getField("SDK_INT");
+//			sdkInt = fld.getInt(cl);
+//			Log.i("cr3", "API LEVEL " + sdkInt + " detected");
+//		} catch (SecurityException e) {
+//			// ignore
+//		} catch (NoSuchFieldException e) {
+//			// ignore
+//		} catch (IllegalArgumentException e) {
+//			// ignore
+//		} catch (IllegalAccessException e) {
+//			// ignore
+//		}
+		return sdkInt;
 	}
 	
 	@Override

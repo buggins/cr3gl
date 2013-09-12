@@ -203,7 +203,7 @@ public:
     CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
-		_caption->setPadding(3);
+		_caption->setPadding(lvRect(3,3,1,3));
         //_caption->setFontSize(CRUI::FONT_SIZE_SMALL);
         _caption->setStyle("HOME_LIST_CAPTION");
 //		lvRect rc;
@@ -222,7 +222,7 @@ public:
 		_list = new CRUIListWidget(false, this);
 		_list->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
         _list->setBackground("home_frame.9.png");
-		_list->setPadding(PT_TO_PX(1));
+		_list->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
         _list->setOnItemClickListener(this);
         addChild(_list);
 
@@ -245,7 +245,7 @@ public:
 		_itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
 		_itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
 		_itemWidget->setStyle("LIST_ITEM");
-        setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+        setMargin(lvRect(PT_TO_PX(1), 0, PT_TO_PX(2), 0));
 	}
 
     void onThemeChanged() {

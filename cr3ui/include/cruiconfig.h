@@ -13,6 +13,7 @@ struct CRUIConfig {
     lString8 docCacheDir;
     lString8 i18nDir;
     lString8 uiFontFace;
+    lString8 fallbackFontFace;
     lString8 cssDir;
 
     lString8 systemLanguage;
@@ -31,6 +32,7 @@ struct CRUIConfig {
 
     /// sets resourceDir, i18ndir, hyphdir
     void setupResources(lString8 baseDir);
+    void createDefaultTheme();
     /// sets coverCache, docCache, iniFile, dbFile
     void setupUserDir(lString8 baseDir);
 

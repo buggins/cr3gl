@@ -59,27 +59,27 @@ void CRUIConfig::setupResourcesForScreenSize() {
     }
     resourceResolver->setDirList(dirs);
     int sz = deviceInfo.shortSide;
-    int sz1 = sz / 35;
-    int sz2 = sz / 26;
-    int sz3 = sz / 22;
-    int sz4 = sz / 17;
-    int sz5 = sz / 14;
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, lString8("Arial"), 0));
+    int sz1 = sz / 38;
+    int sz2 = sz / 28;
+    int sz3 = sz / 25;
+    int sz4 = sz / 20;
+    int sz5 = sz / 17;
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
 }
 
 
-void createDefaultTheme() {
+void CRUIConfig::createDefaultTheme() {
     currentTheme = new CRUITheme(lString8("BLACK"));
     currentTheme->setTextColor(0x000000);
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, lString8("Tizen Sans Medium"), 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
 
     //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
     currentTheme->setListDelimiterVertical(resourceResolver->getIcon("list_delimiter_h.png"));
@@ -148,6 +148,24 @@ void CRUIConfig::initEngine() {
     for (int i = 0; i<fontFiles.length(); i++) {
         fontMan->RegisterFont(fontFiles[i]);
     }
+    lString8 fallbackFont = fallbackFontFace;
+    bool configuredFallbackFontFound = false;
+    lString8 foundFallbackFont;
+    lString16Collection faceList;
+    fontMan->getFaceList(faceList);
+    for (int i = 0; i < faceList.length(); i++) {
+    	lString8 face = UnicodeToUtf8(faceList[i]);
+    	if (face == fallbackFont)
+    		configuredFallbackFontFound = true;
+    	if (face == "Droid Sans Fallback" || face == "Arial Unicode") // TODO: more faces
+    		foundFallbackFont = face;
+    }
+    if (!configuredFallbackFontFound)
+    	fallbackFont = foundFallbackFont;
+    if (!fallbackFont.empty()) {
+    	fontMan->SetFallbackFontFace(fallbackFont);
+    }
+
 
     //fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
     //dirs.add(UnicodeToUtf8(resourceDir));

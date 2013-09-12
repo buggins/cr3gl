@@ -16,7 +16,11 @@ public class CRConfig {
     public String docCacheDir;
     public String i18nDir;
     public String uiFontFace;
+    public String fallbackFontFace;
     public String cssDir;
+    
+    public String internalStorageDir;
+    public String sdcardDir;
 
     public String systemLanguage;
 
