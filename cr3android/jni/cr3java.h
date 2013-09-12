@@ -89,23 +89,19 @@ public:
 	jclass getClass() { return cls; }
     CRClassAccessor(JNIEnv * pEnv, jclass _class) : CRJNIEnv(pEnv)
     {
-    	cls = _class;
-    	env()->NewGlobalRef(_class);
+    	cls = (jclass)env()->NewGlobalRef(_class);
     }
     CRClassAccessor(jclass _class) : CRJNIEnv(NULL)
     {
-    	cls = _class;
-    	currentThreadEnv()->NewGlobalRef(_class);
+    	cls = (jclass)currentThreadEnv()->NewGlobalRef(_class);
     }
     CRClassAccessor(JNIEnv * pEnv, const char * className) : CRJNIEnv(pEnv)
     {
-    	cls = env()->FindClass(className);
-    	env()->NewGlobalRef(cls);
+    	cls = (jclass)env()->NewGlobalRef(env()->FindClass(className));
     }
     CRClassAccessor(const char * className) : CRJNIEnv(NULL)
     {
-    	cls = currentThreadEnv()->FindClass(className);
-    	currentThreadEnv()->NewGlobalRef(cls);
+    	cls = (jclass)currentThreadEnv()->NewGlobalRef(currentThreadEnv()->FindClass(className));
     }
     ~CRClassAccessor() {
     	env()->DeleteGlobalRef(cls);
@@ -129,14 +125,12 @@ public:
 	CRObjectAccessor(JNIEnv * pEnv, jobject _obj)
     : CRClassAccessor(pEnv, pEnv->GetObjectClass(_obj))
     {
-    	obj = _obj;
-    	env()->NewGlobalRef(obj);
+    	obj = env()->NewGlobalRef(_obj);
     }
 	CRObjectAccessor(jobject _obj)
     : CRClassAccessor(NULL, currentThreadEnv()->GetObjectClass(_obj))
     {
-    	obj = _obj;
-    	env()->NewGlobalRef(obj);
+    	obj = env()->NewGlobalRef(_obj);
     }
 	~CRObjectAccessor() {
     	env()->DeleteGlobalRef(obj);
@@ -224,6 +218,39 @@ public:
 	}
 	void set( const lString16& str) { objacc->SetObjectField(objacc.getObject(), fieldid, objacc.toJavaString(str)); } 
 	void set( const lString8& str) { set(Utf8ToUnicode(str)); }
+};
+
+class CRStringArrayField : public CRFieldAccessor {
+public:
+	CRStringArrayField( CRObjectAccessor & acc, const char * fieldName )
+	: CRFieldAccessor( acc, fieldName, "[Ljava/lang/String;" )
+	{
+	}
+	lString16 get(int index) {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		jstring str = (jstring)objacc->GetObjectArrayElement(array, index);
+		lString16 res = objacc.fromJavaString(str);
+		objacc.env()->DeleteLocalRef(str);
+		objacc.env()->DeleteLocalRef(array);
+		return res;
+	}
+	lString8 get8(int index) {
+		return UnicodeToUtf8(get(index));
+	}
+	void set(int index, const lString16& str) {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		jstring local = objacc.toJavaString(str);
+		objacc->SetObjectArrayElement(array, index, local);
+		objacc->DeleteLocalRef(local);
+		objacc->DeleteLocalRef(array);
+	}
+	void set(int index, const lString8& str) { set(index, Utf8ToUnicode(str)); }
+	int length() {
+		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		int res = objacc->GetArrayLength(array);
+		objacc->DeleteLocalRef(array);
+		return res;
+	}
 };
 
 class CRIntField : public CRFieldAccessor {

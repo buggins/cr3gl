@@ -227,6 +227,12 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.coverDirMaxSize = CRIntField(cfg,"coverDirMaxSize").get();
     crconfig.coverRenderCacheMaxItems = CRIntField(cfg,"coverRenderCacheMaxItems").get();
     crconfig.coverRenderCacheMaxBytes = CRIntField(cfg,"coverRenderCacheMaxBytes").get();
+    lString16Collection fonts;
+    CRStringArrayField fontFilesField(cfg, "fontFiles");
+    for (int i = 0; i < fontFilesField.length(); i++) {
+    	crconfig.fontFiles.add(fontFilesField.get8(i));
+    }
+    //env.fromJavaStringArray()
 
     CRLog::info("Calling initEngine");
     crconfig.initEngine();
