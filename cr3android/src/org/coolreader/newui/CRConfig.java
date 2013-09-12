@@ -1,5 +1,7 @@
 package org.coolreader.newui;
 
+import android.content.res.AssetManager;
+
 public class CRConfig {
 	public int screenX;
 	public int screenY;
@@ -29,4 +31,7 @@ public class CRConfig {
     public String[] fontDirs;
     /// separate font files to register
     public String[] fontFiles;
+    
+    public AssetManager assetManager;
+    
 }

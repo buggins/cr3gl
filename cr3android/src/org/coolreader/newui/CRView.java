@@ -1,9 +1,13 @@
 package org.coolreader.newui;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 
 public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
@@ -13,6 +17,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	
 	public CRView(Context context) {
 		super(context);
+		mAssetManager = context.getAssets();
 		setRenderer(this);
 	}
 
@@ -69,7 +74,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 * Call from JNI to execute CRRunnable in GUI (GL) thread
 	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
 	 */
-	public final void runInGLThread(long crRunnablePtr) {
+	private final void runInGLThread(long crRunnablePtr) {
 		log.d("runInGLThread - in Java");
 		queueEvent(new CRRunnable(crRunnablePtr));
 	}
@@ -79,7 +84,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 * @param crRunnablePtr
 	 * @return newly created thread
 	 */
-	public final CRThread createCRThread(long crRunnablePtr) {
+	private final CRThread createCRThread(long crRunnablePtr) {
 		return new CRThread(crRunnablePtr);
 	}
 	
@@ -87,7 +92,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 * Call from JNI thread to sleep current thread for specified time
 	 * @param ms is millis to sleep
 	 */
-	public final void sleepMs(long ms) {
+	private final void sleepMs(long ms) {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
@@ -95,10 +100,24 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		}
 	}
 
+	private final InputStream openResourceStream(String path) {
+		try {
+			return mAssetManager.open(path, AssetManager.ACCESS_RANDOM);
+		} catch (IOException e) {
+			return null;
+		}
+	}
 	
-
+	private final String[] listResourceDir(String path) {
+		try {
+			return mAssetManager.list(path);
+		} catch (IOException e) {
+			return null;
+		}
+	}
 	
 	private int mNativeObject; // holds pointer to native object instance
+	private AssetManager mAssetManager;
 
 	// ======================================================================================================================
 	

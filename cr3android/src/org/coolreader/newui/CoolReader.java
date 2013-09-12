@@ -41,21 +41,32 @@ public class CoolReader extends Activity {
 		String dataDir = null;
 		PackageManager m = getPackageManager();
 		String s = getPackageName();
+	    String externalFilesDir = getExternalFilesDir(null).getAbsolutePath();
 		try {
 		    PackageInfo p = m.getPackageInfo(s, 0);
+		    
 		    dataDir = p.applicationInfo.dataDir;
+		    log.i("DataDir = " + dataDir);
+		    log.i("ExternalFilesDir = " + dataDir);
 		} catch (NameNotFoundException e) {
 		    Log.w(TAG, "Error Package name not found ", e);
 		}
+		
+		cfg.assetManager = getAssets();
+
 		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
 		cfg.coverCacheDir = externalStorageDir + "/.cr3/coverpages";
 		cfg.cssDir = externalStorageDir + "/.cr3/css";
 		cfg.docCacheDir = externalStorageDir + "/.cr3/doccache";
 		cfg.dbFile = externalStorageDir + "/.cr3/cr3new.sqlite";
-		cfg.hyphDir = externalStorageDir + "/.cr3/hyph";
-		cfg.i18nDir = externalStorageDir + "/.cr3/i18n";
 		cfg.iniFile = externalStorageDir + "/.cr3/cr3new.ini";
-		cfg.resourceDir = externalStorageDir + "/.cr3/res"; // TODO
+		
+		
+		cfg.hyphDir = externalFilesDir + "/hyph";
+		cfg.i18nDir = externalFilesDir + "/i18n";
+		cfg.resourceDir = externalFilesDir + "/.cr3/res"; // TODO
+		
 		cfg.systemLanguage = "en"; // TODO
 		cfg.uiFontFace = "Droid Sans";
 		cfg.fontFiles = findFonts();

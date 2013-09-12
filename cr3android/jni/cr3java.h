@@ -191,6 +191,18 @@ public:
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid ); 
 	}
+	jint callInt(jbyteArray array)
+	{
+		return objacc->CallIntMethod( objacc.getObject(), methodid, array );
+	}
+	jlong callLong()
+	{
+		return objacc->CallLongMethod( objacc.getObject(), methodid );
+	}
+	jlong callLong(jlong v)
+	{
+		return objacc->CallLongMethod( objacc.getObject(), methodid, v );
+	}
 	void callVoid()
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid );

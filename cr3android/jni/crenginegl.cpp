@@ -12,11 +12,197 @@
 static jfieldID gNativeObjectID = 0;
 
 class DocViewNative {
-public:
-    JNIEnv * _env;
+    CRJNIEnv _env;
+    CRObjectAccessor _obj;
+    CRMethodAccessor _openResourceStreamMethod;
+    CRMethodAccessor _listResourceDirMethod;
     CRUIMainWidget * _widget;
-    DocViewNative(JNIEnv * env) : _env(env), _widget(NULL) {}    
+public:
+    DocViewNative(jobject obj)
+    : _obj(obj)
+    , _openResourceStreamMethod(_obj, "openResourceStream", "(Ljava/lang/String;)Ljava/io/InputStream;")
+    , _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
+    , _widget(NULL) {}
+    bool create() {
+    	_widget = new CRUIMainWidget();
+    	return true;
+    }
+
+    LVStreamRef openResource(const lString16 & path);
+
+    LVContainerRef openResourceDir(const lString16 & path);
+
+    ~DocViewNative() {
+    	delete _widget;
+    }
 };
+
+class CRInputStream : public LVStream {
+	lvoffset_t pos;
+	lvoffset_t size;
+	bool eof;
+public:
+
+	/// Seek (change file pos)
+    /**
+        \param offset is file offset (bytes) relateve to origin
+        \param origin is offset base
+        \param pNewPos points to place to store new file position
+        \return lverror_t status: LVERR_OK if success
+    */
+    virtual lverror_t Seek( lvoffset_t offset, lvseek_origin_t origin, lvpos_t * pNewPos ) {
+    	lvoffset_t newpos = pos;
+    	switch (origin) {
+    	case LVSEEK_CUR:
+    		newpos = pos + offset;
+    		break;
+    	case LVSEEK_SET:
+    		newpos = offset;
+    		break;
+    	case LVSEEK_END:
+    		newpos = size + offset;
+    		break;
+    	}
+    	if (newpos < pos) {
+    		_resetMethod.callVoid();
+    		pos = 0;
+    		eof = (size == 0);
+    	}
+    	if (newpos > pos) {
+    		lvoffset_t toSkip = newpos - pos;
+        	while (toSkip > 0) {
+        		jlong skipped = _skipMethod.callLong(toSkip);
+        		if (skipped <= 0)
+        			break;
+        		pos += skipped;
+        		toSkip -= skipped;
+    		}
+    	}
+    	if (pNewPos)
+    		*pNewPos = pos;
+		eof = (pos >= size);
+    	return LVERR_OK;
+    }
+
+    /// Get file position
+    /**
+        \return lvpos_t file position
+    */
+    virtual lvpos_t GetPos()
+    {
+        return pos;
+    }
+
+    virtual lverror_t SetSize( lvsize_t size ) {
+    	return LVERR_NOTIMPL;
+    }
+
+    /// Read
+    /**
+        \param buf is buffer to place bytes read from stream
+        \param count is number of bytes to read from stream
+        \param nBytesRead is place to store real number of bytes read from stream
+        \return lverror_t status: LVERR_OK if success
+    */
+    virtual lverror_t Read( void * buf, lvsize_t count, lvsize_t * nBytesRead ) {
+    	lUInt8 * pbuf = (lUInt8*)buf;
+    	lvsize_t bytesRead = 0;
+    	if (count <= 0) {
+    		if (nBytesRead)
+    			*nBytesRead = 0;
+    		return LVERR_OK;
+    	}
+    	int bufSize = count > 32768 ? 32768 : 0;
+    	jbyteArray array = _obj->NewByteArray(bufSize);
+    	while (count > 0 && pos < size) {
+    		int read = _readMethod.callInt(array);
+    		if (read <= 0)
+    			break;
+    		jboolean isCopy;
+    		jbyte* data = _obj->GetByteArrayElements(array, &isCopy);
+    		memcpy(pbuf, data, read);
+    	    _obj->ReleaseByteArrayElements(array, data, 0);
+    		bytesRead += read;
+    		count -= read;
+    		pbuf += read;
+    		pos += read;
+    	}
+    	_obj->DeleteLocalRef(array);
+    	eof = (pos >= size);
+    	return LVERR_OK;
+    }
+
+    virtual lverror_t Write( const void * buf, lvsize_t count, lvsize_t * nBytesWritten ) {
+    	return LVERR_NOTIMPL;
+    }
+
+    /// Check whether end of file is reached
+    /**
+        \return true if end of file reached
+    */
+    virtual bool Eof() {
+    	return eof;
+    }
+
+    /// Constructor
+    CRInputStream(jobject obj)
+    : _obj(obj)
+    , _closeMethod(_obj, "close", "()V")
+    , _readMethod(_obj, "read", "([B)I")
+    , _resetMethod(_obj, "reset", "()V")
+    , _skipMethod(_obj, "skip", "(J)J")
+    {
+    	pos = 0;
+    	size = 0;
+    	eof = false;
+    	for (;;) {
+    		jlong skipped = _skipMethod.callLong(65536);
+    		if (skipped <= 0)
+    			break;
+    		size += skipped;
+    	}
+    	_resetMethod.callVoid();
+		eof = (size == 0);
+    }
+    /// Destructor
+    virtual ~CRInputStream() {
+    	_closeMethod.callVoid();
+    }
+private:
+    CRObjectAccessor _obj;
+    CRMethodAccessor _closeMethod;
+    CRMethodAccessor _readMethod;
+    CRMethodAccessor _resetMethod;
+    CRMethodAccessor _skipMethod;
+    /*
+ void  close()
+Closes this stream.
+
+ int  read(byte[] buffer)
+Reads at most length bytes from this stream and stores them in the byte array b starting at offset.
+
+ synchronized void  reset()
+Resets this stream to the last marked location.
+
+ long  skip(long byteCount)
+Skips at most n bytes in this stream.
+     *
+     *
+     */
+};
+
+LVStreamRef DocViewNative::openResource(const lString16 & path) {
+	jstring str = _env.toJavaString(path);
+	jobject obj = _openResourceStreamMethod.callObj((jobject)str);
+	_env->DeleteLocalRef(str);
+	if (!obj)
+		return LVStreamRef();
+	return LVStreamRef(new CRInputStream(obj));
+}
+
+LVContainerRef DocViewNative::openResourceDir(const lString16 & path) {
+	return LVContainerRef();
+}
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
 {
@@ -184,7 +370,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     CRJNIEnv env(_env);
     jclass rvClass = env->FindClass("org/coolreader/newui/CRView");
     gNativeObjectID = env->GetFieldID(rvClass, "mNativeObject", "I");
-    DocViewNative * obj = new DocViewNative(_env);
+
+    DocViewNative * obj = new DocViewNative(_this);
     env->SetIntField(_this, gNativeObjectID, (jint)obj);
 
 	LOGI("initInternal called");
