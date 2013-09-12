@@ -9,6 +9,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.view.SurfaceHolder;
 
 public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
@@ -24,11 +25,14 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		drawInternal();
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
+		log.i("Java: onSurfaceChanged(" + w + "," + h + ")");
+		surfaceChangedInternal(w, h);
 	}
 	
 	@Override
@@ -36,6 +40,13 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		// do nothing
 	}
 
+	
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		surfaceDestroyedInternal();
+		super.surfaceDestroyed(holder);
+	}
 
 	// accessible from Java
 	public boolean init(CRConfig config) {
@@ -48,8 +59,14 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
 	// accessible from Java
 	native private boolean initInternal(CRConfig config);
+	
+	native private boolean uninitInternal();
 
+	native private void drawInternal();
 
+	native private void surfaceChangedInternal(int x, int y);
+	
+	native private void surfaceDestroyedInternal();
 	
 	// accessible from Java JNI calls
 	

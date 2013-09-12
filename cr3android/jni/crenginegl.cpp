@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <android/asset_manager.h>
-
+#include "crcoverpages.h"
+#include "gldrawbuf.h"
+#include "glfont.h"
 
 static jfieldID gNativeObjectID = 0;
 
@@ -32,7 +34,31 @@ public:
 
 	virtual LVStreamRef openAssetStream(lString16 path);
 
-    ~DocViewNative() {
+	virtual void uninit() {
+		crconfig.uninitEngine();
+	}
+
+	virtual void onSurfaceChanged(int dx, int dy) {
+		_widget->measure(dx, dy);
+		_widget->layout(0, 0, dx, dy);
+	}
+
+	virtual void onSurfaceDestroyed() {
+		coverPageManager->cancelAll();
+		//coverImageCache->clear();
+		fontMan->gc();
+	}
+
+	virtual void onDraw() {
+		lvRect pos = _widget->getPos();
+		CRLog::debug("Drawing CR GL %dx%d", pos.width(), pos.height());
+		GLDrawBuf buf(pos.width(), pos.height(), 32, false);
+		buf.beforeDrawing();
+		_widget->draw(&buf);
+		buf.afterDrawing();
+	}
+
+	~DocViewNative() {
     	delete _widget;
     	LVSetAssetContainerFactory(NULL);
     }
@@ -561,14 +587,70 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
 	runnable->run();
 }
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    uninitInternal
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_uninitInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	native->uninit();
+	return JNI_TRUE;
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    drawInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	//CRLog::trace("Java_org_coolreader_newui_CRView_drawInternal");
+	native->onDraw();
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    surfaceChangedInternal
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceChangedInternal
+  (JNIEnv * _env, jobject _this, jint dx, jint dy)
+{
+	DocViewNative * native = getNative(_env, _this);
+	native->onSurfaceChanged(dx, dy);
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    surfaceDestroyedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceDestroyedInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	native->onSurfaceDestroyed();
+}
+
+
 //============================================================================================================
 // register JNI methods
 
-static JNINativeMethod sCRViewMethods[] = {
-  /* name, signature, funcPtr */
-  {"initInternal", "(Lorg/coolreader/newui/CRConfig;)Z", (void*)Java_org_coolreader_newui_CRView_initInternal},
-  {"isLink", "(Ljava/lang/String;)Ljava/lang/String;", (void*)Java_org_coolreader_newui_CRView_isLink},
-  {"callCRRunnableInternal", "(J)V", (void*)Java_org_coolreader_newui_CRView_callCRRunnableInternal}
+static JNINativeMethod sCRViewMethods[] =
+{
+    /* name, signature, funcPtr */
+	{"initInternal", "(Lorg/coolreader/newui/CRConfig;)Z", (void*)Java_org_coolreader_newui_CRView_initInternal},
+	{"uninitInternal", "()Z",                              (void*)Java_org_coolreader_newui_CRView_uninitInternal},
+	{"isLink", "(Ljava/lang/String;)Ljava/lang/String;",   (void*)Java_org_coolreader_newui_CRView_isLink},
+	{"callCRRunnableInternal", "(J)V",                     (void*)Java_org_coolreader_newui_CRView_callCRRunnableInternal},
+	{"drawInternal", "()V",                                (void*)Java_org_coolreader_newui_CRView_drawInternal},
+	{"surfaceChangedInternal", "(II)V",                    (void*)Java_org_coolreader_newui_CRView_surfaceChangedInternal},
+	{"surfaceDestroyedInternal", "()V",                    (void*)Java_org_coolreader_newui_CRView_surfaceDestroyedInternal}
 };
 
 /*
