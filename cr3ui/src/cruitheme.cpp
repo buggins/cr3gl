@@ -257,7 +257,7 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 		return lString16::empty_str;
 	if (path[0] == '#') {
 		// by resource id: TODO
-	} else if (path[0] == '/') {
+	} else if (path[0] == '/' || path[0] == ASSET_PATH_PREFIX) { // @
 		// absolute path
 		if (LVFileExists(path)) {
 			return path;

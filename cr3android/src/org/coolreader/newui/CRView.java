@@ -116,7 +116,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		}
 	}
 	
-	private int mNativeObject; // holds pointer to native object instance
+	private long mNativeObject; // holds pointer to native object instance
 	private AssetManager mAssetManager;
 
 	// ======================================================================================================================

@@ -8,13 +8,38 @@ void SaveJVMPointer(JNIEnv *env) {
     int status = env->GetJavaVM(&jvm);
     if(status != 0) {
         // Fail!
+    	CRLog::fatal("cannot get JVM");
     }
 }
 
 JNIEnv * CRJNIEnv::currentThreadEnv() {
 	// get environment for current thread
-    JNIEnv *env;
-    jvm->AttachCurrentThread(&env, NULL);
+	if (!jvm) {
+		CRLog::fatal("JVM pointer is not initialized");
+	}
+    JNIEnv *env = NULL;
+    int getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+        if (jvm->AttachCurrentThread(&env, NULL) != 0) {
+            CRLog::fatal("Failed to attach to current thread");
+        }
+    } else if (getEnvStat == JNI_OK) {
+        //
+    } else if (getEnvStat == JNI_EVERSION) {
+        getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION_1_4);
+        if (getEnvStat == JNI_EDETACHED) {
+            if (jvm->AttachCurrentThread(&env, NULL) != 0) {
+                CRLog::fatal("Failed to attach to current thread");
+            }
+        } else if (getEnvStat == JNI_OK) {
+            //
+        } else if (getEnvStat == JNI_EVERSION) {
+            getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION_1_2);
+            if (getEnvStat != JNI_OK) {
+            	CRLog::fatal("Cannot get JNI environment");
+            }
+        }
+    }
     return env;
 }
 

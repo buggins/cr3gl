@@ -56,16 +56,16 @@ public class CoolReader extends Activity {
 
 		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-		cfg.coverCacheDir = externalStorageDir + "/.cr3/coverpages";
-		cfg.cssDir = externalStorageDir + "/.cr3/css";
-		cfg.docCacheDir = externalStorageDir + "/.cr3/doccache";
-		cfg.dbFile = externalStorageDir + "/.cr3/cr3new.sqlite";
-		cfg.iniFile = externalStorageDir + "/.cr3/cr3new.ini";
+		cfg.coverCacheDir = externalFilesDir + "/coverpages";
+		cfg.cssDir = "@css";
+		cfg.docCacheDir = externalFilesDir + "/doccache";
+		cfg.dbFile = externalFilesDir + "/cr3new.sqlite";
+		cfg.iniFile = externalFilesDir + "/cr3new.ini";
 		
 		
-		cfg.hyphDir = externalFilesDir + "/hyph";
-		cfg.i18nDir = externalFilesDir + "/i18n";
-		cfg.resourceDir = externalFilesDir + "/.cr3/res"; // TODO
+		cfg.hyphDir = "@hyph";
+		cfg.i18nDir = "@i18n";
+		cfg.resourceDir = "@"; // TODO
 		
 		cfg.systemLanguage = "en"; // TODO
 		cfg.uiFontFace = "Droid Sans";

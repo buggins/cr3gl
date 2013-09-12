@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <android/asset_manager.h>
+
 
 static jfieldID gNativeObjectID = 0;
 
@@ -22,7 +24,6 @@ public:
 
     bool create() {
     	_widget = new CRUIMainWidget();
-    	LVSetAssetContainerFactory(this);
     	return true;
     }
 
@@ -192,12 +193,14 @@ public:
     			*nBytesRead = 0;
     		return LVERR_OK;
     	}
-    	int bufSize = count > 32768 ? 32768 : 0;
+    	int bufSize = count > 32768 ? 32768 : count;
     	jbyteArray array = _obj->NewByteArray(bufSize);
     	while (count > 0 && pos < size) {
     		int read = _readMethod.callInt(array);
-    		if (read <= 0)
+    		if (read <= 0) {
+    			CRLog::warn("no bytes read");
     			break;
+    		}
     		jboolean isCopy;
     		jbyte* data = _obj->GetByteArrayElements(array, &isCopy);
     		memcpy(pbuf, data, read);
@@ -209,6 +212,8 @@ public:
     	}
     	_obj->DeleteLocalRef(array);
     	eof = (pos >= size);
+		if (nBytesRead)
+			*nBytesRead = bytesRead;
     	return LVERR_OK;
     }
 
@@ -224,6 +229,10 @@ public:
     	return eof;
     }
 
+    /// Destructor
+    virtual ~CRInputStream() {
+    	_closeMethod.callVoid();
+    }
     /// Constructor
     CRInputStream(jobject obj)
     : _obj(obj)
@@ -235,6 +244,7 @@ public:
     	pos = 0;
     	size = 0;
     	eof = false;
+    	// calculating size
     	for (;;) {
     		jlong skipped = _skipMethod.callLong(65536);
     		if (skipped <= 0)
@@ -244,31 +254,12 @@ public:
     	_resetMethod.callVoid();
 		eof = (size == 0);
     }
-    /// Destructor
-    virtual ~CRInputStream() {
-    	_closeMethod.callVoid();
-    }
 private:
     CRObjectAccessor _obj;
     CRMethodAccessor _closeMethod;
     CRMethodAccessor _readMethod;
     CRMethodAccessor _resetMethod;
     CRMethodAccessor _skipMethod;
-    /*
- void  close()
-Closes this stream.
-
- int  read(byte[] buffer)
-Reads at most length bytes from this stream and stores them in the byte array b starting at offset.
-
- synchronized void  reset()
-Resets this stream to the last marked location.
-
- long  skip(long byteCount)
-Skips at most n bytes in this stream.
-     *
-     *
-     */
 };
 
 LVStreamRef DocViewNative::openAssetStream(lString16 path) {
@@ -277,7 +268,8 @@ LVStreamRef DocViewNative::openAssetStream(lString16 path) {
 	_env->DeleteLocalRef(str);
 	if (!obj)
 		return LVStreamRef();
-	return LVStreamRef(new CRInputStream(obj));
+	LVStreamRef res = LVStreamRef(new CRInputStream(obj));
+	return res;
 }
 
 LVContainerRef DocViewNative::openAssetContainer(lString16 path) {
@@ -299,11 +291,12 @@ DocViewNative::DocViewNative(jobject obj)
 	, _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
 	, _widget(NULL)
 {
+	LVSetAssetContainerFactory(this);
 }
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
 {
-	DocViewNative * res = (DocViewNative *)env->GetIntField(_this, gNativeObjectID);
+	DocViewNative * res = (DocViewNative *)env->GetLongField(_this, gNativeObjectID);
 	if (res == NULL)
 		CRLog::warn("Native DocView is NULL");
 	return res;
@@ -466,10 +459,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
   (JNIEnv * _env, jobject _this, jobject _config) {
     CRJNIEnv env(_env);
     jclass rvClass = env->FindClass("org/coolreader/newui/CRView");
-    gNativeObjectID = env->GetFieldID(rvClass, "mNativeObject", "I");
-
-    DocViewNative * obj = new DocViewNative(_this);
-    env->SetIntField(_this, gNativeObjectID, (jint)obj);
+    gNativeObjectID = env->GetFieldID(rvClass, "mNativeObject", "J");
 
 	LOGI("initInternal called");
 	// set fatal error handler
@@ -482,6 +472,9 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
 	crSetSignalHandler();
 
 	SaveJVMPointer(_env);
+
+    DocViewNative * obj = new DocViewNative(_this);
+    env->SetLongField(_this, gNativeObjectID, (jlong)obj);
 
 	concurrencyProvider = new AndroidConcurrencyProvider(_this);
 
@@ -521,6 +514,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     CRLog::info("Calling initEngine");
     crconfig.initEngine();
     CRLog::info("Done initEngine");
+
+    obj->create();
 
     return JNI_TRUE;
 }
