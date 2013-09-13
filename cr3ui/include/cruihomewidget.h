@@ -36,6 +36,8 @@ public:
 	virtual void layout(int left, int top, int right, int bottom);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
+
 };
 
 class CRCoverWidget : public CRUIWidget {

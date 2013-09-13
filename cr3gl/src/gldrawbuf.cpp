@@ -1051,6 +1051,7 @@ void myGlOrtho(float left, float right, float bottom, float top,
 void GLDrawBuf::beforeDrawing()
 {
 	if (_prepareStage++ == 0) {
+    	//CRLog::trace("beforeDrawing");
 		if (_textureBuf) {
 			if (_textureId == 0 || _framebufferId == 0) {
 				createFramebuffer();
@@ -1060,7 +1061,7 @@ void GLDrawBuf::beforeDrawing()
 			if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
         glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
+        //glPushMatrix();
         checkError("glPushMatrix");
 		glLoadIdentity();
 		myGlOrtho(0, _dx, 0, _dy, -1.0f, 5.0f);
@@ -1069,7 +1070,7 @@ void GLDrawBuf::beforeDrawing()
         checkError("glViewport");
         _scene = LVGLPushScene(new GLScene());
 		glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
+        //glPushMatrix();
         checkError("glPushMatrix");
         glLoadIdentity();
     } else {
@@ -1080,6 +1081,7 @@ void GLDrawBuf::beforeDrawing()
 void GLDrawBuf::afterDrawing()
 {
     if (--_prepareStage == 0) {
+    	//CRLog::trace("afterDrawing");
 		if (_scene) {
 			_scene->draw();
 			_scene->clear();
@@ -1100,10 +1102,10 @@ void GLDrawBuf::afterDrawing()
 			checkError("afterDrawing - glBindFramebuffer");
 		}
         glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
+        //glPopMatrix();
         checkError("glPopMatrix");
         glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
+        //glPopMatrix();
         checkError("glPopMatrix");
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");

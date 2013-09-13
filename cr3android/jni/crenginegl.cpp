@@ -184,13 +184,13 @@ public:
     		return false;
 		CRUIKeyEvent * crevent = new CRUIKeyEvent(action, key, false, 0, mod);
 		bool res = _eventManager->dispatchKeyEvent(crevent);
-		delete crevent;
+		//delete crevent;
 		return res;
     }
 };
 
 
-class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateManagerCallback {
+class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateManagerCallback, public CRUIPlatform {
     CRJNIEnv _env;
     CRObjectAccessor _obj;
     CRMethodAccessor _openResourceStreamMethod;
@@ -207,6 +207,8 @@ public:
     bool create() {
     	_widget = new CRUIMainWidget();
     	_eventManager.setRootWidget(_widget);
+    	_widget->setScreenUpdater(this);
+    	_widget->setPlatform(this);
     	return true;
     }
 
@@ -263,6 +265,13 @@ public:
     /// set animation fps (0 to disable) and/or update screen instantly
     virtual void setScreenUpdateMode(bool updateNow, int animationFps) {
     	_updateScreenMethod.callVoid(updateNow ? JNI_TRUE : JNI_FALSE, animationFps > 0 ? JNI_TRUE : JNI_FALSE);
+    }
+
+
+    // CRUIPlatform methods
+    virtual void exitApp() {
+        CRMethodAccessor method(_obj, "exitApp", "()V");
+        method.callVoid();
     }
 
 	~DocViewNative() {

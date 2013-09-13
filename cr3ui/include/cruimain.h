@@ -20,6 +20,12 @@ public:
     virtual ~CRUIScreenUpdateManagerCallback() {}
 };
 
+class CRUIPlatform {
+public:
+	virtual void exitApp() = 0;
+	virtual ~CRUIPlatform() {}
+};
+
 class CRUIMainWidget;
 class NavHistoryItem {
 protected:
@@ -184,6 +190,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     LVDrawBuf * _popupBackground;
     //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
+    CRUIPlatform * _platform;
     lString8 _pendingFolder;
     lUInt64 _lastAnimationTs;
 
@@ -233,6 +240,13 @@ public:
             _screenUpdater->setScreenUpdateMode(updateNow, animationFps);
     }
     virtual void setScreenUpdater(CRUIScreenUpdateManagerCallback * screenUpdater) { _screenUpdater = screenUpdater; }
+
+    virtual void setPlatform(CRUIPlatform * platform) {
+    	_platform = platform;
+    }
+    CRUIPlatform * getPlatform() {
+    	return _platform;
+    }
 
 
     virtual int getChildCount();

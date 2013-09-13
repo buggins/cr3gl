@@ -227,8 +227,10 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     dirCache->scan(lString8(RECENT_DIR_TAG));
 }
 
-CRUIMainWidget::CRUIMainWidget() : _home(NULL), _read(NULL), _popup(NULL), _popupBackground(NULL),
-    _screenUpdater(NULL), _lastAnimationTs(0), _initialized(false)
+CRUIMainWidget::CRUIMainWidget()
+: _home(NULL), _read(NULL)
+, _popup(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
+, _platform(NULL), _lastAnimationTs(0), _initialized(false)
 {
     onThemeChanged();
 }
