@@ -129,9 +129,63 @@ public:
 		return res;
     }
 
+    enum {
+    	AKEY_BACK = 4,
+    	AKEY_MENU = 82,
+    	AKEY_VOLUMEUP = 24,
+    	AKEY_VOLUMEDOWN = 25,
+    };
+    static int translateKeyCode(int key) {
+    	switch(key) {
+    	case AKEY_BACK: return CR_KEY_BACK;
+    	case AKEY_MENU: return CR_KEY_MENU;
+    	default:
+    		return -1;
+    	}
+    }
+
+    enum {
+    	AKEY_META_SHIFT_ON = 1,
+    	AKEY_META_ALT_ON = 2,
+    	AKEY_META_SYM_ON = 4,
+    	AKEY_META_CTRL_ON = 0x00001000,
+    };
+    static int translateModifiers(int m) {
+    	int res = 0;
+    	if (m & AKEY_META_SHIFT_ON)
+    		res |= CR_KEY_MODIFIER_SHIFT;
+    	if (m & AKEY_META_CTRL_ON)
+    		res |= CR_KEY_MODIFIER_CONTROL;
+    	if (m & AKEY_META_ALT_ON)
+    		res |= CR_KEY_MODIFIER_ALT;
+    	return res;
+    }
+
+    enum {
+    	AKEYACTION_DOWN = 0,
+    	AKEYACTION_UP = 1,
+    	AKEYACTION_MULTIPLE = 2,
+    };
+    static KEY_EVENT_TYPE translateKeyAction(int action) {
+    	switch(action) {
+    	case AKEYACTION_DOWN: return KEY_ACTION_PRESS;
+    	case AKEYACTION_UP: return KEY_ACTION_RELEASE;
+    	default:
+    		return KEY_ACTION_UNKNOWN;
+    	}
+    }
+
     // key event listener
     bool dispatchKeyEvent(CRKeyEventWrapper * event) {
-    	return false;
+    	KEY_EVENT_TYPE action = translateKeyAction(event->getAction());
+    	int key = translateKeyCode(event->getKeyCode());
+    	int mod = translateModifiers(event->getModifiers());
+    	if (key < 0 || action == KEY_ACTION_UNKNOWN)
+    		return false;
+		CRUIKeyEvent * crevent = new CRUIKeyEvent(action, key, false, 0, mod);
+		bool res = _eventManager->dispatchKeyEvent(crevent);
+		delete crevent;
+		return res;
     }
 };
 
