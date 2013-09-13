@@ -224,6 +224,10 @@ public:
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid );
 	}
+	void callVoid(jboolean p1, jboolean p2)
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid, p1, p2 );
+	}
 	void callVoid(jlong v)
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, v);

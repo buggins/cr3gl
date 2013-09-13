@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <android/asset_manager.h>
 #include "crcoverpages.h"
 #include "gldrawbuf.h"
 #include "glfont.h"
@@ -137,13 +136,14 @@ public:
 };
 
 
-class DocViewNative : public LVAssetContainerFactory {
+class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateManagerCallback {
     CRJNIEnv _env;
     CRObjectAccessor _obj;
     CRMethodAccessor _openResourceStreamMethod;
     CRMethodAccessor _listResourceDirMethod;
     CRMethodAccessor _getLeftMethod;
     CRMethodAccessor _getTopMethod;
+    CRMethodAccessor _updateScreenMethod;
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
@@ -205,6 +205,11 @@ public:
 	bool handleKeyEvent(CRKeyEventWrapper * event) {
 		return _eventAdapter.dispatchKeyEvent(event);
 	}
+
+    /// set animation fps (0 to disable) and/or update screen instantly
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps) {
+    	_updateScreenMethod.callVoid(updateNow ? JNI_TRUE : JNI_FALSE, animationFps > 0 ? JNI_TRUE : JNI_FALSE);
+    }
 
 	~DocViewNative() {
     	delete _widget;
@@ -465,6 +470,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
 	, _getLeftMethod(_obj, "getLeft", "()I")
 	, _getTopMethod(_obj, "getTop", "()I")
+	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 {
@@ -517,8 +523,10 @@ void cr3androidFatalErrorHandler(int errorCode, const char * errorText )
 {
 	static char str[1001];
 	snprintf(str, 1000, "CoolReader Fatal Error #%d: %s", errorCode, errorText);
-	LOGE(str);
-	LOGASSERTFAILED(errorText, str);
+	//LOGE(str);
+	LOGE("CoolReader Fatal Error #%d: %s", errorCode, errorText);
+	//LOGASSERTFAILED(errorText, str);
+	LOGASSERTFAILED("%s  %s", errorText, str);
 }
 
 class AndroidConcurrencyProvider : public CRConcurrencyProvider {

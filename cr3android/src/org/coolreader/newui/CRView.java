@@ -199,6 +199,15 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 			// ignore
 		}
 	}
+	
+	private final void updateScreen(boolean updateNow, boolean animation) {
+		if (updateNow)
+			requestRender();
+		if (!animation)
+			setRenderMode(RENDERMODE_WHEN_DIRTY);
+		else
+			setRenderMode(RENDERMODE_CONTINUOUSLY);
+	}
 
 	private final InputStream openResourceStream(String path) {
 		try {
