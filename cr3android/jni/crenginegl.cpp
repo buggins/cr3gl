@@ -17,19 +17,122 @@ static jfieldID gNativeObjectID = 0;
 
 class CRUIEventAdapter {
     CRUIEventManager * _eventManager;
-    CRUIMotionEventItem * _activePointer;
+	LVPtrVector<CRUIMotionEventItem> _activePointers;
+	int findPointer(lUInt64 id) {
+		for (int i=0; i<_activePointers.length(); i++)
+			if (_activePointers[i]->getPointerId() == id)
+				return i;
+		return -1;
+	}
 public:
-    CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager), _activePointer(NULL) {
+    CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager) {
 
     }
-    // touch event listener
-    void dispatchTouchEvent(CRTouchEventWrapper * event) {
 
+    #define MAX_DOWN_DURATION 60*1000
+
+    // android action codes
+    enum {
+    	AACTION_DOWN = 0,
+    	AACTION_UP = 1,
+    	AACTION_MOVE = 2,
+    	AACTION_CANCEL = 3,
+    	AACTION_OUTSIDE = 4,
+    	AACTION_POINTER_DOWN = 5,
+    	AACTION_POINTER_UP = 6,
+    	AACTION_SCROLL = 8,
+
+    };
+    static int translateTouchAction(int action) {
+    	switch(action) {
+    	case AACTION_POINTER_DOWN:
+    	case AACTION_DOWN:
+    		return CRUI::ACTION_DOWN;
+    	case AACTION_POINTER_UP:
+    	case AACTION_UP:
+    		return CRUI::ACTION_UP;
+    	case AACTION_MOVE:
+    		return CRUI::ACTION_MOVE;
+    	case AACTION_CANCEL:
+    		return CRUI::ACTION_CANCEL;
+    	case AACTION_OUTSIDE:
+    		return CRUI::ACTION_FOCUS_OUT;
+    	case AACTION_SCROLL:
+    	default:
+    		return -1;
+    	}
+    }
+
+    // touch event listener
+    bool dispatchTouchEvent(CRTouchEventWrapper * event, int x0, int y0) {
+    	int pointerCount = event->getPointerCount();
+    	int action = translateTouchAction(event->getAction());
+    	if (action < 0) {
+    		CRLog::trace("ignoring unknown touch event %d", event->getAction());
+    		return false; // ignore unknown actions
+    	}
+    	int actionIndex = event->getActionIndex();
+    	int actionPointerId = event->getPointerId(0);
+    	lUInt64 ts = event->getEventTime();
+		CRUIMotionEventItem * actionItem = NULL;
+		//CRLog::trace("pointerCount = %d action = %d actionIndex = %d actionPointerId = %d", pointerCount, action, actionIndex, actionPointerId);
+    	for (int i = 0; i < pointerCount; i++) {
+    		int x = event->getX(i) - x0;
+    		int y = event->getY(i) - y0;
+    		int pointerId = event->getPointerId(i);
+    		int pointerAction = CRUI::ACTION_MOVE;
+    		if (actionIndex == i) {
+    			actionPointerId = pointerId;
+    			pointerAction = action;
+    		}
+    		int p = findPointer(pointerId);
+    		CRUIMotionEventItem * item = NULL;
+    		if (p >= 0) {
+    			CRUIMotionEventItem * olditem = _activePointers[p];
+    			//CRLog::trace("found old pointer %d,%d", olditem->getX(), olditem->getStartY());
+    			item = new CRUIMotionEventItem(olditem, pointerId, pointerAction, x, y, ts);
+    			//delete olditem;
+    			_activePointers.set(p, item);
+    		} else {
+    			item = new CRUIMotionEventItem(NULL, pointerId, pointerAction, x, y, ts);
+    			_activePointers.add(item);
+    		}
+    		if (actionIndex == i) {
+    			//CRLog::trace("action item found with index = %d", i);
+    			actionItem = item;
+    		}
+    	}
+		CRUIMotionEvent * crevent = new CRUIMotionEvent();
+		// add current action item
+		if (actionItem)
+			crevent->addEvent(actionItem);
+		// add other items
+		int activeActionItemIndex = -1;
+		for (int i = _activePointers.length() - 1; i >= 0; i--) {
+			CRUIMotionEventItem * item = _activePointers[i];
+			if (item->getDownDuration() > MAX_DOWN_DURATION) {
+				// remove obsolete item
+				// TODO: send CANCEL events?
+				delete _activePointers.remove(i);
+				continue;
+			}
+			if (item != actionItem)
+				crevent->addEvent(item);
+			else
+				activeActionItemIndex = i;
+		}
+		//CRLog::trace("Posting touch event ptr=%d action=%d (%d,%d)", (int)crevent->getPointerId(), crevent->getAction(), crevent->getX(), crevent->getY());
+		bool res = _eventManager->dispatchTouchEvent(crevent);
+		delete crevent;
+		if (activeActionItemIndex >= 0 && actionItem && (actionItem->getAction() == CRUI::ACTION_UP || actionItem->getAction() == CRUI::ACTION_CANCEL)) {
+			delete _activePointers.remove(activeActionItemIndex);
+		}
+		return res;
     }
 
     // key event listener
-    void dispatchKeyEvent(CRKeyEventWrapper * event) {
-
+    bool dispatchKeyEvent(CRKeyEventWrapper * event) {
+    	return false;
     }
 };
 
@@ -39,6 +142,8 @@ class DocViewNative : public LVAssetContainerFactory {
     CRObjectAccessor _obj;
     CRMethodAccessor _openResourceStreamMethod;
     CRMethodAccessor _listResourceDirMethod;
+    CRMethodAccessor _getLeftMethod;
+    CRMethodAccessor _getTopMethod;
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
@@ -74,6 +179,16 @@ public:
 
 	virtual void onDraw() {
 		lvRect pos = _widget->getPos();
+
+		bool needLayout, needDraw, animating;
+		CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
+		_widget->invalidate();
+		if (needLayout) {
+			//CRLog::trace("need layout");
+			_widget->measure(pos.width(), pos.height());
+			_widget->layout(0, 0, pos.width(), pos.height());
+		}
+
 		//CRLog::debug("Drawing CR GL %dx%d", pos.width(), pos.height());
 		GLDrawBuf buf(pos.width(), pos.height(), 32, false);
 		buf.beforeDrawing();
@@ -81,12 +196,14 @@ public:
 		buf.afterDrawing();
 	}
 
-	void handleTouchEvent(CRTouchEventWrapper & event) {
-		_eventAdapter.dispatchTouchEvent(&event);
+	bool handleTouchEvent(CRTouchEventWrapper * event) {
+		int x0 = _getLeftMethod.callInt();
+		int y0 = _getTopMethod.callInt();
+		return _eventAdapter.dispatchTouchEvent(event, x0, y0);
 	}
 
-	void handleKeyEvent(CRKeyEventWrapper & event) {
-		_eventAdapter.dispatchKeyEvent(&event);
+	bool handleKeyEvent(CRKeyEventWrapper * event) {
+		return _eventAdapter.dispatchKeyEvent(event);
 	}
 
 	~DocViewNative() {
@@ -346,6 +463,8 @@ DocViewNative::DocViewNative(jobject obj)
 	: _obj(obj)
 	, _openResourceStreamMethod(_obj, "openResourceStream", "(Ljava/lang/String;)Ljava/io/InputStream;")
 	, _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
+	, _getLeftMethod(_obj, "getLeft", "()I")
+	, _getTopMethod(_obj, "getTop", "()I")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 {
@@ -687,7 +806,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleKeyEventIntern
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRKeyEventWrapper event(_env, _event);
-	return JNI_TRUE;
+	jboolean res = native->handleKeyEvent(&event) ? JNI_TRUE : JNI_FALSE;
+	return res;
 }
 
 /*
@@ -700,7 +820,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInte
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRTouchEventWrapper event(_env, _event);
-    return JNI_TRUE;
+	jboolean res = native->handleTouchEvent(&event) ? JNI_TRUE : JNI_FALSE;
+    return res;
 }
 
 

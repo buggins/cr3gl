@@ -2,6 +2,9 @@ package org.coolreader.newui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -22,6 +25,9 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		super(context);
 		mAssetManager = context.getAssets();
 		setRenderer(this);
+		setFocusable(true);
+		setFocusableInTouchMode(true);
+		requestFocus();
 	}
 
 	@Override
@@ -59,6 +65,11 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	public void onResume() {
 		super.onResume();
 	}
+	
+	/// call when application is being closed
+	public void uninit() {
+		uninitInternal();
+	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, final KeyEvent event) {
@@ -67,6 +78,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 			@Override
 			public void run() {
 				handleKeyEventInternal(event);
+				requestRender();
 			}
 		});
 		return true;
@@ -75,25 +87,43 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@Override
 	public boolean onKeyUp(int keyCode, final KeyEvent event) {
 		// process in GL thread
-		queueEvent(new Runnable() {
+		FutureTask<Boolean> f = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
-			public void run() {
-				handleKeyEventInternal(event);
+			public Boolean call() throws Exception {
+				return handleKeyEventInternal(event);
 			}
 		});
-		return true;
+		queueEvent(f);
+		for (;;) {
+			try {
+				return f.get();
+			} catch (InterruptedException e) {
+				// retry
+			} catch (ExecutionException e) {
+				return false;
+			}
+		}
 	}
 
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		// process in GL thread
-		queueEvent(new Runnable() {
+		FutureTask<Boolean> f = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
-			public void run() {
-				handleTouchEventInternal(event);
+			public Boolean call() throws Exception {
+				return handleTouchEventInternal(event);
 			}
 		});
-		return true;
+		queueEvent(f);
+		for (;;) {
+			try {
+				return f.get();
+			} catch (InterruptedException e) {
+				// retry
+			} catch (ExecutionException e) {
+				return false;
+			}
+		}
 	}
 
 	// accessible from Java

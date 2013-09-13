@@ -122,8 +122,14 @@ public class CoolReader extends Activity {
     protected void onResume() {
         super.onResume();
         crview.onResume();
-    }	
-	
+    }
+    
+	@Override
+	protected void onDestroy() {
+		crview.uninit();
+		super.onDestroy();
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.

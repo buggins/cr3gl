@@ -200,6 +200,14 @@ public:
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid, v );
 	}
+	jfloat callFloat()
+	{
+		return objacc->CallFloatMethod( objacc.getObject(), methodid);
+	}
+	jfloat callFloat(jint v)
+	{
+		return objacc->CallFloatMethod( objacc.getObject(), methodid, v );
+	}
 	jint callInt(jbyteArray array)
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid, array );
@@ -397,11 +405,11 @@ class CRTouchEventWrapper {
 	CRMethodAccessor getActionIndexMethod;
 	CRMethodAccessor getEventTimeMethod;
 public:
-	CRTouchEventWrapper(JNIEnv * jni, jobject obj)
-	: event(jni, obj)
+	CRTouchEventWrapper(JNIEnv * _env, jobject obj)
+	: event(_env, obj)
 	, getPointerCountMethod(event, "getPointerCount", "()I")
-	, getXMethod(event, "getX", "(I)I")
-	, getYMethod(event, "getY", "(I)I")
+	, getXMethod(event, "getX", "(I)F")
+	, getYMethod(event, "getY", "(I)F")
 	, getPointerIdMethod(event, "getPointerId", "(I)I")
 	, getToolTypeMethod(event, "getToolType", "(I)I")
 	, getButtonStateMethod(event, "getButtonState", "()I")
@@ -415,16 +423,16 @@ public:
 		return getPointerCountMethod.callInt();
 	}
 	int getX(jint index) {
-		return getPointerCountMethod.callInt(index);
+		return (int)getXMethod.callFloat(index);
 	}
 	int getY(jint index) {
-		return getPointerCountMethod.callInt(index);
+		return (int)getYMethod.callFloat(index);
 	}
 	int getPointerId(jint index) {
-		return getPointerCountMethod.callInt(index);
+		return getPointerIdMethod.callInt(index);
 	}
 	int getToolType(jint index) {
-		return getPointerCountMethod.callInt(index);
+		return getToolTypeMethod.callInt(index);
 	}
 	int getAction() {
 		return getActionMethod.callInt();
