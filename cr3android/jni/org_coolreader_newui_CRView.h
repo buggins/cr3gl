@@ -49,6 +49,22 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceDestroyedInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    handleKeyEventInternal
+ * Signature: (Landroid/view/KeyEvent;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleKeyEventInternal
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    handleTouchEventInternal
+ * Signature: (Landroid/view/MotionEvent;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInternal
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    isLink
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */

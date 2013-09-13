@@ -7,6 +7,7 @@
 
 #include <jni.h>
 #include <android/log.h>
+#include "cruievent.h"
 
 #define  LOG_TAG    "cr3eng"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -195,6 +196,10 @@ public:
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid ); 
 	}
+	jint callInt(jint v)
+	{
+		return objacc->CallIntMethod( objacc.getObject(), methodid, v );
+	}
 	jint callInt(jbyteArray array)
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid, array );
@@ -214,6 +219,70 @@ public:
 	void callVoid(jlong v)
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, v);
+	}
+};
+
+class CRStaticMethodAccessor {
+protected:
+	CRClassAccessor & objacc;
+	jmethodID methodid;
+public:
+	CRStaticMethodAccessor( CRClassAccessor & acc, const char * methodName, const char * signature )
+	: objacc(acc)
+	{
+		methodid = objacc->GetStaticMethodID( objacc.getClass(), methodName, signature );
+	}
+	jobject callObj()
+	{
+		return objacc->CallStaticObjectMethod( objacc.getClass(), methodid );
+	}
+	jobject callObj(jlong v)
+	{
+		return objacc->CallStaticObjectMethod( objacc.getClass(), methodid, v );
+	}
+	jobject callObj(jobject obj)
+	{
+		return objacc->CallStaticObjectMethod( objacc.getClass(), methodid, obj );
+	}
+	jobjectArray callObjArray(jobject obj)
+	{
+		return (jobjectArray)objacc->CallStaticObjectMethod( objacc.getClass(), methodid, obj );
+	}
+	jobject callObj(jobject obj1, jobject obj2)
+	{
+		return objacc->CallStaticObjectMethod( objacc.getClass(), methodid, obj1, obj2 );
+	}
+	jboolean callBool()
+	{
+		return objacc->CallStaticBooleanMethod( objacc.getClass(), methodid );
+	}
+	jint callInt()
+	{
+		return objacc->CallStaticIntMethod( objacc.getClass(), methodid );
+	}
+	jint callInt(jint v)
+	{
+		return objacc->CallStaticIntMethod( objacc.getClass(), methodid, v );
+	}
+	jint callInt(jbyteArray array)
+	{
+		return objacc->CallStaticIntMethod( objacc.getClass(), methodid, array );
+	}
+	jlong callLong()
+	{
+		return objacc->CallStaticLongMethod( objacc.getClass(), methodid );
+	}
+	jlong callLong(jlong v)
+	{
+		return objacc->CallStaticLongMethod( objacc.getClass(), methodid, v );
+	}
+	void callVoid()
+	{
+		return objacc->CallStaticVoidMethod( objacc.getClass(), methodid );
+	}
+	void callVoid(jlong v)
+	{
+		return objacc->CallStaticVoidMethod( objacc.getClass(), methodid, v);
 	}
 };
 
@@ -287,6 +356,91 @@ public:
 	}
 	lInt64 get() { return objacc->GetLongField(objacc.getObject(), fieldid); } 
 	void set(lInt64 v) { objacc->SetLongField(objacc.getObject(), fieldid, v); } 
+};
+
+/// wrapper for Android KeyEvent
+class CRKeyEventWrapper {
+	CRObjectAccessor event;
+	CRMethodAccessor getActionMethod;
+	CRMethodAccessor getKeyCodeMethod;
+	CRMethodAccessor getModifiersMethod;
+public:
+	CRKeyEventWrapper(JNIEnv * jni, jobject obj)
+	: event(jni, obj)
+	, getActionMethod(event, "getAction", "()I")
+	, getKeyCodeMethod(event, "getKeyCode", "()I")
+	, getModifiersMethod(event, "getModifiers", "()I")
+	{
+
+	}
+	int getAction() {
+		return getActionMethod.callInt();
+	}
+	int getKeyCode() {
+		return getKeyCodeMethod.callInt();
+	}
+	int getModifiers() {
+		return getModifiersMethod.callInt();
+	}
+};
+
+/// wrapper for Android TouchEvent
+class CRTouchEventWrapper {
+	CRObjectAccessor event;
+	CRMethodAccessor getPointerCountMethod;
+	CRMethodAccessor getXMethod;
+	CRMethodAccessor getYMethod;
+	CRMethodAccessor getPointerIdMethod;
+	CRMethodAccessor getToolTypeMethod;
+	CRMethodAccessor getButtonStateMethod;
+	CRMethodAccessor getActionMethod;
+	CRMethodAccessor getActionIndexMethod;
+	CRMethodAccessor getEventTimeMethod;
+public:
+	CRTouchEventWrapper(JNIEnv * jni, jobject obj)
+	: event(jni, obj)
+	, getPointerCountMethod(event, "getPointerCount", "()I")
+	, getXMethod(event, "getX", "(I)I")
+	, getYMethod(event, "getY", "(I)I")
+	, getPointerIdMethod(event, "getPointerId", "(I)I")
+	, getToolTypeMethod(event, "getToolType", "(I)I")
+	, getButtonStateMethod(event, "getButtonState", "()I")
+	, getActionMethod(event, "getAction", "()I")
+	, getActionIndexMethod(event, "getActionIndex", "()I")
+	, getEventTimeMethod(event, "getEventTime", "()J")
+	{
+
+	}
+	int getPointerCount() {
+		return getPointerCountMethod.callInt();
+	}
+	int getX(jint index) {
+		return getPointerCountMethod.callInt(index);
+	}
+	int getY(jint index) {
+		return getPointerCountMethod.callInt(index);
+	}
+	int getPointerId(jint index) {
+		return getPointerCountMethod.callInt(index);
+	}
+	int getToolType(jint index) {
+		return getPointerCountMethod.callInt(index);
+	}
+	int getAction() {
+		return getActionMethod.callInt();
+	}
+	int getActionIndex() {
+		return getActionIndexMethod.callInt();
+	}
+	lUInt64 getEventTime() {
+		// convert uptime to system time
+		jlong ts = getEventTimeMethod.callLong();
+		CRClassAccessor systemClockClass(event.env(), "android/os/SystemClock");
+		CRStaticMethodAccessor uptimeMillisMethod(systemClockClass, "uptimeMillis", "()J");
+		jlong currentUptimeMillis = uptimeMillisMethod.callLong();
+		jlong currentTimeMillis = GetCurrentTimeMillis();
+		return (lUInt64)(currentTimeMillis - (currentUptimeMillis - ts));
+	}
 };
 
 #endif

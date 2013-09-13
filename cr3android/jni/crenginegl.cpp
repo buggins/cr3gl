@@ -15,17 +15,39 @@
 
 static jfieldID gNativeObjectID = 0;
 
+class CRUIEventAdapter {
+    CRUIEventManager * _eventManager;
+    CRUIMotionEventItem * _activePointer;
+public:
+    CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager), _activePointer(NULL) {
+
+    }
+    // touch event listener
+    void dispatchTouchEvent(CRTouchEventWrapper * event) {
+
+    }
+
+    // key event listener
+    void dispatchKeyEvent(CRKeyEventWrapper * event) {
+
+    }
+};
+
+
 class DocViewNative : public LVAssetContainerFactory {
     CRJNIEnv _env;
     CRObjectAccessor _obj;
     CRMethodAccessor _openResourceStreamMethod;
     CRMethodAccessor _listResourceDirMethod;
     CRUIMainWidget * _widget;
+    CRUIEventManager _eventManager;
+    CRUIEventAdapter _eventAdapter;
 public:
     DocViewNative(jobject obj);
 
     bool create() {
     	_widget = new CRUIMainWidget();
+    	_eventManager.setRootWidget(_widget);
     	return true;
     }
 
@@ -57,6 +79,14 @@ public:
 		buf.beforeDrawing();
 		_widget->draw(&buf);
 		buf.afterDrawing();
+	}
+
+	void handleTouchEvent(CRTouchEventWrapper & event) {
+		_eventAdapter.dispatchTouchEvent(&event);
+	}
+
+	void handleKeyEvent(CRKeyEventWrapper & event) {
+		_eventAdapter.dispatchKeyEvent(&event);
 	}
 
 	~DocViewNative() {
@@ -317,6 +347,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _openResourceStreamMethod(_obj, "openResourceStream", "(Ljava/lang/String;)Ljava/io/InputStream;")
 	, _listResourceDirMethod(_obj, "listResourceDir", "(Ljava/lang/String;)[Ljava/lang/String;")
 	, _widget(NULL)
+	, _eventAdapter(&_eventManager)
 {
 	LVSetAssetContainerFactory(this);
 }
@@ -370,8 +401,6 @@ void cr3androidFatalErrorHandler(int errorCode, const char * errorText )
 	LOGE(str);
 	LOGASSERTFAILED(errorText, str);
 }
-
-class AndroidGuiExecutorObject;
 
 class AndroidConcurrencyProvider : public CRConcurrencyProvider {
     CRObjectAccessor crviewObject;
@@ -451,10 +480,11 @@ public:
     virtual CRThread * createThread(CRRunnable * threadTask) {
         return new AndroidThread(crviewCreateCRThread.callObj((jlong)threadTask));
     }
+
+    /// task will be deleted after execution
     virtual void executeGui(CRRunnable * task) {
-    	CRLog::trace("executeGui - enter in JNI");
+    	// run in GL thread
     	crviewRunInGLThread.callVoid((jlong)task);
-    	CRLog::trace("executeGui - exit in JNI");
     }
 
     AndroidConcurrencyProvider(jobject _crviewObject) :
@@ -594,6 +624,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
 {
 	CRRunnable * runnable = (CRRunnable*)ptr;
 	runnable->run();
+	delete runnable;
 }
 
 /*
@@ -646,6 +677,32 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceDestroyedInternal
 	native->onSurfaceDestroyed();
 }
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    handleKeyEventInternal
+ * Signature: (Landroid/view/KeyEvent;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleKeyEventInternal
+  (JNIEnv * _env, jobject _this, jobject _event)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRKeyEventWrapper event(_env, _event);
+	return JNI_TRUE;
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    handleTouchEventInternal
+ * Signature: (Landroid/view/MotionEvent;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInternal
+  (JNIEnv * _env, jobject _this, jobject _event)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRTouchEventWrapper event(_env, _event);
+    return JNI_TRUE;
+}
+
 
 //============================================================================================================
 // register JNI methods
@@ -659,7 +716,9 @@ static JNINativeMethod sCRViewMethods[] =
 	{"callCRRunnableInternal", "(J)V",                     (void*)Java_org_coolreader_newui_CRView_callCRRunnableInternal},
 	{"drawInternal", "()V",                                (void*)Java_org_coolreader_newui_CRView_drawInternal},
 	{"surfaceChangedInternal", "(II)V",                    (void*)Java_org_coolreader_newui_CRView_surfaceChangedInternal},
-	{"surfaceDestroyedInternal", "()V",                    (void*)Java_org_coolreader_newui_CRView_surfaceDestroyedInternal}
+	{"surfaceDestroyedInternal", "()V",                    (void*)Java_org_coolreader_newui_CRView_surfaceDestroyedInternal},
+	{"handleKeyEventInternal", "(Landroid/view/KeyEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleKeyEventInternal},
+	{"handleTouchEventInternal", "(Landroid/view/MotionEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleTouchEventInternal}
 };
 
 /*

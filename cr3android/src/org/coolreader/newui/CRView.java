@@ -9,6 +9,8 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
@@ -40,12 +42,58 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		// do nothing
 	}
 
-	
-
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		surfaceDestroyedInternal();
 		super.surfaceDestroyed(holder);
+	}
+	
+	
+
+	@Override
+	public void onPause() {
+		super.onPause();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, final KeyEvent event) {
+		// process in GL thread
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				handleKeyEventInternal(event);
+			}
+		});
+		return true;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, final KeyEvent event) {
+		// process in GL thread
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				handleKeyEventInternal(event);
+			}
+		});
+		return true;
+	}
+
+	@Override
+	public boolean onTouchEvent(final MotionEvent event) {
+		// process in GL thread
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				handleTouchEventInternal(event);
+			}
+		});
+		return true;
 	}
 
 	// accessible from Java
@@ -67,6 +115,11 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	native private void surfaceChangedInternal(int x, int y);
 	
 	native private void surfaceDestroyedInternal();
+
+	native private boolean handleKeyEventInternal(KeyEvent event);
+
+	native private boolean handleTouchEventInternal(MotionEvent event);
+
 	
 	// accessible from Java JNI calls
 	
