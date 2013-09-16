@@ -40,19 +40,29 @@ void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 color
 }
 
 class CRUIDocView : public LVDocView {
-    CRUIImageRef background;
-    CRUIImageRef backgroundScrollLeft;
-    CRUIImageRef backgroundScrollRight;
+    //CRUIImageRef background;
+    //CRUIImageRef backgroundScrollLeft;
+    //CRUIImageRef backgroundScrollRight;
 public:
     CRUIDocView() : LVDocView() {
         //background = resourceResolver->getIcon("leather.jpg", true);
     }
     /// clears page background
     virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
-        background = resourceResolver->getIcon("paper1.jpg", true);
+    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
+        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
+        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
         lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
         background->draw(&drawbuf, rc, offsetX, offsetY);
         drawbuf.FillRect(rc, 0xE0E0C040);
+        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
+			lvRect leftrc = rc;
+			leftrc.right = leftrc.left + backgroundScrollLeft->originalWidth();
+			backgroundScrollLeft->draw(&drawbuf, leftrc, 0, offsetY);
+			lvRect rightrc = rc;
+			rightrc.left = rightrc.right - backgroundScrollRight->originalWidth();
+			backgroundScrollRight->draw(&drawbuf, rightrc, 0, offsetY);
+        }
     }
 };
 
