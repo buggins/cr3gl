@@ -399,6 +399,10 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     return true;
 }
 
+void CRUIReadWidget::clearImageCaches() {
+	_scrollCache.clear();
+}
+
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     if (_locked)
         return false;

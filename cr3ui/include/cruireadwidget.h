@@ -112,6 +112,8 @@ public:
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
 
+    virtual void clearImageCaches();
+
     /// motion event handler, returns true if it handled event
     bool onTouchEvent(const CRUIMotionEvent * event);
     bool onKeyEvent(const CRUIKeyEvent * event);

@@ -9,7 +9,7 @@ import java.util.concurrent.FutureTask;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 import android.view.KeyEvent;
@@ -22,9 +22,9 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	public static final Logger log = L.create(TAG);
 	
 	private CoolReader activity; 
-	public CRView(CoolReader context) {
+	public CRView(Context context) {
 		super(context);
-		this.activity = context;
+		this.activity = (CoolReader)context;
 		mAssetManager = context.getAssets();
 		setRenderer(this);
 		setFocusable(true);
@@ -52,14 +52,18 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		surfaceDestroyedInternal();
 		super.surfaceDestroyed(holder);
 	}
 	
-	
-
 	@Override
 	public void onPause() {
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				// clear GL caches
+				surfaceDestroyedInternal();
+			}
+		});
 		super.onPause();
 	}
 

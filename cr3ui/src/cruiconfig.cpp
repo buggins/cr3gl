@@ -123,6 +123,15 @@ void CRUIConfig::createDefaultTheme() {
     toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
 }
 
+/// on GL context close, delete all GL objects
+void CRUIConfig::clearGraphicsCaches() {
+	coverPageManager->cancelAll();
+	coverPageManager->clearImageCache();
+	resourceResolver->clearImageCache();
+	LVGLClearImageCache();
+	fontMan->clearGlyphCache();
+}
+
 void CRUIConfig::initEngine() {
 
     if (systemLanguage.empty())

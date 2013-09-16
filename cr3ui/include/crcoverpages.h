@@ -43,6 +43,9 @@ public:
     /// cancels all pending coverpage tasks
     void cancelAll();
 
+    /// removes all cached images from memory
+    void clearImageCache();
+
     /// set callback to run when all tasks are finished
     void setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback);
 

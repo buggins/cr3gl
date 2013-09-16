@@ -718,6 +718,7 @@ lUInt32 GLFontManager::GetFontListHash(int documentId)
 void GLFontManager::clearGlyphCache()
 {
 	_base->clearGlyphCache();
+	_cache->clear();
 }
 
 /// get antialiasing mode
@@ -772,3 +773,4 @@ void GLFontManager::SetHintingMode(hinting_mode_t mode)
 hinting_mode_t GLFontManager::GetHintingMode() {
 	return _base->GetHintingMode();
 }
+

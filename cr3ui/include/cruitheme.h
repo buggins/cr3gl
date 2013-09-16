@@ -110,6 +110,7 @@ public:
     void setDirList(lString8Collection & dirList);
 	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList), _imageSourceMap(1000), _iconMap(1000) { }
 	LVImageSourceRef getImageSource(const char * name);
+	void clearImageCache();
 	CRUIImageRef getIcon(const char * name, bool tiled= false);
 	virtual ~CRResourceResolver() {}
 };

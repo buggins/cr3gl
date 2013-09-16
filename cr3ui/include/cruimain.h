@@ -282,6 +282,9 @@ public:
     virtual void onDocumentRenderFinished(lString8 pathname);
 
     virtual void onThemeChanged();
+
+    virtual void clearImageCaches();
+
     CRUIMainWidget();
     virtual ~CRUIMainWidget();
 };

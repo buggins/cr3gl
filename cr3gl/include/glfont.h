@@ -35,7 +35,6 @@ struct GLGlyphCacheItem {
 	void draw(int x, int y, lUInt32 color, lvRect * clip);
 };
 
-
 class GLGlyphCache {
 	LVHashTable<lUInt64, GLGlyphCacheItem*> _map;
 	LVPtrVector<GLGlyphCachePage, true> _pages;

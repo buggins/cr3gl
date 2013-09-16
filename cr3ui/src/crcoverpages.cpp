@@ -726,6 +726,13 @@ void CRCoverPageManager::cancelAll() {
     }
 }
 
+/// removes all cached images from memory
+void CRCoverPageManager::clearImageCache() {
+    CRGuard guard(_monitor);
+    CRLog::trace("CRCoverPageManager::clearImageCache()");
+    coverImageCache->clear();
+}
+
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);

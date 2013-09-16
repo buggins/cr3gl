@@ -201,6 +201,9 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
+	bool _surfaceCreated;
+	int _dx;
+	int _dy;
 public:
     DocViewNative(jobject obj);
 
@@ -222,18 +225,32 @@ public:
 	}
 
 	virtual void onSurfaceChanged(int dx, int dy) {
-		crconfig.setupResourcesForScreenSize();
-		_widget->measure(dx, dy);
-		_widget->layout(0, 0, dx, dy);
+		_dx = dx;
+		_dy = dy;
+	}
+
+	virtual void clearImageCaches() {
+		if (_widget)
+			_widget->clearImageCaches();
+		crconfig.clearGraphicsCaches();
 	}
 
 	virtual void onSurfaceDestroyed() {
-		coverPageManager->cancelAll();
-		//coverImageCache->clear();
-		fontMan->gc();
+		clearImageCaches();
+		_surfaceCreated = false;
 	}
 
 	virtual void onDraw() {
+
+		if (!_surfaceCreated) {
+			clearImageCaches();
+			_surfaceCreated = true;
+			crconfig.setupResourcesForScreenSize();
+			_widget->measure(_dx, _dy);
+			_widget->layout(0, 0, _dx, _dy);
+		}
+
+
 		lvRect pos = _widget->getPos();
 
 		bool needLayout, needDraw, animating;
@@ -536,6 +553,9 @@ DocViewNative::DocViewNative(jobject obj)
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
+	, _surfaceCreated(false)
+	, _dx(480)
+	, _dy(320)
 {
 	LVSetAssetContainerFactory(this);
 }

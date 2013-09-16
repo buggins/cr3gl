@@ -292,6 +292,11 @@ void CRResourceResolver::setDirList(lString8Collection & dirList) {
     _dirList.addAll(dirList);
 }
 
+void CRResourceResolver::clearImageCache() {
+	_imageSourceMap.clear();
+	_iconMap.clear();
+}
+
 LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	lString8 name8(name);
 	LVImageSourceRef res = _imageSourceMap.get(name8);

@@ -680,6 +680,7 @@ bool CRUIHomeWidget::onKeyEvent(const CRUIKeyEvent * event) {
 	if (event->getType() == KEY_ACTION_PRESS && (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC)) {
 		return true;
 	}
+	return false;
 }
 
 /// motion event handler, returns true if it handled event

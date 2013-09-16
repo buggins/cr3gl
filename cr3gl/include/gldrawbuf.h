@@ -166,5 +166,7 @@ void LVGLSetColor(lUInt32 color);
 /// creates OpenGL based image cache
 void LVGLCreateImageCache();
 
+/// clears OpenGL based image cache on GL context destroy
+void LVGLClearImageCache();
 
 #endif /* GLDRAWBUF_H_ */

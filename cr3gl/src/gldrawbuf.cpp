@@ -48,8 +48,6 @@ public:
 
 extern GLImageCache * glImageCache;
 
-
-
 #define MIN_TEX_SIZE 64
 #define MAX_TEX_SIZE 4096
 static int nearestPOT(int n) {
@@ -83,6 +81,10 @@ void LVGLCreateImageCache() {
 	if (glImageCache != NULL)
 		delete glImageCache;
 	glImageCache = new GLImageCache();
+}
+
+void LVGLClearImageCache() {
+	glImageCache->clear();
 }
 
 class GLImageCachePage {

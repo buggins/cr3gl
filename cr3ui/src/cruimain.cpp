@@ -242,6 +242,12 @@ CRUIMainWidget::~CRUIMainWidget() {
         delete _read;
 }
 
+void CRUIMainWidget::clearImageCaches() {
+	_read->clearImageCaches();
+	if (_popup)
+		hideSlowOperationPopup();
+}
+
 int CRUIMainWidget::getChildCount() {
     int cnt = 0;
     if (_history.currentWidget())

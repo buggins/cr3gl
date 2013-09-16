@@ -38,6 +38,9 @@ struct CRUIConfig {
 
     void setupResourcesForScreenSize();
 
+    /// on GL context close, delete all GL objects
+    void clearGraphicsCaches();
+
     void initEngine();
     void uninitEngine();
 
