@@ -245,6 +245,7 @@ public:
 		if (!_surfaceCreated) {
 			clearImageCaches();
 			_surfaceCreated = true;
+			deviceInfo.setScreenDimensions(_dx, _dy, 0);
 			crconfig.setupResourcesForScreenSize();
 			_widget->measure(_dx, _dy);
 			_widget->layout(0, 0, _dx, _dy);

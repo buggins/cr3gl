@@ -55,7 +55,8 @@ void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {
 		shortSide = dy;
 		longSide = dx;
 	}
-	dpi = _dpi;
+	if (_dpi)
+		dpi = _dpi;
 	shortSideMillimeters = pixelsToMm(shortSide);
 	longSideMillimeters = pixelsToMm(longSide);
 	minListItemSize = mmToPixels(8);

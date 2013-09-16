@@ -43,6 +43,7 @@ void CRUIConfig::setupResources(lString8 baseDir) {
 }
 
 void CRUIConfig::setupResourcesForScreenSize() {
+	CRLog::trace("setupResourcesForScreenSize(%d,%d)", deviceInfo.shortSide, deviceInfo.longSide);
     lString8Collection dirs;
     if (deviceInfo.shortSide <= 320) {
         dirs.add(resourceDir + "screen-density-normal");

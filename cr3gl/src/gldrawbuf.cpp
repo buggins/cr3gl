@@ -430,6 +430,7 @@ void GLImageCache::clear() {
 	}
 	_map.clear();
 	_pages.clear();
+	_activePage = NULL;
 }
 
 void GLImageCache::removeDeletedItems() {
