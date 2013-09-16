@@ -608,11 +608,14 @@ void CRCoverPageManager::stop() {
         return;
     {
         CRGuard guard(_monitor);
+        CRLog::trace("CRCoverPageManager::stop() - under lock");
         _stopped = true;
+        CRLog::trace("CRCoverPageManager::stop() deleting all tasks from queue");
         while (_queue.length() > 0) {
             CoverTask * p = _queue.popFront();
             delete p;
         }
+        CRLog::trace("CRCoverPageManager::stop() deleting all tasks from queue");
         _monitor->notifyAll();
     }
     _thread->join();
@@ -770,15 +773,18 @@ void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles
 
 void CRStopCoverpageManager() {
     if (coverPageManager) {
+    	CRLog::trace("Calling coverPageManager->stop()");
         coverPageManager->stop();
         delete coverPageManager;
         coverPageManager = NULL;
     }
     if (coverImageCache) {
+    	CRLog::trace("Deleting coverImageCache");
         delete coverImageCache;
         coverImageCache = NULL;
     }
     if (coverCache) {
+    	CRLog::trace("Deleting coverCache");
         delete coverCache;
         coverCache = NULL;
     }
