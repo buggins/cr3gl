@@ -211,19 +211,26 @@ public:
 		_itemCount--;
 		return _itemCount;
 	}
+
 	GLImageCacheItem * addItem(LVImageSourceRef img) {
+		//CRLog::trace("imageCachePage %08x addItem %08x", (lUInt32)this, (lUInt32)img.get());
 		GLImageCacheItem * cacheItem = reserveSpace(img.get(), img->GetWidth(), img->GetHeight());
 		if (cacheItem == NULL) {
-			if (_closed && _needUpdateTexture)
+			if (_closed && _needUpdateTexture) {
+				//CRLog::trace("calling updateTexture");
 				updateTexture();
+			}
 			return NULL;
 		}
+		//CRLog::trace("set onDestroyCallback");
 		img->setOnObjectDestroyedCallback(onObjectDestroyedCallback, _cache);
+		//CRLog::trace("drawing item to cache page texture");
 		_drawbuf->Draw(img, cacheItem->_x0, cacheItem->_y0, cacheItem->_dx, cacheItem->_dy, false);
 		invertAlpha(cacheItem);
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
+
 	GLImageCacheItem * addItem(LVDrawBuf * buf) {
 		GLImageCacheItem * cacheItem = reserveSpace(buf, buf->GetWidth(), buf->GetHeight());
 		if (cacheItem == NULL)

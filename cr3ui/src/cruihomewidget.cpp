@@ -226,7 +226,7 @@ public:
         _list->setOnItemClickListener(this);
         addChild(_list);
 
-		_itemImage = new CRUIImageWidget(CRUIImageRef());
+		_itemImage = new CRUIImageWidget(NULL);
 		_itemImage->setAlign(CRUI::ALIGN_CENTER);
 		_itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
 		_itemImage->setPadding(PT_TO_PX(1));
@@ -269,13 +269,13 @@ public:
 		sprintf(s, "item%d", index);
 		return lString16(s);
 	}
-	virtual CRUIImageRef getItemIcon(int index) {
+	virtual lString8 getItemIcon(int index) {
         CR_UNUSED(index);
-        return resourceResolver->getIcon("folder_blue");
+        return lString8("folder_blue");
 	}
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
         CR_UNUSED(list);
-        CRUIImageRef icon = getItemIcon(index);
+        lString8 icon = getItemIcon(index);
 		lString16 text = getItemText(index);
 		_textWidget->setText(text);
 		_itemImage->setImage(icon);
@@ -312,27 +312,27 @@ public:
             return Utf8ToUnicode(item->getPathName());
         }
     }
-    virtual CRUIImageRef getItemIcon(int index) {
+	virtual lString8 getItemIcon(int index) {
         CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
         switch(item->getDirType()) {
         case DIR_TYPE_INTERNAL_STORAGE:
-            return resourceResolver->getIcon("media_flash_sd_mmc");
+            return lString8("media_flash_sd_mmc");
         case DIR_TYPE_SD_CARD:
-            return resourceResolver->getIcon("media_flash_sd_mmc");
+            return lString8("media_flash_sd_mmc");
         case DIR_TYPE_FS_ROOT:
-            return resourceResolver->getIcon("folder_blue");
+            return lString8("folder_blue");
         case DIR_TYPE_DEFAULT_BOOKS_DIR:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_CURRENT_BOOK_DIR:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_DOWNLOADS:
-            return resourceResolver->getIcon("folder_blue");
+            return lString8("folder_blue");
         case DIR_TYPE_FAVORITE:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_NORMAL:
-            return resourceResolver->getIcon("folder_blue");
+            return lString8("folder_blue");
         default:
-            return resourceResolver->getIcon("folder_blue");
+            return lString8("folder_blue");
         }
     }
     CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
@@ -405,23 +405,23 @@ public:
             return Utf8ToUnicode(item->getPathName());
         }
     }
-    virtual CRUIImageRef getItemIcon(int index) {
+    virtual lString8 getItemIcon(int index) {
         if (index < 0 || index >= _entries.length())
-            return CRUIImageRef();
+            return lString8();
         CRDirEntry * item = _entries[index];
         switch(item->getDirType()) {
         case DIR_TYPE_BOOKS_BY_AUTHOR:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_BOOKS_BY_TITLE:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_BOOKS_BY_FILENAME:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_BOOKS_BY_SERIES:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         case DIR_TYPE_BOOKS_SEARCH_RESULT:
-            return resourceResolver->getIcon("folder_bookmark");
+            return lString8("folder_bookmark");
         default:
-            return resourceResolver->getIcon("folder_blue");
+            return lString8("folder_blue");
         }
     }
     /// measure dimensions

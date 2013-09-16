@@ -42,14 +42,12 @@ public:
 
 class CRUIImageWidget : public CRUIWidget {
 protected:
-	CRUIImageRef _image;
     lString8 _imageRes;
 public:
     CRUIImageWidget(const char * imageRes) : _imageRes(imageRes) { }
-	CRUIImageWidget(CRUIImageRef image) : _image(image) { }
-    virtual void setImage(const char * imageRes) { _image = NULL; _imageRes = imageRes; requestLayout(); }
-    virtual void setImage(CRUIImageRef image) { _image = image; requestLayout(); }
-    CRUIImageRef getImage() { return _image.isNull() ? resourceResolver->getIcon(_imageRes.c_str()) : _image; }
+    virtual void setImage(const char * imageRes) { _imageRes = imageRes; requestLayout(); }
+    virtual void setImage(const lString8 & imageRes) { _imageRes = imageRes; requestLayout(); }
+    CRUIImageRef getImage() { return !_imageRes.empty() ? resourceResolver->getIcon(_imageRes.c_str()) : CRUIImageRef(); }
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);
 	/// updates widget position based on specified rectangle
