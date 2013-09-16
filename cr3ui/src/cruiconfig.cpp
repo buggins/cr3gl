@@ -83,7 +83,7 @@ void CRUIConfig::createDefaultTheme() {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
 
     //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
-    currentTheme->setListDelimiterVertical(resourceResolver->getIcon("list_delimiter_h.png"));
+    currentTheme->setListDelimiterVertical("list_delimiter_h.png");
     CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
     //keyboard_key_feedback_background.9
     buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
@@ -110,7 +110,7 @@ void CRUIConfig::createDefaultTheme() {
     CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
     fileListStyle->setBackground("tx_wood_v3.jpg", true);
     fileListStyle->setBackground2("list_shadow_vertical.9");
-    fileListStyle->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+    fileListStyle->setListDelimiterVertical("divider_light_v3.png");
 
     CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
     //homeListCaption->setTextColor(0x40000000);
@@ -126,8 +126,9 @@ void CRUIConfig::createDefaultTheme() {
 
 /// on GL context close, delete all GL objects
 void CRUIConfig::clearGraphicsCaches() {
-	coverPageManager->cancelAll();
-	coverPageManager->clearImageCache();
+	CRLog::trace("CRUIConfig::clearGraphicsCaches()");
+	//coverPageManager->cancelAll();
+	//coverPageManager->clearImageCache();
 	resourceResolver->clearImageCache();
 	LVGLClearImageCache();
 	fontMan->clearGlyphCache();

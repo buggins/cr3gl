@@ -206,6 +206,7 @@ void GLGlyphCacheItem::draw(int x, int y, lUInt32 color, lvRect * clip) {
 #define LVGLMakeGlyphKey(ch, font) ((((lUInt64)ch) << 32) ^ ((lUInt64)font))
 
 void GLGlyphCache::clear() {
+	CRLog::info("GLGlyphCache::clear() map size = %d, pages size = %d", _map.length(), _pages.length());
 	LVHashTable<lUInt64, GLGlyphCacheItem*>::iterator iter = _map.forwardIterator();
 	for (;;) {
 		LVHashTable<lUInt64, GLGlyphCacheItem*>::pair * item = iter.next();
@@ -215,6 +216,7 @@ void GLGlyphCache::clear() {
 		item->value = NULL;
 	}
 	_map.clear();
+	_pages.clear();
 }
 
 void GLGlyphCache::clearFontGlyphs(GLFont * font) {

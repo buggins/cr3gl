@@ -26,10 +26,11 @@ class CRUIDocView : public LVDocView {
     CRUIImageRef backgroundScrollRight;
 public:
     CRUIDocView() : LVDocView() {
-        background = resourceResolver->getIcon("leather.jpg", true);
+        //background = resourceResolver->getIcon("leather.jpg", true);
     }
     /// clears page background
     virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
+        background = resourceResolver->getIcon("leather.jpg", true);
         lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
         background->draw(&drawbuf, rc, offsetX, offsetY);
     }

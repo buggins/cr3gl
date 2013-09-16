@@ -53,14 +53,18 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		super.surfaceDestroyed(holder);
+		log.i("CRView.surfaceDestroyed");
+		surfaceDestroyedInternal();
 	}
 	
 	@Override
 	public void onPause() {
+		log.i("CRView.onPause");
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
 				// clear GL caches
+				log.i("CRView.onPause - calling surfaceDestroyedInternal()");
 				surfaceDestroyedInternal();
 			}
 		});

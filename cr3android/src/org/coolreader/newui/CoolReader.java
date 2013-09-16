@@ -74,6 +74,12 @@ public class CoolReader extends Activity {
 		cfg.fallbackFontFace = "Droid Sans Fallback";
 		cfg.fontFiles = findFonts();
 		
+		cfg.coverDirMaxFiles = 500;
+		cfg.coverDirMaxItems = 5000;
+		cfg.coverDirMaxSize = 1024 * 1024 * 16;
+		cfg.coverRenderCacheMaxBytes = 1024 * 1024 * 16;
+		cfg.coverRenderCacheMaxItems = 128;
+		
 		return cfg;
 	}
 	

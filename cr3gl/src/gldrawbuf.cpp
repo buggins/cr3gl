@@ -409,7 +409,7 @@ void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy,
 	}
 }
 
-GLImageCache::GLImageCache() : _map(1024), _activePage(0)
+GLImageCache::GLImageCache() : _map(1024), _activePage(NULL)
 {
 	glImageCache = this;
 }
@@ -419,7 +419,7 @@ GLImageCache::~GLImageCache() {
 }
 
 void GLImageCache::clear() {
-    CRLog::trace("Clearing image cache");
+    CRLog::info("GLImageCache::clear() map size = %d, pages = %d", _map.length(), _pages.length());
     LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
 	LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * p;
 	for (;;) {

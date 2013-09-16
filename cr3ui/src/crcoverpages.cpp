@@ -269,7 +269,7 @@ LVStreamRef LVScanBookCover(lString8 _path, int & type) {
         }
     }
     if (!res.isNull())
-        CRLog::debug("scanBookCoverInternal() : returned cover page array");
+        CRLog::debug("scanBookCoverInternal() : returned cover page stream");
     else
         CRLog::debug("scanBookCoverInternal() : cover page data not found");
     return res;
@@ -280,6 +280,7 @@ LVStreamRef LVScanBookCover(lString8 _path, int & type) {
 CRCoverFileCache * coverCache = NULL;
 
 CRCoverFileCache::CRCoverFileCache(lString16 dir, int maxitems, int maxfiles, int maxsize) : _dir(dir), _maxitems(maxitems), _maxfiles(maxfiles), _maxsize(maxsize), _nextId(0) {
+	CRLog::info("Created CRCoverFileCache - maxItems=%d maxFiles=%d maxSize=%d at %s", _maxitems, _maxfiles, _maxsize, LCSTR(dir));
     LVAppendPathDelimiter(_dir);
     _filename = _dir;
     _filename += "covercache.ini";
@@ -325,6 +326,7 @@ CRCoverFileCache::Entry * CRCoverFileCache::scan(const lString8 & pathname) {
 CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int type, LVStreamRef stream) {
     Entry * existing = find(pathname);
     if (existing) {
+    	CRLog::error("CRCoverFileCache::put - existing item found for %s", pathname.c_str());
         return existing;
     }
     if (stream.isNull() || stream->GetSize() == 0)
@@ -340,6 +342,7 @@ CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int t
             p->type = COVER_EMPTY;
         }
     }
+    CRLog::trace("Adding item %s type=%d size=%d", p->pathname.c_str(), p->type, p->size);
     _cache.pushFront(p);
     checkSize();
     save();
@@ -361,8 +364,9 @@ void CRCoverFileCache::checkSize() {
             totalFiles++;
         }
         totalBooks++;
-        if ((totalBooks > _maxitems || totalFiles > _maxfiles || totalSize > _maxsize) && (totalBooks > 2)) {
+        if ((totalBooks > _maxitems || totalFiles > _maxfiles || totalSize > _maxsize) && (totalBooks > 10)) {
             iterator.remove();
+            //CRLog::trace("CRCoverFileCache::checkSize() - totalBooks:%d totalFiles:%d totalSize:%d Removing cover file item %s", totalBooks, totalFiles, totalSize, item->pathname.c_str());
             if (item->type == COVER_CACHED)
                 LVDeleteFile(getFilename(item));
             delete item;
@@ -398,9 +402,15 @@ void CRCoverFileCache::clear() {
 }
 
 LVStreamRef CRCoverFileCache::getStream(const lString8 & pathname) {
+	//CRLog::trace("CRCoverFileCache::getStream %s", pathname.c_str());
     Entry * item = find(pathname);
     if (!item) {
+    	//CRLog::trace("CRCoverFileCache::getStream Cache item %s not found, scanning", pathname.c_str());
         item = scan(pathname);
+//        if (!item)
+//        	CRLog::trace("item %s scanned, no coverpage found", pathname.c_str());
+//        else
+//        	CRLog::trace("item %s scanned, type=%d size=%d", item->pathname.c_str(), item->type, item->size);
     }
     if (!item)
         return LVStreamRef();
@@ -408,10 +418,12 @@ LVStreamRef CRCoverFileCache::getStream(const lString8 & pathname) {
 }
 
 LVStreamRef CRCoverFileCache::getStream(Entry * item) {
+    //CRLog::trace("CRCoverFileCache::getStream(type = %d)", item->type);
     if (item->type == COVER_EMPTY)
         return LVStreamRef();
     if (item->type == COVER_CACHED)
         return LVOpenFileStream(getFilename(item).c_str(), LVOM_READ);
+    //CRLog::trace("Calling LVGetBookCoverStream(%s)", item->pathname.c_str());
     return LVGetBookCoverStream(item->pathname);
 }
 
@@ -505,13 +517,14 @@ bool CRCoverFileCache::save() {
 
 
 CRCoverImageCache::Entry * CRCoverImageCache::draw(CRDirEntry * _book, int dx, int dy) {
-    LVDrawBuf * drawbuf = createDrawBuf(dx, dy);
+	CRLog::trace("CRCoverImageCache::draw called for %s", _book->getPathName().c_str());
     LVStreamRef stream = coverCache->getStream(_book->getPathName());
     LVImageSourceRef image;
     if (!stream.isNull()) {
         image = LVCreateStreamImageSource(stream);
     }
     // TODO: fix font face
+    LVDrawBuf * drawbuf = createDrawBuf(dx, dy);
     drawbuf->beforeDrawing();
     CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
     drawbuf->afterDrawing();
@@ -547,8 +560,8 @@ void CRCoverImageCache::checkSize() {
         Entry * item = iterator.get();
         totalSize += item->dx * item->dy * 4;
         totalItems++;
-        if ((totalItems > _maxitems || totalSize > _maxsize) && totalItems > 2) {
-            CRLog::info("CRCoverImageCache::checkSize() removing item %s %dx%d", item->book->getPathName().c_str(), item->dx, item->dy);
+        if ((totalItems > _maxitems || totalSize > _maxsize) && totalItems > 10) {
+            CRLog::trace("CRCoverImageCache::checkSize() removing item %s %dx%d", item->book->getPathName().c_str(), item->dx, item->dy);
             iterator.remove();
             delete item;
         }
@@ -635,7 +648,7 @@ void CRCoverPageManager::run() {
             if (_stopped)
                 break;
             //CRLog::trace("CRCoverPageManager::run :: lock acquired");
-            if (_queue.length() == 0) {
+            if (_queue.length() <= 0) {
                 allTasksFinished();
                 //CRLog::trace("CRCoverPageManager::run :: calling monitor wait");
                 _monitor->wait();
@@ -711,10 +724,11 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
             return;
         }
     }
+    _book = _book->clone();
     CoverTask * task = new CoverTask(_book, dx, dy, readyCallback);
     _queue.pushBack(task);
     _monitor->notify();
-    CRLog::trace("CRCoverPageManager::prepare - added new task %s %dx%d", _book->getPathName().c_str(), dx, dy);
+    //CRLog::trace("CRCoverPageManager::prepare - added new task %s %dx%d", _book->getPathName().c_str(), dx, dy);
 }
 
 /// cancels all pending coverpage tasks

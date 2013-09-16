@@ -149,16 +149,16 @@ int CRUIStyle::getMinWidth()
 }
 
 CRUIImageRef CRUIStyle::getListDelimiterHorizontal() {
-	if (!_listDelimiterHorizontal.isNull())
-		return _listDelimiterHorizontal;
+	if (!_listDelimiterHorizontal.empty())
+		return resourceResolver->getIcon(_listDelimiterHorizontal.c_str(), false);
 	if (_parentStyle)
 		return _parentStyle->getListDelimiterHorizontal();
 	return CRUIImageRef();
 }
 
 CRUIImageRef CRUIStyle::getListDelimiterVertical() {
-	if (!_listDelimiterVertical.isNull())
-		return _listDelimiterVertical;
+	if (!_listDelimiterVertical.empty())
+		return resourceResolver->getIcon(_listDelimiterVertical.c_str(), false);
 	if (_parentStyle)
 		return _parentStyle->getListDelimiterVertical();
 	return CRUIImageRef();
@@ -303,6 +303,7 @@ void CRResourceResolver::setDirList(lString8Collection & dirList) {
 }
 
 void CRResourceResolver::clearImageCache() {
+	CRLog::info("CRResourceResolver::clearImageCache()");
 	_imageSourceMap.clear();
 	_iconMap.clear();
 }

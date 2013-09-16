@@ -146,8 +146,8 @@ protected:
 	int _minHeight;
 	int _maxHeight;
 	lUInt32 _align;
-	CRUIImageRef _listDelimiterHorizontal;
-	CRUIImageRef _listDelimiterVertical;
+	lString8 _listDelimiterHorizontal;
+	lString8 _listDelimiterVertical;
 	LVPtrVector<CRUIStyle, true> _substyles;
 	/// checks if state filter matches specified state
 	virtual bool matchState(lUInt8 stateValue);
@@ -191,8 +191,8 @@ public:
 	virtual CRUIStyle * setBackground(lUInt32 color) { _backgroundColor = color; _background.clear(); return this; }
     virtual CRUIStyle * setBackground2(const char * resourceName, bool tiled = false) { _background2 = resourceName; _background2Tiled = tiled; _background2Color = COLOR_NONE; return this; }
 	virtual CRUIStyle * setBackground2(lUInt32 color) { _background2Color = color; _background2.clear(); return this; }
-    virtual CRUIStyle * setListDelimiterHorizontal(CRUIImageRef img) { _listDelimiterHorizontal = img; return this; }
-	virtual CRUIStyle *  setListDelimiterVertical(CRUIImageRef img) { _listDelimiterVertical = img; return this; }
+    virtual CRUIStyle * setListDelimiterHorizontal(const char * imgRes) { _listDelimiterHorizontal = imgRes; return this; }
+	virtual CRUIStyle *  setListDelimiterVertical(const char * imgRes) { _listDelimiterVertical = imgRes; return this; }
 	virtual CRUIImageRef getListDelimiterHorizontal();
 	virtual CRUIImageRef getListDelimiterVertical();
     /// main (lower) layer of background

@@ -208,6 +208,7 @@ public:
     DocViewNative(jobject obj);
 
     bool create() {
+		CRLog::trace("Creating widget");
     	_widget = new CRUIMainWidget();
     	_eventManager.setRootWidget(_widget);
     	_widget->setScreenUpdater(this);
@@ -227,6 +228,7 @@ public:
 	virtual void onSurfaceChanged(int dx, int dy) {
 		_dx = dx;
 		_dy = dy;
+		_surfaceCreated = false;
 	}
 
 	virtual void clearImageCaches() {
@@ -243,7 +245,14 @@ public:
 	virtual void onDraw() {
 
 		if (!_surfaceCreated) {
-			clearImageCaches();
+			CRLog::info("onDraw() - surface just created");
+			if (!_widget) {
+				CRLog::info("onDraw() - creating widget");
+				create();
+			} else {
+				CRLog::info("onDraw() - invalidating GL caches");
+				clearImageCaches();
+			}
 			_surfaceCreated = true;
 			deviceInfo.setScreenDimensions(_dx, _dy, 0);
 			crconfig.setupResourcesForScreenSize();
@@ -271,12 +280,16 @@ public:
 	}
 
 	bool handleTouchEvent(CRTouchEventWrapper * event) {
+		if (!_surfaceCreated)
+			return false;
 		int x0 = _getLeftMethod.callInt();
 		int y0 = _getTopMethod.callInt();
 		return _eventAdapter.dispatchTouchEvent(event, x0, y0);
 	}
 
 	bool handleKeyEvent(CRKeyEventWrapper * event) {
+		if (!_surfaceCreated)
+			return false;
 		return _eventAdapter.dispatchKeyEvent(event);
 	}
 
@@ -791,7 +804,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.initEngine();
     CRLog::info("Done initEngine");
 
-    obj->create();
+    //obj->create(); // will be called on first draw
 
     return JNI_TRUE;
 }

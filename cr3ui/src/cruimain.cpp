@@ -243,6 +243,7 @@ CRUIMainWidget::~CRUIMainWidget() {
 }
 
 void CRUIMainWidget::clearImageCaches() {
+	CRLog::info("CRUIMainWidget::clearImageCaches()");
 	_read->clearImageCaches();
 	if (_popup)
 		hideSlowOperationPopup();

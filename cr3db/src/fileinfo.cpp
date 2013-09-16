@@ -487,6 +487,8 @@ void CRDirCache::scan(const lString8 & pathname, CRDirScanCallback * callback) {
     CRGuard guard(_monitor);
     //CRLog::trace("CRDirCache::scan - acquired lock");
     //CRLog::trace("CRCoverPageManager::prepare %s %dx%d", _book->getPathName().c_str(), dx, dy);
+    if (_queue.length() < 0)
+    	CRLog::fatal("CRDirCache::scan :: queue length < 0");
     if (_stopped) {
         CRLog::error("Ignoring new task since dir cache thread is stopped");
         return;
@@ -494,14 +496,21 @@ void CRDirCache::scan(const lString8 & pathname, CRDirScanCallback * callback) {
     for (LVQueue<DirectoryScanTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         DirectoryScanTask * item = iterator.get();
         if (item->isSame(pathname)) {
+            CRLog::trace("CRDirCache::scan - before moveToHead queueLength was %d", _queue.length());
             iterator.moveToHead();
+            CRLog::trace("CRDirCache::scan - after moveToHead queueLength is %d", _queue.length());
             return;
         }
     }
+    if (_queue.length() < 0)
+    	CRLog::fatal("CRDirCache::scan 2 :: queue length < 0");
     DirectoryScanTask * task = new DirectoryScanTask(dir, callback);
+    CRLog::trace("CRDirCache::scan - adding new task %s queueLength was %d", pathname.c_str(), _queue.length());
     _queue.pushBack(task);
-    _monitor->notify();
-    CRLog::trace("CRDirCache::scan - added new task %s", pathname.c_str());
+    if (_queue.length() < 0)
+    	CRLog::fatal("CRDirCache::scan 3 :: queue length < 0");
+    CRLog::trace("CRDirCache::scan - added new task %s queueLength = %d. Calling notifyAll", pathname.c_str(), _queue.length());
+    _monitor->notifyAll();
 }
 
 void CRDirCache::run() {
@@ -511,19 +520,25 @@ void CRDirCache::run() {
             break;
         DirectoryScanTask * task = NULL;
         {
-            CRLog::trace("CRDirCache::run :: wait for lock");
+            //CRLog::trace("CRDirCache::run :: wait for lock");
             CRGuard guard(_monitor);
             if (_stopped)
                 break;
-            CRLog::trace("CRDirCache::run :: lock acquired");
-            if (_queue.length() == 0) {
-                CRLog::trace("CRDirCache::run :: calling monitor wait");
+            //CRLog::trace("CRDirCache::run :: lock acquired");
+            if (_queue.length() < 0)
+            	CRLog::fatal("CRDirCache::run :: queue length < 0");
+            if (_queue.length() <= 0) {
+                CRLog::trace("CRDirCache::run :: no tasks - calling monitor wait");
                 _monitor->wait();
-                CRLog::trace("CRDirCache::run :: done monitor wait");
+                CRLog::trace("CRDirCache::run :: done monitor wait - queue length = %d", _queue.length());
             }
             if (_stopped)
                 break;
+            CRLog::trace("CRDirCache::run - before popFront queueLength was %d", _queue.length());
             task = _queue.popFront();
+            if (_queue.length() < 0)
+            	CRLog::fatal("CRDirCache::run 2 :: queue length < 0");
+            CRLog::trace("CRDirCache::run - after popFront queueLength is %d", _queue.length());
         }
         if (task) {
             CRDirContentItem * item = task->dir;
@@ -612,6 +627,7 @@ void CRDirCache::remove(const lString8 & pathname) {
         return;
     CRGuard guard(_monitor);
     removeItem(pathname);
+    _monitor->notifyAll();
 }
 
 CRDirContentItem * CRDirCache::find(lString8 pathname) {
@@ -633,6 +649,7 @@ void CRDirCache::clear() {
 		delete item;
 	}
 	_byName.clear();
+	_monitor->notifyAll();
 }
 
 CRFileItem * CRDirCache::findBook(const lString8 & pathname) {
