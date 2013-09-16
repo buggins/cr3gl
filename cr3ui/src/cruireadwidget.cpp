@@ -30,9 +30,10 @@ public:
     }
     /// clears page background
     virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
-        background = resourceResolver->getIcon("leather.jpg", true);
+        background = resourceResolver->getIcon("paper1.jpg", true);
         lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
         background->draw(&drawbuf, rc, offsetX, offsetY);
+        drawbuf.FillRect(rc, 0xE0E0C040);
     }
 };
 
@@ -43,7 +44,13 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
 {
     _docview = new CRUIDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
-    _docview->setFontSize(26);
+	LVArray<int> sizes;
+	for (int i = deviceInfo.shortSide / 40; i < deviceInfo.shortSide / 10 && i < 200; i++)
+		sizes.add(i);
+	_docview->setFontSizes(sizes, false);
+	_docview->setFontSize(deviceInfo.shortSide / 20);
+	lvRect margins(deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20);
+	_docview->setPageMargins(margins);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -72,11 +79,18 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     }
 }
 
+void CRUIReadWidget::prepareScroll(int direction) {
+    if (renderIfNecessary()) {
+    	CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
+    }
+}
+
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
-        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1);
+        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1, false);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
     } else {
         // document render in progress; draw just page background
@@ -517,6 +531,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         if (!_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             _isDragging = true;
             _docview->SetPos(_dragStartOffset - delta, false);
+            prepareScroll(-delta);
             invalidate();
             _main->update();
         } else if (_isDragging) {
@@ -623,12 +638,22 @@ bool CRUIReadWidget::OnRequestReload() {
 //================================================================
 // Scroll Mode page image cache
 
-CRUIReadWidget::ScrollModePageCache::ScrollModePageCache() : minpos(0), maxpos(0) {
+CRUIReadWidget::ScrollModePageCache::ScrollModePageCache() : minpos(0), maxpos(0), dx(0), dy(0), tdx(0), tdy(0) {
 
 }
 
-LVDrawBuf * CRUIReadWidget::ScrollModePageCache::createBuf(int dx, int dy) {
-    return new GLDrawBuf(dx, dy, 32, true);
+#define MIN_TEX_SIZE 64
+#define MAX_TEX_SIZE 4096
+static int nearestPOT(int n) {
+	for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i++) {
+		if (n <= i)
+			return i;
+	}
+	return MIN_TEX_SIZE;
+}
+
+LVDrawBuf * CRUIReadWidget::ScrollModePageCache::createBuf() {
+    return new GLDrawBuf(dx, tdy, 32, true);
 }
 
 void CRUIReadWidget::ScrollModePageCache::setSize(int _dx, int _dy) {
@@ -636,17 +661,23 @@ void CRUIReadWidget::ScrollModePageCache::setSize(int _dx, int _dy) {
         clear();
         dx = _dx;
         dy = _dy;
+        tdx = nearestPOT(dx);
+        tdy = nearestPOT(dy);
     }
 }
 
 /// ensure images are prepared
-void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos, int _dx, int _dy, int direction) {
+void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos, int _dx, int _dy, int direction, bool force) {
     setSize(_dx, _dy);
-    if (_pos >= minpos && _pos + dy <= maxpos)
+    if (_pos >= minpos && _pos + dy <= maxpos && !force)
         return; // already prepared
-    int y0 = direction > 0 ? (_pos - dy / 4) : (_pos - dy * 3 / 4);
-    int y1 = direction > 0 ? (_pos + dy + dy * 3 / 4) : (_pos + dy + dy / 4);
-    int pos0 = _pos / dy * dy;
+    int y0 = direction > 0 ? (_pos - dy / 4) : (_pos - dy * 5 / 4);
+    int y1 = direction > 0 ? (_pos + dy + dy * 5 / 4) : (_pos + dy + dy / 4);
+    if (y0 < 0)
+    	y0 = 0;
+    int pos0 = y0 / tdy * tdy;
+    int pos1 = (y1 + tdy - 1) / tdy * tdy;
+    int pageCount = (pos1 - pos0) / tdy + 1;
     for (int i = pages.length() - 1; i >= 0; i--) {
         ScrollModePage * p = pages[i];
         if (!p->intersects(y0, y1)) {
@@ -654,8 +685,8 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
             delete p;
         }
     }
-    for (int i = 0; i < 2; i++) {
-        int pos = pos0 + i * dy;
+    for (int i = 0; i < pageCount; i++) {
+        int pos = pos0 + i * tdy;
         bool found = false;
         for (int k = pages.length() - 1; k >= 0; k--) {
             if (pages[k]->pos == pos) {
@@ -666,9 +697,9 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
         if (!found) {
             ScrollModePage * page = new ScrollModePage();
             page->dx = dx;
-            page->dy = dy;
+            page->dy = tdy;
             page->pos = pos;
-            page->drawbuf = createBuf(dx, dy);
+            page->drawbuf = createBuf();
             LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
             buf->beforeDrawing();
             int oldpos = _docview->GetPos();

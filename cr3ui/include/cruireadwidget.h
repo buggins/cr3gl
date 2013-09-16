@@ -54,16 +54,18 @@ class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public 
     };
     class ScrollModePageCache {
         LVPtrVector<ScrollModePage> pages;
-        LVDrawBuf * createBuf(int dx, int dy);
+        LVDrawBuf * createBuf();
         int minpos;
         int maxpos;
         int dx;
         int dy;
+        int tdx;
+        int tdy;
     public:
         void setSize(int _dx, int _dy);
         ScrollModePageCache();
         /// ensure images are prepared
-        void prepare(LVDocView * docview, int pos, int dx, int dy, int direction);
+        void prepare(LVDocView * docview, int pos, int dx, int dy, int direction, bool force);
         /// draw
         void draw(LVDrawBuf * dst, int pos, int x, int y);
         /// remove images from cache
@@ -119,6 +121,7 @@ public:
     bool onKeyEvent(const CRUIKeyEvent * event);
     bool doCommand(int cmd, int param = 0);
 
+    void prepareScroll(int direction);
 
     // DocView callback
     /// on starting file loading
