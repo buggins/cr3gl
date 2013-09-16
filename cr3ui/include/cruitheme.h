@@ -121,12 +121,18 @@ void LVCreateResourceResolver(lString8Collection & dirList);
 
 class CRUITheme;
 
+#define COLOR_NONE 0xFFFFFFFF
+
 class CRUIStyle {
 protected:
 	CRUITheme * _theme;
 	lString8 _styleId;
-	CRUIImageRef _background;
-    CRUIImageRef _background2;
+	lString8 _background;
+	lString8 _background2;
+	bool _backgroundTiled;
+	bool _background2Tiled;
+	lUInt32 _backgroundColor;
+	lUInt32 _background2Color;
     LVFontRef _font;
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
@@ -180,12 +186,11 @@ public:
 	virtual CRUIStyle * setFontSize(lUInt8 fontSize) { _fontSize = fontSize; return this; }
 	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
 	virtual CRUIStyle * setTextColor(lUInt32 color) { _textColor = color; return this; }
-	virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
-    virtual CRUIStyle * setBackground(const char * imgname, bool tiled = false) { _background = resourceResolver->getIcon(imgname, tiled); return this; }
-	virtual CRUIStyle * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
-    virtual CRUIStyle * setBackground2(CRUIImageRef background) { _background2 = background; return this; }
-    virtual CRUIStyle * setBackground2(const char * imgname, bool tiled = false) { _background2 = resourceResolver->getIcon(imgname, tiled); return this; }
-    virtual CRUIStyle * setBackground2(lUInt32 color) { _background2 = CRUIImageRef(new CRUISolidFillImage(color)); return this; }
+	//virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
+    virtual CRUIStyle * setBackground(const char * resourceName, bool tiled = false) { _background = resourceName; _backgroundTiled = tiled; _backgroundColor = COLOR_NONE; return this; }
+	virtual CRUIStyle * setBackground(lUInt32 color) { _backgroundColor = color; _background.clear(); return this; }
+    virtual CRUIStyle * setBackground2(const char * resourceName, bool tiled = false) { _background2 = resourceName; _background2Tiled = tiled; _background2Color = COLOR_NONE; return this; }
+	virtual CRUIStyle * setBackground2(lUInt32 color) { _background2Color = color; _background2.clear(); return this; }
     virtual CRUIStyle * setListDelimiterHorizontal(CRUIImageRef img) { _listDelimiterHorizontal = img; return this; }
 	virtual CRUIStyle *  setListDelimiterVertical(CRUIImageRef img) { _listDelimiterVertical = img; return this; }
 	virtual CRUIImageRef getListDelimiterHorizontal();

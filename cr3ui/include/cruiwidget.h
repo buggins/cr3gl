@@ -32,8 +32,14 @@ protected:
 	int _measuredWidth;
 	int _measuredHeight;
 	CRUIWidget * _parent;
-	CRUIImageRef _background;
-    CRUIImageRef _background2;
+	lString8 _background;
+	lString8 _background2;
+	bool _backgroundTiled;
+	bool _background2Tiled;
+	lUInt32 _backgroundColor;
+	lUInt32 _background2Color;
+//	CRUIImageRef _background;
+//    CRUIImageRef _background2;
     bool _layoutRequested;
 	bool _drawRequested;
 	LVFontRef _font;
@@ -142,14 +148,14 @@ public:
 	virtual CRUIWidget * setFontSize(lUInt8 sz) { _fontSize = sz; requestLayout(); return this; }
 	virtual CRUIWidget * setTextColor(lUInt32 color) { _textColor = color; requestLayout(); return this; }
     /// main (lower) layer of background
-    virtual CRUIWidget * setBackground(const char * resourceName, bool tiled = false) { _background = resourceResolver->getIcon(resourceName, tiled); requestLayout(); return this; }
-	virtual CRUIWidget * setBackground(CRUIImageRef background) { _background = background; requestLayout(); return this; }
-	virtual CRUIWidget * setBackground(lUInt32 color) { _background = CRUIImageRef(new CRUISolidFillImage(color)); requestLayout(); return this; }
+    virtual CRUIWidget * setBackground(const char * resourceName, bool tiled = false) { _background = resourceName; _backgroundTiled = tiled; _backgroundColor = COLOR_NONE; requestLayout(); return this; }
+	//virtual CRUIWidget * setBackground(CRUIImageRef background) { _background = background; requestLayout(); return this; }
+	virtual CRUIWidget * setBackground(lUInt32 color) { _backgroundColor = color; _background.clear(); requestLayout(); return this; }
 	virtual CRUIImageRef getBackground();
     /// additional (upper) layer of background
-    virtual CRUIWidget * setBackground2(const char * resourceName, bool tiled = false) { _background2 = resourceResolver->getIcon(resourceName, tiled); requestLayout(); return this; }
-    virtual CRUIWidget * setBackground2(CRUIImageRef background) { _background2 = background; requestLayout(); return this; }
-    virtual CRUIWidget * setBackground2(lUInt32 color) { _background2 = CRUIImageRef(new CRUISolidFillImage(color)); requestLayout(); return this; }
+    virtual CRUIWidget * setBackground2(const char * resourceName, bool tiled = false) { _background2 = resourceName; _background2Tiled = tiled; _background2Color = COLOR_NONE; requestLayout(); return this; }
+    //virtual CRUIWidget * setBackground2(CRUIImageRef background) { _background2 = background; requestLayout(); return this; }
+    virtual CRUIWidget * setBackground2(lUInt32 color) { _background2Color = color; _background2.clear(); requestLayout(); return this; }
     virtual CRUIImageRef getBackground2();
     virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();

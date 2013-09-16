@@ -82,6 +82,8 @@ CRUIStyle * CRUITheme::find(const lString8 &id) {
 
 CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 stateValue) :
 		_theme(theme), _styleId(id),
+		_backgroundColor(COLOR_NONE),
+		_background2Color(COLOR_NONE),
 		_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL),
 		_stateMask(stateMask), _stateValue(stateValue),
 		_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
@@ -163,16 +165,24 @@ CRUIImageRef CRUIStyle::getListDelimiterVertical() {
 }
 
 CRUIImageRef CRUIStyle::getBackground() {
-	if (!_background.isNull())
-		return _background;
+	if (!_background.empty()) {
+		return resourceResolver->getIcon(_background.c_str(), _backgroundTiled);
+	}
+	if (_backgroundColor != COLOR_NONE) {
+		return CRUIImageRef(new CRUISolidFillImage(_backgroundColor));
+	}
 	if (_parentStyle && _stateValue)
 		return _parentStyle->getBackground();
 	return CRUIImageRef();
 }
 
 CRUIImageRef CRUIStyle::getBackground2() {
-    if (!_background2.isNull())
-        return _background2;
+	if (!_background2.empty()) {
+		return resourceResolver->getIcon(_background2.c_str(), _background2Tiled);
+	}
+	if (_background2Color != COLOR_NONE) {
+		return CRUIImageRef(new CRUISolidFillImage(_background2Color));
+	}
     if (_parentStyle && _stateValue)
         return _parentStyle->getBackground2();
     return CRUIImageRef();

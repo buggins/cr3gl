@@ -16,6 +16,8 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
 	_measuredWidth(0), _measuredHeight(0),
 	_parent(NULL),
+	_backgroundColor(COLOR_NONE),
+	_background2Color(COLOR_NONE),
 	_layoutRequested(true),
 	_drawRequested(true),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
@@ -271,15 +273,23 @@ int CRUIWidget::getMinWidth()
 }
 
 CRUIImageRef CRUIWidget::getBackground() {
-	if (!_background.isNull())
-		return _background;
+	if (!_background.empty()) {
+		return resourceResolver->getIcon(_background.c_str(), _backgroundTiled);
+	}
+	if (_backgroundColor != COLOR_NONE) {
+		return CRUIImageRef(new CRUISolidFillImage(_backgroundColor));
+	}
 	return getStyle(true)->getBackground();
 }
 
 CRUIImageRef CRUIWidget::getBackground2() {
-    if (!_background2.isNull())
-        return _background2;
-    return getStyle(true)->getBackground2();
+	if (!_background2.empty()) {
+		return resourceResolver->getIcon(_background2.c_str(), _background2Tiled);
+	}
+	if (_background2Color != COLOR_NONE) {
+		return CRUIImageRef(new CRUISolidFillImage(_background2Color));
+	}
+	return getStyle(true)->getBackground();
 }
 
 LVFontRef CRUIWidget::getFont() {
