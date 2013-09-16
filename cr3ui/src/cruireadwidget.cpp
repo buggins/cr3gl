@@ -19,6 +19,25 @@
 
 using namespace CRUI;
 
+lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
+	if (alpha <=0)
+		return cl1;
+	else if (alpha >= 255)
+		return cl2;
+    lUInt32 opaque = 256 - alpha;
+    lUInt32 n1 = (((cl2 & 0xFF00FF) * alpha + (cl1 & 0xFF00FF) * opaque) >> 8) & 0xFF00FF;
+    lUInt32 n2 = (((cl2 >> 8) & 0xFF00FF) * alpha + ((cl1 >> 8) & 0xFF00FF) * opaque) & 0xFF00FF00;
+    return n1 | n2;
+}
+void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 colorBottom) {
+	lvRect rc2 = rc;
+	for (int y = 0; y < rc.height(); y++) {
+		int alpha = (y * 255) / rc.height();
+		rc2.top = rc.top + y;
+		rc2.bottom = rc.top + y + 1;
+		buf->FillRect(rc2, applyAlpha(colorTop, colorBottom, alpha));
+	}
+}
 
 class CRUIDocView : public LVDocView {
     CRUIImageRef background;
@@ -97,6 +116,21 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
         //CRLog::trace("Document is locked, just drawing background");
         _docview->drawPageBackground(*buf, 0, 0);
     }
+    // scroll bottom and top gradients
+    lvRect top = _pos;
+    top.bottom = top.top + deviceInfo.shortSide / 60;
+    lvRect top2 = _pos;
+    top2.top = top.bottom;
+    top2.bottom = top.top + deviceInfo.shortSide / 30;
+    lvRect bottom = _pos;
+    bottom.top = bottom.bottom - deviceInfo.shortSide / 60;
+    lvRect bottom2 = _pos;
+    bottom2.bottom = bottom.top;
+    bottom2.top = bottom.bottom - deviceInfo.shortSide / 30;
+    drawVGradient(buf, top, 0xA0000000, 0xE0000000);
+    drawVGradient(buf, top2, 0xE0000000, 0xFF000000);
+    drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
+    drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
 }
 
 class BookLoadedNotificationTask : public CRRunnable {
