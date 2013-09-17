@@ -165,6 +165,9 @@ void CRUIConfig::createDefaultTheme() {
     toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
 
     resourceResolver->setIconColorTransform(0x888888, 0x302820);
+
+    lvRect hardcoverClientRect(53, 29, 319, 378);
+    coverPageManager->setCoverPageTemplate(resourceResolver->getImageSource("hardcover"), hardcoverClientRect);
 }
 
 /// on GL context close, delete all GL objects

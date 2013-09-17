@@ -14,15 +14,6 @@ class CoverTask;
 /// cover page extracting, cache and rendering manager
 class CRCoverPageManager : public CRRunnable {
 
-    volatile bool _stopped;
-    CRMonitorRef _monitor;
-    CRThreadRef _thread;
-    LVQueue<CoverTask *> _queue;
-    CRRunnable * _allTasksFinishedCallback;
-    volatile bool _taskIsRunning;
-    LVImageSourceRef _bookImage; // book image template
-    lvRect _bookImageClientRect; // where cover image should be placed inside book image
-
     struct BookImage {
         int dx;
         int dy;
@@ -37,12 +28,21 @@ class CRCoverPageManager : public CRRunnable {
         int find(int dx, int dy);
     public:
         BookImage * get(LVImageSourceRef img, const lvRect & rc, int dx, int dy);
-        BookImageCache() {}
-        void clear() {
-            items.clear();
-        }
+        BookImageCache() { }
+        void clear() { items.clear(); }
         ~BookImageCache() { clear(); }
     };
+
+    volatile bool _stopped;
+    CRMonitorRef _monitor;
+    CRThreadRef _thread;
+    LVQueue<CoverTask *> _queue;
+    CRRunnable * _allTasksFinishedCallback;
+    volatile bool _taskIsRunning;
+    LVImageSourceRef _bookImage; // book image template
+    lvRect _bookImageClientRect; // where cover image should be placed inside book image
+    BookImageCache _bookImageCache;
+
 
     void allTasksFinished();
 
@@ -74,6 +74,9 @@ public:
 
     /// set book image to draw covers on - instead of plain cover images
     void setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect);
+
+    /// draws book template and tells its client rect - returns false if book template is not set
+    bool drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect);
 
 };
 

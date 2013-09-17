@@ -82,7 +82,7 @@ private:
     virtual LVDrawBuf * createDrawBuf(int dx, int dy);
 public:
     void clear();
-    Entry * draw(CRDirEntry * _book, int dx, int dy);
+    Entry * draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy);
     Entry * find(CRDirEntry * _book, int dx, int dy);
     CRCoverImageCache(int maxitems = 1000, int maxsize = 16*1024*1024);
     virtual ~CRCoverImageCache() { clear(); }
@@ -516,7 +516,7 @@ bool CRCoverFileCache::save() {
 
 
 
-CRCoverImageCache::Entry * CRCoverImageCache::draw(CRDirEntry * _book, int dx, int dy) {
+CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy) {
 	CRLog::trace("CRCoverImageCache::draw called for %s", _book->getPathName().c_str());
     LVStreamRef stream = coverCache->getStream(_book->getPathName());
     LVImageSourceRef image;
@@ -525,8 +525,20 @@ CRCoverImageCache::Entry * CRCoverImageCache::draw(CRDirEntry * _book, int dx, i
     }
     // TODO: fix font face
     LVDrawBuf * drawbuf = createDrawBuf(dx, dy);
+    lvRect clientRect;
     drawbuf->beforeDrawing();
-    CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
+    if (_manager->drawBookTemplate(drawbuf, clientRect)) {
+        // has book template
+        LVDrawBuf * buf = createDrawBuf(clientRect.width(), clientRect.height());
+        buf->beforeDrawing();
+        CRDrawBookCover(buf, lString8("Arial"), _book, image, 32);
+        buf->afterDrawing();
+        buf->DrawTo(drawbuf, clientRect.left, clientRect.top, 0, NULL);
+        delete buf;
+    } else {
+        // does not have book template
+        CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
+    }
     drawbuf->afterDrawing();
     return put(_book, dx, dy, drawbuf);
 }
@@ -708,7 +720,7 @@ void CRCoverPageManager::run() {
             CRCoverImageCache::Entry * entry = coverImageCache->find(task->book, task->dx, task->dy);
             if (!entry) {
                 //CRLog::trace("CRCoverPageManager: rendering new coverpage image ");
-                entry = coverImageCache->draw(task->book, task->dx, task->dy);
+                entry = coverImageCache->draw(this, task->book, task->dx, task->dy);
             }
             //CRLog::trace("CRCoverPageManager: calling ready callback");
             if (task->callback)
@@ -733,6 +745,17 @@ LVDrawBuf * CRCoverPageManager::getIfReady(CRDirEntry * _book, int dx, int dy)
     }
     //CRLog::trace("CRCoverPageManager::getIfReady - not found %s %dx%d", _book->getPathName().c_str(), dx, dy);
     return NULL;
+}
+
+/// draws book template and tells its client rect - returns false if book template is not set
+bool CRCoverPageManager::drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect) {
+    CRGuard guard(_monitor);
+    if (_bookImage.isNull())
+        return false;
+    BookImage * bookImage = _bookImageCache.get(_bookImage, _bookImageClientRect, buf->GetWidth(), buf->GetHeight());
+    bookImage->buf->DrawTo(buf, 0, 0, 0, NULL);
+    clientRect = bookImage->clientRc;
+    return true;
 }
 
 void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback)
@@ -787,6 +810,7 @@ void CRCoverPageManager::clearImageCache() {
     CRGuard guard(_monitor);
     CRLog::trace("CRCoverPageManager::clearImageCache()");
     coverImageCache->clear();
+    _bookImageCache.clear();
 }
 
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
