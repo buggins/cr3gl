@@ -288,7 +288,7 @@ public:
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
-        _folderWidget = new CRUIDirItemWidget(_coverDx, _coverDy, "folder_blue");
+        _folderWidget = new CRUIDirItemWidget(_coverDx, _coverDy, "folder");
         _bookWidget = new CRUIBookItemWidget(_coverDx, _coverDy, parent->getMain());
 		setStyle("FILE_LIST");
         setColCount(2);

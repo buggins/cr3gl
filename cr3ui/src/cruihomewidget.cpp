@@ -271,7 +271,7 @@ public:
 	}
 	virtual lString8 getItemIcon(int index) {
         CR_UNUSED(index);
-        return lString8("folder_blue");
+        return lString8("folder");
 	}
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
         CR_UNUSED(list);
@@ -316,23 +316,23 @@ public:
         CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
         switch(item->getDirType()) {
         case DIR_TYPE_INTERNAL_STORAGE:
-            return lString8("media_flash_sd_mmc");
+            return lString8("integrated_circuit");
         case DIR_TYPE_SD_CARD:
-            return lString8("media_flash_sd_mmc");
+            return lString8("sd");
         case DIR_TYPE_FS_ROOT:
-            return lString8("folder_blue");
+            return lString8("folder");
         case DIR_TYPE_DEFAULT_BOOKS_DIR:
-            return lString8("folder_bookmark");
+            return lString8("likes");
         case DIR_TYPE_CURRENT_BOOK_DIR:
-            return lString8("folder_bookmark");
+            return lString8("documents");
         case DIR_TYPE_DOWNLOADS:
-            return lString8("folder_blue");
+            return lString8("downloads");
         case DIR_TYPE_FAVORITE:
-            return lString8("folder_bookmark");
+            return lString8("likes");
         case DIR_TYPE_NORMAL:
-            return lString8("folder_blue");
+            return lString8("folder");
         default:
-            return lString8("folder_blue");
+            return lString8("folder");
         }
     }
     CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
@@ -411,17 +411,17 @@ public:
         CRDirEntry * item = _entries[index];
         switch(item->getDirType()) {
         case DIR_TYPE_BOOKS_BY_AUTHOR:
-            return lString8("folder_bookmark");
+            return lString8("book_stack");
         case DIR_TYPE_BOOKS_BY_TITLE:
-            return lString8("folder_bookmark");
+            return lString8("book_stack");
         case DIR_TYPE_BOOKS_BY_FILENAME:
-            return lString8("folder_bookmark");
+            return lString8("book_stack");
         case DIR_TYPE_BOOKS_BY_SERIES:
-            return lString8("folder_bookmark");
+            return lString8("book_stack");
         case DIR_TYPE_BOOKS_SEARCH_RESULT:
-            return lString8("folder_bookmark");
+            return lString8("opera_glasses");
         default:
-            return lString8("folder_blue");
+            return lString8("folder");
         }
     }
     /// measure dimensions
@@ -448,6 +448,10 @@ public:
     CRUIOnlineCatalogsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_ONLINE_CATALOGS) {
 
 	}
+    virtual lString8 getItemIcon(int index) {
+        CR_UNUSED(index);
+        return lString8("internet");
+    }
 };
 
 class CRUIRecentBooksListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {

@@ -45,24 +45,28 @@ void CRUIConfig::setupResources(lString8 baseDir) {
 void CRUIConfig::setupResourcesForScreenSize() {
 	CRLog::trace("setupResourcesForScreenSize(%d,%d)", deviceInfo.shortSide, deviceInfo.longSide);
     lString8Collection dirs;
-    if (deviceInfo.shortSide <= 320) {
+    if (deviceInfo.shortSide <= 420) {
     	CRLog::info("screen density normal");
+        dirs.add(resourceDir + "icons/32x32");
         dirs.add(resourceDir + "screen-density-normal");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-xhigh");
     } else if (deviceInfo.shortSide <= 480) {
     	CRLog::info("screen density high");
+        dirs.add(resourceDir + "icons/48x48");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-normal");
     } else if (deviceInfo.shortSide <= 800) {
     	CRLog::info("screen density xhigh");
+        dirs.add(resourceDir + "icons/64x64");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-xxhigh");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-normal");
     } else {
     	CRLog::info("screen density xxhigh");
+        dirs.add(resourceDir + "icons/128x128");
         dirs.add(resourceDir + "screen-density-xxhigh");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-high");
