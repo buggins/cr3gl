@@ -44,35 +44,8 @@ void CRUIConfig::setupResources(lString8 baseDir) {
 
 void CRUIConfig::setupResourcesForScreenSize() {
 	CRLog::trace("setupResourcesForScreenSize(%d,%d)", deviceInfo.shortSide, deviceInfo.longSide);
-    lString8Collection dirs;
-    if (deviceInfo.shortSide <= 420) {
-    	CRLog::info("screen density normal");
-        dirs.add(resourceDir + "icons/32x32");
-        dirs.add(resourceDir + "screen-density-normal");
-        dirs.add(resourceDir + "screen-density-high");
-        dirs.add(resourceDir + "screen-density-xhigh");
-    } else if (deviceInfo.shortSide <= 480) {
-    	CRLog::info("screen density high");
-        dirs.add(resourceDir + "icons/48x48");
-        dirs.add(resourceDir + "screen-density-high");
-        dirs.add(resourceDir + "screen-density-xhigh");
-        dirs.add(resourceDir + "screen-density-normal");
-    } else if (deviceInfo.shortSide <= 800) {
-    	CRLog::info("screen density xhigh");
-        dirs.add(resourceDir + "icons/64x64");
-        dirs.add(resourceDir + "screen-density-xhigh");
-        dirs.add(resourceDir + "screen-density-xxhigh");
-        dirs.add(resourceDir + "screen-density-high");
-        dirs.add(resourceDir + "screen-density-normal");
-    } else {
-    	CRLog::info("screen density xxhigh");
-        dirs.add(resourceDir + "icons/128x128");
-        dirs.add(resourceDir + "screen-density-xxhigh");
-        dirs.add(resourceDir + "screen-density-xhigh");
-        dirs.add(resourceDir + "screen-density-high");
-        dirs.add(resourceDir + "screen-density-normal");
-    }
-    resourceResolver->setDirList(dirs);
+
+    // calculate fonts size
     int sz = deviceInfo.shortSide;
     int sz1 = sz / 38;
     int sz2 = sz / 28;
@@ -84,6 +57,60 @@ void CRUIConfig::setupResourcesForScreenSize() {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
+
+    // calculate folder icons size
+    int folderIconSize;
+    bool vertical = deviceInfo.width < deviceInfo.height * 85 / 100;
+    if (vertical) {
+        int nowReadingH = deviceInfo.height * 20 / 100;
+        int recentH = deviceInfo.height * 25 / 100;
+        int otherH = (deviceInfo.height - nowReadingH - recentH) / 3;
+        folderIconSize = otherH - sz5*2 - PT_TO_PX(4);
+    } else {
+        int nowReadingH = deviceInfo.height * 30 / 100;
+        int recentH = deviceInfo.height * 40 / 100;
+        int otherH = (deviceInfo.height - nowReadingH - recentH);
+        folderIconSize = otherH - sz5*2 - PT_TO_PX(4);
+    }
+    if (folderIconSize < 48)
+        folderIconSize = 32;
+    else if (folderIconSize < 64)
+        folderIconSize = 48;
+    else if (folderIconSize < 128)
+        folderIconSize = 64;
+    else if (folderIconSize < 256)
+        folderIconSize = 128;
+    else
+        folderIconSize = 256;
+    char s[32];
+    sprintf(s, "icons/%dx%d", folderIconSize, folderIconSize);
+
+    lString8Collection dirs;
+    dirs.add(resourceDir + s);
+    if (deviceInfo.shortSide <= 420) {
+    	CRLog::info("screen density normal");
+        dirs.add(resourceDir + "screen-density-normal");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-xhigh");
+    } else if (deviceInfo.shortSide <= 480) {
+    	CRLog::info("screen density high");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-xhigh");
+        dirs.add(resourceDir + "screen-density-normal");
+    } else if (deviceInfo.shortSide <= 800) {
+    	CRLog::info("screen density xhigh");
+        dirs.add(resourceDir + "screen-density-xhigh");
+        dirs.add(resourceDir + "screen-density-xxhigh");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-normal");
+    } else {
+    	CRLog::info("screen density xxhigh");
+        dirs.add(resourceDir + "screen-density-xxhigh");
+        dirs.add(resourceDir + "screen-density-xhigh");
+        dirs.add(resourceDir + "screen-density-high");
+        dirs.add(resourceDir + "screen-density-normal");
+    }
+    resourceResolver->setDirList(dirs);
 }
 
 

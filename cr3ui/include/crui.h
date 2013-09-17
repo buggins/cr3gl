@@ -19,6 +19,8 @@
 
 struct CRUIDeviceInfo {
 	int dpi;
+    int width;
+    int height;
 	int shortSide;
 	int longSide;
 	int shortSideMillimeters;

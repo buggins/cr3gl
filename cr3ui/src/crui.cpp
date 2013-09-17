@@ -48,6 +48,8 @@ int CRUIDeviceInfo::ptToPixels(int pt) {
 }
 
 void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {
+    width = dx;
+    height = dy;
 	if (dx < dy) {
 		shortSide = dx;
 		longSide = dy;
