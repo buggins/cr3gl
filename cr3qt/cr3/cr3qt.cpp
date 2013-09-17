@@ -174,10 +174,17 @@ void InitCREngine(lString16 exePath) {
     crconfig.setupUserDir(UnicodeToUtf8(exePath));
 
     crconfig.setupResources(UnicodeToUtf8(exePath + L"res\\"));
+    crconfig.coverDirMaxFiles = 2000;
+    crconfig.coverDirMaxItems = 10000;
+    crconfig.coverDirMaxSize = 1024*1024 * 32;
+    crconfig.coverRenderCacheMaxBytes = 1024*1024 * 16;
+    crconfig.coverRenderCacheMaxItems = 200;
+
+    //QString homePath = QDir::homePath();
 
     deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
     deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));
-    deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("c:\\"));
+    //deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("c:\\"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("d:\\"));
     deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8("c:\\Shared\\Books"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_CURRENT_BOOK_DIR, lString8("c:\\Shared\\Books"));
