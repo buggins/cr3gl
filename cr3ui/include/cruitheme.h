@@ -106,9 +106,22 @@ class CRResourceResolver {
 	lString16 resourceToFileName(const char * res);
 	LVHashTable<lString8, LVImageSourceRef> _imageSourceMap;
 	LVHashTable<lString8, CRUIImageRef> _iconMap;
+    lUInt32 _iconColorTransformAdd;
+    lUInt32 _iconColorTransformMultiply;
+    LVImageSourceRef applyColorTransform(LVImageSourceRef src);
 public:
     void setDirList(lString8Collection & dirList);
-	CRResourceResolver(lString8Collection & dirList) : _dirList(dirList), _imageSourceMap(1000), _iconMap(1000) { }
+    CRResourceResolver(lString8Collection & dirList)
+        : _dirList(dirList), _imageSourceMap(1000),
+        _iconMap(1000),
+        _iconColorTransformAdd(0x808080), _iconColorTransformMultiply(0x202020)
+    {
+    }
+    void setIconColorTransform(lUInt32 add, lUInt32 multiply = 0x202020) {
+        _iconColorTransformAdd = add;
+        _iconColorTransformMultiply = multiply;
+        clearImageCache();
+    }
 	LVImageSourceRef getImageSource(const char * name);
 	void clearImageCache();
 	CRUIImageRef getIcon(const char * name, bool tiled= false);

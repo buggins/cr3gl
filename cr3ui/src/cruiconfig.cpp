@@ -163,6 +163,8 @@ void CRUIConfig::createDefaultTheme() {
     toolbar->setBackground("tx_wood_v3.jpg", true);
     toolbar->setBackground2("toolbar_shadow.9");
     toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+    resourceResolver->setIconColorTransform(0x888888, 0x302820);
 }
 
 /// on GL context close, delete all GL objects
