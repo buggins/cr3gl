@@ -20,6 +20,29 @@ class CRCoverPageManager : public CRRunnable {
     LVQueue<CoverTask *> _queue;
     CRRunnable * _allTasksFinishedCallback;
     volatile bool _taskIsRunning;
+    LVImageSourceRef _bookImage; // book image template
+    lvRect _bookImageClientRect; // where cover image should be placed inside book image
+
+    struct BookImage {
+        int dx;
+        int dy;
+        lvRect clientRc;
+        LVColorDrawBuf * buf;
+        BookImage(LVImageSourceRef img, const lvRect & rc, int _dx, int _dy);
+        ~BookImage() { delete buf; }
+    };
+
+    class BookImageCache {
+        LVPtrVector<BookImage> items;
+        int find(int dx, int dy);
+    public:
+        BookImage * get(LVImageSourceRef img, const lvRect & rc, int dx, int dy);
+        BookImageCache() {}
+        void clear() {
+            items.clear();
+        }
+        ~BookImageCache() { clear(); }
+    };
 
     void allTasksFinished();
 
@@ -49,6 +72,8 @@ public:
     /// set callback to run when all tasks are finished
     void setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback);
 
+    /// set book image to draw covers on - instead of plain cover images
+    void setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect);
 
 };
 

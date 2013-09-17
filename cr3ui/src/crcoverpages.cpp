@@ -601,6 +601,45 @@ void CRCoverPageManager::allTasksFinished() {
     }
 }
 
+/// set book image to draw covers on - instead of plain cover images
+void CRCoverPageManager::setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect) {
+    _bookImage = image;
+    _bookImageClientRect = clientRect;
+    clearImageCache();
+}
+
+int CRCoverPageManager::BookImageCache::find(int dx, int dy) {
+    for (int i = 0; i < items.length(); i++) {
+        if (items[i]->dx == dx && items[i]->dy == dy)
+            return i;
+    }
+    return -1;
+}
+
+#define MAX_BOOK_IMAGE_CACHE_SIZE 3
+CRCoverPageManager::BookImage * CRCoverPageManager::BookImageCache::get(LVImageSourceRef img, const lvRect & rc, int dx, int dy) {
+    int index = find(dx, dy);
+    if (index >= 0) {
+        if (index > 0)
+            items.move(0, index);
+        return items[0];
+    }
+    if (items.length() >= MAX_BOOK_IMAGE_CACHE_SIZE)
+        delete items.remove(items.length() - 1);
+    items.insert(0, new CRCoverPageManager::BookImage(img, rc, dx, dy));
+    return items[0];
+}
+
+CRCoverPageManager::BookImage::BookImage(LVImageSourceRef img, const lvRect & rc, int _dx, int _dy) : dx(_dx), dy(_dy) {
+    clientRc.left = rc.left * dx / img->GetWidth();
+    clientRc.top = rc.top * dy / img->GetHeight();
+    clientRc.right = rc.right * dx / img->GetWidth();
+    clientRc.bottom = rc.bottom * dy / img->GetHeight();
+    buf = new LVColorDrawBuf(dx, dy, 32);
+    buf->Clear(0xFF000000); // transparent
+    buf->Draw(img, 0, 0, dx, dy, false);
+}
+
 void CRCoverPageManager::setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback) {
     // called from GUI thread
     CRGuard guard(_monitor);
