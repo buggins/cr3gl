@@ -410,6 +410,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 /// return true if drag operation is intercepted
 bool CRUIListWidget::startDragging(const CRUIMotionEvent * event, bool vertical) {
+    CR_UNUSED2(event, vertical);
     return false;
 }
 
@@ -432,11 +433,13 @@ CRUIStringListAdapter * CRUIStringListAdapter::setItems(lString16Collection & li
 
 int CRUIStringListAdapter::getItemCount(CRUIListWidget * list)
 {
-	return _strings.length();
+    CR_UNUSED(list);
+    return _strings.length();
 }
 CRUIWidget * CRUIStringListAdapter::getItemWidget(CRUIListWidget * list, int index)
 {
-	_widget->setText(_strings[index]);
+    CR_UNUSED(list);
+    _widget->setText(_strings[index]);
 	return _widget;
 }
 

@@ -181,6 +181,7 @@ void CRUIMainWidget::hideSlowOperationPopup()
 }
 
 void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
+    CR_UNUSED(appendHistory);
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     _pendingFolder = folder;
     int newpos = _history.findPosByMode(MODE_FOLDER, folder);

@@ -109,12 +109,13 @@ void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height
 CRUIStyle * CRUIWidget::getStyle(bool forState) {
 	CRUIStyle * res = currentTheme->find(_styleId);
 	if (forState && getState())
-		res = res->find(getState());
+        res = res->find((lUInt8)getState());
 	return res;
 }
 
 /// motion event handler - before children, returns true if it handled event
 bool CRUIWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
+    CR_UNUSED(event);
     return false;
 }
 
@@ -127,6 +128,7 @@ bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 /// key event handler - before children, returns true if it handled event
 bool CRUIWidget::onKeyEventPreProcess(const CRUIKeyEvent * event) {
+    CR_UNUSED(event);
     return false;
 }
 

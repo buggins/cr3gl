@@ -143,7 +143,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         checkError("updateTexture - glTexParameteri");
         lUInt8 * pixels = _drawbuf->GetScanLine(0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, _drawbuf->GetScanLine(0));
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	    checkError("updateTexture - glTexImage2D");
 	    if (glGetError() != GL_NO_ERROR) {
 	        glDeleteTextures(1, &_textureId);
@@ -208,7 +208,8 @@ public:
 		return cacheItem;
 	}
 	int deleteItem(GLImageCacheItem* item) {
-		_itemCount--;
+        CR_UNUSED(item);
+        _itemCount--;
 		return _itemCount;
 	}
 
@@ -242,6 +243,7 @@ public:
 		return cacheItem;
 	}
     void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip, int rotationAngle) {
+        CR_UNUSED(options);
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
@@ -479,7 +481,8 @@ void GLImageCache::removePage(GLImageCachePage * page) {
 
 /// rotates buffer contents by specified angle
 void GLDrawBuf::Rotate( cr_rotate_angle_t angle ) {
-	CRLog::error("GLDrawBuf::Rotate() is not implemented");
+    CR_UNUSED(angle);
+    CRLog::error("GLDrawBuf::Rotate() is not implemented");
 }
 
 /// returns white pixel value
@@ -597,21 +600,24 @@ void GLDrawBuf::Clear( lUInt32 color )
 /// get pixel value
 lUInt32 GLDrawBuf::GetPixel( int x, int y )
 {
-	CRLog::error("GLDrawBuf::GetPixel() is not implemented");
+    CR_UNUSED2(x, y);
+    CRLog::error("GLDrawBuf::GetPixel() is not implemented");
 	return 0;
 }
 
 /// get average pixel value for area (coordinates are fixed floating points *16)
 lUInt32 GLDrawBuf::GetAvgColor(lvRect & rc16)
 {
-	CRLog::error("GLDrawBuf::GetAvgColor() is not implemented");
+    CR_UNUSED(rc16);
+    CRLog::error("GLDrawBuf::GetAvgColor() is not implemented");
 	return 0;
 }
 
 /// get linearly interpolated pixel value (coordinates are fixed floating points *16)
 lUInt32 GLDrawBuf::GetInterpolatedColor(int x16, int y16)
 {
-	CRLog::error("GLDrawBuf::GetInterpolatedColor() is not implemented");
+    CR_UNUSED2(x16, y16);
+    CRLog::error("GLDrawBuf::GetInterpolatedColor() is not implemented");
 	return 0;
 }
 
@@ -694,19 +700,22 @@ void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 /// draws rounded rectangle with specified line width, rounding radius, and color
 void GLDrawBuf::RoundRect( int x0, int y0, int x1, int y1, int borderWidth, int radius, lUInt32 color, int cornerFlags)
 {
-	CRLog::error("GLDrawBuf::RoundRect() is not implemented");
+    CR_UNUSED8(x0, y0, x1, y1, borderWidth, radius, color, cornerFlags);
+    CRLog::error("GLDrawBuf::RoundRect() is not implemented");
 }
 
 /// fills rectangle with pattern
 void GLDrawBuf::FillRectPattern( int x0, int y0, int x1, int y1, lUInt32 color0, lUInt32 color1, lUInt8 * pattern )
 {
-	CRLog::error("GLDrawBuf::FillRectPattern() is not implemented");
+    CR_UNUSED7(x0, y0, x1, y1, color0, color1, pattern);
+    CRLog::error("GLDrawBuf::FillRectPattern() is not implemented");
 }
 
 /// inverts image in specified rectangle
 void GLDrawBuf::InvertRect(int x0, int y0, int x1, int y1)
 {
-	CRLog::error("GLDrawBuf::InvertRect() is not implemented");
+    CR_UNUSED4(x0, y0, x1, y1);
+    CRLog::error("GLDrawBuf::InvertRect() is not implemented");
 }
 
 /// sets new size
@@ -723,7 +732,8 @@ void GLDrawBuf::Resize( int dx, int dy )
 /// draws bitmap (1 byte per pixel) using specified palette
 void GLDrawBuf::Draw( int x, int y, const lUInt8 * bitmap, int width, int height, lUInt32 * palette )
 {
-	CRLog::error("GLDrawBuf::Draw(bitmap) is not implemented");
+    CR_UNUSED6(x, y, bitmap, width, height, palette);
+    CRLog::error("GLDrawBuf::Draw(bitmap) is not implemented");
 }
 
 
@@ -785,7 +795,8 @@ void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int 
 /// draws image
 void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height, bool dither)
 {
-	if (width <= 0 || height <= 0)
+    CR_UNUSED(dither);
+    if (width <= 0 || height <= 0)
 		return;
 	GLImageCacheItem * item = glImageCache->get(img.get());
 	if (item == NULL)
@@ -907,6 +918,7 @@ public:
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
 {
+    CR_UNUSED2(options, palette);
     // workaround for no-rtti builds
 	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
@@ -924,6 +936,7 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int options)
 {
+    CR_UNUSED(options);
     if (dx <= 0 || dy <= 0 || !src)
         return;
     // workaround for no-rtti builds
@@ -969,7 +982,8 @@ void DrawFormattedText( formatted_text_fragment_t * text, int x, int y ) = 0;
 /// returns scanline pointer
 lUInt8 * GLDrawBuf::GetScanLine( int y )
 {
-	CRLog::error("GLDrawBuf::GetScanLine() is not implemented");
+    CR_UNUSED(y);
+    CRLog::error("GLDrawBuf::GetScanLine() is not implemented");
 	return NULL;
 }
 
