@@ -154,15 +154,24 @@ void CRUIConfig::createDefaultTheme() {
     fileListStyle->setListDelimiterVertical("divider_light_v3.png");
 
     CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
-    //homeListCaption->setTextColor(0x40000000);
     homeListCaption->setTextColor(0x00402000);
     homeListCaption->setFontSize(CRUI::FONT_SIZE_SMALL);
 
     CRUIStyle * toolbar = currentTheme->addSubstyle("TOOL_BAR");
-    //homeListCaption->setTextColor(0x40000000);
-    toolbar->setBackground("tx_wood_v3.jpg", true);
+   toolbar->setBackground("tx_wood_v3.jpg", true);
     toolbar->setBackground2("toolbar_shadow.9");
     toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+    CRUIStyle * popupframe = currentTheme->addSubstyle("POPUP_FRAME");
+    popupframe->setBackground("tx_wood_v3.jpg", true);
+    popupframe->setBackground2("toolbar_shadow.9");
+    popupframe->setPadding(PT_TO_PX(2));
+
+    CRUIStyle * popupframehandle = currentTheme->addSubstyle("POPUP_FRAME_HANDLE");
+    popupframehandle->setPadding(PT_TO_PX(2));
+    popupframehandle->setMargin(PT_TO_PX(2));
+    popupframehandle->setBackground(0xC0000000);
+    popupframehandle->setBackground2("toolbar_shadow.9");
 
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);
 

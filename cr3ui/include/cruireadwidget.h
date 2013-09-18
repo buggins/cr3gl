@@ -10,6 +10,7 @@
 
 
 #include "cruiwidget.h"
+#include "cruilayout.h"
 #include "fileinfo.h"
 
 class CRUIMainWidget;
@@ -28,7 +29,7 @@ public:
 
 class CRUIDocView;
 
-class CRUIReadWidget : public CRUIWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
+class CRUIReadWidget : public CRUIWindowWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
 {
     CRUIMainWidget * _main;
     CRUIDocView * _docview;

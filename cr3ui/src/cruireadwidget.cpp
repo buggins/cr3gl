@@ -141,6 +141,8 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     drawVGradient(buf, top2, 0xE0000000, 0xFF000000);
     drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
     drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
+    // popup support
+    drawPopup(buf);
 }
 
 class BookLoadedNotificationTask : public CRRunnable {

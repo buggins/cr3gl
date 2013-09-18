@@ -97,7 +97,8 @@ public:
 	virtual lvPoint getTileOffset() const { return lvPoint(); }
 	const lString8 & getId() { return _id; }
 	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }
-	lUInt32 getState() { return _state; }
+    CRUIWidget * setId(const char * id) { _id = id; return this; }
+    lUInt32 getState() { return _state; }
 	lUInt32 getState(lUInt32 mask) { return _state & mask; }
 	CRUIWidget * setState(lUInt32 state) { if (_state != state) { _state = state; invalidate(); } return this; }
 	CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }

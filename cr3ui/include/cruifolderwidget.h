@@ -16,7 +16,7 @@ class CRUIFileListWidget;
 
 class CRUIMainWidget;
 
-class CRUIFolderWidget : public CRUILinearLayout, public CRUIOnListItemClickListener, public CRUIOnClickListener {
+class CRUIFolderWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
     CRDirContentItem * _dir;

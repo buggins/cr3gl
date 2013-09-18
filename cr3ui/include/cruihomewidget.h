@@ -19,7 +19,7 @@ class CRUILibraryWidget;
 class CRUIOnlineCatalogsWidget;
 class CRUIMainWidget;
 
-class CRUIHomeWidget : public CRUIContainerWidget {
+class CRUIHomeWidget : public CRUIWindowWidget, public CRUIOnClickListener {
 	CRUINowReadingWidget * _currentBook;
 	CRUIRecentBooksListWidget * _recentBooksList;
 	CRUIFileSystemDirsWidget * _fileSystem;
@@ -38,6 +38,7 @@ public:
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
 
+    virtual bool onClick(CRUIWidget * widget);
 };
 
 class CRCoverWidget : public CRUIWidget {

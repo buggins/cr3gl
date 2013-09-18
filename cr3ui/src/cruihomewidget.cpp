@@ -45,7 +45,9 @@ public:
 		addChild(_layout);
 		_captionLayout = new CRUILinearLayout(false);
 		_menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
-		_caption = new CRUITextWidget(STR_NOW_READING);
+        _menuButton->setOnClickListener(home);
+        _menuButton->setId("MENU");
+        _caption = new CRUITextWidget(STR_NOW_READING);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
         //_caption->setBackground(0xE0404040);
@@ -84,6 +86,7 @@ public:
 //		_layout->addChild(testButton);
 
 		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+
 	}
 
     void onThemeChanged() {
@@ -714,6 +717,16 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "MENU") {
+        CRLog::debug("Home screen - Menu button pressed");
+        CRUITextWidget * popup = new CRUITextWidget(lString16("Test popup"));
+        lvRect margins;
+        preparePopup(popup, ALIGN_TOP, margins);
+        return true;
+    }
+    return false;
+}
 
 
 void CRCoverWidget::setSize(int width, int height) {
