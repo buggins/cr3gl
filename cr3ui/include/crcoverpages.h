@@ -19,7 +19,9 @@ class CRCoverPageManager : public CRRunnable {
         int dy;
         lvRect clientRc;
         LVColorDrawBuf * buf;
-        BookImage(LVImageSourceRef img, const lvRect & rc, int _dx, int _dy);
+        lUInt32 color;
+        lUInt32 neutralColor;
+        BookImage(LVImageSourceRef img, const lvRect & rc, const lvRect & neutralRc, int _dx, int _dy);
         ~BookImage() { delete buf; }
     };
 
@@ -27,7 +29,7 @@ class CRCoverPageManager : public CRRunnable {
         LVPtrVector<BookImage> items;
         int find(int dx, int dy);
     public:
-        BookImage * get(LVImageSourceRef img, const lvRect & rc, int dx, int dy);
+        BookImage * get(LVImageSourceRef img, const lvRect & rc, const lvRect & neutralRc, int dx, int dy);
         BookImageCache() { }
         void clear() { items.clear(); }
         ~BookImageCache() { clear(); }
@@ -41,6 +43,7 @@ class CRCoverPageManager : public CRRunnable {
     volatile bool _taskIsRunning;
     LVImageSourceRef _bookImage; // book image template
     lvRect _bookImageClientRect; // where cover image should be placed inside book image
+    lvRect _bookImageNeutralRect; // rect where color is neutral - and should not be corrected
     BookImageCache _bookImageCache;
 
 
@@ -73,10 +76,10 @@ public:
     void setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback);
 
     /// set book image to draw covers on - instead of plain cover images
-    void setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect);
+    void setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect, const lvRect & bookImageNeutralRect);
 
     /// draws book template and tells its client rect - returns false if book template is not set
-    bool drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect);
+    bool drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect, lUInt32 & avgColor, lUInt32 & neutralColor);
 
 };
 

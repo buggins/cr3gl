@@ -166,8 +166,9 @@ void CRUIConfig::createDefaultTheme() {
 
     resourceResolver->setIconColorTransform(0x888888, 0x302820);
 
-    lvRect hardcoverClientRect(53, 29, 319, 378);
-    coverPageManager->setCoverPageTemplate(resourceResolver->getImageSource("hardcover"), hardcoverClientRect);
+    lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image
+    lvRect hardcoverNeutralRect(60, 12, 300, 20); // area with neutral color
+    coverPageManager->setCoverPageTemplate(resourceResolver->getImageSource("hardcover"), hardcoverClientRect, hardcoverNeutralRect);
 }
 
 /// on GL context close, delete all GL objects

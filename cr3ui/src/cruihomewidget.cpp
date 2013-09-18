@@ -760,10 +760,10 @@ void CRCoverWidget::draw(LVDrawBuf * buf) {
     int width = rc.width();
     int height = rc.height();
     // fix proportions
-    if (width > height * 3 / 4)
-        width = height * 3 / 4;
-    else if (height > width * 4 / 3)
-        height = width * 4 / 3;
+    if (width > height * 8 / 10)
+        width = height * 8 / 10;
+    else if (height > width * 10 / 8)
+        height = width * 10 / 8;
     if (width < 30 || height < 40)
         return; // too small
 
@@ -791,9 +791,9 @@ lvPoint CRCoverWidget::calcCoverSize(int w, int h) {
     int width = w - padding.left - padding.right - margin.left - margin.right;
     int height = h - padding.top - padding.bottom - margin.top - margin.bottom;
     // fix proportions
-    if (width > height * 3 / 4)
-        width = height * 3 / 4;
-    else if (height > width * 4 / 3)
-        height = width * 4 / 3;
+    if (width > height * 8 / 10)
+        width = height * 8 / 10;
+    else if (height > width * 10 / 8)
+        height = width * 10 / 8;
     return lvPoint(width, height);
 }

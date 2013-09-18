@@ -79,7 +79,7 @@ private:
     void checkSize();
     Entry * put(CRDirEntry * _book, int _dx, int _dy, LVDrawBuf * _image);
     /// override to use non-standard draw buffers (e.g. OpenGL)
-    virtual LVDrawBuf * createDrawBuf(int dx, int dy);
+    virtual LVColorDrawBuf * createDrawBuf(int dx, int dy);
 public:
     void clear();
     Entry * draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy);
@@ -514,31 +514,129 @@ bool CRCoverFileCache::save() {
 
 
 
+static lUInt32 getAvgColor(LVColorDrawBuf * buf, lvRect & rc, int borderSize = 0) {
+    int stats[16*16*16];
+    memset(stats, 0, sizeof(stats));
+    for (int y = rc.top; y < rc.bottom; y++) {
+        bool hborder = !borderSize || y <= rc.top + borderSize || y > rc.bottom - borderSize;
+        lUInt32 * row = (lUInt32*)buf->GetScanLine(y);
+        for (int x = rc.left; x < rc.right; x++) {
+            bool vborder = !borderSize || x <= rc.left + borderSize || x > rc.right - borderSize;
+            if (hborder || vborder) {
+                lUInt32 cl = row[x];
+                if ((cl & 0xFF000000) == 0) {
+                    // convert to 12 bit color
+                    int cl12 = ((cl >> 12) & 0xF00) | ((cl >> 8) & 0xF0) | ((cl >> 4) & 0xF);
+                    stats[cl12]++;
+                }
+            }
+        }
+    }
+    int maxcount = stats[0];
+    lUInt32 cl12 = 0;
+    for (int i = 1; i < 0x1000; i++) {
+        if (maxcount < stats[i]) {
+            maxcount = stats[i];
+            cl12 = i;
+        }
+    }
+    return ((cl12 & 0xF00) << 12) | ((cl12 & 0xF0) << 8) | ((cl12 & 0xF) << 4);
+}
 
+// distance between two colors
+static inline int calcDist(lUInt32 c1, lUInt32 c2) {
+    int dr = ((c1 >> 16) & 0xFF) - ((c2 >> 16) & 0xFF);
+    int dg = ((c1 >> 8) & 0xFF) - ((c2 >> 8) & 0xFF);
+    int db = ((c1 >> 0) & 0xFF) - ((c2 >> 0) & 0xFF);
+    if (dr < 0) dr = -dr;
+    if (dg < 0) dg = -dg;
+    if (db < 0) db = -db;
+    return dr + dg + db;
+}
+
+// returns 0 if very close to src color (full transform), 255 if very close to neutral color
+static inline int calcDistAlpha(int ds, int dn) {
+    return (ds + dn > 5) ? 255 * ds / (ds + dn) : 255;
+}
+
+static inline int calcMult(int sc, int dc) {
+    return sc > (dc >> 4) ? 256 * dc / sc : 256 * 16;
+}
+
+static inline int correctComponent(int c, int mult, int alpha) {
+    if (alpha >= 250)
+        return c; // no transform, very close to neutral
+    int cm = (c * mult) >> 8;
+    int res = ((cm * (255-alpha)) + (c * alpha)) >> 8;
+    if (res < 0)
+        return 0;
+    else if (res > 255)
+        return 255;
+    return res;
+}
+
+static void correctColors(LVColorDrawBuf * buf, lUInt32 srcColor, lUInt32 dstColor, lUInt32 neutralColor) {
+    int sr = (srcColor >> 16) & 0xFF;
+    int sg = (srcColor >> 8) & 0xFF;
+    int sb = (srcColor >> 0) & 0xFF;
+    int dr = (dstColor >> 16) & 0xFF;
+    int dg = (dstColor >> 8) & 0xFF;
+    int db = (dstColor >> 0) & 0xFF;
+    int mr = calcMult(sr, dr);
+    int mg = calcMult(sg, dg);
+    int mb = calcMult(sb, db);
+    for (int y = 0; y < buf->GetHeight(); y++) {
+        lUInt32 * row = (lUInt32*)buf->GetScanLine(y);
+        for (int x = 0; x < buf->GetWidth(); x++) {
+            lUInt32 cl = row[x];
+            if ((cl & 0xFF000000) < 0xF0000000) {
+                int ds = calcDist(cl, srcColor); // distance to src color
+                int dn = calcDist(cl, neutralColor); // distance to neutral color
+                int alpha = calcDistAlpha(ds, dn);
+                int r = correctComponent((cl >> 16) & 0xFF, mr, alpha);
+                int g = correctComponent((cl >> 8) & 0xFF, mg, alpha);
+                int b = correctComponent((cl >> 0) & 0xFF, mb, alpha);
+                row[x] = (cl & 0xFF000000) | (r << 16) | (g << 8) | b;
+            }
+        }
+    }
+}
 
 CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy) {
 	CRLog::trace("CRCoverImageCache::draw called for %s", _book->getPathName().c_str());
+
     LVStreamRef stream = coverCache->getStream(_book->getPathName());
     LVImageSourceRef image;
     if (!stream.isNull()) {
         image = LVCreateStreamImageSource(stream);
     }
+
     // TODO: fix font face
-    LVDrawBuf * drawbuf = createDrawBuf(dx, dy);
-    lvRect clientRect;
+
+    LVColorDrawBuf * drawbuf = createDrawBuf(dx, dy);
     drawbuf->beforeDrawing();
-    if (_manager->drawBookTemplate(drawbuf, clientRect)) {
+
+    lvRect clientRect;
+    lUInt32 bookImageColor;
+    lUInt32 neutralColor;
+    if (_manager->drawBookTemplate(drawbuf, clientRect, bookImageColor, neutralColor)) {
         // has book template
-        LVDrawBuf * buf = createDrawBuf(clientRect.width(), clientRect.height());
+        LVColorDrawBuf * buf = createDrawBuf(clientRect.width(), clientRect.height());
         buf->beforeDrawing();
         CRDrawBookCover(buf, lString8("Arial"), _book, image, 32);
         buf->afterDrawing();
+
+        lvRect rc(0, 0, buf->GetWidth(), buf->GetHeight());
+        lUInt32 coverImageColor = getAvgColor(buf, rc, rc.width() / 10);
+        correctColors(drawbuf, bookImageColor, coverImageColor, neutralColor);
+
         buf->DrawTo(drawbuf, clientRect.left, clientRect.top, 0, NULL);
         delete buf;
     } else {
         // does not have book template
         CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
     }
+
     drawbuf->afterDrawing();
     return put(_book, dx, dy, drawbuf);
 }
@@ -580,15 +678,10 @@ void CRCoverImageCache::checkSize() {
     }
 }
 
-LVDrawBuf * CRCoverImageCache::createDrawBuf(int dx, int dy) {
-#if USE_GL_COVERPAGE_CACHE == 1
-    GLDrawBuf * res = new GLDrawBuf(dx, dy, 32, true);
-    return res;
-#else
+LVColorDrawBuf * CRCoverImageCache::createDrawBuf(int dx, int dy) {
     LVColorDrawBuf * res = new LVColorDrawBuf(dx, dy, 32);
     res->Clear(0xFF000000);
     return res;
-#endif
 }
 
 void CRCoverImageCache::clear() {
@@ -614,9 +707,10 @@ void CRCoverPageManager::allTasksFinished() {
 }
 
 /// set book image to draw covers on - instead of plain cover images
-void CRCoverPageManager::setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect) {
+void CRCoverPageManager::setCoverPageTemplate(LVImageSourceRef image, const lvRect & clientRect, const lvRect & neutralRect) {
     _bookImage = image;
     _bookImageClientRect = clientRect;
+    _bookImageNeutralRect = neutralRect;
     clearImageCache();
 }
 
@@ -629,7 +723,7 @@ int CRCoverPageManager::BookImageCache::find(int dx, int dy) {
 }
 
 #define MAX_BOOK_IMAGE_CACHE_SIZE 3
-CRCoverPageManager::BookImage * CRCoverPageManager::BookImageCache::get(LVImageSourceRef img, const lvRect & rc, int dx, int dy) {
+CRCoverPageManager::BookImage * CRCoverPageManager::BookImageCache::get(LVImageSourceRef img, const lvRect & rc, const lvRect & neutralRc, int dx, int dy) {
     int index = find(dx, dy);
     if (index >= 0) {
         if (index > 0)
@@ -638,18 +732,25 @@ CRCoverPageManager::BookImage * CRCoverPageManager::BookImageCache::get(LVImageS
     }
     if (items.length() >= MAX_BOOK_IMAGE_CACHE_SIZE)
         delete items.remove(items.length() - 1);
-    items.insert(0, new CRCoverPageManager::BookImage(img, rc, dx, dy));
+    items.insert(0, new CRCoverPageManager::BookImage(img, rc, neutralRc, dx, dy));
     return items[0];
 }
 
-CRCoverPageManager::BookImage::BookImage(LVImageSourceRef img, const lvRect & rc, int _dx, int _dy) : dx(_dx), dy(_dy) {
+CRCoverPageManager::BookImage::BookImage(LVImageSourceRef img, const lvRect & rc, const lvRect & neutralRc, int _dx, int _dy) : dx(_dx), dy(_dy) {
     clientRc.left = rc.left * dx / img->GetWidth();
     clientRc.top = rc.top * dy / img->GetHeight();
     clientRc.right = rc.right * dx / img->GetWidth();
     clientRc.bottom = rc.bottom * dy / img->GetHeight();
+    lvRect nrc;
+    nrc.left = neutralRc.left * dx / img->GetWidth();
+    nrc.top = neutralRc.top * dy / img->GetHeight();
+    nrc.right = neutralRc.right * dx / img->GetWidth();
+    nrc.bottom = neutralRc.bottom * dy / img->GetHeight();
     buf = new LVColorDrawBuf(dx, dy, 32);
     buf->Clear(0xFF000000); // transparent
     buf->Draw(img, 0, 0, dx, dy, false);
+    color = getAvgColor(buf, clientRc);
+    neutralColor = getAvgColor(buf, nrc);
 }
 
 void CRCoverPageManager::setAllTasksFinishedCallback(CRRunnable * allTasksFinishedCallback) {
@@ -748,13 +849,15 @@ LVDrawBuf * CRCoverPageManager::getIfReady(CRDirEntry * _book, int dx, int dy)
 }
 
 /// draws book template and tells its client rect - returns false if book template is not set
-bool CRCoverPageManager::drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect) {
+bool CRCoverPageManager::drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect, lUInt32 & avgColor, lUInt32 & neutralColor) {
     CRGuard guard(_monitor);
     if (_bookImage.isNull())
         return false;
-    BookImage * bookImage = _bookImageCache.get(_bookImage, _bookImageClientRect, buf->GetWidth(), buf->GetHeight());
+    BookImage * bookImage = _bookImageCache.get(_bookImage, _bookImageClientRect, _bookImageNeutralRect, buf->GetWidth(), buf->GetHeight());
     bookImage->buf->DrawTo(buf, 0, 0, 0, NULL);
     clientRect = bookImage->clientRc;
+    avgColor = bookImage->color;
+    neutralColor = bookImage->neutralColor;
     return true;
 }
 
