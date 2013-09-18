@@ -65,12 +65,12 @@ void CRUIConfig::setupResourcesForScreenSize() {
         int nowReadingH = deviceInfo.height * 20 / 100;
         int recentH = deviceInfo.height * 25 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH) / 3;
-        folderIconSize = otherH - sz5*2 - PT_TO_PX(4);
+        folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
     } else {
         int nowReadingH = deviceInfo.height * 30 / 100;
         int recentH = deviceInfo.height * 40 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH);
-        folderIconSize = otherH - sz5*2 - PT_TO_PX(4);
+        folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
     }
     if (folderIconSize < 48)
         folderIconSize = 32;
@@ -164,7 +164,7 @@ void CRUIConfig::createDefaultTheme() {
     toolbar->setBackground2("toolbar_shadow.9");
     toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
 
-    resourceResolver->setIconColorTransform(0x888888, 0x302820);
+    resourceResolver->setIconColorTransform(0x898480, 0x28241E);
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image
     lvRect hardcoverNeutralRect(60, 12, 300, 20); // area with neutral color

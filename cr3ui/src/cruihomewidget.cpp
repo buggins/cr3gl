@@ -203,7 +203,7 @@ public:
     CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
-		_caption->setPadding(lvRect(3,3,1,3));
+        _caption->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(2), PT_TO_PX(3), PT_TO_PX(2)));
         //_caption->setFontSize(CRUI::FONT_SIZE_SMALL);
         _caption->setStyle("HOME_LIST_CAPTION");
 //		lvRect rc;
@@ -229,12 +229,12 @@ public:
 		_itemImage = new CRUIImageWidget(NULL);
 		_itemImage->setAlign(CRUI::ALIGN_CENTER);
 		_itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
-		_itemImage->setPadding(PT_TO_PX(1));
+        _itemImage->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
 
 		_textWidget = new CRUITextWidget(lString16());
 		_textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
         _textWidget->setFontSize(CRUI::FONT_SIZE_XSMALL);
-		_textWidget->setPadding(PT_TO_PX(1));
+        _textWidget->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
         _textWidget->setMaxLines(2);
         _textWidget->setEllipsisMode(ELLIPSIS_MIDDLE);
 
