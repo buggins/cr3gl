@@ -173,6 +173,16 @@ void CRUIConfig::createDefaultTheme() {
     popupframehandle->setBackground(0xC0000000);
     popupframehandle->setBackground2("toolbar_shadow.9");
 
+    CRUIStyle * menuitem = currentTheme->addSubstyle("MENU_ITEM");
+    menuitem->setPadding(PT_TO_PX(2));
+    CRUIStyle * menuitemicon = currentTheme->addSubstyle("MENU_ITEM_ICON");
+    menuitemicon->setMargin(PT_TO_PX(2));
+    menuitemicon->setAlign(ALIGN_CENTER);
+    CRUIStyle * menuitemtext = currentTheme->addSubstyle("MENU_ITEM_TEXT");
+    menuitemtext->setMargin(PT_TO_PX(2));
+    menuitemtext->setFontSize(CRUI::FONT_SIZE_XSMALL);
+    menuitemtext->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image

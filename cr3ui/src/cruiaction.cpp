@@ -1,12 +1,11 @@
 #include "cruiaction.h"
 
-#define CRACTION_IMPL
+#undef CRACTION
+#define CRACTION(id,cmd,param,name,icon) const char * name  = # name; const CRUIAction * ACTION_ ## id = new CRUIAction(CMD_ ## id,cmd,param,name,icon);
 #include "cruiactiondef.h"
-#undef CRACTION_IMPL
 
-
-lString16 CRUIAction::getName() {
-    return name.empty() ? (name_res.empty() ? lString16() : _16(name_res)) : name;
+lString16 CRUIAction::getName() const {
+    return name.empty() ? (name_res.empty() ? lString16() : _16(name_res.c_str())) : name;
 }
 
 CRUIAction::CRUIAction(const CRUIAction & v)
@@ -21,6 +20,7 @@ CRUIAction & CRUIAction::operator = (const CRUIAction & v) {
     name_res = v.name_res;
     icon_res = v.icon_res;
     sparam = v.sparam;
+    return *this;
 }
 
 CRUIAction * CRUIAction::clone() const {

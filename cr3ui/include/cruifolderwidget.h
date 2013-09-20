@@ -10,6 +10,7 @@
 
 #include "cruilist.h"
 #include "fileinfo.h"
+#include "cruiwindow.h"
 
 class CRUITitleBarWidget;
 class CRUIFileListWidget;

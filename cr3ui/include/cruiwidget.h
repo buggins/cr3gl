@@ -186,7 +186,8 @@ public:
 
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating() { return false; }
-	virtual bool isDrawRequested() { return _drawRequested; }
+    virtual bool isAnimatingRecursive();
+    virtual bool isDrawRequested() { return _drawRequested; }
 	virtual void invalidate() {
 		_drawRequested = true;
 	}

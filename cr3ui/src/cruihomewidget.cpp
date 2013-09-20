@@ -720,9 +720,11 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
 bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "MENU") {
         CRLog::debug("Home screen - Menu button pressed");
-        CRUITextWidget * popup = new CRUITextWidget(lString16("Test popup"));
-        lvRect margins;
-        preparePopup(popup, ALIGN_TOP, margins);
+        CRUIActionList actions;
+        actions.add(ACTION_EXIT);
+        actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_BACK);
+        showMenu(actions, ALIGN_TOP, false);
         return true;
     }
     return false;

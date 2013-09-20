@@ -6,6 +6,7 @@
 #include "cruihomewidget.h"
 #include "cruireadwidget.h"
 #include "cruipopup.h"
+#include "cruiwindow.h"
 
 enum VIEW_MODE {
     MODE_HOME,

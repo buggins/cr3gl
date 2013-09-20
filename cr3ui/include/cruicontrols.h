@@ -44,7 +44,7 @@ class CRUIImageWidget : public CRUIWidget {
 protected:
     lString8 _imageRes;
 public:
-    CRUIImageWidget(const char * imageRes) : _imageRes(imageRes) { }
+    CRUIImageWidget(const char * imageRes = NULL) : _imageRes(imageRes) { }
     virtual void setImage(const char * imageRes) { _imageRes = imageRes; requestLayout(); }
     virtual void setImage(const lString8 & imageRes) { _imageRes = imageRes; requestLayout(); }
     CRUIImageRef getImage() { return !_imageRes.empty() ? resourceResolver->getIcon(_imageRes.c_str()) : CRUIImageRef(); }

@@ -377,6 +377,13 @@ CRUIWidget * CRUIWidget::childById(const char * id) {
 	return childById(lString8(id));
 }
 
+bool CRUIWidget::isAnimatingRecursive() {
+    for (int i = 0; i < getChildCount(); i++)
+        if (getChild(i)->isAnimating())
+            return true;
+    return false;
+}
+
 void CRUIWidget::animate(lUInt64 millisPassed)
 {
     for (int i = 0; i < getChildCount(); i++)

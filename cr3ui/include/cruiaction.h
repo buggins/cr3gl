@@ -15,10 +15,11 @@ struct CRUIAction {
     lString8 icon_res; // icon resource id
     lString8 sparam;   // string parameter for some custom actions
     CRUIAction(int _id) : id(_id), cmd(0), param(0) { }
+    CRUIAction(int _id, int _cmd, int _param, const char * _name_res, const char * _icon_res) : id(_id), cmd(_cmd), param(_param), name_res(_name_res), icon_res(_icon_res) { }
     CRUIAction(const CRUIAction & v);
     CRUIAction & operator = (const CRUIAction & v);
     CRUIAction * clone() const;
-    lString16 getName();
+    lString16 getName() const;
 };
 
 class CRUIActionList {
@@ -34,7 +35,7 @@ public:
         delete _list.remove(pos);
     }
     void addAll(const CRUIActionList & list);
-    int length() const { return _list; }
+    int length() const { return _list.length(); }
     void clear() { _list.clear(); }
     const CRUIAction * operator[] (int index) const { return _list[index]; }
     const CRUIAction * get(int index) const { return _list[index]; }
@@ -43,11 +44,29 @@ public:
     CRUIActionList & operator += (const CRUIActionList & list) { addAll(list); }
 };
 
-#undef CRACTION_IMPL
-#define CRACTION_ENUM
+#ifndef CRACTION_ENUM_INCLUDED
+#define CRACTION_ENUM_INCLUDED
+// define enum
+#undef CRACTION
+#define CRACTION(id,cmd,param,name,icon) CMD_ ## id,
+enum {
+    CMD_FIRST = 10000,
+
+    #include "cruiactiondef.h"
+
+    CMD_LAST
+};
+#endif
+
+#ifndef CRACTION_EXTERN_INCLUDED
+#define CRACTION_EXTERN_INCLUDED
+// define external instances
+#undef CRACTION
+#define CRACTION(id,cmd,param,name,icon) extern const char * name; extern const CRUIAction * ACTION_ ## id;
 #include "cruiactiondef.h"
-#undef CRACTION_ENUM
-#include "cruiactiondef.h"
+#endif
+
+
 
 
 #endif // CRUIACTION_H

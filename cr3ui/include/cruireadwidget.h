@@ -12,6 +12,7 @@
 #include "cruiwidget.h"
 #include "cruilayout.h"
 #include "fileinfo.h"
+#include "cruiwindow.h"
 
 class CRUIMainWidget;
 

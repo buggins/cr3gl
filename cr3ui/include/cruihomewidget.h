@@ -11,6 +11,7 @@
 #include "cruilayout.h"
 #include "cruilist.h"
 #include "fileinfo.h"
+#include "cruiwindow.h"
 
 class CRUINowReadingWidget;
 class CRUIRecentBooksListWidget;

@@ -14,13 +14,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         cr3qt.cpp \
-        cr3mainwindow.cpp \
-    ../../cr3ui/src/cruiaction.cpp
+        cr3mainwindow.cpp
 
 HEADERS  += cr3mainwindow.h \
-            cr3qt.h \
-    ../../cr3ui/include/cruiaction.h \
-    ../../cr3ui/include/cruiactiondef.h
+            cr3qt.h
             
 win32 {
     DEFINES += _WIN32=1 \
@@ -378,6 +375,8 @@ SOURCES += \
     ../../cr3ui/src/cruipopup.cpp \
     ../../cr3ui/src/crcoverpages.cpp \
     ../../cr3ui/src/cruiconfig.cpp \
+    ../../cr3ui/src/cruiaction.cpp \
+    ../../cr3ui/src/cruiwindow.cpp \
     ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
@@ -402,4 +401,7 @@ HEADERS += \
     ../../cr3ui/include/cruipopup.h \
     ../../cr3ui/include/crcoverpages.h \
     ../../cr3ui/include/cruiconfig.h \
+    ../../cr3ui/include/cruiaction.h \
+    ../../cr3ui/include/cruiactiondef.h \
+    ../../cr3ui/include/cruiwindow.h \
     ../../cr3ui/include/stringresource.h
