@@ -14,10 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         cr3qt.cpp \
-        cr3mainwindow.cpp
+        cr3mainwindow.cpp \
+    ../../cr3ui/src/cruiaction.cpp
 
 HEADERS  += cr3mainwindow.h \
-            cr3qt.h
+            cr3qt.h \
+    ../../cr3ui/include/cruiaction.h \
+    ../../cr3ui/include/cruiactiondef.h
             
 win32 {
     DEFINES += _WIN32=1 \
