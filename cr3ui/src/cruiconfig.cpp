@@ -42,6 +42,19 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     crconfig.cssDir = baseDir + "hyph";
 }
 
+static int nearestIconSize(int sz) {
+    if (sz < 48)
+        return 32;
+    else if (sz < 64)
+        return 48;
+    else if (sz < 128)
+        return 64;
+    else if (sz < 256)
+        return 128;
+    else
+        return 256;
+}
+
 void CRUIConfig::setupResourcesForScreenSize() {
 	CRLog::trace("setupResourcesForScreenSize(%d,%d)", deviceInfo.shortSide, deviceInfo.longSide);
 
@@ -60,33 +73,32 @@ void CRUIConfig::setupResourcesForScreenSize() {
 
     // calculate folder icons size
     int folderIconSize;
+    int menuIconSize;
     bool vertical = deviceInfo.width < deviceInfo.height * 85 / 100;
     if (vertical) {
         int nowReadingH = deviceInfo.height * 20 / 100;
         int recentH = deviceInfo.height * 25 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH) / 3;
         folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
+        menuIconSize = MIN_ITEM_PX - PT_TO_PX(4);
     } else {
         int nowReadingH = deviceInfo.height * 30 / 100;
         int recentH = deviceInfo.height * 40 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH);
         folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
+        menuIconSize = MIN_ITEM_PX - PT_TO_PX(4);
     }
-    if (folderIconSize < 48)
-        folderIconSize = 32;
-    else if (folderIconSize < 64)
-        folderIconSize = 48;
-    else if (folderIconSize < 128)
-        folderIconSize = 64;
-    else if (folderIconSize < 256)
-        folderIconSize = 128;
-    else
-        folderIconSize = 256;
-    char s[32];
-    sprintf(s, "icons/%dx%d", folderIconSize, folderIconSize);
+    folderIconSize = nearestIconSize(folderIconSize);
+    menuIconSize = nearestIconSize(menuIconSize);
 
     lString8Collection dirs;
+
+    char s[32];
+    sprintf(s, "icons/%dx%d", menuIconSize, menuIconSize);
     dirs.add(resourceDir + s);
+    sprintf(s, "folder_icons/%dx%d", folderIconSize, folderIconSize);
+    dirs.add(resourceDir + s);
+
     if (deviceInfo.shortSide <= 420) {
     	CRLog::info("screen density normal");
         dirs.add(resourceDir + "screen-density-normal");

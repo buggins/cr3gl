@@ -330,7 +330,7 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	if (!stream.isNull())
 		res = LVCreateStreamImageSource(stream);
 	if (!res.isNull() && res->GetWidth() > 0 && res->GetHeight() > 0) {
-        bool isIconResource = path.pos("icons/") >= 0 || path.pos("folders/") >= 0;
+        bool isIconResource = path.pos("icons/") >= 0 || path.pos("folder_icons/") >= 0;
         if (isIconResource)
             res = applyColorTransform(res);
         if (path.pos(".9.") >= 0) {
