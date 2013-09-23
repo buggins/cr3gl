@@ -1,22 +1,41 @@
 #include "cruisettingswidget.h"
 #include "crui.h"
+#include "cruimain.h"
 
 using namespace CRUI;
 
-CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsList * settings) : CRUIWindowWidget(main), _settings(settings)
+/// no-rtti workaround for dynamic_cast<CRUISettingsList *>
+CRUISettingsList * CRUISettingsList::asList() {
+    return (CRUISettingsList *)this;
+}
+
+CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings) : CRUIWindowWidget(main), _settings(settings)
 {
     _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
-    _list = new CRUISettingsListWidget(settings);
-    _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
+    _list = NULL;
     addChild(_titlebar);
-    addChild(_list);
+    if (settings->isList()) {
+        int childCount = settings->childCount();
+        CRUISettingsList * list = settings->asList();
+        childCount = list->childCount();
+        _list = new CRUISettingsListWidget(settings->asList());
+        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _list->setOnItemClickListener(this);
+        addChild(_list);
+    }
     setStyle("SETTINGS_WIDGET");
+}
+
+bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    CRUISettingsItemBase * setting = _settings->getChild(itemIndex);
+    _main->showSettings(setting);
+    return true;
 }
 
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
-        // TODO: handle title bar back button
-
+        _main->back();
     }
     return true;
 }
@@ -36,16 +55,16 @@ lString16 CRUISettingsItemBase::getDescription() const {
     return !_descriptionRes.empty() ? _16(_descriptionRes.c_str()) : lString16();
 }
 
-CRUISettingsItemBase * CRUISettingsItemBase::findSetting(lString8 name) {
-    if (getSettingId() == name)
-        return this;
-    for (int i = 0; i <childCount(); i++) {
-        CRUISettingsItemBase * res = getChild(i)->findSetting(name);
-        if (res)
-            return res;
-    }
-    return NULL;
-}
+//CRUISettingsItemBase * CRUISettingsItemBase::findSetting(lString8 name) {
+//    if (getSettingId() == name)
+//        return this;
+//    for (int i = 0; i <childCount(); i++) {
+//        CRUISettingsItemBase * res = getChild(i)->findSetting(name);
+//        if (res)
+//            return res;
+//    }
+//    return NULL;
+//}
 
 CRUISettingsListItemWidget::CRUISettingsListItemWidget() : _settings(NULL) {
     _title = new CRUITextWidget();
@@ -97,8 +116,8 @@ int CRUISettingsListWidget::getItemCount(CRUIListWidget * list) {
 CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int index) {
     CR_UNUSED(list);
     CRUISettingsItemBase * item = _settings->getChild(index);
-    if (item->isList()) {
-        _settingsListItem->setSetting((CRUISettingsList*)item);
+    if (item->asList()) {
+        _settingsListItem->setSetting(item->asList());
         return _settingsListItem;
     }
     // TODO: more item types

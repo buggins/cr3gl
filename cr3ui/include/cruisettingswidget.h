@@ -4,6 +4,7 @@
 #include "cruiwindow.h"
 #include "cruilist.h"
 
+class CRUISettingsList;
 class CRUISettingsItemBase {
     lString8 _nameRes; // settings name resource
     lString8 _descriptionRes; // settings name resource
@@ -17,9 +18,10 @@ public:
     virtual lString16 getDescription() const;
     virtual int childCount() const { return 0; }
     virtual CRUISettingsItemBase * getChild(int index) const { CR_UNUSED(index); return NULL; }
-    /// returns true if it's list of subsettings, false if single setting
-    virtual bool isList() const { return false; }
-    virtual CRUISettingsItemBase * findSetting(lString8 name);
+    virtual bool isList() { return false; }
+    /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
+    virtual CRUISettingsList * asList() { return NULL; }
+    //virtual CRUISettingsItemBase * findSetting(lString8 name);
 };
 
 class CRUISettingsList : public CRUISettingsItemBase {
@@ -35,8 +37,9 @@ public:
     virtual ~CRUISettingsList() {}
     virtual int childCount() const { return _list.length(); }
     virtual CRUISettingsItemBase * getChild(int index) const { return _list[index]; }
-    /// returns true if it's list of subsettings, false if single setting
-    virtual bool isList() const { return true; }
+    virtual bool isList() { return true; }
+    /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
+    virtual CRUISettingsList * asList();
 };
 
 class CRUISettingsItem : public CRUISettingsItemBase {
@@ -116,13 +119,14 @@ public:
     virtual ~CRUISettingsListWidget() {}
 };
 
-class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener {
-    CRUISettingsList * _settings;
+class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnListItemClickListener {
+    CRUISettingsItemBase * _settings;
     CRUITitleBarWidget * _titlebar;
     CRUISettingsListWidget * _list;
 public:
-    CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsList * settings);
+    CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings);
     virtual bool onClick(CRUIWidget * widget);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
 // setting group paths

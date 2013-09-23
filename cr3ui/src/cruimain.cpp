@@ -151,6 +151,10 @@ CRUISettingsList * CRUIMainWidget::findSettings(lString8 path) {
 
 void CRUIMainWidget::showSettings(lString8 path) {
     CRUISettingsList * setting = findSettings(path);
+    showSettings(setting);
+}
+
+void CRUIMainWidget::showSettings(CRUISettingsItemBase * setting) {
     if (setting) {
         CRUISettingsWidget * widget = new CRUISettingsWidget(this, setting);
         _history.setNext(new SettingsItem(this, widget));
