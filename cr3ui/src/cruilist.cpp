@@ -6,12 +6,12 @@
  */
 
 #include "cruilist.h"
-
+#include "crui.h"
 
 using namespace CRUI;
 
 #define NO_DRAG (-1234567)
-#define MAX_EXTRA_DRAG 20
+#define MAX_EXTRA_DRAG PT_TO_PX(10)
 //===================================================================================================
 // List
 
@@ -295,10 +295,10 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 	return -1;
 }
 
-#define DRAG_THRESHOLD 5
-#define DRAG_THRESHOLD_X 15
-#define SCROLL_SPEED_CALC_INTERVAL 2000
-#define SCROLL_MIN_SPEED 3
+#define DRAG_THRESHOLD PT_TO_PX(3)
+#define DRAG_THRESHOLD_X PT_TO_PX(10)
+#define SCROLL_SPEED_CALC_INTERVAL 700
+#define SCROLL_MIN_SPEED PT_TO_PX(1)
 #define SCROLL_FRICTION 20
 
 void CRUIListWidget::animate(lUInt64 millisPassed) {
@@ -345,6 +345,7 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 int spd = isVertical() ? speed.y : speed.x;
                 _dragStartOffset = NO_DRAG;
                 if (spd < -SCROLL_MIN_SPEED || spd > SCROLL_MIN_SPEED) {
+                    setScrollOffset(_scrollOffset);
                     _scroll.start(_scrollOffset, -spd, SCROLL_FRICTION);
                     CRLog::trace("Starting scroll with speed %d", _scroll.speed());
                 } else {

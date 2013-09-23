@@ -68,6 +68,9 @@ public:
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
 
+    /// motion event handler - before children, returns true if it handled event
+    virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
+
     /// opens menu popup with specified list of actions
     virtual void showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar);
 

@@ -97,9 +97,10 @@ public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event) {
         if (!_body->isPointInside(event->getX(), event->getY())) {
-            if (event->getAction() == ACTION_UP)
+            if (event->getAction() == ACTION_UP) {
                 _control->animateClose();
-            return true;
+                return true;
+            }
         }
         return true;
     }
@@ -246,7 +247,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     _popupControl.endTs = _popupControl.startTs + POPUP_ANIMATION_DURATION;
     _popupControl.progress = 0;
     _popupControl.closing = false;
-    _popupControl.outerColor = 0x80404040;
+    _popupControl.outerColor = 0xA0404040;
 }
 
 class CRUIListMenu : public CRUIListWidget, public CRUIListAdapter {
@@ -294,6 +295,15 @@ bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * action) {
 }
 
 void CRUIWindowWidget::showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar) {
+    CR_UNUSED(asToolbar);
     CRUIListMenu * menu = new CRUIListMenu(this, actionList);
     preparePopup(menu, location, margins);
+}
+
+/// motion event handler - before children, returns true if it handled event
+bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
+    CR_UNUSED(event);
+    if (!_popupControl.popup)
+        return false;
+    return false;
 }
