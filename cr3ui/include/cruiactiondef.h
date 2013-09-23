@@ -1,5 +1,5 @@
 
-#define CRACTION_UI(id,icon) CRACTION(id,0,0,STR_ACTION_ ## id, icon)
+#define CRACTION_UI(id,icon) CRACTION(id,0,0,ACTION_ ## id, icon)
 
 CRACTION_UI(EXIT, "home")
 CRACTION_UI(SETTINGS, "fantasy")

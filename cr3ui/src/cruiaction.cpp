@@ -1,8 +1,9 @@
 #include "cruiaction.h"
 
 #undef CRACTION
-#define CRACTION(id,cmd,param,name,icon) const char * name  = # name; const CRUIAction * ACTION_ ## id = new CRUIAction(CMD_ ## id,cmd,param,name,icon);
+#define CRACTION(id,cmd,param,name,icon) const char * STR_ ## name  = # name ; const CRUIAction * ACTION_ ## id = new CRUIAction(CMD_ ## id,cmd,param,STR_ ## name,icon);
 #include "cruiactiondef.h"
+
 
 lString16 CRUIAction::getName() const {
     return name.empty() ? (name_res.empty() ? lString16() : _16(name_res.c_str())) : name;

@@ -1,4 +1,5 @@
 #include "cruisettingswidget.h"
+#include "crui.h"
 
 using namespace CRUI;
 
@@ -15,6 +16,7 @@ CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsList *
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
         // TODO: handle title bar back button
+
     }
     return true;
 }
@@ -23,6 +25,7 @@ CRUISettingsListWidget::CRUISettingsListWidget(CRUISettingsList * settings) : CR
     setAdapter(this);
     _settingsListItem = new CRUISettingsListItemWidget(); // child setting list widget
     _optionListItem = new CRUISettingsValueListItemWidget(); // child is setting with list of possible options
+    setStyle("SETTINGS_ITEM_LIST");
 }
 
 lString16 CRUISettingsItemBase::getName() const {
@@ -53,6 +56,9 @@ CRUISettingsListItemWidget::CRUISettingsListItemWidget() : _settings(NULL) {
     layout->addChild(_description);
     addChild(layout);
     addChild(_righticon);
+    _title->setStyle("SETTINGS_ITEM_TITLE");
+    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
+    setStyle("SETTINGS_ITEM");
 }
 
 void CRUISettingsListItemWidget::setSetting(CRUISettingsList * settings)
@@ -72,11 +78,15 @@ CRUISettingsValueListItemWidget::CRUISettingsValueListItemWidget() : _settings(N
     layout->addChild(_description);
     addChild(layout);
     addChild(_righticon);
-    setStyle("SETTINGS_ITEM_LIST");
+    _title->setStyle("SETTINGS_ITEM_TITLE");
+    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
+    setStyle("SETTINGS_ITEM");
 }
 
 void CRUISettingsValueListItemWidget::setSetting(CRUISettingsItemBase * settings) {
     _settings = settings;
+    _title->setText(_settings->getName());
+    _description->setText(_settings->getDescription());
 }
 
 int CRUISettingsListWidget::getItemCount(CRUIListWidget * list) {

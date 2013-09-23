@@ -62,7 +62,7 @@ enum {
 #define CRACTION_EXTERN_INCLUDED
 // define external instances
 #undef CRACTION
-#define CRACTION(id,cmd,param,name,icon) extern const char * name; extern const CRUIAction * ACTION_ ## id;
+#define CRACTION(id,cmd,param,name,icon) extern const char * STR_ ## name; extern const CRUIAction * ACTION_ ## id;
 #include "cruiactiondef.h"
 #endif
 

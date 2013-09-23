@@ -202,6 +202,13 @@ void CRUIConfig::createDefaultTheme() {
     settingsWindow->setBackground2("list_shadow_vertical.9");
     CRUIStyle * settingsList = currentTheme->addSubstyle("SETTINGS_ITEM_LIST");
     settingsList->setListDelimiterVertical("divider_light_v3");
+    CRUIStyle * settingsItem = currentTheme->addSubstyle("SETTINGS_ITEM");
+    settingsItem->setPadding(PT_TO_PX(2));
+    settingsItem->setMinHeight(MIN_ITEM_PX);
+    CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
+    settingsItemTitle->setFontSize(FONT_SIZE_MEDIUM);
+    CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
+    settingsItemDescription->setFontSize(FONT_SIZE_XSMALL);
 
 
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);
