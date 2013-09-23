@@ -377,6 +377,8 @@ SOURCES += \
     ../../cr3ui/src/cruiconfig.cpp \
     ../../cr3ui/src/cruiaction.cpp \
     ../../cr3ui/src/cruiwindow.cpp \
+    ../../cr3ui/src/cruicoverwidget.cpp \
+    ../../cr3ui/src/cruisettingswidget.cpp \
     ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
@@ -404,4 +406,6 @@ HEADERS += \
     ../../cr3ui/include/cruiaction.h \
     ../../cr3ui/include/cruiactiondef.h \
     ../../cr3ui/include/cruiwindow.h \
+    ../../cr3ui/include/cruisettingswidget.h \
+    ../../cr3ui/include/cruicoverwidget.h \
     ../../cr3ui/include/stringresource.h

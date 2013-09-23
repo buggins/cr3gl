@@ -12,7 +12,7 @@
 #include "cruicontrols.h"
 #include "crcoverpages.h"
 #include "cruimain.h"
-#include "cruihomewidget.h"
+#include "cruicoverwidget.h"
 #include "stringresource.h"
 
 using namespace CRUI;
