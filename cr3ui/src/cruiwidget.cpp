@@ -291,7 +291,7 @@ CRUIImageRef CRUIWidget::getBackground2() {
 	if (_background2Color != COLOR_NONE) {
 		return CRUIImageRef(new CRUISolidFillImage(_background2Color));
 	}
-	return getStyle(true)->getBackground();
+    return getStyle(true)->getBackground2();
 }
 
 LVFontRef CRUIWidget::getFont() {

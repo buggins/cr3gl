@@ -476,6 +476,15 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return _history.currentWidget()->onTouchEvent(event);
 }
 
+/// handle menu or other action
+bool CRUIMainWidget::onAction(const CRUIAction * action) {
+    switch (action->id) {
+    case CMD_EXIT:
+        return true;
+    }
+    return false;
+}
+
 /// motion event handler - before children, returns true if it handled event
 bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     // by returning of true, just ignore all events while animation is on

@@ -22,7 +22,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
   _colCount(1),
   _onItemClickListener(NULL), _onItemLongClickListener(NULL)
 {
-
+    setStyle("MENU_LIST");
 }
 
 bool CRUIListWidget::onItemClickEvent(int itemIndex) {

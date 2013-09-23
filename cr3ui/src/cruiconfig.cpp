@@ -180,19 +180,21 @@ void CRUIConfig::createDefaultTheme() {
     popupframe->setPadding(PT_TO_PX(2));
 
     CRUIStyle * popupframehandle = currentTheme->addSubstyle("POPUP_FRAME_HANDLE");
-    popupframehandle->setPadding(PT_TO_PX(2));
-    popupframehandle->setMargin(PT_TO_PX(2));
-    popupframehandle->setBackground(0xC0000000);
-    popupframehandle->setBackground2("toolbar_shadow.9");
+    popupframehandle->setPadding(PT_TO_PX(4));
+    popupframehandle->setMargin(PT_TO_PX(0));
+    popupframehandle->setBackground(0xE0808080);
+    popupframehandle->setBackground("home_frame.9");
 
+    CRUIStyle * menulist = currentTheme->addSubstyle("MENU_LIST");
+    menulist->setListDelimiterVertical("divider_light_v3");
     CRUIStyle * menuitem = currentTheme->addSubstyle("MENU_ITEM");
-    menuitem->setPadding(PT_TO_PX(2));
+    menuitem->setPadding(PT_TO_PX(0));
     CRUIStyle * menuitemicon = currentTheme->addSubstyle("MENU_ITEM_ICON");
-    menuitemicon->setMargin(PT_TO_PX(2));
+    menuitemicon->setMargin(PT_TO_PX(1));
     menuitemicon->setAlign(ALIGN_CENTER);
     CRUIStyle * menuitemtext = currentTheme->addSubstyle("MENU_ITEM_TEXT");
     menuitemtext->setMargin(PT_TO_PX(2));
-    menuitemtext->setFontSize(CRUI::FONT_SIZE_XSMALL);
+    menuitemtext->setFontSize(CRUI::FONT_SIZE_MEDIUM);
     menuitemtext->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
 
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);

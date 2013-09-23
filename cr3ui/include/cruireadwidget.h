@@ -32,7 +32,6 @@ class CRUIDocView;
 
 class CRUIReadWidget : public CRUIWindowWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
 {
-    CRUIMainWidget * _main;
     CRUIDocView * _docview;
     bool _isDragging;
     lvPoint _dragStart;

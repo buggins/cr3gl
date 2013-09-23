@@ -601,7 +601,7 @@ public:
     }
 };
 
-CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : _main(main){
+CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : CRUIWindowWidget(main){
     _currentBook = new CRUINowReadingWidget(this);
     _recentBooksList = new CRUIRecentBooksListWidget(this);
     _fileSystem = new CRUIFileSystemDirsWidget(this);
@@ -717,6 +717,16 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+/// override to handle menu or other action
+bool CRUIHomeWidget::onAction(const CRUIAction * action) {
+    switch(action->id) {
+    case CMD_EXIT:
+        break;
+    case CMD_BACK:
+        break;
+    }
+    return false;
+}
 bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "MENU") {
         CRLog::debug("Home screen - Menu button pressed");
@@ -724,7 +734,9 @@ bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
         actions.add(ACTION_EXIT);
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_BACK);
-        showMenu(actions, ALIGN_TOP, false);
+        lvRect margins;
+        margins.right = MIN_ITEM_PX * 5 / 4;
+        showMenu(actions, ALIGN_TOP, margins, false);
         return true;
     }
     return false;

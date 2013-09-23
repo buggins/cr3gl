@@ -263,6 +263,9 @@ public:
     /// motion event handler - before children, returns true if it handled event
     virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
 
+    /// handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);
 

@@ -21,7 +21,6 @@ class CRUIFolderWidget : public CRUIWindowWidget, public CRUIOnListItemClickList
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
     CRDirContentItem * _dir;
-    CRUIMainWidget * _main;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted
     virtual bool requestAllVisibleCoverpages();
@@ -30,7 +29,6 @@ public:
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
-    CRUIMainWidget * getMain() { return _main; }
     virtual void setDirectory(CRDirContentItem * _dir);
     CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();

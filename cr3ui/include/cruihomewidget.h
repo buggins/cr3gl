@@ -26,9 +26,7 @@ class CRUIHomeWidget : public CRUIWindowWidget, public CRUIOnClickListener {
 	CRUIFileSystemDirsWidget * _fileSystem;
 	CRUILibraryWidget * _library;
 	CRUIOnlineCatalogsWidget * _onlineCatalogsList;
-    CRUIMainWidget * _main;
 public:
-    CRUIMainWidget * getMain() { return _main; }
     CRUIHomeWidget(CRUIMainWidget * main);
     virtual ~CRUIHomeWidget() {}
 	/// measure dimensions
@@ -40,6 +38,8 @@ public:
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
 
     virtual bool onClick(CRUIWidget * widget);
+    /// handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
 };
 
 class CRCoverWidget : public CRUIWidget {

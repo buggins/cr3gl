@@ -67,7 +67,7 @@ public:
 };
 
 
-CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : _main(main),
+CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : CRUIWindowWidget(main),
     _isDragging(false), _dragStartOffset(0), _locked(false),
     _fileItem(NULL), _lastPosition(NULL)
 {
