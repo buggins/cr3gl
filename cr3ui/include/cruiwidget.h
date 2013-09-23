@@ -12,7 +12,8 @@
 #include "cri18n.h"
 
 #define LONG_TOUCH_THRESHOLD 500
-#define DRAG_THRESHOLD_X 15
+#define DRAG_THRESHOLD PT_TO_PX(3)
+#define DRAG_THRESHOLD_X PT_TO_PX(10)
 
 /// base class for all UI elements
 class CRUIWidget {

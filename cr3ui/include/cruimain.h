@@ -7,10 +7,12 @@
 #include "cruireadwidget.h"
 #include "cruipopup.h"
 #include "cruiwindow.h"
+#include "cruisettingswidget.h"
 
 enum VIEW_MODE {
     MODE_HOME,
     MODE_FOLDER,
+    MODE_SETTINGS,
     MODE_READ
 };
 
@@ -67,6 +69,19 @@ public:
     }
     virtual VIEW_MODE getMode() { return MODE_READ; }
     ReadItem(CRUIMainWidget * _main, CRUIReadWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class SettingsItem : public NavHistoryItem {
+public:
+    // recreate on config change
+    virtual CRUIWidget * recreate() {
+        lvRect pos = ((CRUIWidget*)main)->getPos();
+        widget->measure(pos.width(), pos.height());
+        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_SETTINGS; }
+    SettingsItem(CRUIMainWidget * _main, CRUISettingsWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class FolderItem : public NavHistoryItem {
@@ -219,11 +234,19 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     bool _initialized;
 
+    CRUISettingsList _browserSettings;
+    CRUISettingsList _readerSettings;
+
+    void createBrowserSettings();
+    void createReaderSettings();
+
     void startAnimation(int newpos, int duration, const CRUIMotionEvent * event = NULL);
     void stopAnimation();
     /// if not initialized, run background tasks
     void runStartupTasksIfNeeded();
 public:
+    CRUISettingsList * findSettings(lString8 path);
+
     CRRunnable * createUpdateCallback();
     void executeBackground(CRRunnable * task) { _backgroundThread.execute(task); }
     VIEW_MODE getMode() { return _history.currentMode(); }
@@ -278,6 +301,7 @@ public:
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
     void showHome();
+    void showSettings(lString8 path);
     void back();
 
     virtual void onAllCoverpagesReady(int newpos);

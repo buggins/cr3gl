@@ -4,6 +4,7 @@ using namespace CRUI;
 
 #include "gldrawbuf.h"
 #include "crcoverpages.h"
+#include "stringresource.h"
 
 #define WINDOW_ANIMATION_DELAY 250
 #define SLOW_OPERATION_POPUP_DELAY 150
@@ -133,6 +134,31 @@ void CRUIMainWidget::onDocumentRenderFinished(lString8 pathname) {
     }
 }
 
+CRUISettingsList * CRUIMainWidget::findSettings(lString8 path) {
+    if (!path.startsWith("@settings/"))
+        return NULL;
+    path = path.substr(10); // strlen("@settings/")
+    if (path.startsWith("browser")) {
+        // TODO: support subsettings
+        return &_browserSettings;
+    } else if (path.startsWith("reader")) {
+        // TODO: support subsettings
+        return &_readerSettings;
+    } else {
+        return NULL;
+    }
+}
+
+void CRUIMainWidget::showSettings(lString8 path) {
+    CRUISettingsList * setting = findSettings(path);
+    if (setting) {
+        CRUISettingsWidget * widget = new CRUISettingsWidget(this, setting);
+        _history.setNext(new SettingsItem(this, widget));
+        int newpos = _history.pos() + 1;
+        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+    }
+}
+
 void CRUIMainWidget::showSlowOperationPopup()
 {
 	if (_popup) {
@@ -228,11 +254,44 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     dirCache->scan(lString8(RECENT_DIR_TAG));
 }
 
+void CRUIMainWidget::createBrowserSettings() {
+    CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+    themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
+    _browserSettings.addChild(themes);
+}
+
+void CRUIMainWidget::createReaderSettings() {
+    CRUISettingsList * fontsAndColors = new CRUISettingsList(STR_SETTINGS_FONTS_AND_COLORS, NULL, SETTINGS_PATH_READER_FONTSANDCOLORS);
+    CRUISettingsOptionList * fontFaces = new CRUISettingsOptionList(STR_SETTINGS_FONT_FACE, NULL, PROP_FONT_FACE);
+    lString16Collection faceList;
+    fontMan->getFaceList(faceList);
+    for (int i = 0; i < faceList.length(); i++) {
+        fontFaces->addOption(new CRUIOptionItem(UnicodeToUtf8(faceList[i]), faceList[i]));
+    }
+    fontsAndColors->addChild(fontFaces);
+    _readerSettings.addChild(fontsAndColors);
+    CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
+    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+    themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
+    _readerSettings.addChild(themes);
+}
+
 CRUIMainWidget::CRUIMainWidget()
 : _home(NULL), _read(NULL)
 , _popup(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
 , _platform(NULL), _lastAnimationTs(0), _initialized(false)
+, _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
+, _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
 {
+    createBrowserSettings();
+    createReaderSettings();
     onThemeChanged();
 }
 

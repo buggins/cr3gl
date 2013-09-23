@@ -295,8 +295,6 @@ int CRUIListWidget::itemFromPoint(int x, int y) {
 	return -1;
 }
 
-#define DRAG_THRESHOLD PT_TO_PX(3)
-#define DRAG_THRESHOLD_X PT_TO_PX(10)
 #define SCROLL_SPEED_CALC_INTERVAL 700
 #define SCROLL_MIN_SPEED PT_TO_PX(1)
 #define SCROLL_FRICTION 20

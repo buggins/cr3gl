@@ -287,11 +287,12 @@ public:
 };
 
 /// close popup menu, and call onAction
-bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * action) {
+bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * _action) {
+    CRUIAction action(*_action);
     _popupControl.close();
-    if (onAction(action))
+    if (onAction(&action))
         return true;
-    return _main->onAction(action);
+    return _main->onAction(&action);
 }
 
 void CRUIWindowWidget::showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar) {
@@ -306,4 +307,33 @@ bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     if (!_popupControl.popup)
         return false;
     return false;
+}
+
+
+
+CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, bool hasMenuButton) : CRUILinearLayout(false) {
+    setStyle("TOOL_BAR");
+    setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    if (hasMenuButton)
+        _menuButton = new CRUIImageButton("ic_menu_more");
+    else
+        _menuButton = NULL;
+    _backButton = new CRUIImageButton("ic_menu_back");
+    _caption = new CRUITextWidget(title);
+    _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _caption->setFontSize(FONT_SIZE_MEDIUM);
+    _caption->setAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    _caption->setPadding(PT_TO_PX(2));
+    addChild(_backButton);
+    addChild(_caption);
+    if (hasMenuButton)
+        addChild(_menuButton);
+    setMinHeight(MIN_ITEM_PX);
+    //_caption->setBackground(0xC0C0C040);
+    if (hasMenuButton) {
+        _menuButton->setId(lString8("MENU"));
+        _menuButton->setOnClickListener(buttonListener);
+    }
+    _backButton->setId(lString8("BACK"));
+    _backButton->setOnClickListener(buttonListener);
 }

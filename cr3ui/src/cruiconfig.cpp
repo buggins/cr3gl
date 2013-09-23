@@ -197,6 +197,13 @@ void CRUIConfig::createDefaultTheme() {
     menuitemtext->setFontSize(CRUI::FONT_SIZE_MEDIUM);
     menuitemtext->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
 
+    CRUIStyle * settingsWindow = currentTheme->addSubstyle("SETTINGS_WIDGET");
+    settingsWindow->setBackground("tx_wood_v3.jpg", true);
+    settingsWindow->setBackground2("list_shadow_vertical.9");
+    CRUIStyle * settingsList = currentTheme->addSubstyle("SETTINGS_ITEM_LIST");
+    settingsList->setListDelimiterVertical("divider_light_v3");
+
+
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image

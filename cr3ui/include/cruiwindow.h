@@ -3,6 +3,7 @@
 
 #include "cruilayout.h"
 #include "cruiaction.h"
+#include "cruicontrols.h"
 
 class PopupControl {
 public:
@@ -82,6 +83,17 @@ public:
         CR_UNUSED(action);
         // overridde to handle
         return false;
+    }
+};
+
+class CRUITitleBarWidget : public CRUILinearLayout {
+    CRUIButton * _backButton;
+    CRUIButton * _menuButton;
+    CRUITextWidget * _caption;
+public:
+    CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, bool hasMenuButton);
+    void setTitle(lString16 title) {
+        _caption->setText(title);
     }
 };
 

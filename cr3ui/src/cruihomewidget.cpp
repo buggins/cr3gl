@@ -725,6 +725,9 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
         break;
     case CMD_BACK:
         break;
+    case CMD_SETTINGS:
+        _main->showSettings(lString8("@settings/browser"));
+        break;
     }
     return false;
 }

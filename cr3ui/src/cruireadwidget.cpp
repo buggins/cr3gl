@@ -388,8 +388,6 @@ bool CRUIReadWidget::renderIfNecessary() {
     return false;
 }
 
-#define DRAG_THRESHOLD 5
-#define DRAG_THRESHOLD_X 15
 #define SCROLL_SPEED_CALC_INTERVAL 2000
 #define SCROLL_MIN_SPEED 3
 #define SCROLL_FRICTION 13

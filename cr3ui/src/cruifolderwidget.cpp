@@ -67,37 +67,6 @@ public:
     }
 };
 
-#define DRAG_THRESHOLD_X 15
-
-class CRUITitleBarWidget : public CRUILinearLayout {
-	CRUIButton * _backButton;
-	CRUIButton * _menuButton;
-	CRUITextWidget * _caption;
-public:
-    CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener) : CRUILinearLayout(false) {
-        setStyle("TOOL_BAR");
-        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-		_menuButton = new CRUIImageButton("ic_menu_more");
-		_backButton = new CRUIImageButton("ic_menu_back");
-		_caption = new CRUITextWidget(title);
-		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-		_caption->setFontSize(FONT_SIZE_MEDIUM);
-		_caption->setAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-		_caption->setPadding(PT_TO_PX(2));
-		addChild(_backButton);
-		addChild(_caption);
-		addChild(_menuButton);
-		setMinHeight(MIN_ITEM_PX);
-		//_caption->setBackground(0xC0C0C040);
-        _menuButton->setId(lString8("MENU"));
-        _backButton->setId(lString8("BACK"));
-        _backButton->setOnClickListener(buttonListener);
-	}
-    void setTitle(lString16 title) {
-        _caption->setText(title);
-    }
-};
-
 class CRUIDirItemWidget : public CRUILinearLayout {
 public:
     int _iconDx;
@@ -404,7 +373,7 @@ void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 
 CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL), _fileList(NULL), _dir(NULL)
 {
-    _title = new CRUITitleBarWidget(lString16("File list"), this);
+    _title = new CRUITitleBarWidget(lString16("File list"), this, true);
 	addChild(_title);
     _fileList = new CRUIFileListWidget(this);
 	addChild(_fileList);
