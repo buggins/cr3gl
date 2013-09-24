@@ -79,10 +79,10 @@ public:
     virtual bool onMenuItemAction(const CRUIAction * action);
 
     /// override to handle menu or other action
-    virtual bool onAction(const CRUIAction * action) {
-        CR_UNUSED(action);
-        // overridde to handle
-        return false;
+    virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) {
+        return onAction(CRUIActionByCode(actionId));
     }
 };
 

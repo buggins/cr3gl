@@ -237,6 +237,9 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     CRUISettingsList _browserSettings;
     CRUISettingsList _readerSettings;
 
+    CRPropRef _currrentSettings; // curretnly active settings
+    CRPropRef _newSettings; // to be edited by Settings editors
+
     void createBrowserSettings();
     void createReaderSettings();
 
@@ -288,6 +291,8 @@ public:
 
     /// handle menu or other action
     virtual bool onAction(const CRUIAction * action);
+    /// handle menu or other action - find standard action by id
+    virtual bool onAction(int actionId);
 
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);

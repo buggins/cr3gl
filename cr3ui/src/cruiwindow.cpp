@@ -286,6 +286,11 @@ public:
     }
 };
 
+/// override to handle menu or other action
+bool CRUIWindowWidget::onAction(const CRUIAction * action) {
+    return getMain()->onAction(action);
+}
+
 /// close popup menu, and call onAction
 bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * _action) {
     CRUIAction action(*_action);

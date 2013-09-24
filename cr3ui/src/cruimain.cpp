@@ -294,6 +294,8 @@ CRUIMainWidget::CRUIMainWidget()
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
 {
+    _currrentSettings = LVCreatePropsContainer(); // currently active settings
+    _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
     createBrowserSettings();
     createReaderSettings();
     onThemeChanged();
@@ -541,11 +543,20 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 /// handle menu or other action
 bool CRUIMainWidget::onAction(const CRUIAction * action) {
+    if (!action)
+        return NULL;
     switch (action->id) {
     case CMD_EXIT:
+        if (getPlatform() != NULL)
+            getPlatform()->exitApp();
         return true;
     }
     return false;
+}
+
+/// handle menu or other action - find standard action by id
+bool CRUIMainWidget::onAction(int actionId) {
+    return onAction(CRUIActionByCode(actionId));
 }
 
 /// motion event handler - before children, returns true if it handled event

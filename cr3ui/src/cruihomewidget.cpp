@@ -681,9 +681,7 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 
 bool CRUIHomeWidget::onKeyEvent(const CRUIKeyEvent * event) {
 	if (event->getType() == KEY_ACTION_RELEASE && (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC)) {
-		if (getMain()->getPlatform() != NULL)
-			getMain()->getPlatform()->exitApp();
-		return true;
+        return getMain()->onAction(CRUIActionByCode(CMD_EXIT));
 	}
 	if (event->getType() == KEY_ACTION_PRESS && (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC)) {
 		return true;

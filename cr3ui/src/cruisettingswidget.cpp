@@ -4,6 +4,48 @@
 
 using namespace CRUI;
 
+
+class CRUISettingsListItemWidgetBase : public CRUIHorizontalLayout {
+protected:
+    CRUISettingsItemBase * _settings;
+    CRUITextWidget * _title;
+    CRUITextWidget * _description;
+    CRUIImageWidget * _righticon;
+public:
+    CRUISettingsListItemWidgetBase();
+    virtual void setSetting(CRUISettingsItemBase * settings) {
+        _settings = settings;
+        _title->setText(_settings->getName());
+        _description->setText(_settings->getDescription());
+    }
+    virtual ~CRUISettingsListItemWidgetBase() {}
+};
+
+class CRUISettingsListItemWidget : public CRUISettingsListItemWidgetBase {
+public:
+};
+
+class CRUISettingsValueListItemWidget : public CRUISettingsListItemWidgetBase {
+public:
+};
+
+CRUISettingsListItemWidgetBase::CRUISettingsListItemWidgetBase() : _settings(NULL) {
+    _title = new CRUITextWidget();
+    _description = new CRUITextWidget();
+    _righticon = new CRUIImageWidget();
+    CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+    layout->addChild(_title);
+    layout->addChild(_description);
+    addChild(layout);
+    addChild(_righticon);
+    _title->setStyle("SETTINGS_ITEM_TITLE");
+    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
+    setStyle("SETTINGS_ITEM");
+}
+
+
+
+
 /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
 CRUISettingsList * CRUISettingsList::asList() {
     return (CRUISettingsList *)this;
@@ -66,47 +108,7 @@ lString16 CRUISettingsItemBase::getDescription() const {
 //    return NULL;
 //}
 
-CRUISettingsListItemWidget::CRUISettingsListItemWidget() : _settings(NULL) {
-    _title = new CRUITextWidget();
-    _description = new CRUITextWidget();
-    _righticon = new CRUIImageWidget();
-    CRUIVerticalLayout * layout = new CRUIVerticalLayout();
-    layout->addChild(_title);
-    layout->addChild(_description);
-    addChild(layout);
-    addChild(_righticon);
-    _title->setStyle("SETTINGS_ITEM_TITLE");
-    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
-    setStyle("SETTINGS_ITEM");
-}
 
-void CRUISettingsListItemWidget::setSetting(CRUISettingsList * settings)
-{
-    _settings = settings;
-    _title->setText(_settings->getName());
-    _description->setText(_settings->getDescription());
-}
-
-
-CRUISettingsValueListItemWidget::CRUISettingsValueListItemWidget() : _settings(NULL) {
-    _title = new CRUITextWidget();
-    _description = new CRUITextWidget();
-    _righticon = new CRUIImageWidget();
-    CRUIVerticalLayout * layout = new CRUIVerticalLayout();
-    layout->addChild(_title);
-    layout->addChild(_description);
-    addChild(layout);
-    addChild(_righticon);
-    _title->setStyle("SETTINGS_ITEM_TITLE");
-    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
-    setStyle("SETTINGS_ITEM");
-}
-
-void CRUISettingsValueListItemWidget::setSetting(CRUISettingsItemBase * settings) {
-    _settings = settings;
-    _title->setText(_settings->getName());
-    _description->setText(_settings->getDescription());
-}
 
 int CRUISettingsListWidget::getItemCount(CRUIListWidget * list) {
     CR_UNUSED(list);
