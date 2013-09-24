@@ -66,7 +66,8 @@ enum {
 #include "cruiactiondef.h"
 #endif
 
-
+const CRUIAction * CRUIActionByName(const char * id);
+const CRUIAction * CRUIActionByCode(int code);
 
 
 #endif // CRUIACTION_H

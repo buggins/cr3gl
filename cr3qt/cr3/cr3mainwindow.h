@@ -57,7 +57,7 @@ QT_END_NAMESPACE
 
 
 //! [1]
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions, public CRUIScreenUpdateManagerCallback
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions, public CRUIScreenUpdateManagerCallback, public CRUIPlatform
 {
     Q_OBJECT
 
@@ -84,7 +84,9 @@ public:
     virtual void keyPressEvent(QKeyEvent * event);
     virtual void keyReleaseEvent(QKeyEvent * event);
 
+    // CRUI overrides
     virtual void setScreenUpdateMode(bool updateNow, int animationFps);
+    virtual void exitApp();
 
 public slots:
     void renderLater();

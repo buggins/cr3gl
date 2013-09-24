@@ -64,6 +64,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     _widget = new CRUIMainWidget();
     _widget->setScreenUpdater(this);
+    _widget->setPlatform(this);
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
@@ -263,3 +264,6 @@ void OpenGLWindow::setAnimating(bool animating)
 }
 //! [5]
 
+void OpenGLWindow::exitApp() {
+    QApplication::exit();
+}

@@ -408,4 +408,5 @@ HEADERS += \
     ../../cr3ui/include/cruiwindow.h \
     ../../cr3ui/include/cruisettingswidget.h \
     ../../cr3ui/include/cruicoverwidget.h \
+    ../../cr3ui/include/cruisettings.h \
     ../../cr3ui/include/stringresource.h
