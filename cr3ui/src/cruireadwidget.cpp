@@ -503,6 +503,33 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     return true;
 }
 
+int CRUIReadWidget::pointToTapZone(int x, int y) {
+    int x0 = x / ((_pos.width() + 2) / 3);
+    int y0 = y / ((_pos.height() + 2) / 3);
+    if (x0 > 2) x0 = 2;
+    if (x0 < 0) x0 = 0;
+    if (y0 > 2) y0 = 2;
+    if (y0 < 0) y0 = 0;
+    return y0 * 3 + x0 + 1;
+}
+
+bool CRUIReadWidget::onTapZone(int zone, bool additionalAction) {
+    lString8 settingName;
+    if (additionalAction)
+        settingName = PROP_APP_TAP_ZONE_ACTION_DOUBLE;
+    else
+        settingName = PROP_APP_TAP_ZONE_ACTION_NORMAL;
+    settingName += lString8::itoa(zone);
+    lString8 action = UnicodeToUtf8(_main->getSettings()->getStringDef(settingName.c_str()));
+    if (!action.empty()) {
+        const CRUIAction * a = CRUIActionByName(action.c_str());
+        if (a != NULL) {
+            return onAction(a);
+        }
+    }
+    return false;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -534,6 +561,10 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     _scroll.start(_docview->GetPos(), -speed.y, SCROLL_FRICTION);
                     CRLog::trace("Starting scroll with speed %d", _scroll.speed());
                 }
+            } else {
+                int zone = pointToTapZone(event->getX(), event->getY());
+                bool longTap = (event->getDownDuration() > 500);
+                onTapZone(zone, longTap);
             }
             _dragStartOffset = 0; //NO_DRAG;
             _isDragging = false;
@@ -596,6 +627,27 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+/// override to handle menu or other action
+bool CRUIReadWidget::onAction(const CRUIAction * action) {
+    if (!action)
+        return false;
+    if (action->cmd) {
+        doCommand(action->cmd, action->param);
+        return true;
+    }
+    switch (action->id) {
+    case CMD_BACK:
+        _main->back();
+        return true;
+    case CMD_MENU:
+        // TODO
+        return true;
+    case CMD_SETTINGS:
+        // TODO
+        return true;
+    }
+    return false;
+}
 
 /// on starting file loading
 void CRUIReadWidget::OnLoadFileStart( lString16 filename ) {

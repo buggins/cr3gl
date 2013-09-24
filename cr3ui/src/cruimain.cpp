@@ -306,6 +306,14 @@ CRUIMainWidget::CRUIMainWidget()
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
     _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
+    _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
+    _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "CMD_MENU");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "CMD_SETTINGS");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "6", "CMD_PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "CMD_PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "CMD_PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "CMD_PAGE_DOWN");
     createBrowserSettings();
     createReaderSettings();
     onThemeChanged();

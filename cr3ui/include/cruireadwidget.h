@@ -121,6 +121,11 @@ public:
     bool onTouchEvent(const CRUIMotionEvent * event);
     bool onKeyEvent(const CRUIKeyEvent * event);
     bool doCommand(int cmd, int param = 0);
+    int pointToTapZone(int x, int y);
+    /// override to handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+
+    bool onTapZone(int zone, bool additionalAction);
 
     void prepareScroll(int direction);
 
