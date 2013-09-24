@@ -6,6 +6,8 @@
 #include "cruisettings.h"
 
 class CRUISettingsList;
+class CRUISettingsOptionList;
+class CRUIOptionItem;
 class CRUISettingsItemBase {
     lString8 _nameRes; // settings name resource
     lString8 _descriptionRes; // settings name resource
@@ -19,10 +21,19 @@ public:
     virtual lString16 getDescription() const;
     virtual int childCount() const { return 0; }
     virtual CRUISettingsItemBase * getChild(int index) const { CR_UNUSED(index); return NULL; }
-    virtual bool isList() { return false; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
     virtual CRUISettingsList * asList() { return NULL; }
+    /// no-rtti workaround for dynamic_cast<CRUISettingsOptionList *>
+    virtual CRUISettingsOptionList * asOptionList() { return NULL; }
     //virtual CRUISettingsItemBase * findSetting(lString8 name);
+
+
+    virtual int getOptionCount() const { return 0; }
+    virtual const CRUIOptionItem * getOption(int index) const { CR_UNUSED(index); return NULL; }
+    virtual const CRUIOptionItem * findOption(lString8 value) const { CR_UNUSED(value); return NULL; }
+    virtual const CRUIOptionItem * getDefaultOption() const { return NULL; }
+    virtual const CRUIOptionItem * getSelectedOption() const { return NULL; }
+
 };
 
 class CRUISettingsList : public CRUISettingsItemBase {
@@ -38,7 +49,6 @@ public:
     virtual ~CRUISettingsList() {}
     virtual int childCount() const { return _list.length(); }
     virtual CRUISettingsItemBase * getChild(int index) const { return _list[index]; }
-    virtual bool isList() { return true; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
     virtual CRUISettingsList * asList();
 };
@@ -83,20 +93,43 @@ public:
     virtual const CRUIOptionItem * getSelectedOption() const;
     virtual void addOption(CRUIOptionItem * option) { _list.add(option); }
     virtual void clearOptions() { _list.clear(); }
+    /// no-rtti workaround for dynamic_cast<CRUISettingsOptionList *>
+    virtual CRUISettingsOptionList * asOptionList() { return this; }
     CRUISettingsOptionList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
     }
     virtual ~CRUISettingsOptionList() {}
 };
 
+class CRUISettingsEditor {
+protected:
+    CRPropRef _props;
+    CRUISettingsItemBase * _settings;
+public:
+    CRUISettingsEditor(CRPropRef props, CRUISettingsItemBase * setting) : _props(props), _settings(setting) {}
+};
+
+class CRUISettingsEditorWidget : public CRUISettingsEditor, public CRUIVerticalLayout {
+public:
+    CRUISettingsEditorWidget(CRPropRef props, CRUISettingsItemBase * setting) : CRUISettingsEditor(props, setting) {}
+};
+
+class CRUIOptionListItemWidget;
+class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
+    CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
+public:
+    CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItemBase * setting);
+    virtual int getItemCount(CRUIListWidget * list);
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+};
+
 class CRUISettingsListItemWidget;
 class CRUISettingsValueListItemWidget;
-class CRUISettingsListWidget : public CRUIListWidget, public CRUIListAdapter {
-    CRUISettingsList * _settings;
+class CRUISettingsListWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
     CRUISettingsListItemWidget * _settingsListItem; // child setting list widget
     CRUISettingsValueListItemWidget * _optionListItem; // child is setting with list of possible options
 public:
-    CRUISettingsListWidget(CRUISettingsList * settings);
+    CRUISettingsListWidget(CRPropRef props, CRUISettingsItemBase * settings);
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
     virtual ~CRUISettingsListWidget() {}
@@ -105,7 +138,6 @@ public:
 class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnListItemClickListener {
     CRUISettingsItemBase * _settings;
     CRUITitleBarWidget * _titlebar;
-    CRUISettingsListWidget * _list;
 public:
     CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings);
     virtual bool onClick(CRUIWidget * widget);

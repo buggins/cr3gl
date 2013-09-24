@@ -237,7 +237,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     CRUISettingsList _browserSettings;
     CRUISettingsList _readerSettings;
 
-    CRPropRef _currrentSettings; // curretnly active settings
+    CRPropRef _currentSettings; // curretnly active settings
     CRPropRef _newSettings; // to be edited by Settings editors
 
     void createBrowserSettings();
@@ -248,6 +248,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     /// if not initialized, run background tasks
     void runStartupTasksIfNeeded();
 public:
+    CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
+    CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors
     CRUISettingsList * findSettings(lString8 path);
 
     CRRunnable * createUpdateCallback();

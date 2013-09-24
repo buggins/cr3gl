@@ -156,6 +156,9 @@ void CRUIMainWidget::showSettings(lString8 path) {
 
 void CRUIMainWidget::showSettings(CRUISettingsItemBase * setting) {
     if (setting) {
+        if (_history[_history.pos()]->getMode() != MODE_SETTINGS) {
+            _newSettings = LVClonePropsContainer(_currentSettings);
+        }
         CRUISettingsWidget * widget = new CRUISettingsWidget(this, setting);
         _history.setNext(new SettingsItem(this, widget));
         int newpos = _history.pos() + 1;
@@ -294,7 +297,7 @@ CRUIMainWidget::CRUIMainWidget()
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
 {
-    _currrentSettings = LVCreatePropsContainer(); // currently active settings
+    _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
     createBrowserSettings();
     createReaderSettings();

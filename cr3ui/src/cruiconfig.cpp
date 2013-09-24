@@ -136,7 +136,7 @@ void CRUIConfig::createDefaultTheme() {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
 
     //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
-    currentTheme->setListDelimiterVertical("list_delimiter_h.png");
+    //currentTheme->setListDelimiterVertical("list_delimiter_h.png");
     CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
     //keyboard_key_feedback_background.9
     buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
@@ -201,12 +201,17 @@ void CRUIConfig::createDefaultTheme() {
     settingsWindow->setBackground("tx_wood_v3.jpg", true);
     settingsWindow->setBackground2("list_shadow_vertical.9");
     CRUIStyle * settingsList = currentTheme->addSubstyle("SETTINGS_ITEM_LIST");
-    settingsList->setListDelimiterVertical("divider_light_v3");
+    settingsList->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(0x60A08060, 2)));
+    //settingsList->setListDelimiterVertical("divider_light_v3");
     CRUIStyle * settingsItem = currentTheme->addSubstyle("SETTINGS_ITEM");
-    settingsItem->setPadding(PT_TO_PX(2));
+    settingsItem->setPadding(PT_TO_PX(0));
     settingsItem->setMinHeight(MIN_ITEM_PX);
     CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
+    settingsItemTitle->setPadding(PT_TO_PX(2));
     settingsItemTitle->setFontSize(FONT_SIZE_MEDIUM);
+    settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+    CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
+    settingsItemIcon->setAlign(ALIGN_CENTER);
     CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
     settingsItemDescription->setFontSize(FONT_SIZE_XSMALL);
 
