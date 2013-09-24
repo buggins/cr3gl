@@ -117,10 +117,12 @@ public:
 class CRUIOptionListItemWidget;
 class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
     CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
+    lString8 _currentValue;
 public:
     CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItemBase * setting);
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    virtual bool onItemClickEvent(int itemIndex);
 };
 
 class CRUISettingsListItemWidget;

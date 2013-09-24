@@ -33,21 +33,21 @@ class CRUIMainWidget;
 class NavHistoryItem {
 protected:
     CRUIMainWidget * main;
-    CRUIWidget * widget;
+    CRUIWindowWidget * widget;
 public:
-    virtual CRUIWidget * recreate() = 0;
+    virtual CRUIWindowWidget * recreate() = 0;
     virtual void setDirectory(CRDirCacheItem * item) { CR_UNUSED(item); }
     virtual const lString8 & getPathName() { return lString8::empty_str; }
     virtual VIEW_MODE getMode() = 0;
-    virtual CRUIWidget * getWidget() { return widget; }
-    NavHistoryItem(CRUIMainWidget * _main, CRUIWidget * widget) : main(_main), widget(widget) {}
+    virtual CRUIWindowWidget * getWidget() { return widget; }
+    NavHistoryItem(CRUIMainWidget * _main, CRUIWindowWidget * widget) : main(_main), widget(widget) {}
     virtual ~NavHistoryItem() {}
 };
 
 
 class HomeItem : public NavHistoryItem {
 public:
-    virtual CRUIWidget * recreate() {
+    virtual CRUIWindowWidget * recreate() {
         if (widget)
             delete widget;
         widget = new CRUIHomeWidget(main);
@@ -61,7 +61,7 @@ public:
 class ReadItem : public NavHistoryItem {
 public:
     // recreate on config change
-    virtual CRUIWidget * recreate() {
+    virtual CRUIWindowWidget * recreate() {
         lvRect pos = ((CRUIWidget*)main)->getPos();
         widget->measure(pos.width(), pos.height());
         widget->layout(pos.left, pos.top, pos.right, pos.bottom);
@@ -74,7 +74,7 @@ public:
 class SettingsItem : public NavHistoryItem {
 public:
     // recreate on config change
-    virtual CRUIWidget * recreate() {
+    virtual CRUIWindowWidget * recreate() {
         lvRect pos = ((CRUIWidget*)main)->getPos();
         widget->measure(pos.width(), pos.height());
         widget->layout(pos.left, pos.top, pos.right, pos.bottom);
@@ -87,7 +87,7 @@ public:
 class FolderItem : public NavHistoryItem {
     lString8 pathname;
 public:
-    virtual CRUIWidget * recreate() {
+    virtual CRUIWindowWidget * recreate() {
         if (widget)
             delete widget;
         widget = new CRUIFolderWidget(main);
@@ -250,6 +250,10 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 public:
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
     CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors
+    // apply changed settings
+    void applySettings();
+    // apply changed settings
+    void applySettings(CRPropRef changed);
     CRUISettingsList * findSettings(lString8 path);
 
     CRRunnable * createUpdateCallback();

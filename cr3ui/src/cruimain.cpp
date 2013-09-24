@@ -5,6 +5,7 @@ using namespace CRUI;
 #include "gldrawbuf.h"
 #include "crcoverpages.h"
 #include "stringresource.h"
+#include "cruiconfig.h"
 
 #define WINDOW_ANIMATION_DELAY 250
 #define SLOW_OPERATION_POPUP_DELAY 150
@@ -23,7 +24,9 @@ void CRUIMainWidget::onThemeChanged()
 {
     if (!_history.length()) {
         _home = new CRUIHomeWidget(this);
+        _home->applySettings(_currentSettings);
         _read = new CRUIReadWidget(this);
+        _read->applySettings(_currentSettings);
         _history.add(new HomeItem(this, _home));
         return;
     } else {
@@ -299,6 +302,10 @@ CRUIMainWidget::CRUIMainWidget()
 {
     _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
+    LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_READ);
+    if (!stream.isNull())
+        _currentSettings->loadFromStream(stream.get());
+    _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
     createBrowserSettings();
     createReaderSettings();
     onThemeChanged();
@@ -365,6 +372,36 @@ void CRUIMainWidget::update() {
     setScreenUpdateMode(true, animating ? 30 : 0);
 }
 
+// apply changed settings
+void CRUIMainWidget::applySettings() {
+    CRPropRef diff = LVCreatePropsContainer();
+    for (int i = 0; i <_newSettings->getCount(); i++) {
+        lString16 oldValue = _currentSettings->getStringDef(_newSettings->getName(i));
+        lString16 newValue = _newSettings->getValue(i);
+        if (oldValue != newValue)
+            diff->setString(_newSettings->getName(i), _newSettings->getValue(i));
+    }
+    applySettings(diff);
+}
+
+// apply changed settings
+void CRUIMainWidget::applySettings(CRPropRef changed) {
+    if (changed.isNull() || changed->getCount() == 0)
+        return; // no changes
+    for (int i = 0; i < _history.length(); i++)
+        _history[i]->getWidget()->applySettings(changed);
+    for (int i = 0; i <_newSettings->getCount(); i++) {
+        lString8 key(_newSettings->getName(i));
+        lString16 oldValue = _currentSettings->getStringDef(key.c_str());
+        lString16 newValue = _newSettings->getValue(i);
+    }
+    _currentSettings->set(_newSettings);
+    LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_WRITE);
+    if (!stream.isNull())
+        _currentSettings->saveToStream(stream.get());
+    invalidate();
+}
+
 void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEvent * event) {
     if (_animation.active) {
         stopAnimation();
@@ -372,6 +409,9 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     int oldpos = _history.pos();
     if (newpos == oldpos)
         return;
+    if (_history[oldpos]->getMode() == MODE_SETTINGS && _history[newpos]->getMode() != MODE_SETTINGS) {
+        applySettings();
+    }
     CRUIWidget * newWidget = _history[newpos]->getWidget();
     CRUIWidget * oldWidget = _history[oldpos]->getWidget();
     if (!newWidget || !oldWidget)

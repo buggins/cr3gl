@@ -84,6 +84,9 @@ public:
     virtual bool onAction(int actionId) {
         return onAction(CRUIActionByCode(actionId));
     }
+
+    // apply changed settings
+    virtual void applySettings(CRPropRef changed) { CR_UNUSED(changed); }
 };
 
 class CRUITitleBarWidget : public CRUILinearLayout {

@@ -81,43 +81,10 @@ CRUISettingsList * CRUISettingsList::asList() {
     return this;
 }
 
-CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings) : CRUIWindowWidget(main), _settings(settings)
-{
-    _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
-    addChild(_titlebar);
-    if (settings->asList()) {
-        CRUISettingsListWidget * _list;
-        _list = new CRUISettingsListWidget(main->getNewSettings(), settings);
-        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        _list->setOnItemClickListener(this);
-        addChild(_list);
-    } else if (settings->asOptionList()) {
-        CRUISettingsOptionsListEditorWidget * _list;
-        _list = new CRUISettingsOptionsListEditorWidget(main->getNewSettings(), settings);
-        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        _list->setOnItemClickListener(this);
-        addChild(_list);
-    }
-    setStyle("SETTINGS_WIDGET");
-}
-
-bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
-    CR_UNUSED(widget);
-    CRUISettingsItemBase * setting = _settings->getChild(itemIndex);
-    _main->showSettings(setting);
-    return true;
-}
-
-bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
-    if (widget->getId() == "BACK") {
-        _main->back();
-    }
-    return true;
-}
-
 CRUISettingsOptionsListEditorWidget::CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItemBase * setting) : CRUISettingsEditor(props, setting) {
     setAdapter(this);
     _optionListItem = new CRUIOptionListItemWidget(); // child is setting with list of possible options
+    _currentValue = UnicodeToUtf8(_props->getStringDef(_settings->getSettingId().c_str()));
     setStyle("SETTINGS_ITEM_LIST");
 }
 
@@ -129,10 +96,16 @@ int CRUISettingsOptionsListEditorWidget::getItemCount(CRUIListWidget * list) {
 CRUIWidget * CRUISettingsOptionsListEditorWidget::getItemWidget(CRUIListWidget * list, int index) {
     CR_UNUSED(list);
     const CRUIOptionItem * item = _settings->getOption(index);
-    bool isSelected = false;
+    bool isSelected = item->getValue() == _currentValue;
     // TODO: calc isSelected
     _optionListItem->setSetting(item, isSelected);
     return _optionListItem;
+}
+
+bool CRUISettingsOptionsListEditorWidget::onItemClickEvent(int itemIndex) {
+    const CRUIOptionItem * item = _settings->getOption(itemIndex);
+    _props->setString(_settings->getSettingId().c_str(), item->getValue().c_str());
+    return CRUIListWidget::onItemClickEvent(itemIndex);
 }
 
 CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItemBase * settings) : CRUISettingsEditor(props, settings), CRUIListWidget(false) {
@@ -199,3 +172,49 @@ const CRUIOptionItem * CRUISettingsOptionList::getDefaultOption() const {
 const CRUIOptionItem * CRUISettingsOptionList::getSelectedOption() const {
     return findOption(_value);
 }
+
+
+
+
+
+
+CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings) : CRUIWindowWidget(main), _settings(settings)
+{
+    _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
+    addChild(_titlebar);
+    if (settings->asList()) {
+        CRUISettingsListWidget * _list;
+        _list = new CRUISettingsListWidget(main->getNewSettings(), settings);
+        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _list->setOnItemClickListener(this);
+        addChild(_list);
+    } else if (settings->asOptionList()) {
+        CRUISettingsOptionsListEditorWidget * _list;
+        _list = new CRUISettingsOptionsListEditorWidget(main->getNewSettings(), settings);
+        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _list->setOnItemClickListener(this);
+        addChild(_list);
+    }
+    setStyle("SETTINGS_WIDGET");
+}
+
+bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    CRUISettingsItemBase * setting = _settings->getChild(itemIndex);
+    if (_settings->asList()) {
+        if (setting->asList() || setting->asOptionList()) {
+            _main->showSettings(setting);
+        }
+    } else if (_settings->asOptionList()) {
+        _main->back();
+    }
+    return true;
+}
+
+bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK") {
+        _main->back();
+    }
+    return true;
+}
+
