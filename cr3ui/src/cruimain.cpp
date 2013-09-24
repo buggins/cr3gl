@@ -283,6 +283,10 @@ void CRUIMainWidget::createReaderSettings() {
         fontFaces->addOption(new CRUIOptionItem(UnicodeToUtf8(faceList[i]), faceList[i]));
     }
     fontsAndColors->addChild(fontFaces);
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING));
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED));
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN));
+
     _readerSettings.addChild(fontsAndColors);
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
@@ -315,6 +319,9 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
+    _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
+    _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");
     if (_currentSettings->getCount() != oldPropCount) {
         saveSettings();
     }

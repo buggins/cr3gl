@@ -188,8 +188,10 @@ public:
 
 	virtual void setStateFilter(lUInt8 mask, lUInt8 value) { _stateMask = mask; _stateValue = value; }
 
-	CRUIStyle * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
-	CRUIStyle * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
+    CRUIStyle * setPadding(const lvRect & padding) { _padding = padding; return this; }
+    CRUIStyle * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
+    CRUIStyle * setMargin(const lvRect & margin) { _margin = margin; return this; }
+    CRUIStyle * setMargin(int w) { _margin.left = _margin.top = _margin.right = _margin.bottom = w; return this; }
 	CRUIStyle * setMinWidth(int v) { _minWidth = v; return this; }
 	CRUIStyle * setMaxWidth(int v) { _maxWidth = v; return this; }
 	CRUIStyle * setMinHeight(int v) { _minHeight = v; return this; }

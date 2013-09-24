@@ -204,16 +204,18 @@ void CRUIConfig::createDefaultTheme() {
     settingsList->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(0x60A08060, 2)));
     //settingsList->setListDelimiterVertical("divider_light_v3");
     CRUIStyle * settingsItem = currentTheme->addSubstyle("SETTINGS_ITEM");
-    settingsItem->setPadding(PT_TO_PX(0));
+    settingsItem->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
     settingsItem->setMinHeight(MIN_ITEM_PX);
     CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
-    settingsItemTitle->setPadding(PT_TO_PX(2));
-    settingsItemTitle->setFontSize(FONT_SIZE_MEDIUM);
+    //settingsItemTitle->setPadding(PT_TO_PX(2));
+    settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
     settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
     CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
     settingsItemIcon->setAlign(ALIGN_CENTER);
     CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
-    settingsItemDescription->setFontSize(FONT_SIZE_XSMALL);
+    settingsItemDescription->setFontSize(FONT_SIZE_SMALL);
+    //settingsItemDescription->setPadding(PT_TO_PX(2));
+    settingsItemDescription->setAlign(ALIGN_BOTTOM | ALIGN_LEFT);
 
 
     resourceResolver->setIconColorTransform(0x898480, 0x28241E);

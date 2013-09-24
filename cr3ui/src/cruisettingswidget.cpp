@@ -12,13 +12,73 @@ protected:
     CRUITextWidget * _description;
     CRUIImageWidget * _righticon;
 public:
-    CRUISettingsListItemWidgetBase();
-    virtual void setSetting(CRUISettingsItemBase * settings) {
+    void setDescription(lString16 s) {
+        _description->setText(s);
+        if (!s.empty()) {
+            _description->setMaxHeight(UNSPECIFIED);
+        } else {
+            _description->setMaxHeight(0);
+        }
+    }
+    void setDescription(const char * s) {
+        _description->setText(s);
+        if (s && s[0]) {
+            _description->setMaxHeight(UNSPECIFIED);
+        } else {
+            _description->setMaxHeight(0);
+        }
+    }
+    CRUISettingsListItemWidgetBase() {
+        _title = new CRUITextWidget();
+        _description = new CRUITextWidget();
+        _righticon = new CRUIImageWidget();
+        CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+        layout->addChild(_title);
+        layout->addChild(_description);
+        layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        layout->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
+        addChild(layout);
+        addChild(_righticon);
+        _righticon->setStyle("SETTINGS_ITEM_ICON");
+        _title->setStyle("SETTINGS_ITEM_TITLE");
+        _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
+        setStyle("SETTINGS_ITEM");
+    }
+
+    virtual void setSetting(CRUISettingsItemBase * settings, CRPropRef props) {
+        CR_UNUSED(props);
         _settings = settings;
         _title->setText(_settings->getName());
-        _description->setText(_settings->getDescription());
+        if (settings->asOptionList()) {
+            lString8 value = UnicodeToUtf8(props->getStringDef(settings->getSettingId().c_str()));
+            const CRUIOptionItem * item = settings->findOption(value);
+            if (item) {
+                setDescription(item->getName());
+            } else {
+                setDescription(NULL);
+            }
+            _righticon->setImage("ic_menu_forward");
+        } else {
+            setDescription(_settings->getDescription());
+            _righticon->setImage("ic_menu_forward");
+        }
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
+};
+
+class CRUISettingsCheckboxWidget : public CRUISettingsListItemWidgetBase {
+public:
+    virtual void setSetting(CRUISettingsItemBase * settings, CRPropRef props) {
+        _settings = settings;
+        _title->setText(_settings->getName());
+        setDescription(_settings->getDescription());
+        if (settings->isChecked(props))
+            _righticon->setImage("btn_check_on");
+        else
+            _righticon->setImage("btn_check_off");
+
+    }
+    virtual ~CRUISettingsCheckboxWidget() {}
 };
 
 class CRUIOptionListItemWidget : public CRUIHorizontalLayout {
@@ -57,21 +117,6 @@ public:
 class CRUISettingsValueListItemWidget : public CRUISettingsListItemWidgetBase {
 public:
 };
-
-CRUISettingsListItemWidgetBase::CRUISettingsListItemWidgetBase() : _settings(NULL) {
-    _title = new CRUITextWidget();
-    _description = new CRUITextWidget();
-    _righticon = new CRUIImageWidget();
-    CRUIVerticalLayout * layout = new CRUIVerticalLayout();
-    layout->addChild(_title);
-    layout->addChild(_description);
-    addChild(layout);
-    addChild(_righticon);
-    _righticon->setStyle("SETTINGS_ITEM_ICON");
-    _title->setStyle("SETTINGS_ITEM_TITLE");
-    _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
-    setStyle("SETTINGS_ITEM");
-}
 
 
 
@@ -112,6 +157,7 @@ CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItem
     setAdapter(this);
     _settingsListItem = new CRUISettingsListItemWidget(); // child setting list widget
     _optionListItem = new CRUISettingsValueListItemWidget(); // child is setting with list of possible options
+    _checkboxListItem = new CRUISettingsCheckboxWidget();
     setStyle("SETTINGS_ITEM_LIST");
 }
 
@@ -145,14 +191,26 @@ CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int in
     CR_UNUSED(list);
     CRUISettingsItemBase * item = _settings->getChild(index);
     if (item->asList()) {
-        _settingsListItem->setSetting(item->asList());
+        _settingsListItem->setSetting(item, _props);
         return _settingsListItem;
+    } else if (item->isToggle()) {
+        _checkboxListItem->setSetting(item, _props);
+        return _checkboxListItem;
     }
     // TODO: more item types
-    _optionListItem->setSetting(item);
+    _optionListItem->setSetting(item, _props);
     return _optionListItem;
 }
 
+bool CRUISettingsCheckbox::isChecked(CRPropRef props) {
+    return props->getBoolDef(getSettingId().c_str(), false);
+}
+
+void CRUISettingsCheckbox::toggle(CRPropRef props) {
+    bool value = props->getBoolDef(getSettingId().c_str(), false);
+    value = !value;
+    props->setBool(getSettingId().c_str(), value);
+}
 
 lString16 CRUIOptionItem::getName() const {
     return _name.empty() ? _16(_nameRes.c_str()) : _name;
@@ -204,6 +262,9 @@ bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex)
     if (_settings->asList()) {
         if (setting->asList() || setting->asOptionList()) {
             _main->showSettings(setting);
+        } else if (setting->isToggle()) {
+            setting->toggle(_main->getNewSettings());
+            invalidate();
         }
     } else if (_settings->asOptionList()) {
         _main->back();

@@ -33,6 +33,9 @@ public:
     virtual const CRUIOptionItem * findOption(lString8 value) const { CR_UNUSED(value); return NULL; }
     virtual const CRUIOptionItem * getDefaultOption() const { return NULL; }
     virtual const CRUIOptionItem * getSelectedOption() const { return NULL; }
+    virtual bool isToggle() { return false; }
+    virtual bool isChecked(CRPropRef props) { CR_UNUSED(props); return false; }
+    virtual void toggle(CRPropRef props) { CR_UNUSED(props); }
 
 };
 
@@ -67,6 +70,18 @@ public:
     virtual lString8 getDefaultValue() { return _defaultValue; }
     virtual lString8 getValue() { return _value; }
     virtual void setValue(lString8 value) { _value = value; }
+};
+
+class CRUISettingsCheckbox : public CRUISettingsItemBase {
+protected:
+public:
+    CRUISettingsCheckbox(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItemBase(nameRes, descriptionRes, settingId) {
+
+    }
+    virtual ~CRUISettingsCheckbox() {}
+    virtual bool isToggle() { return true; }
+    virtual void toggle(CRPropRef props);
+    virtual bool isChecked(CRPropRef props);
 };
 
 /// option item for option list setting
@@ -127,9 +142,11 @@ public:
 
 class CRUISettingsListItemWidget;
 class CRUISettingsValueListItemWidget;
+class CRUISettingsCheckboxWidget;
 class CRUISettingsListWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
     CRUISettingsListItemWidget * _settingsListItem; // child setting list widget
     CRUISettingsValueListItemWidget * _optionListItem; // child is setting with list of possible options
+    CRUISettingsCheckboxWidget * _checkboxListItem; // checkbox
 public:
     CRUISettingsListWidget(CRPropRef props, CRUISettingsItemBase * settings);
     virtual int getItemCount(CRUIListWidget * list);

@@ -170,6 +170,14 @@ void InitCREngine(lString16 exePath) {
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\ariali.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbd.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbi.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\tahoma.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\tahomabd.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\comic.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\comicbd.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibri.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrib.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrii.ttf");
+    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrili.ttf");
 
     crconfig.setupUserDir(UnicodeToUtf8(exePath));
 
