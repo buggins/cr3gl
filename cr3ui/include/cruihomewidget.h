@@ -40,6 +40,8 @@ public:
     virtual bool onClick(CRUIWidget * widget);
     /// handle menu or other action
     virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 };
 
 

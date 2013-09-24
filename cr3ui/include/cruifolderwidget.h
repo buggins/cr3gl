@@ -30,6 +30,10 @@ public:
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual void setDirectory(CRDirContentItem * _dir);
+    /// override to handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
     CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();
 };

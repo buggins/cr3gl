@@ -38,7 +38,7 @@ void CRUIActionList::addAll(const CRUIActionList & list) {
 
 const CRUIAction * CRUIActionByName(const char * _id) {
     #undef CRACTION
-    #define CRACTION(id,cmd,param,name,icon) if (!strcmp(_id, # name)) return ACTION_ ## id;
+    #define CRACTION(id,cmd,param,name,icon) if (!strcmp(_id, # id)) return ACTION_ ## id;
     #include "cruiactiondef.h"
     return NULL; // not found
 }

@@ -1,6 +1,8 @@
 #ifndef CRUISETTINGS_H
 #define CRUISETTINGS_H
 
+#include "lvdocviewprops.h"
+
 // setting group paths
 #define SETTINGS_PATH_READER "reader"
 #define SETTINGS_PATH_BROWSER "browser"
@@ -16,16 +18,17 @@
 #define PROP_APP_THEME_NIGHT "app.ui.theme.night"
 #define PROP_APP_LOCALE "app.locale.name"
 #define PROP_NIGHT_MODE "crengine.night.mode"
+
+//#define PROP_FONT_COLOR "font.color.default"
 #define PROP_FONT_COLOR_DAY        "font.color.day"
 #define PROP_FONT_COLOR_NIGHT      "font.color.night"
-#define PROP_FONT_COLOR "font.color.default"
 #define PROP_BACKGROUND_COLOR_DAY "background.color.day"
 #define PROP_BACKGROUND_COLOR_NIGHT "background.color.night"
 
-#define PROP_FONT_ANTIALIASING       "font.antialiasing.mode"
-#define PROP_FONT_FACE               "font.face.default"
-#define PROP_FONT_HINTING            "font.hinting.mode"
-#define PROP_FONT_GAMMA              "font.gamma"
+//#define PROP_FONT_ANTIALIASING       "font.antialiasing.mode"
+//#define PROP_FONT_FACE               "font.face.default"
+//#define PROP_FONT_HINTING            "font.hinting.mode"
+//#define PROP_FONT_GAMMA              "font.gamma"
 #define PROP_FONT_GAMMA_DAY          "font.gamma.day"
 #define PROP_FONT_GAMMA_NIGHT        "font.gamma.night"
 

@@ -99,6 +99,7 @@ public:
         if (!_body->isPointInside(event->getX(), event->getY())) {
             if (event->getAction() == ACTION_UP) {
                 _control->animateClose();
+                invalidate();
                 return true;
             }
         }
@@ -110,6 +111,7 @@ public:
         if (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC) {
             if (event->getType() == KEY_ACTION_RELEASE) {
                 _control->animateClose();
+                invalidate();
             }
             return true;
         }
@@ -248,6 +250,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     _popupControl.progress = 0;
     _popupControl.closing = false;
     _popupControl.outerColor = 0xA0404040;
+    invalidate();
 }
 
 class CRUIListMenu : public CRUIListWidget, public CRUIListAdapter {

@@ -4,7 +4,7 @@
 #include "lvptrvec.h"
 #include "lvstring.h"
 #include "cri18n.h"
-#include "lvdocview.h" // import DCMD_ defs
+#include "lvdocviewcmd.h" // import DCMD_ defs
 
 struct CRUIAction {
     int id; // action ID

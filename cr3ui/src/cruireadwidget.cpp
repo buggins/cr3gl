@@ -392,12 +392,26 @@ bool CRUIReadWidget::renderIfNecessary() {
 #define SCROLL_MIN_SPEED 3
 #define SCROLL_FRICTION 13
 
+/// overriden to treat popup as first child
+int CRUIReadWidget::getChildCount() {
+    if (_popupControl.popup)
+        return 1;
+    return 0;
+}
+
+/// overriden to treat popup as first child
+CRUIWidget * CRUIReadWidget::getChild(int index) {
+    CR_UNUSED(index);
+    return _popupControl.popup;
+}
+
 void CRUIReadWidget::animate(lUInt64 millisPassed) {
     if (_locked) {
         if (_scroll.isActive())
             _scroll.stop();
         return;
     }
+    CRUIWidget::animate(millisPassed);
     bool changed = _scroll.animate(millisPassed);
     if (changed) {
         int oldpos = _docview->GetPos();
@@ -640,10 +654,17 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         _main->back();
         return true;
     case CMD_MENU:
-        // TODO
+    {
+        CRUIActionList actions;
+        actions.add(ACTION_EXIT);
+        actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_BACK);
+        lvRect margins;
+        showMenu(actions, ALIGN_TOP, margins, false);
         return true;
+    }
     case CMD_SETTINGS:
-        // TODO
+        _main->showSettings(lString8("@settings/reader"));
         return true;
     }
     return false;

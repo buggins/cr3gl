@@ -132,8 +132,14 @@ void OpenGLWindow::renderIfChanged()
 {
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
-    if (needLayout || needDraw)
-        renderLater();
+    if (animating) {
+        setAnimating(true);
+    } else {
+        setAnimating(false);
+        if (needLayout || needDraw) {
+            renderLater();
+        }
+    }
 }
 
 void OpenGLWindow::render()

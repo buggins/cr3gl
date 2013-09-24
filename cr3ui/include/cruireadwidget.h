@@ -115,6 +115,11 @@ public:
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
 
+    /// overriden to treat popup as first child
+    virtual int getChildCount();
+    /// overriden to treat popup as first child
+    virtual CRUIWidget * getChild(int index);
+
     virtual void clearImageCaches();
 
     /// motion event handler, returns true if it handled event
@@ -124,6 +129,8 @@ public:
     int pointToTapZone(int x, int y);
     /// override to handle menu or other action
     virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 
     bool onTapZone(int zone, bool additionalAction);
 

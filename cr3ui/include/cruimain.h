@@ -247,6 +247,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void stopAnimation();
     /// if not initialized, run background tasks
     void runStartupTasksIfNeeded();
+
+    void saveSettings();
 public:
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
     CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors

@@ -382,11 +382,34 @@ CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(mai
 
 bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK")
-        getMain()->back();
+        onAction(CMD_BACK);
     else if (widget->getId() == "MENU") {
-        // TODO
+        onAction(CMD_MENU);
     }
     return true;
+}
+
+/// handle menu or other action
+bool CRUIFolderWidget::onAction(const CRUIAction * action) {
+    switch (action->id) {
+    case CMD_BACK:
+        _main->back();
+        return true;
+    case CMD_MENU:
+    {
+        CRUIActionList actions;
+        actions.add(ACTION_EXIT);
+        actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_BACK);
+        lvRect margins;
+        showMenu(actions, ALIGN_TOP, margins, false);
+        return true;
+    }
+    case CMD_SETTINGS:
+        _main->showSettings(lString8("@settings/browser"));
+        return true;
+    }
+    return false;
 }
 
 bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {

@@ -138,6 +138,8 @@ HEADERS += \
     ../../../cr3/crengine/include/chmfmt.h \
     ../../../cr3/crengine/include/crlocks.h \
     ../../../cr3/crengine/include/bookformats.h \
+    ../../../cr3/crengine/include/lvdocviewprops.h \
+    ../../../cr3/crengine/include/lvdocviewcmd.h \
     ../../../cr3/crengine/include/lvautoptr.h
 
 

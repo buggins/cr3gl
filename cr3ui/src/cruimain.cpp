@@ -305,15 +305,19 @@ CRUIMainWidget::CRUIMainWidget()
     LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_READ);
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
+    int oldPropCount = _currentSettings->getCount();
     _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "CMD_MENU");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "CMD_SETTINGS");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "6", "CMD_PAGE_DOWN");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "CMD_PAGE_DOWN");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "CMD_PAGE_DOWN");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "CMD_PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "MENU");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "SETTINGS");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "6", "PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "PAGE_DOWN");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
+    if (_currentSettings->getCount() != oldPropCount) {
+        saveSettings();
+    }
     createBrowserSettings();
     createReaderSettings();
     onThemeChanged();
@@ -404,10 +408,14 @@ void CRUIMainWidget::applySettings(CRPropRef changed) {
         lString16 newValue = _newSettings->getValue(i);
     }
     _currentSettings->set(_newSettings);
+    saveSettings();
+    invalidate();
+}
+
+void CRUIMainWidget::saveSettings() {
     LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_WRITE);
     if (!stream.isNull())
         _currentSettings->saveToStream(stream.get());
-    invalidate();
 }
 
 void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEvent * event) {

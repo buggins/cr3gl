@@ -719,19 +719,8 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
 /// override to handle menu or other action
 bool CRUIHomeWidget::onAction(const CRUIAction * action) {
     switch(action->id) {
-    case CMD_EXIT:
-        break;
-    case CMD_BACK:
-        break;
-    case CMD_SETTINGS:
-        _main->showSettings(lString8("@settings/browser"));
-        break;
-    }
-    return false;
-}
-bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
-    if (widget->getId() == "MENU") {
-        CRLog::debug("Home screen - Menu button pressed");
+    case CMD_MENU:
+    {
         CRUIActionList actions;
         actions.add(ACTION_EXIT);
         actions.add(ACTION_SETTINGS);
@@ -740,6 +729,21 @@ bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
         margins.right = MIN_ITEM_PX * 5 / 4;
         showMenu(actions, ALIGN_TOP, margins, false);
         return true;
+    }
+    case CMD_EXIT:
+        break;
+    case CMD_BACK:
+        break;
+    case CMD_SETTINGS:
+        _main->showSettings(lString8("@settings/browser"));
+        return true;
+    }
+    return false;
+}
+bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "MENU") {
+        CRLog::debug("Home screen - Menu button pressed");
+        return onAction(CMD_MENU);
     }
     return false;
 }
