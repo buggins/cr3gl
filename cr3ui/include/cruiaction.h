@@ -41,7 +41,7 @@ public:
     const CRUIAction * get(int index) const { return _list[index]; }
     CRUIActionList() {}
     CRUIActionList(const CRUIActionList & list) { addAll(list); }
-    CRUIActionList & operator += (const CRUIActionList & list) { addAll(list); }
+    CRUIActionList & operator += (const CRUIActionList & list) { addAll(list); return *this; }
 };
 
 #ifndef CRACTION_ENUM_INCLUDED

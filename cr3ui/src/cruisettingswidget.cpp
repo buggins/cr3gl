@@ -362,3 +362,8 @@ CRUISettingsEditor * CRUIFontFaceSetting::createEditor(CRPropRef props) {
 CRUISettingsEditor * CRUISettingsList::createEditor(CRPropRef props) {
     return new CRUISettingsListWidget(props, this);
 }
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIFontSizeSetting::createEditor(CRPropRef props) {
+    return new CRUIFontSizeEditorWidget(props, this);
+}

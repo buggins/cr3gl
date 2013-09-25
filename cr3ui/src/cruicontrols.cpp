@@ -386,3 +386,24 @@ bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 
 
 
+/// measure dimensions
+void CRUISliderWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    int width = baseWidth * 9 / 10;
+    int height = PT_TO_PX(30);
+    defMeasure(baseWidth, baseHeight, width, height);
+}
+
+/// updates widget position based on specified rectangle
+void CRUISliderWidget::layout(int left, int top, int right, int bottom) {
+
+}
+
+/// draws widget with its children to specified surface
+void CRUISliderWidget::draw(LVDrawBuf * buf) {
+    CRUIWidget::draw(buf);
+}

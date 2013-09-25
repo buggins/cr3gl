@@ -125,6 +125,14 @@ public:
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
 };
 
+class CRUIFontSizeSetting : public CRUISettingsItem {
+public:
+    CRUIFontSizeSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+};
+
 class CRUISettingsEditorCallback {
 public:
     virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done) = 0;
@@ -184,6 +192,13 @@ protected:
 public:
     CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+};
+
+class CRUIFontSizeEditorWidget : public CRUISettingsEditor {
+protected:
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIFontSizeEditorWidget(CRPropRef props, CRUISettingsItem * setting);
 };
 
 class CRUISettingsListItemWidget;

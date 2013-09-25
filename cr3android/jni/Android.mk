@@ -250,6 +250,10 @@ NEWUI_FILES += \
     cr3/cr3ui/src/cruipopup.cpp \
     cr3/cr3ui/src/crcoverpages.cpp \
     cr3/cr3ui/src/cruiconfig.cpp \
+    cr3/cr3ui/src/cruiaction.cpp \
+    cr3/cr3ui/src/cruiwindow.cpp \
+    cr3/cr3ui/src/cruicoverwidget.cpp \
+    cr3/cr3ui/src/cruisettingswidget.cpp \
     cr3/cr3ui/src/stringresource.cpp
 
     

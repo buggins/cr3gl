@@ -262,6 +262,10 @@ public:
 	virtual ~CRUIOnListItemLongClickListener() {}
 };
 
-
+class CRUISliderWidget;
+class CRUIOnScrollPosCallback {
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) = 0;
+    virtual ~CRUIOnScrollPosCallback() {}
+};
 
 #endif /* CRUIEVENT_H_ */

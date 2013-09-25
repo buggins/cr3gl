@@ -87,5 +87,31 @@ public:
     void onThemeChanged();
 };
 
+class CRUISliderWidget : public CRUIWidget {
+protected:
+    CRUIImageRef sliderResource;
+    CRUIImageRef lineResource;
+    int _minValue;
+    int _maxValue;
+    int _value;
+    CRUIOnScrollPosCallback * _callback;
+public:
+    CRUISliderWidget(int minValue, int maxValue, int currentValue) :  _minValue(minValue), _maxValue(maxValue), _value(currentValue), _callback(NULL) {
+
+    }
+    int getPos() { return _value; }
+    void setPos(int value) { _value = value < _minValue ? _minValue : (value > _maxValue ? _maxValue : value); }
+    int getMinPos() { return _minValue; }
+    int getMaxPos() { return _maxValue; }
+    int setMinPos(int value) { _minValue = value; }
+    int setMaxPos(int value) { _maxValue = value; }
+    void setScrollPosCallback(CRUIOnScrollPosCallback * callback) { _callback = callback; }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+};
 
 #endif /* CRUICONTROLS_H_ */
