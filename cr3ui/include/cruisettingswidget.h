@@ -138,14 +138,17 @@ public:
 };
 
 class CRUIOptionListItemWidget;
-class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
+class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIVerticalLayout, public CRUIOnListItemClickListener {
     CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
+    CRUIListWidget * _list;
     lString8 _currentValue;
+    CRUIOnListItemClickListener * _onItemClickListener;
 public:
     CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItemBase * setting);
+    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
-    virtual bool onItemClickEvent(int itemIndex);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
 class CRUISettingsListItemWidget;
