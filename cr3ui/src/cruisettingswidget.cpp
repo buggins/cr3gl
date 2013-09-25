@@ -114,14 +114,23 @@ CRUISettingsList * CRUISettingsList::asList() {
     return this;
 }
 
-CRUISettingsOptionsListEditorWidget::CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting), _list(NULL), _onItemClickListener(NULL) {
+CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting), _list(NULL), _onItemClickListener(NULL) {
     _list = new CRUIListWidget(true);
     _list->setAdapter(this);
     _list->setOnItemClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
+    addChild(_list);
+}
+
+bool CRUISettingsListEditor::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    if (_onItemClickListener)
+        return _onItemClickListener->onListItemClick(widget, itemIndex);
+    return true;
+}
+
+CRUISettingsOptionsListEditorWidget::CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsListEditor(props, setting) {
     _optionListItem = new CRUIOptionListItemWidget(); // child is setting with list of possible options
     _currentValue = _settings->getValue(_props);
-    addChild(_list);
 }
 
 int CRUISettingsOptionsListEditorWidget::getItemCount(CRUIListWidget * list) {
@@ -140,20 +149,13 @@ CRUIWidget * CRUISettingsOptionsListEditorWidget::getItemWidget(CRUIListWidget *
 bool CRUISettingsOptionsListEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
     const CRUIOptionItem * item = _settings->getOption(itemIndex);
     _props->setString(_settings->getSettingId().c_str(), item->getValue().c_str());
-    if (_onItemClickListener)
-        return _onItemClickListener->onListItemClick(widget, itemIndex);
-    return true;
+    return CRUISettingsListEditor::onListItemClick(widget, itemIndex);
 }
 
-CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings) : CRUISettingsEditor(props, settings), _list(NULL), _onItemClickListener(NULL) {
-    _list = new CRUIListWidget();
-    _list->setAdapter(this);
-    _list->setOnItemClickListener(this);
-    _list->setStyle("SETTINGS_ITEM_LIST");
+CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings) : CRUISettingsListEditor(props, settings) {
     _settingsListItem = new CRUISettingsListItemWidget(); // child setting list widget
     _optionListItem = new CRUISettingsValueListItemWidget(); // child is setting with list of possible options
     _checkboxListItem = new CRUISettingsCheckboxWidget();
-    addChild(_list);
 }
 
 lString16 CRUISettingsItem::getName() const {
@@ -181,12 +183,6 @@ lString16 CRUISettingsItem::getDescription(CRPropRef props) const {
 int CRUISettingsListWidget::getItemCount(CRUIListWidget * list) {
     CR_UNUSED(list);
     return _settings->childCount();
-}
-
-bool CRUISettingsListWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
-    if (_onItemClickListener)
-        return _onItemClickListener->onListItemClick(widget, itemIndex);
-    return true;
 }
 
 CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int index) {

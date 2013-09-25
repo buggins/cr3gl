@@ -119,15 +119,25 @@ public:
     CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting) {}
 };
 
+class CRUISettingsListEditor : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
+protected:
+    CRUIListWidget * _list;
+    CRUIOnListItemClickListener * _onItemClickListener;
+public:
+    CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting);
+    virtual ~CRUISettingsListEditor() {}
+    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+};
+
 class CRUIOptionListItemWidget;
-class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
+class CRUISettingsOptionsListEditorWidget : public CRUISettingsListEditor {
     CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
     CRUIListWidget * _list;
     lString8 _currentValue;
     CRUIOnListItemClickListener * _onItemClickListener;
 public:
     CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItem * setting);
-    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
@@ -136,18 +146,14 @@ public:
 class CRUISettingsListItemWidget;
 class CRUISettingsValueListItemWidget;
 class CRUISettingsCheckboxWidget;
-class CRUISettingsListWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
-    CRUIListWidget * _list;
-    CRUIOnListItemClickListener * _onItemClickListener;
+class CRUISettingsListWidget : public CRUISettingsListEditor {
     CRUISettingsListItemWidget * _settingsListItem; // child setting list widget
     CRUISettingsValueListItemWidget * _optionListItem; // child is setting with list of possible options
     CRUISettingsCheckboxWidget * _checkboxListItem; // checkbox
 public:
     CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings);
-    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
-    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual ~CRUISettingsListWidget() {}
 };
 
