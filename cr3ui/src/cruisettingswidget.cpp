@@ -1,6 +1,7 @@
 #include "cruisettingswidget.h"
 #include "crui.h"
 #include "cruimain.h"
+#include "stringresource.h"
 
 using namespace CRUI;
 
@@ -114,17 +115,64 @@ CRUISettingsList * CRUISettingsList::asList() {
     return this;
 }
 
-CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting), _list(NULL), _onItemClickListener(NULL) {
+CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting), _list(NULL) {
     _list = new CRUIListWidget(true);
     _list->setAdapter(this);
     _list->setOnItemClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
+    _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
     addChild(_list);
 }
 
-bool CRUISettingsListEditor::onListItemClick(CRUIListWidget * widget, int itemIndex) {
-    if (_onItemClickListener)
-        return _onItemClickListener->onListItemClick(widget, itemIndex);
+
+
+/// measure dimensions
+void CRUIFontSampleWidget::measure(int baseWidth, int baseHeight) {
+    int dx = 0;
+    int dy = _props->getIntDef(PROP_FONT_SIZE) * 2 * 120 / 100;
+    if (dy < baseHeight / 6)
+        dy = _props->getIntDef(PROP_FONT_SIZE) * 3 * 120 / 100;
+    defMeasure(baseWidth, baseHeight, dx, dy);
+}
+
+/// draws widget with its children to specified surface
+void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
+    CRUIWidget::draw(buf);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    LVDrawStateSaver saver(*buf);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+    // draw
+    lUInt32 textColor = 0;
+    int fontSize = _props->getIntDef(PROP_FONT_SIZE);
+    lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
+    lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
+    SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+    fmt.draw(*buf, rc, 0, 0);
+}
+
+CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
+    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xC0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xC0808080);
+    _sample->setPadding(PT_TO_PX(3));
+    addChild(_sample);
+}
+
+bool CRUIFontFaceEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    const CRUIOptionItem * item = _settings->getOption(itemIndex);
+    _currentValue = item->getValue();
+    _props->setString(_settings->getSettingId().c_str(), _currentValue);
+    invalidate();
     return true;
 }
 
@@ -147,9 +195,12 @@ CRUIWidget * CRUISettingsOptionsListEditorWidget::getItemWidget(CRUIListWidget *
 }
 
 bool CRUISettingsOptionsListEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
     const CRUIOptionItem * item = _settings->getOption(itemIndex);
     _props->setString(_settings->getSettingId().c_str(), item->getValue().c_str());
-    return CRUISettingsListEditor::onListItemClick(widget, itemIndex);
+    if (_callback)
+        _callback->onSettingChange(NULL, true);
+    return true;
 }
 
 CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings) : CRUISettingsListEditor(props, settings) {
@@ -198,6 +249,19 @@ CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int in
     // TODO: more item types
     _optionListItem->setSetting(item, _props);
     return _optionListItem;
+}
+
+bool CRUISettingsListWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    CRUISettingsItem * setting = _settings->getChild(itemIndex);
+    if (setting->isToggle()) {
+        setting->toggle(_props);
+        invalidate();
+    } else {
+        if (_callback)
+            _callback->onSettingChange(setting, false);
+    }
+    return true;
 }
 
 lString16 CRUISettingsCheckbox::getDescription(CRPropRef props) const {
@@ -254,25 +318,16 @@ CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem *
 {
     _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
     addChild(_titlebar);
-    if (settings->asList()) {
-        CRUISettingsListWidget * _list;
-        _list = new CRUISettingsListWidget(main->getNewSettings(), settings);
-        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        _list->setOnItemClickListener(this);
-        addChild(_list);
-    } else if (settings->asOptionList()) {
-        CRUISettingsOptionsListEditorWidget * _list;
-        _list = new CRUISettingsOptionsListEditorWidget(main->getNewSettings(), settings);
-        _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        _list->setOnItemClickListener(this);
-        addChild(_list);
-    }
     setStyle("SETTINGS_WIDGET");
+    CRUISettingsEditor * editor = settings->createEditor(main->getNewSettings());
+    if (editor) {
+        editor->setCallback(this);
+        editor->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        addChild(editor);
+    }
 }
 
-bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
-    CR_UNUSED(widget);
-    CRUISettingsItem * setting = _settings->getChild(itemIndex);
+void CRUISettingsWidget::onSettingChange(CRUISettingsItem * setting, bool done) {
     if (_settings->asList()) {
         if (setting->asList() || setting->asOptionList()) {
             _main->showSettings(setting);
@@ -281,10 +336,26 @@ bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex)
             invalidate();
         }
     } else if (_settings->asOptionList()) {
-        _main->back();
+        if (done)
+            _main->back();
     }
-    return true;
 }
+
+//bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+//    CR_UNUSED(widget);
+//    CRUISettingsItem * setting = _settings->getChild(itemIndex);
+//    if (_settings->asList()) {
+//        if (setting->asList() || setting->asOptionList()) {
+//            _main->showSettings(setting);
+//        } else if (setting->isToggle()) {
+//            setting->toggle(_main->getNewSettings());
+//            invalidate();
+//        }
+//    } else if (_settings->asOptionList()) {
+//        _main->back();
+//    }
+//    return true;
+//}
 
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
@@ -293,3 +364,17 @@ bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     return true;
 }
 
+/// create editor widget based on option type
+CRUISettingsEditor * CRUISettingsOptionList::createEditor(CRPropRef props) {
+    return new CRUISettingsOptionsListEditorWidget(props, this);
+}
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIFontFaceSetting::createEditor(CRPropRef props) {
+    return new CRUIFontFaceEditorWidget(props, this);
+}
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUISettingsList::createEditor(CRPropRef props) {
+    return new CRUISettingsListWidget(props, this);
+}

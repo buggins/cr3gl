@@ -62,6 +62,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     _qtgl = this;
 
+    crconfig.setupResourcesForScreenSize();
     _widget = new CRUIMainWidget();
     _widget->setScreenUpdater(this);
     _widget->setPlatform(this);

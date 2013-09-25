@@ -25,6 +25,10 @@ struct CRUIConfig {
     int coverRenderCacheMaxItems;
     int coverRenderCacheMaxBytes;
 
+    int minFontSize;
+    int maxFontSize;
+    int defFontSize;
+
     /// font directories to register all files from
     lString8Collection fontDirs;
     /// separate font files to register

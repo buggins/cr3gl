@@ -71,6 +71,10 @@ void CRUIConfig::setupResourcesForScreenSize() {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
 
+    minFontSize = sz1;
+    maxFontSize = sz5;
+    defFontSize = sz3;
+
     // calculate folder icons size
     int folderIconSize;
     int menuIconSize;

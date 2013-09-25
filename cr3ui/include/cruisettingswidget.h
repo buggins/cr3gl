@@ -8,6 +8,7 @@
 class CRUISettingsList;
 class CRUISettingsOptionList;
 class CRUIOptionItem;
+class CRUISettingsEditor;
 
 class CRUISettingsItem {
     lString8 _nameRes; // settings name resource
@@ -38,7 +39,8 @@ public:
     virtual bool isToggle() const { return false; }
     virtual bool isChecked(CRPropRef props) const { CR_UNUSED(props); return false; }
     virtual void toggle(CRPropRef props) const { CR_UNUSED(props); }
-
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props) { CR_UNUSED(props); return NULL; }
 };
 
 class CRUISettingsList : public CRUISettingsItem {
@@ -56,6 +58,8 @@ public:
     virtual CRUISettingsItem * getChild(int index) const { return _list[index]; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
     virtual CRUISettingsList * asList();
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
 };
 
 class CRUISettingsCheckbox : public CRUISettingsItem {
@@ -105,41 +109,80 @@ public:
     virtual CRUISettingsOptionList * asOptionList() { return this; }
     virtual lString8 getValue(CRPropRef props) const;
     virtual lString16 getDescription(CRPropRef props) const;
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
     CRUISettingsOptionList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
     }
     virtual ~CRUISettingsOptionList() {}
 };
 
+class CRUIFontFaceSetting : public CRUISettingsOptionList {
+public:
+    CRUIFontFaceSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsOptionList(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+};
+
+class CRUISettingsEditorCallback {
+public:
+    virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done) = 0;
+    virtual ~CRUISettingsEditorCallback() {}
+};
+
 class CRUISettingsEditor : public CRUIVerticalLayout {
 protected:
     CRPropRef _props;
     CRUISettingsItem * _settings;
+    CRUISettingsEditorCallback * _callback;
 public:
-    CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting) {}
+    CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting), _callback(NULL) {}
+    virtual void setCallback(CRUISettingsEditorCallback * callback) { _callback = callback; }
 };
 
 class CRUISettingsListEditor : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
 protected:
     CRUIListWidget * _list;
-    CRUIOnListItemClickListener * _onItemClickListener;
 public:
     CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting);
     virtual ~CRUISettingsListEditor() {}
-    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
-    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
 class CRUIOptionListItemWidget;
 class CRUISettingsOptionsListEditorWidget : public CRUISettingsListEditor {
     CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
-    CRUIListWidget * _list;
+protected:
     lString8 _currentValue;
-    CRUIOnListItemClickListener * _onItemClickListener;
 public:
     CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+};
+
+class CRUISettingsSampleWidget : public CRUIWidget {
+protected:
+    CRPropRef _props;
+public:
+    CRUISettingsSampleWidget(CRPropRef props) : _props(props) {}
+};
+
+class CRUIFontSampleWidget : public CRUISettingsSampleWidget {
+protected:
+public:
+    CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSampleWidget(props) {}
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+};
+
+class CRUIFontFaceEditorWidget : public CRUISettingsOptionsListEditorWidget {
+protected:
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
@@ -154,16 +197,17 @@ public:
     CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings);
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual ~CRUISettingsListWidget() {}
 };
 
-class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnListItemClickListener {
+class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUISettingsEditorCallback {
     CRUISettingsItem * _settings;
     CRUITitleBarWidget * _titlebar;
 public:
     CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings);
     virtual bool onClick(CRUIWidget * widget);
-    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+    virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done);
 };
 
 

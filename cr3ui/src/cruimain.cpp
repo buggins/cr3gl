@@ -276,7 +276,7 @@ void CRUIMainWidget::createBrowserSettings() {
 
 void CRUIMainWidget::createReaderSettings() {
     CRUISettingsList * fontsAndColors = new CRUISettingsList(STR_SETTINGS_FONTS_AND_COLORS, NULL, SETTINGS_PATH_READER_FONTSANDCOLORS);
-    CRUISettingsOptionList * fontFaces = new CRUISettingsOptionList(STR_SETTINGS_FONT_FACE, NULL, PROP_FONT_FACE);
+    CRUISettingsOptionList * fontFaces = new CRUIFontFaceSetting(STR_SETTINGS_FONT_FACE, NULL, PROP_FONT_FACE);
     lString16Collection faceList;
     fontMan->getFaceList(faceList);
     for (int i = 0; i < faceList.length(); i++) {
@@ -319,6 +319,18 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
+
+    _currentSettings->setStringDef(PROP_FONT_FACE, crconfig.uiFontFace.c_str());
+    _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
+    _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
+    _currentSettings->setColorDef(PROP_FONT_COLOR_DAY, 0x000000);
+    _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0xFFFFFF);
+    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR, 0xFFFFFF);
+    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
+    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_NIGHT, 0x000000);
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "paper1.jpg");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "paper1.jpg");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "paper1.jpg");
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
     _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");
