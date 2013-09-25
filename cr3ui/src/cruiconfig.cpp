@@ -210,6 +210,9 @@ void CRUIConfig::createDefaultTheme() {
     //settingsItemTitle->setPadding(PT_TO_PX(2));
     settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
     settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+    CRUIStyle * settingsItemLayout = currentTheme->addSubstyle("SETTINGS_ITEM_TEXT_LAYOUT");
+    settingsItemLayout->setPadding(PT_TO_PX(2));
+    settingsItemLayout->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
     CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
     settingsItemIcon->setAlign(ALIGN_CENTER);
     CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");

@@ -40,6 +40,7 @@ public:
         layout->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
         addChild(layout);
         addChild(_righticon);
+        layout->setStyle("SETTINGS_ITEM_TEXT_LAYOUT");
         _righticon->setStyle("SETTINGS_ITEM_ICON");
         _title->setStyle("SETTINGS_ITEM_TITLE");
         _description->setStyle("SETTINGS_ITEM_DESCRIPTION");
@@ -50,19 +51,8 @@ public:
         CR_UNUSED(props);
         _settings = settings;
         _title->setText(_settings->getName());
-        if (settings->asOptionList()) {
-            lString8 value = UnicodeToUtf8(props->getStringDef(settings->getSettingId().c_str()));
-            const CRUIOptionItem * item = settings->findOption(value);
-            if (item) {
-                setDescription(item->getName());
-            } else {
-                setDescription(NULL);
-            }
-            _righticon->setImage("ic_menu_forward");
-        } else {
-            setDescription(_settings->getDescription());
-            _righticon->setImage("ic_menu_forward");
-        }
+        setDescription(_settings->getDescription(props));
+        _righticon->setImage("ic_menu_forward");
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
 };
@@ -72,7 +62,7 @@ public:
     virtual void setSetting(CRUISettingsItemBase * settings, CRPropRef props) {
         _settings = settings;
         _title->setText(_settings->getName());
-        setDescription(_settings->getDescription());
+        setDescription(_settings->getDescription(props));
         if (settings->isChecked(props))
             _righticon->setImage("btn_check_on");
         else
@@ -166,7 +156,8 @@ lString16 CRUISettingsItemBase::getName() const {
     return _16(_nameRes.c_str());
 }
 
-lString16 CRUISettingsItemBase::getDescription() const {
+lString16 CRUISettingsItemBase::getDescription(CRPropRef props) const {
+    CR_UNUSED(props);
     return !_descriptionRes.empty() ? _16(_descriptionRes.c_str()) : lString16();
 }
 
@@ -203,11 +194,20 @@ CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int in
     return _optionListItem;
 }
 
-bool CRUISettingsCheckbox::isChecked(CRPropRef props) {
+lString16 CRUISettingsCheckbox::getDescription(CRPropRef props) const {
+    bool checked = isChecked(props);
+    if (checked && !_checkedDescriptionRes.empty())
+        return _16(_checkedDescriptionRes.c_str());
+    if (!checked && !_uncheckedDescriptionRes.empty())
+        return _16(_uncheckedDescriptionRes.c_str());
+    return CRUISettingsItemBase::getDescription(props);
+}
+
+bool CRUISettingsCheckbox::isChecked(CRPropRef props) const {
     return props->getBoolDef(getSettingId().c_str(), false);
 }
 
-void CRUISettingsCheckbox::toggle(CRPropRef props) {
+void CRUISettingsCheckbox::toggle(CRPropRef props) const {
     bool value = props->getBoolDef(getSettingId().c_str(), false);
     value = !value;
     props->setBool(getSettingId().c_str(), value);
@@ -224,14 +224,23 @@ const CRUIOptionItem * CRUISettingsOptionList::findOption(lString8 value) const 
     return NULL;
 }
 
-const CRUIOptionItem * CRUISettingsOptionList::getDefaultOption() const {
-    return findOption(_defaultValue);
+//const CRUIOptionItem * CRUISettingsOptionList::getDefaultOption() const {
+//    return findOption(_defaultValue);
+//}
+
+const CRUIOptionItem * CRUISettingsOptionList::getSelectedOption(CRPropRef props) const {
+    lString8 value = UnicodeToUtf8(props->getStringDef(getSettingId().c_str()));
+    if (value.empty())
+        return NULL;
+    return findOption(value);
 }
 
-const CRUIOptionItem * CRUISettingsOptionList::getSelectedOption() const {
-    return findOption(_value);
+lString16 CRUISettingsOptionList::getDescription(CRPropRef props) const {
+    const CRUIOptionItem * opt = getSelectedOption(props);
+    if (!opt)
+        return CRUISettingsItemBase::getDescription(props);
+    return opt->getName();
 }
-
 
 
 

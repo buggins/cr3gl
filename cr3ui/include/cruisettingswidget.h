@@ -18,7 +18,7 @@ public:
     virtual ~CRUISettingsItemBase() {}
     virtual lString8 getSettingId() const { return _settingId; }
     virtual lString16 getName() const;
-    virtual lString16 getDescription() const;
+    virtual lString16 getDescription(CRPropRef props) const;
     virtual int childCount() const { return 0; }
     virtual CRUISettingsItemBase * getChild(int index) const { CR_UNUSED(index); return NULL; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
@@ -31,11 +31,11 @@ public:
     virtual int getOptionCount() const { return 0; }
     virtual const CRUIOptionItem * getOption(int index) const { CR_UNUSED(index); return NULL; }
     virtual const CRUIOptionItem * findOption(lString8 value) const { CR_UNUSED(value); return NULL; }
-    virtual const CRUIOptionItem * getDefaultOption() const { return NULL; }
-    virtual const CRUIOptionItem * getSelectedOption() const { return NULL; }
-    virtual bool isToggle() { return false; }
-    virtual bool isChecked(CRPropRef props) { CR_UNUSED(props); return false; }
-    virtual void toggle(CRPropRef props) { CR_UNUSED(props); }
+    //virtual const CRUIOptionItem * getDefaultOption() const { return NULL; }
+    virtual const CRUIOptionItem * getSelectedOption(CRPropRef props) const { CR_UNUSED(props); return NULL; }
+    virtual bool isToggle() const { return false; }
+    virtual bool isChecked(CRPropRef props) const { CR_UNUSED(props); return false; }
+    virtual void toggle(CRPropRef props) const { CR_UNUSED(props); }
 
 };
 
@@ -58,30 +58,37 @@ public:
 
 class CRUISettingsItem : public CRUISettingsItemBase {
 protected:
-    lString8 _defaultValue;
-    lString8 _value;
+//    lString8 _defaultValue;
+//    lString8 _value;
 public:
     CRUISettingsItem(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItemBase(nameRes, descriptionRes, settingId) {
 
     }
     virtual ~CRUISettingsItem() {}
-    virtual void setDefaultValue(lString8 defaultValue) { _defaultValue = defaultValue; }
-    virtual void setDefaultValue(const char * defaultValue) { _defaultValue = defaultValue; }
-    virtual lString8 getDefaultValue() { return _defaultValue; }
-    virtual lString8 getValue() { return _value; }
-    virtual void setValue(lString8 value) { _value = value; }
+//    virtual void setDefaultValue(lString8 defaultValue) { _defaultValue = defaultValue; }
+//    virtual void setDefaultValue(const char * defaultValue) { _defaultValue = defaultValue; }
+//    virtual lString8 getDefaultValue() { return _defaultValue; }
+//    virtual lString8 getValue() { return _value; }
+//    virtual void setValue(lString8 value) { _value = value; }
 };
 
 class CRUISettingsCheckbox : public CRUISettingsItemBase {
 protected:
+    lString8 _checkedDescriptionRes;
+    lString8 _uncheckedDescriptionRes;
 public:
-    CRUISettingsCheckbox(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItemBase(nameRes, descriptionRes, settingId) {
+    CRUISettingsCheckbox(const char * nameRes, const char * descriptionRes, const char * settingId, const char * checkedRes = NULL, const char * uncheckedRes = NULL)
+        : CRUISettingsItemBase(nameRes, descriptionRes, settingId)
+        , _checkedDescriptionRes(checkedRes)
+        , _uncheckedDescriptionRes(uncheckedRes)
+    {
 
     }
     virtual ~CRUISettingsCheckbox() {}
-    virtual bool isToggle() { return true; }
-    virtual void toggle(CRPropRef props);
-    virtual bool isChecked(CRPropRef props);
+    virtual bool isToggle() const { return true; }
+    virtual void toggle(CRPropRef props) const;
+    virtual bool isChecked(CRPropRef props) const;
+    virtual lString16 getDescription(CRPropRef props) const;
 };
 
 /// option item for option list setting
@@ -104,12 +111,13 @@ public:
     virtual int getOptionCount() const { return _list.length(); }
     virtual const CRUIOptionItem * getOption(int index) const { return _list[index]; }
     virtual const CRUIOptionItem * findOption(lString8 value) const;
-    virtual const CRUIOptionItem * getDefaultOption() const;
-    virtual const CRUIOptionItem * getSelectedOption() const;
+    //virtual const CRUIOptionItem * getDefaultOption() const;
+    virtual const CRUIOptionItem * getSelectedOption(CRPropRef props) const;
     virtual void addOption(CRUIOptionItem * option) { _list.add(option); }
     virtual void clearOptions() { _list.clear(); }
     /// no-rtti workaround for dynamic_cast<CRUISettingsOptionList *>
     virtual CRUISettingsOptionList * asOptionList() { return this; }
+    virtual lString16 getDescription(CRPropRef props) const;
     CRUISettingsOptionList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
     }

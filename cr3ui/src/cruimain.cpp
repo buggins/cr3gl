@@ -270,7 +270,7 @@ void CRUIMainWidget::createBrowserSettings() {
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
-    themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
+    //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(themes);
 }
 
@@ -283,9 +283,9 @@ void CRUIMainWidget::createReaderSettings() {
         fontFaces->addOption(new CRUIOptionItem(UnicodeToUtf8(faceList[i]), faceList[i]));
     }
     fontsAndColors->addChild(fontFaces);
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING));
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED));
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN));
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF));
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED, STR_SETTINGS_FONT_KERNING_VALUE_ON, STR_SETTINGS_FONT_KERNING_VALUE_OFF));
+    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN, STR_SETTINGS_FONT_EMBOLDEN_VALUE_ON, STR_SETTINGS_FONT_EMBOLDEN_VALUE_OFF));
 
     _readerSettings.addChild(fontsAndColors);
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
@@ -293,7 +293,7 @@ void CRUIMainWidget::createReaderSettings() {
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
-    themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
+    //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _readerSettings.addChild(themes);
 }
 
