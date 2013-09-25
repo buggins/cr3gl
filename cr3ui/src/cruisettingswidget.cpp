@@ -341,22 +341,6 @@ void CRUISettingsWidget::onSettingChange(CRUISettingsItem * setting, bool done) 
     }
 }
 
-//bool CRUISettingsWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
-//    CR_UNUSED(widget);
-//    CRUISettingsItem * setting = _settings->getChild(itemIndex);
-//    if (_settings->asList()) {
-//        if (setting->asList() || setting->asOptionList()) {
-//            _main->showSettings(setting);
-//        } else if (setting->isToggle()) {
-//            setting->toggle(_main->getNewSettings());
-//            invalidate();
-//        }
-//    } else if (_settings->asOptionList()) {
-//        _main->back();
-//    }
-//    return true;
-//}
-
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
         _main->back();
