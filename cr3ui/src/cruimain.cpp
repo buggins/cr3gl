@@ -157,7 +157,7 @@ void CRUIMainWidget::showSettings(lString8 path) {
     showSettings(setting);
 }
 
-void CRUIMainWidget::showSettings(CRUISettingsItemBase * setting) {
+void CRUIMainWidget::showSettings(CRUISettingsItem * setting) {
     if (setting) {
         if (_history[_history.pos()]->getMode() != MODE_SETTINGS) {
             _newSettings = LVClonePropsContainer(_currentSettings);

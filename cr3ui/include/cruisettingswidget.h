@@ -8,24 +8,26 @@
 class CRUISettingsList;
 class CRUISettingsOptionList;
 class CRUIOptionItem;
-class CRUISettingsItemBase {
+
+class CRUISettingsItem {
     lString8 _nameRes; // settings name resource
     lString8 _descriptionRes; // settings name resource
     lString8 _settingId;
 public:
-    CRUISettingsItemBase(const char * nameRes, const char * descriptionRes, const char * settingId)
+    CRUISettingsItem(const char * nameRes, const char * descriptionRes, const char * settingId)
         : _nameRes(nameRes), _descriptionRes(descriptionRes), _settingId(settingId) {}
-    virtual ~CRUISettingsItemBase() {}
+    virtual ~CRUISettingsItem() {}
     virtual lString8 getSettingId() const { return _settingId; }
     virtual lString16 getName() const;
+    virtual lString8 getValue(CRPropRef props) const { CR_UNUSED(props); return lString8(); }
     virtual lString16 getDescription(CRPropRef props) const;
     virtual int childCount() const { return 0; }
-    virtual CRUISettingsItemBase * getChild(int index) const { CR_UNUSED(index); return NULL; }
+    virtual CRUISettingsItem * getChild(int index) const { CR_UNUSED(index); return NULL; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
     virtual CRUISettingsList * asList() { return NULL; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsOptionList *>
     virtual CRUISettingsOptionList * asOptionList() { return NULL; }
-    //virtual CRUISettingsItemBase * findSetting(lString8 name);
+    //virtual CRUISettingsItem * findSetting(lString8 name);
 
 
     virtual int getOptionCount() const { return 0; }
@@ -39,46 +41,30 @@ public:
 
 };
 
-class CRUISettingsList : public CRUISettingsItemBase {
+class CRUISettingsList : public CRUISettingsItem {
 protected:
-    LVPtrVector<CRUISettingsItemBase> _list;
+    LVPtrVector<CRUISettingsItem> _list;
 public:
-    CRUISettingsList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItemBase(nameRes, descriptionRes, settingId) {
+    CRUISettingsList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
     }
-    virtual void addChild(CRUISettingsItemBase * child) {
+    virtual void addChild(CRUISettingsItem * child) {
         _list.add(child);
     }
     virtual ~CRUISettingsList() {}
     virtual int childCount() const { return _list.length(); }
-    virtual CRUISettingsItemBase * getChild(int index) const { return _list[index]; }
+    virtual CRUISettingsItem * getChild(int index) const { return _list[index]; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
     virtual CRUISettingsList * asList();
 };
 
-class CRUISettingsItem : public CRUISettingsItemBase {
-protected:
-//    lString8 _defaultValue;
-//    lString8 _value;
-public:
-    CRUISettingsItem(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItemBase(nameRes, descriptionRes, settingId) {
-
-    }
-    virtual ~CRUISettingsItem() {}
-//    virtual void setDefaultValue(lString8 defaultValue) { _defaultValue = defaultValue; }
-//    virtual void setDefaultValue(const char * defaultValue) { _defaultValue = defaultValue; }
-//    virtual lString8 getDefaultValue() { return _defaultValue; }
-//    virtual lString8 getValue() { return _value; }
-//    virtual void setValue(lString8 value) { _value = value; }
-};
-
-class CRUISettingsCheckbox : public CRUISettingsItemBase {
+class CRUISettingsCheckbox : public CRUISettingsItem {
 protected:
     lString8 _checkedDescriptionRes;
     lString8 _uncheckedDescriptionRes;
 public:
     CRUISettingsCheckbox(const char * nameRes, const char * descriptionRes, const char * settingId, const char * checkedRes = NULL, const char * uncheckedRes = NULL)
-        : CRUISettingsItemBase(nameRes, descriptionRes, settingId)
+        : CRUISettingsItem(nameRes, descriptionRes, settingId)
         , _checkedDescriptionRes(checkedRes)
         , _uncheckedDescriptionRes(uncheckedRes)
     {
@@ -117,6 +103,7 @@ public:
     virtual void clearOptions() { _list.clear(); }
     /// no-rtti workaround for dynamic_cast<CRUISettingsOptionList *>
     virtual CRUISettingsOptionList * asOptionList() { return this; }
+    virtual lString8 getValue(CRPropRef props) const;
     virtual lString16 getDescription(CRPropRef props) const;
     CRUISettingsOptionList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
@@ -124,27 +111,22 @@ public:
     virtual ~CRUISettingsOptionList() {}
 };
 
-class CRUISettingsEditor {
+class CRUISettingsEditor : public CRUIVerticalLayout {
 protected:
     CRPropRef _props;
-    CRUISettingsItemBase * _settings;
+    CRUISettingsItem * _settings;
 public:
-    CRUISettingsEditor(CRPropRef props, CRUISettingsItemBase * setting) : _props(props), _settings(setting) {}
-};
-
-class CRUISettingsEditorWidget : public CRUISettingsEditor, public CRUIVerticalLayout {
-public:
-    CRUISettingsEditorWidget(CRPropRef props, CRUISettingsItemBase * setting) : CRUISettingsEditor(props, setting) {}
+    CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting) {}
 };
 
 class CRUIOptionListItemWidget;
-class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIVerticalLayout, public CRUIOnListItemClickListener {
+class CRUISettingsOptionsListEditorWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
     CRUIOptionListItemWidget * _optionListItem; // child is setting with list of possible options
     CRUIListWidget * _list;
     lString8 _currentValue;
     CRUIOnListItemClickListener * _onItemClickListener;
 public:
-    CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItemBase * setting);
+    CRUISettingsOptionsListEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
@@ -154,22 +136,26 @@ public:
 class CRUISettingsListItemWidget;
 class CRUISettingsValueListItemWidget;
 class CRUISettingsCheckboxWidget;
-class CRUISettingsListWidget : public CRUISettingsEditor, public CRUIListWidget, public CRUIListAdapter {
+class CRUISettingsListWidget : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
+    CRUIListWidget * _list;
+    CRUIOnListItemClickListener * _onItemClickListener;
     CRUISettingsListItemWidget * _settingsListItem; // child setting list widget
     CRUISettingsValueListItemWidget * _optionListItem; // child is setting with list of possible options
     CRUISettingsCheckboxWidget * _checkboxListItem; // checkbox
 public:
-    CRUISettingsListWidget(CRPropRef props, CRUISettingsItemBase * settings);
+    CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings);
+    virtual void setOnItemClickListener(CRUIOnListItemClickListener * listener) { _onItemClickListener = listener; }
     virtual int getItemCount(CRUIListWidget * list);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual ~CRUISettingsListWidget() {}
 };
 
 class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnListItemClickListener {
-    CRUISettingsItemBase * _settings;
+    CRUISettingsItem * _settings;
     CRUITitleBarWidget * _titlebar;
 public:
-    CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItemBase * settings);
+    CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings);
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };

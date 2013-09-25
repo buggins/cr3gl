@@ -315,7 +315,7 @@ public:
     void showFolder(lString8 folder, bool appendHistory);
     void showHome();
     void showSettings(lString8 path);
-    void showSettings(CRUISettingsItemBase * setting);
+    void showSettings(CRUISettingsItem * setting);
     void back();
 
     virtual void onAllCoverpagesReady(int newpos);
