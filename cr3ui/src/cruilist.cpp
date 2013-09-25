@@ -52,7 +52,12 @@ void CRUIListWidget::setScrollOffset(int offset) {
 
 /// measure dimensions
 void CRUIListWidget::measure(int baseWidth, int baseHeight) {
-	lvRect padding;
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    lvRect padding;
 	getPadding(padding);
 	lvRect margin = getMargin();
 	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
@@ -192,7 +197,10 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUIListWidget::draw(LVDrawBuf * buf) {
-	CRUIWidget::draw(buf);
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    CRUIWidget::draw(buf);
 //	if (!_adapter)
 //		return;
 	LVDrawStateSaver saver(*buf);

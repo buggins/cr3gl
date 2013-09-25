@@ -15,6 +15,14 @@
 #define DRAG_THRESHOLD PT_TO_PX(3)
 #define DRAG_THRESHOLD_X PT_TO_PX(10)
 
+namespace CRUI {
+    enum Visibility {
+        VISIBLE,   // Visible on screen; the default value
+        INVISIBLE, // Not displayed, but taken into account during layout (space is left for it).
+        GONE       // Completely hidden, as if the view had not been added.
+    };
+}
+
 /// base class for all UI elements
 class CRUIWidget {
 protected:
@@ -48,6 +56,7 @@ protected:
 	lUInt32 _textColor;
 	lUInt32 _align;
 	int _layoutWeight;
+    CRUI::Visibility _visibility;
 	CRUIOnTouchEventListener * _onTouchListener;
     CRUIOnKeyEventListener * _onKeyListener;
     CRUIOnClickListener * _onClickListener;
@@ -163,6 +172,10 @@ public:
 	virtual lUInt32 getTextColor();
 	virtual lUInt8 getFontSize() { return _fontSize; }
 
+    /// returns visibility of widget (VISIBLE, INVISIBLE, GONE)
+    virtual CRUI::Visibility getVisibility() { return _visibility; }
+    /// sets new visibility for widget (VISIBLE, INVISIBLE, GONE)
+    virtual CRUIWidget * setVisibility(CRUI::Visibility visibility);
 
 
 

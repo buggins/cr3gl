@@ -124,6 +124,11 @@ void CRUITextWidget::layoutText(lString16 text, int maxWidth, lString16 & line1,
 
 /// measure dimensions
 void CRUITextWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
     lString16 text = getText();
     lString16 line1, line2;
     int width, height;
@@ -142,6 +147,9 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUITextWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
     lString16 text = getText();
     lString16 line1, line2;
     int width, height;
@@ -186,6 +194,11 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
 // Image Widget
 /// measure dimensions
 void CRUIImageWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
     CRUIImageRef image = getImage();
     int width = !image ? 0 : image->originalWidth();
     int height = !image ? 0 : image->originalHeight();
@@ -201,7 +214,10 @@ void CRUIImageWidget::layout(int left, int top, int right, int bottom) {
 }
 /// draws widget with its children to specified surface
 void CRUIImageWidget::draw(LVDrawBuf * buf) {
-	CRUIWidget::draw(buf);
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    CRUIWidget::draw(buf);
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
@@ -233,6 +249,9 @@ bool CRUISpinnerWidget::isAnimating() {
 
 /// draws widget with its children to specified surface
 void CRUISpinnerWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
     LVDrawStateSaver saver(*buf);
     lvRect rc = _pos;
     applyMargin(rc);

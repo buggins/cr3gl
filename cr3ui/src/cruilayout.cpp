@@ -14,7 +14,12 @@ using namespace CRUI;
 // Vertical Layout
 /// measure dimensions
 void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
-	lvRect padding;
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    lvRect padding;
 	getPadding(padding);
 	lvRect margin = getMargin();
     int maxw = baseWidth;
@@ -31,7 +36,9 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 		int totalh = 0;
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+            } else if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
 				totalWeight += child->getLayoutWeight();
 			} else {
 				child->measure(maxw, maxh);
@@ -45,7 +52,9 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 			totalWeight = 1;
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+            } else if (child->getLayoutHeight() == CRUI::FILL_PARENT) {
 				int h = hleft * child->getLayoutWeight() / totalWeight;
 				child->measure(maxw, h);
 				totalh += child->getMeasuredHeight();
@@ -64,7 +73,9 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+            } else if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
 				totalWeight += child->getLayoutWeight();
 			} else {
 				child->measure(maxw, maxh);
@@ -78,7 +89,9 @@ void CRUILinearLayout::measure(int baseWidth, int baseHeight) {
 			totalWeight = 1;
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+            } else if (child->getLayoutWidth() == CRUI::FILL_PARENT) {
 				int w = wleft * child->getLayoutWeight() / totalWeight;
 				child->measure(w, maxh);
 				totalw += child->getMeasuredWidth();
@@ -109,14 +122,19 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
 			childRc.top = y;
-			if (i < getChildCount() - 1)
-				childRc.bottom = y + child->getMeasuredHeight();
-			else
-				childRc.bottom = clientRc.bottom;
-			if (childRc.top > clientRc.bottom)
-				childRc.top = clientRc.bottom;
-			if (childRc.bottom > clientRc.bottom)
-				childRc.bottom = clientRc.bottom;
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+                childRc.bottom = childRc.top;
+            } else {
+                if (i < getChildCount() - 1)
+                    childRc.bottom = y + child->getMeasuredHeight();
+                else
+                    childRc.bottom = clientRc.bottom;
+                if (childRc.top > clientRc.bottom)
+                    childRc.top = clientRc.bottom;
+                if (childRc.bottom > clientRc.bottom)
+                    childRc.bottom = clientRc.bottom;
+            }
 			child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
 			y = childRc.bottom;
 		}
@@ -124,18 +142,23 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 		int x = childRc.left;
 		for (int i=0; i<getChildCount(); i++) {
 			CRUIWidget * child = getChild(i);
-			childRc.left = x;
-			if (i < getChildCount() - 1)
-				childRc.right = x + child->getMeasuredWidth();
-			else
-				childRc.right = clientRc.right;
-			if (childRc.left > clientRc.right)
-				childRc.left = clientRc.right;
-			if (childRc.right > clientRc.right)
-				childRc.right = clientRc.right;
-			child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
-			x = childRc.right;
-		}
+            childRc.left = x;
+            if (child->getVisibility() == GONE) {
+                // handle GONE
+                childRc.right = childRc.left;
+            } else {
+                if (i < getChildCount() - 1)
+                    childRc.right = x + child->getMeasuredWidth();
+                else
+                    childRc.right = clientRc.right;
+                if (childRc.left > clientRc.right)
+                    childRc.left = clientRc.right;
+                if (childRc.right > clientRc.right)
+                    childRc.right = clientRc.right;
+            }
+            child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
+            x = childRc.right;
+        }
 	}
 }
 
@@ -146,14 +169,18 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 
 /// draws widget with its children to specified surface
 void CRUIContainerWidget::draw(LVDrawBuf * buf) {
-	CRUIWidget::draw(buf);
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    CRUIWidget::draw(buf);
 	LVDrawStateSaver saver(*buf);
 	lvRect rc = _pos;
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
 	for (int i=0; i<getChildCount(); i++) {
-		getChild(i)->draw(buf);
+        if (getChild(i)->getVisibility() == VISIBLE)
+            getChild(i)->draw(buf);
 	}
 }
 

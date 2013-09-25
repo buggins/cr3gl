@@ -21,7 +21,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_layoutRequested(true),
 	_drawRequested(true),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
-	_align(0), _layoutWeight(1),
+    _align(0), _layoutWeight(1), _visibility(VISIBLE),
     _onTouchListener(NULL), _onKeyListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
 {
 
@@ -311,9 +311,28 @@ lUInt32 CRUIWidget::getTextColor() {
 	return getStyle(true)->getTextColor();
 }
 
+/// sets new visibility for widget (VISIBLE, INVISIBLE, GONE)
+CRUIWidget * CRUIWidget::setVisibility(Visibility visibility) {
+    if (getVisibility() == visibility)
+        return this; // no change
+    bool oldGone = (getVisibility() == GONE);
+    bool newGone = (visibility == GONE);
+    _visibility = visibility;
+    if (oldGone != newGone)
+        requestLayout();
+    else
+        invalidate();
+    return this;
+}
+
 /// measure dimensions
 void CRUIWidget::measure(int baseWidth, int baseHeight) {
-	defMeasure(baseWidth, baseHeight, 0, 0);
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    defMeasure(baseWidth, baseHeight, 0, 0);
 }
 
 /// updates widget position based on specified rectangle
@@ -335,6 +354,8 @@ bool CRUIWidget::setClipRect(LVDrawBuf * buf, lvRect & rc) {
 
 /// draws widget with its children to specified surface
 void CRUIWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE)
+        return;
 	CRUIImageRef background = getBackground();
     CRUIImageRef background2 = getBackground2();
     if (!background.isNull() || !background2.isNull()) {
