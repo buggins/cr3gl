@@ -113,9 +113,11 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
 	_pos.top = top;
 	_pos.right = right;
 	_pos.bottom = bottom;
-	lvRect clientRc = _pos;
+    applyAlign(_pos, _measuredWidth, _measuredHeight);
+    lvRect clientRc = _pos;
 	applyMargin(clientRc);
 	applyPadding(clientRc);
+
 	lvRect childRc = clientRc;
 	if (_isVertical) {
 		int y = childRc.top;

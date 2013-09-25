@@ -15,19 +15,20 @@ public:
     void setDescription(lString16 s) {
         _description->setText(s);
         if (!s.empty()) {
-            _description->setMaxHeight(UNSPECIFIED);
+            _description->setVisibility(VISIBLE);
         } else {
-            _description->setMaxHeight(0);
+            _description->setVisibility(GONE);
         }
     }
     void setDescription(const char * s) {
         _description->setText(s);
         if (s && s[0]) {
-            _description->setMaxHeight(UNSPECIFIED);
+            _description->setVisibility(VISIBLE);
         } else {
-            _description->setMaxHeight(0);
+            _description->setVisibility(GONE);
         }
     }
+
     CRUISettingsListItemWidgetBase() {
         _title = new CRUITextWidget();
         _description = new CRUITextWidget();
