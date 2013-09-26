@@ -157,12 +157,14 @@ static lString16 formatFontSize(int sz) {
     int pt10 = PX_TO_PT(sz * 10);
     int pt10_prev = PX_TO_PT((sz-1) * 10);
     int pt10_next = PX_TO_PT((sz+1) * 10);
-    if (pt10_next - pt10_prev > 15) // integer part only
-        return lString16::itoa(PX_TO_PT(sz)) + " pt";
+    if (pt10_next - pt10_prev > 20) // integer part only
+        return lString16::itoa(PX_TO_PT(sz)) + "";
     if (pt10_next - pt10_prev > 10) {
         pt10 = pt10 / 5 * 5; // .0 and .5 only
+//        if (pt10 % 10  == 0)
+//            return lString16::itoa(PX_TO_PT(pt10 / 10)) + "";
     }
-    return lString16::itoa(pt10/10) + "." + lString16::itoa(pt10 % 10) + " pt";
+    return lString16::itoa(pt10/10) + "." + lString16::itoa(pt10 % 10) + "";
 }
 
 CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
