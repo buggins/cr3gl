@@ -167,7 +167,7 @@ void OpenGLWindow::render()
             dpi = 250;
         if (minsz >= 900)
             dpi = 300;
-        dpi = 200;
+        dpi = 100;
         deviceInfo.setScreenDimensions(sz.width(), sz.height(), dpi);
         adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");

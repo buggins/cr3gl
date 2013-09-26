@@ -2,6 +2,7 @@
 #include "crui.h"
 #include "cruimain.h"
 #include "stringresource.h"
+#include "cruiconfig.h"
 
 using namespace CRUI;
 
@@ -151,6 +152,70 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
     fmt.draw(*buf, rc, 0, 0);
 }
+
+static lString16 formatFontSize(int sz) {
+    int pt10 = PX_TO_PT(sz * 10);
+    int pt10_prev = PX_TO_PT((sz-1) * 10);
+    int pt10_next = PX_TO_PT((sz+1) * 10);
+    if (pt10_next - pt10_prev > 15) // integer part only
+        return lString16::itoa(PX_TO_PT(sz)) + " pt";
+    if (pt10_next - pt10_prev > 10) {
+        pt10 = pt10 / 5 * 5; // .0 and .5 only
+    }
+    return lString16::itoa(pt10/10) + "." + lString16::itoa(pt10 % 10) + " pt";
+}
+
+CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    int sz = props->getIntDef(PROP_FONT_SIZE, 24);
+    _sizetext = new CRUITextWidget();
+    _sizetext->setAlign(ALIGN_CENTER);
+    _sizetext->setPadding(PT_TO_PX(6));
+    _sizetext->setText(formatFontSize(sz));
+    _sizetext->setFontSize(FONT_SIZE_XLARGE);
+    _slider = new CRUISliderWidget(crconfig.minFontSize, crconfig.maxFontSize, sz);
+    _slider->setPadding(PT_TO_PX(4));
+    _slider->setScrollPosCallback(this);
+    addChild(_sizetext);
+    addChild(_slider);
+    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xC0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xC0808080);
+    _sample->setPadding(PT_TO_PX(3));
+    addChild(_sample);
+}
+
+bool CRUIFontSizeEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
+    if (!manual)
+        return false;
+    int sz = pos;
+    _sizetext->setText(formatFontSize(sz));
+    _props->setInt(PROP_FONT_SIZE, sz);
+    _sample->invalidate();
+    return true;
+}
+
+/// updates widget position based on specified rectangle
+void CRUIFontSizeEditorWidget::layout(int left, int top, int right, int bottom) {
+    if (_slider->getMinScrollPos() != crconfig.minFontSize || _slider->getMaxScrollPos() != crconfig.maxFontSize) {
+        _slider->setMinScrollPos(crconfig.minFontSize);
+        _slider->setMaxScrollPos(crconfig.maxFontSize);
+    }
+    CRUISettingsEditor::layout(left, top, right, bottom);
+}
+
+lString16 CRUIFontSizeSetting::getDescription(CRPropRef props) const {
+    int sz = props->getIntDef(PROP_FONT_SIZE, 24);
+    return formatFontSize(sz);
+}
+
 
 CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
     CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
@@ -329,7 +394,7 @@ CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem *
 
 void CRUISettingsWidget::onSettingChange(CRUISettingsItem * setting, bool done) {
     if (_settings->asList()) {
-        if (setting->asList() || setting->asOptionList()) {
+        if (setting->asList() || setting->asOptionList() || setting->hasCustomEditor()) {
             _main->showSettings(setting);
         } else if (setting->isToggle()) {
             setting->toggle(_main->getNewSettings());

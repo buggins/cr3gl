@@ -264,6 +264,7 @@ public:
 
 class CRUISliderWidget;
 class CRUIOnScrollPosCallback {
+public:
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) = 0;
     virtual ~CRUIOnScrollPosCallback() {}
 };

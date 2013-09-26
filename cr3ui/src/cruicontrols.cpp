@@ -400,10 +400,91 @@ void CRUISliderWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUISliderWidget::layout(int left, int top, int right, int bottom) {
-
+    CRUIWidget::layout(left, top, right, bottom);
 }
 
 /// draws widget with its children to specified surface
 void CRUISliderWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
     CRUIWidget::draw(buf);
+    LVDrawStateSaver saver(*buf);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+    int cx = PT_TO_PX(9);
+    int cy = PT_TO_PX(15);
+    int lh = PT_TO_PX(2);
+    int y0 = (rc.top + rc.bottom) / 2;
+    lvRect linerc = rc;
+    linerc.left += cx / 2;
+    linerc.right -= cx / 2;
+    linerc.top = y0 - lh/2;
+    linerc.bottom = linerc.top + lh;
+    buf->FillRect(linerc, 0x80000000);
+    int x0 = linerc.left + linerc.width() * (_value - _minValue) / (_maxValue - _minValue);
+    lvRect crc(x0 - cx / 2, y0 - cy / 2, x0 + cx / 2, y0 + cy / 2);
+    buf->FillRect(crc, 0x80FFFFFF);
+    crc.shrink(2);
+    buf->FillRect(crc, 0x80404040);
 }
+
+void CRUISliderWidget::updatePos(int pos) {
+    int oldpos = _value;
+    setScrollPos(pos);
+    if (_value != oldpos) {
+        if (_callback)
+            _callback->onScrollPosChange(this, _value, true);
+        invalidate();
+    }
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    int action = event->getAction();
+
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    int cx = PT_TO_PX(9);
+    rc.left += cx/2;
+    rc.right -= cx/2;
+    int x = event->getX();
+    //int y = event->getY();
+    if (x < rc.left)
+        x = rc.left;
+    if (x > rc.right)
+        x = rc.right;
+    int pos = _minValue + (x - rc.left + (_maxValue - _minValue) / 2) * (_maxValue - _minValue) / rc.width();
+    switch (action) {
+    case ACTION_DOWN:
+        updatePos(pos);
+        break;
+    case ACTION_UP:
+        {
+            updatePos(pos);
+        }
+        // fire onclick
+        //CRLog::trace("list UP");
+        break;
+    case ACTION_FOCUS_IN:
+        updatePos(pos);
+        //CRLog::trace("list FOCUS IN");
+        break;
+    case ACTION_FOCUS_OUT:
+        return false; // to continue tracking
+        //CRLog::trace("list FOCUS OUT");
+        break;
+    case ACTION_CANCEL:
+        break;
+    case ACTION_MOVE:
+        updatePos(pos);
+        break;
+    default:
+        return CRUIWidget::onTouchEvent(event);
+    }
+    return true;
+}
+

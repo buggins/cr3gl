@@ -95,16 +95,14 @@ protected:
     int _maxValue;
     int _value;
     CRUIOnScrollPosCallback * _callback;
+    void updatePos(int pos);
 public:
-    CRUISliderWidget(int minValue, int maxValue, int currentValue) :  _minValue(minValue), _maxValue(maxValue), _value(currentValue), _callback(NULL) {
-
-    }
-    int getPos() { return _value; }
-    void setPos(int value) { _value = value < _minValue ? _minValue : (value > _maxValue ? _maxValue : value); }
-    int getMinPos() { return _minValue; }
-    int getMaxPos() { return _maxValue; }
-    int setMinPos(int value) { _minValue = value; }
-    int setMaxPos(int value) { _maxValue = value; }
+    int getScrollPos() { return _value; }
+    void setScrollPos(int value) { _value = value < _minValue ? _minValue : (value > _maxValue ? _maxValue : value); }
+    int getMinScrollPos() { return _minValue; }
+    int getMaxScrollPos() { return _maxValue; }
+    void setMinScrollPos(int value) { _minValue = value; }
+    void setMaxScrollPos(int value) { _maxValue = value; }
     void setScrollPosCallback(CRUIOnScrollPosCallback * callback) { _callback = callback; }
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
@@ -112,6 +110,13 @@ public:
     virtual void layout(int left, int top, int right, int bottom);
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
+
+    CRUISliderWidget(int minValue, int maxValue, int currentValue) :  _minValue(minValue), _maxValue(maxValue), _value(currentValue), _callback(NULL) {
+        setScrollPos(currentValue);
+    }
+    virtual ~CRUISliderWidget() {}
 };
 
 #endif /* CRUICONTROLS_H_ */

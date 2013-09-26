@@ -41,6 +41,7 @@ public:
     virtual void toggle(CRPropRef props) const { CR_UNUSED(props); }
     /// create editor widget based on option type
     virtual CRUISettingsEditor * createEditor(CRPropRef props) { CR_UNUSED(props); return NULL; }
+    virtual bool hasCustomEditor() { return false; }
 };
 
 class CRUISettingsList : public CRUISettingsItem {
@@ -111,6 +112,7 @@ public:
     virtual lString16 getDescription(CRPropRef props) const;
     /// create editor widget based on option type
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
     CRUISettingsOptionList(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
 
     }
@@ -123,6 +125,7 @@ public:
     }
     /// create editor widget based on option type
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
 };
 
 class CRUIFontSizeSetting : public CRUISettingsItem {
@@ -131,6 +134,8 @@ public:
     }
     /// create editor widget based on option type
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+    virtual lString16 getDescription(CRPropRef props) const;
 };
 
 class CRUISettingsEditorCallback {
@@ -194,11 +199,16 @@ public:
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
-class CRUIFontSizeEditorWidget : public CRUISettingsEditor {
+class CRUIFontSizeEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
 protected:
+    CRUISliderWidget * _slider;
+    CRUITextWidget * _sizetext;
     CRUIFontSampleWidget * _sample;
 public:
     CRUIFontSizeEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
 };
 
 class CRUISettingsListItemWidget;
