@@ -132,6 +132,10 @@ public:
     /// override to handle menu or other action - by id
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 
+    // apply changed settings
+    virtual void applySettings(CRPropRef changed);
+
+
     bool onTapZone(int zone, bool additionalAction);
 
     void prepareScroll(int direction);

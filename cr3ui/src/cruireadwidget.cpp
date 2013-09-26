@@ -670,6 +670,21 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     return false;
 }
 
+// apply changed settings
+void CRUIReadWidget::applySettings(CRPropRef changed) {
+    CRPropRef docviewprops = LVCreatePropsContainer();
+    for (int i = 0; i < changed->getCount(); i++) {
+        lString8 key(changed->getName(i));
+        lString8 value(UnicodeToUtf8(changed->getValue(i)));
+        if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR
+                || key == PROP_FONT_SIZE || key == PROP_FONT_FACE) {
+            docviewprops->setString(key.c_str(), value.c_str());
+        }
+    }
+    if (docviewprops->getCount())
+        _docview->propsApply(docviewprops);
+}
+
 /// on starting file loading
 void CRUIReadWidget::OnLoadFileStart( lString16 filename ) {
 
