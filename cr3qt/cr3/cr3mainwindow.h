@@ -43,6 +43,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLFunctions>
+
 #include <QCoreApplication>
 #include <QThread>
 

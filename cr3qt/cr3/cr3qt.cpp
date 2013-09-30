@@ -15,6 +15,12 @@
 #include <QtCore/QCoreApplication>
 #include <QtGui/QMouseEvent>
 
+#ifdef _LINUX
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <pwd.h>
+#endif
+
 
 CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventManager(eventManager), _activePointer(NULL)
 {
@@ -159,13 +165,18 @@ QOpenGLFunctions * _qtgl = NULL;
 #include "cruiconfig.h"
 
 void InitCREngine(lString16 exePath) {
+    CRLog::setStderrLogger();
+    CRLog::setLogLevel(CRLog::LL_TRACE);
     // fill config parameters
 
     // Logger
+#ifdef _WIN32
     crconfig.logFile = UnicodeToUtf8(exePath + L"cr3.log");
+#endif
     // Concurrency
     concurrencyProvider = new QtConcurrencyProvider();
 
+#ifdef _WIN32
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arial.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\ariali.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbd.ttf");
@@ -186,10 +197,11 @@ void InitCREngine(lString16 exePath) {
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesi.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbd.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbi.ttf");
+#endif
 
     crconfig.setupUserDir(UnicodeToUtf8(exePath));
 
-    crconfig.setupResources(UnicodeToUtf8(exePath + L"res\\"));
+    crconfig.setupResources(UnicodeToUtf8(exePath + L"res"));
     crconfig.coverDirMaxFiles = 2000;
     crconfig.coverDirMaxItems = 10000;
     crconfig.coverDirMaxSize = 1024*1024 * 32;
@@ -198,6 +210,7 @@ void InitCREngine(lString16 exePath) {
 
     //QString homePath = QDir::homePath();
 
+#ifdef _WIN32
     deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
     deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("c:\\"));
@@ -205,6 +218,16 @@ void InitCREngine(lString16 exePath) {
     deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8("c:\\Shared\\Books"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_CURRENT_BOOK_DIR, lString8("c:\\Shared\\Books"));
     deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("c:\\Shared\\Books\\Downloads"));
+#else
+    {
+        struct passwd *pw = getpwuid(getuid());
+        const char *homedir = pw->pw_dir;
+        deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("/"));
+        deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8(homedir));
+        deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8(homedir) + "/Downloads");
+        crconfig.uiFontFace = "DjVu Sans";
+    }
+#endif
 
     // init
     crconfig.initEngine();

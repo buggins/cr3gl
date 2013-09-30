@@ -702,7 +702,8 @@ void GLFontManager::UnregisterDocumentFonts(int documentId)
 /// initializes font manager
 bool GLFontManager::Init( lString8 path )
 {
-	// nothing to do
+    CR_UNUSED(path);
+    // nothing to do
 	return true;
 }
 

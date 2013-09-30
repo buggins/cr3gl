@@ -11,9 +11,6 @@
 #include <crengine.h>
 #include "cruitheme.h"
 
-lUInt64 GetCurrentTimeMillis();
-void CRReinitTimer();
-
 class CRUIWidget;
 
 namespace CRUI {

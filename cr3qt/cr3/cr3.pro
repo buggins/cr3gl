@@ -36,14 +36,15 @@ debug:DEFINES += _DEBUG=1 DEBUG=1
 !debug:DEFINES += NDEBUG
 
 DEFINES += USE_FREETYPE=1 \
-    LDOM_USE_OWN_MEM_MAN=1 \
     COLOR_BACKBUFFER=1 \
     USE_DOM_UTF8_STORAGE=1 \
-    CR3_PATCH FT2_BUILD_LIBRARY=1 \
-    DOC_DATA_COMPRESSION_LEVEL=1 DOC_BUFFER_SIZE=0xA00000 \
+    CR3_PATCH \
+    DOC_DATA_COMPRESSION_LEVEL=1 \
+    DOC_BUFFER_SIZE=0xA00000 \
     ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1 \
     LDOM_USE_OWN_MEM_MAN=0 \
-    CR3_ANTIWORD_PATCH=1 ENABLE_ANTIWORD=1 \
+    CR3_ANTIWORD_PATCH=1 \
+    ENABLE_ANTIWORD=1 \
     MAX_IMAGE_SCALE_MUL=2 \
     QT_GL=1 \
     NO_WIN32_DRAWING=1
@@ -219,7 +220,7 @@ win32 {
         ../../../cr3/thirdparty/libpng/pngpread.c
 }
 !win32 {
-    unix:LIBS += -lfreetype
+    unix:LIBS += -lfreetype -lfontconfig
     win32:LIBS += libfreetype.lib
 }
 win32 {
@@ -352,9 +353,9 @@ HEADERS += \
     ../../../cr3/thirdparty/sqlite/sqlite3.h \
     ../../../cr3/thirdparty/sqlite/sqlite3ext.h
 
-INCLUDEPATH += ../../cr3db\include \
-    ../../cr3gl\include \
-    ../../cr3ui\include
+INCLUDEPATH += ../../cr3db/include \
+    ../../cr3gl/include \
+    ../../cr3ui/include
 
 SOURCES += \
     ../../cr3db/src/basedb.cpp \

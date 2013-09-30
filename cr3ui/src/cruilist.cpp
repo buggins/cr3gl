@@ -248,7 +248,8 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
             item->setState(selected ? STATE_FOCUSED : 0, STATE_FOCUSED);
             item->setState(!enabled ? STATE_DISABLED : 0, STATE_DISABLED);
             //CRLog::trace("drawing list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
-			item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
+            item->measure(childRc.width(), childRc.height());
+            item->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
 			item->draw(buf);
 		} else {
 			//CRLog::trace("list item out of clip rect");

@@ -17,12 +17,14 @@
 #include "crconcurrent.h"
 #include "lvqueue.h"
 #include "lvhashtable.h"
+#include "lvstring.h"
 
 class BookDBEntity {
 public:
 	lInt64 id; //"id INTEGER PRIMARY KEY AUTOINCREMENT,"
 	BookDBEntity() : id(0) {}
 	BookDBEntity(lInt64 _id) : id(_id) {}
+    BookDBEntity(const BookDBEntity & v) : id(v.id) {}
 };
 
 class BookDBAuthor : public BookDBEntity {
@@ -33,8 +35,7 @@ public:
 	BookDBAuthor() : aliasedAuthorId(0) {}
 	BookDBAuthor(const char * _name) : name(_name), aliasedAuthorId(0) {}
 	BookDBAuthor(const char * _name, const char * _fileAs) : name(_name), fileAs(_fileAs), aliasedAuthorId(0) {}
-	BookDBAuthor(const BookDBAuthor & v) {
-		id = v.id;
+    BookDBAuthor(const BookDBAuthor & v) : BookDBEntity(v.id) {
 		name = v.name;
 		fileAs = v.fileAs;
 		aliasedAuthorId = v.aliasedAuthorId;
@@ -64,8 +65,7 @@ public:
 	DBString name;
 	BookDBSeries() {}
 	BookDBSeries(const char * _name) : name(_name) {}
-	BookDBSeries(const BookDBSeries & v) {
-		id = v.id;
+    BookDBSeries(const BookDBSeries & v)  : BookDBEntity(v.id) {
 		name = v.name;
 	}
 	BookDBSeries & operator = (const BookDBSeries & v) {
@@ -89,8 +89,7 @@ public:
 	DBString name;
 	BookDBFolder() {}
 	BookDBFolder(const char * _name) : name(_name) { }
-	BookDBFolder(const BookDBFolder & v) {
-		id = v.id;
+    BookDBFolder(const BookDBFolder & v)  : BookDBEntity(v.id) {
 		name = v.name;
 	}
 	BookDBFolder & operator = (const BookDBFolder & v) {
@@ -107,6 +106,35 @@ public:
 				name == v.name;
 	}
 	BookDBFolder * clone() const { return new BookDBFolder(*this); }
+};
+
+class BookDBCatalog : public BookDBEntity {
+public:
+    DBString name;
+    DBString url;
+    DBString login;
+    DBString password;
+    lInt64 lastUsage;
+    BookDBCatalog() {}
+    BookDBCatalog(const char * _name, const char * _url) : name(_name), url(_url), lastUsage(GetCurrentTimeMillis()) { }
+    BookDBCatalog(const BookDBFolder & v) {
+        id = v.id;
+        name = v.name;
+    }
+    BookDBCatalog & operator = (const BookDBFolder & v) {
+        id = v.id;
+        name = v.name;
+        return *this;
+    }
+    bool operator == (const BookDBFolder & v) const {
+        if (this == NULL && &v == NULL)
+            return true;
+        if (this == NULL || &v == NULL)
+            return false;
+        return id == v.id &&
+                name == v.name;
+    }
+    BookDBCatalog * clone() const { return new BookDBCatalog(*this); }
 };
 
 class BookDBBook : public BookDBEntity {
@@ -127,7 +155,7 @@ public:
 	DBString language; // "language VARCHAR DEFAULT NULL"
 	LVPtrVector<BookDBAuthor> authors;
 	BookDBBook() : seriesNumber(0), format(0), filesize(0), arcsize(0), createTime(0), lastAccessTime(0), flags(0) {}
-	BookDBBook(const BookDBBook & v) {
+    BookDBBook(const BookDBBook & v)  : BookDBEntity(v.id) {
 		assignFields(v);
 		assignFolder(v);
 		assignSeries(v);
@@ -228,8 +256,7 @@ public:
 	DBString commentText; //"comment_text VARCHAR, "
 	lInt64 timeElapsed; //"time_elapsed INTEGER DEFAULT 0"
 	BookDBBookmark() : bookId(0), type(0), percent(0), shortcut(0), timestamp(0), timeElapsed(0) {}
-	BookDBBookmark(const BookDBBookmark & v) {
-		id = v.id;
+    BookDBBookmark(const BookDBBookmark & v)  : BookDBEntity(v.id) {
 		type = v.type;
 		percent = v.percent;
 		shortcut = v.shortcut;

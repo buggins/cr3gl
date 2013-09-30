@@ -149,8 +149,8 @@ public:
 	CRUIWidget * setStyle(const char * styleId) { _styleId = lString8(styleId); return this; }
 	CRUIStyle * getStyle(bool forState = false);
 
-	virtual CRUIWidget * setText(lString16 text) { return this; }
-	virtual CRUIWidget * setText(lString8 textResourceId) { return this; }
+    virtual CRUIWidget * setText(lString16 text) { CR_UNUSED(text); return this; }
+    virtual CRUIWidget * setText(lString8 textResourceId) { CR_UNUSED(textResourceId); return this; }
     virtual CRUIWidget * setText(const wchar_t * text) { CR_UNUSED(text); return this; }
     virtual CRUIWidget * setText(const char * textResourceId) { CR_UNUSED(textResourceId); return this; }
 	virtual lString16 getText() { return lString16::empty_str; }

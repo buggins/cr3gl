@@ -24,6 +24,7 @@ CRUIConfig::CRUIConfig() {
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {
     LVAppendPathDelimiter(baseDir);
+    CRLog::info("Setting up user directory: %s", baseDir.c_str());
     // coverpage file cache
     crconfig.coverCacheDir = baseDir + "coverpages";
     // document cache
@@ -36,6 +37,7 @@ void CRUIConfig::setupUserDir(lString8 baseDir) {
 /// sets resourceDir, i18ndir, hyphdir
 void CRUIConfig::setupResources(lString8 baseDir) {
     LVAppendPathDelimiter(baseDir);
+    CRLog::info("Setting up resources directory: %s", baseDir.c_str());
     crconfig.resourceDir = baseDir;
     crconfig.i18nDir = baseDir + "i18n";
     crconfig.hyphDir = baseDir + "hyph";
@@ -261,6 +263,8 @@ void CRUIConfig::initEngine() {
     // Logger
     if (!logFile.empty())
         CRLog::setFileLogger(logFile.c_str(), true);
+    else
+        CRLog::setStderrLogger();
     CRLog::setLogLevel(CRLog::LL_TRACE);
 
     // Concurrency

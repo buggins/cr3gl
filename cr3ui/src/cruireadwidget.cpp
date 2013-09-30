@@ -354,6 +354,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
 }
 
 void CRUIReadWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
+    CR_UNUSED(pathname);
     if (!success) {
         if (_fileItem)
             delete _fileItem;
@@ -365,6 +366,7 @@ void CRUIReadWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
 }
 
 void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
+    CR_UNUSED(pathname);
     CRLog::trace("Render is finished - unlocking document");
     _locked = false;
 }
@@ -687,7 +689,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed) {
 
 /// on starting file loading
 void CRUIReadWidget::OnLoadFileStart( lString16 filename ) {
-
+    CR_UNUSED(filename);
 }
 
 /// format detection finished
@@ -738,7 +740,7 @@ void CRUIReadWidget::OnExportProgress(int percent) {
 
 /// file load finiished with error
 void CRUIReadWidget::OnLoadFileError(lString16 message) {
-
+    CR_UNUSED(message);
 }
 
 /// Override to handle external links

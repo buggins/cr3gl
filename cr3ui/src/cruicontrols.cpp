@@ -113,6 +113,7 @@ void CRUITextWidget::layoutText(lString16 text, int maxWidth, lString16 & line1,
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
         }
     }
+    CRLog::trace("Split: %d [%s] [%s]", height, LCSTR(line1), LCSTR(line2));
     // calc width
     int w1 = getFont()->getTextWidth(line1.c_str(), line1.length());
     int w2 = getFont()->getTextWidth(line2.c_str(), line2.length());
@@ -134,6 +135,7 @@ void CRUITextWidget::measure(int baseWidth, int baseHeight) {
     int width, height;
     layoutText(text, baseWidth, line1, line2, width, height);
 	defMeasure(baseWidth, baseHeight, width, height);
+    CRLog::trace("Measure: %d %d [%s]", _measuredWidth, _measuredHeight, LCSTR(text));
 }
 
 /// updates widget position based on specified rectangle
@@ -143,6 +145,8 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 	_pos.right = right;
 	_pos.bottom = bottom;
 	_layoutRequested = false;
+    lString16 text = getText();
+    CRLog::trace("Layout: %d %d [%s]", right - left, bottom - top, LCSTR(text));
 }
 
 /// draws widget with its children to specified surface
@@ -171,20 +175,22 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
     } else {
         // two lines
         int h = getFont()->getHeight();
+        int fh = line2.empty() ? h : h * 2;
         int w1 = getFont()->getTextWidth(line1.c_str(), line1.length());
         int w2 = getFont()->getTextWidth(line2.c_str(), line2.length());
         lvRect rc1 = rc;
-        rc1.bottom = rc1.bottom - h;
-        applyAlign(rc1, w1, h);
+        //rc1.bottom = rc1.bottom - h;
+        applyAlign(rc1, w1, fh);
         lvRect rc2 = rc;
+        applyAlign(rc2, w2, fh);
         rc2.top = rc2.top + h;
-        applyAlign(rc2, w2, h);
         getFont()->DrawTextString(buf, rc1.left, rc1.top,
                 line1.c_str(), line1.length(),
                 '?');
         getFont()->DrawTextString(buf, rc2.left, rc2.top,
                 line2.c_str(), line2.length(),
                 '?');
+        CRLog::trace("Draw: %d [%s] [%s]", rc.height(), LCSTR(line1), LCSTR(line2));
     }
 }
 

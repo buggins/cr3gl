@@ -231,13 +231,13 @@ public:
         addChild(_list);
 
 		_itemImage = new CRUIImageWidget(NULL);
-		_itemImage->setAlign(CRUI::ALIGN_CENTER);
-		_itemImage->setLayoutParams(CRUI::WRAP_CONTENT, CRUI::FILL_PARENT);
+        _itemImage->setAlign(ALIGN_TOP | ALIGN_HCENTER);
+        _itemImage->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         _itemImage->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
 
 		_textWidget = new CRUITextWidget(lString16());
-		_textWidget->setAlign(CRUI::ALIGN_TOP | CRUI::ALIGN_HCENTER);
-        _textWidget->setFontSize(CRUI::FONT_SIZE_XSMALL);
+        _textWidget->setAlign(ALIGN_TOP | ALIGN_HCENTER);
+        _textWidget->setFontSize(FONT_SIZE_XSMALL);
         _textWidget->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
         _textWidget->setMaxLines(2);
         _textWidget->setEllipsisMode(ELLIPSIS_MIDDLE);
@@ -248,7 +248,10 @@ public:
 		_itemWidget->setPadding(PT_TO_PX(1));
 		_itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
 		_itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
+        _itemWidget->setAlign(ALIGN_TOP | ALIGN_HCENTER);
 		_itemWidget->setStyle("LIST_ITEM");
+        _itemWidget->setMargin(lvRect(PT_TO_PX(1), 0, PT_TO_PX(2), 0));
+
         setMargin(lvRect(PT_TO_PX(1), 0, PT_TO_PX(2), 0));
 	}
 
