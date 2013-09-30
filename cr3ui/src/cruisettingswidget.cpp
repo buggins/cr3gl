@@ -54,24 +54,9 @@ public:
         _settings = settings;
         _title->setText(_settings->getName());
         setDescription(_settings->getDescription(props));
-        _righticon->setImage("ic_menu_forward");
+        _righticon->setImage(_settings->getValueIcon(props));
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
-};
-
-class CRUISettingsCheckboxWidget : public CRUISettingsListItemWidgetBase {
-public:
-    virtual void setSetting(CRUISettingsItem * settings, CRPropRef props) {
-        _settings = settings;
-        _title->setText(_settings->getName());
-        setDescription(_settings->getDescription(props));
-        if (settings->isChecked(props))
-            _righticon->setImage("btn_check_on");
-        else
-            _righticon->setImage("btn_check_off");
-
-    }
-    virtual ~CRUISettingsCheckboxWidget() {}
 };
 
 class CRUIOptionListItemWidget : public CRUIHorizontalLayout {
@@ -271,6 +256,12 @@ CRUISettingsEditor * CRUIColorSetting::createEditor(CRPropRef props) {
     return new CRUIColorEditorWidget(props, this);
 }
 
+CRUIImageRef CRUIColorSetting::getValueIcon(CRPropRef props) const {
+    lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
+    CRUIImageRef img(new CRUISolidFillImage(cl, MIN_ITEM_PX * 2 / 3));
+    return img;
+}
+
 lString16 CRUIColorSetting::getDescription(CRPropRef props) const {
     lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
     char str[32];
@@ -339,7 +330,6 @@ bool CRUISettingsOptionsListEditorWidget::onListItemClick(CRUIListWidget * widge
 CRUISettingsListWidget::CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings) : CRUISettingsListEditor(props, settings) {
     _settingsListItem = new CRUISettingsListItemWidget(); // child setting list widget
     _optionListItem = new CRUISettingsValueListItemWidget(); // child is setting with list of possible options
-    _checkboxListItem = new CRUISettingsCheckboxWidget();
 }
 
 lString16 CRUISettingsItem::getName() const {
@@ -349,6 +339,18 @@ lString16 CRUISettingsItem::getName() const {
 lString16 CRUISettingsItem::getDescription(CRPropRef props) const {
     CR_UNUSED(props);
     return !_descriptionRes.empty() ? _16(_descriptionRes.c_str()) : lString16();
+}
+
+CRUIImageRef CRUISettingsItem::getValueIcon(CRPropRef props) const {
+    lString8 res = getValueIconRes(props);
+    if (res.empty())
+        return CRUIImageRef();
+    return resourceResolver->getIcon(res.c_str());
+}
+
+lString8 CRUISettingsItem::getValueIconRes(CRPropRef props) const {
+    CR_UNUSED(props);
+    return lString8("ic_menu_forward");
 }
 
 //CRUISettingsItem * CRUISettingsItem::findSetting(lString8 name) {
@@ -372,16 +374,14 @@ int CRUISettingsListWidget::getItemCount(CRUIListWidget * list) {
 CRUIWidget * CRUISettingsListWidget::getItemWidget(CRUIListWidget * list, int index) {
     CR_UNUSED(list);
     CRUISettingsItem * item = _settings->getChild(index);
-    if (item->asList()) {
+    if (item->asOptionList()) {
+        _optionListItem->setSetting(item, _props);
+        return _optionListItem;
+    } else {
         _settingsListItem->setSetting(item, _props);
         return _settingsListItem;
-    } else if (item->isToggle()) {
-        _checkboxListItem->setSetting(item, _props);
-        return _checkboxListItem;
     }
     // TODO: more item types
-    _optionListItem->setSetting(item, _props);
-    return _optionListItem;
 }
 
 bool CRUISettingsListWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
@@ -395,6 +395,13 @@ bool CRUISettingsListWidget::onListItemClick(CRUIListWidget * widget, int itemIn
             _callback->onSettingChange(setting, false);
     }
     return true;
+}
+
+lString8 CRUISettingsCheckbox::getValueIconRes(CRPropRef props) const {
+    if (isChecked(props))
+        return lString8("btn_check_on");
+    else
+        return lString8("btn_check_off");
 }
 
 lString16 CRUISettingsCheckbox::getDescription(CRPropRef props) const {

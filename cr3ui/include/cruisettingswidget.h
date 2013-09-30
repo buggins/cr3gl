@@ -22,6 +22,8 @@ public:
     virtual lString16 getName() const;
     virtual lString8 getValue(CRPropRef props) const { CR_UNUSED(props); return lString8(); }
     virtual lString16 getDescription(CRPropRef props) const;
+    virtual CRUIImageRef getValueIcon(CRPropRef props) const;
+    virtual lString8 getValueIconRes(CRPropRef props) const;
     virtual int childCount() const { return 0; }
     virtual CRUISettingsItem * getChild(int index) const { CR_UNUSED(index); return NULL; }
     /// no-rtti workaround for dynamic_cast<CRUISettingsList *>
@@ -80,6 +82,7 @@ public:
     virtual void toggle(CRPropRef props) const;
     virtual bool isChecked(CRPropRef props) const;
     virtual lString16 getDescription(CRPropRef props) const;
+    virtual lString8 getValueIconRes(CRPropRef props) const;
 };
 
 /// option item for option list setting
@@ -146,6 +149,7 @@ public:
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
     virtual bool hasCustomEditor() { return true; }
     virtual lString16 getDescription(CRPropRef props) const;
+    virtual CRUIImageRef getValueIcon(CRPropRef props) const;
 };
 
 class CRUISettingsEditorCallback {
@@ -234,11 +238,9 @@ public:
 
 class CRUISettingsListItemWidget;
 class CRUISettingsValueListItemWidget;
-class CRUISettingsCheckboxWidget;
 class CRUISettingsListWidget : public CRUISettingsListEditor {
     CRUISettingsListItemWidget * _settingsListItem; // child setting list widget
     CRUISettingsValueListItemWidget * _optionListItem; // child is setting with list of possible options
-    CRUISettingsCheckboxWidget * _checkboxListItem; // checkbox
 public:
     CRUISettingsListWidget(CRPropRef props, CRUISettingsItem * settings);
     virtual int getItemCount(CRUIListWidget * list);

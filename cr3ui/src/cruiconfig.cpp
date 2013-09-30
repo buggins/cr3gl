@@ -67,11 +67,6 @@ void CRUIConfig::setupResourcesForScreenSize() {
     int sz3 = sz / 25;
     int sz4 = sz / 20;
     int sz5 = sz / 17;
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
 
     minFontSize = sz1;
     maxFontSize = sz5 * 150 / 100;
@@ -133,10 +128,18 @@ void CRUIConfig::setupResourcesForScreenSize() {
         dirs.add(resourceDir + "screen-density-normal");
     }
     resourceResolver->setDirList(dirs);
+    createDefaultTheme();
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
+    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
 }
 
 
 void CRUIConfig::createDefaultTheme() {
+    if (currentTheme)
+        delete currentTheme;
     currentTheme = new CRUITheme(lString8("BLACK"));
     currentTheme->setTextColor(0x000000);
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, uiFontFace, 0));

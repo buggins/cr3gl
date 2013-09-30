@@ -86,7 +86,7 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
                 if (item) {
                     item->measure(maxw, maxh);
                     lvPoint sz(item->getMeasuredWidth(), item->getMeasuredHeight());
-                    //CRLog::trace("measured list item[%d] (%d,%d)", i, sz.x, sz.y);
+                    //CRLog::trace("measured list item[%d] (%d,%d) minH=%d MIN_ITEM_PX=%d", i, sz.x, sz.y, item->getMinHeight(), MIN_ITEM_PX);
                     if (maxColH < sz.y)
                         maxColH = sz.y;
                     if (biggestw < sz.x)
