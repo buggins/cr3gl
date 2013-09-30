@@ -26,6 +26,8 @@ static lString16 setEllipsis(const lString16 & text, int mode, int count, const 
         return text;
     if (count >= text.length())
         return lString16("");
+//    if (ellipsis.empty())
+//        return text;
     if (mode == ELLIPSIS_LEFT) {
         return ellipsis + text.substr(count);
     } else if (mode == ELLIPSIS_MIDDLE) {
@@ -42,7 +44,7 @@ static lString16 setEllipsis(const lString16 & text, int mode, int count, const 
 lString16 CRUITextWidget::applyEllipsis(lString16 text, int maxWidth, int mode, const lString16 & ellipsis) {
     LVFontRef font = getFont();
     for (int count = 0; count < text.length(); count++) {
-        lString16 s = setEllipsis(text, mode, count, count > 0 ? ellipsis : lString16::empty_str);
+        lString16 s = count > 0 ? setEllipsis(text, mode, count, count > 0 ? ellipsis : lString16::empty_str) : text;
         int w = font->getTextWidth(s.c_str(), s.length());
         if (w <= maxWidth)
             return s;
@@ -113,7 +115,7 @@ void CRUITextWidget::layoutText(lString16 text, int maxWidth, lString16 & line1,
             line2 = applyEllipsis(line2, maxWidth, ELLIPSIS_RIGHT, ellipsis);
         }
     }
-    CRLog::trace("Split: %d [%s] [%s]", height, LCSTR(line1), LCSTR(line2));
+    //CRLog::trace("Split: %d [%s] [%s]", height, LCSTR(line1), LCSTR(line2));
     // calc width
     int w1 = getFont()->getTextWidth(line1.c_str(), line1.length());
     int w2 = getFont()->getTextWidth(line2.c_str(), line2.length());
@@ -135,7 +137,7 @@ void CRUITextWidget::measure(int baseWidth, int baseHeight) {
     int width, height;
     layoutText(text, baseWidth, line1, line2, width, height);
 	defMeasure(baseWidth, baseHeight, width, height);
-    CRLog::trace("Measure: %d %d [%s]", _measuredWidth, _measuredHeight, LCSTR(text));
+    //CRLog::trace("Measure: %d %d [%s]", _measuredWidth, _measuredHeight, LCSTR(text));
 }
 
 /// updates widget position based on specified rectangle
@@ -146,7 +148,7 @@ void CRUITextWidget::layout(int left, int top, int right, int bottom) {
 	_pos.bottom = bottom;
 	_layoutRequested = false;
     lString16 text = getText();
-    CRLog::trace("Layout: %d %d [%s]", right - left, bottom - top, LCSTR(text));
+    //CRLog::trace("Layout: %d %d [%s]", right - left, bottom - top, LCSTR(text));
 }
 
 /// draws widget with its children to specified surface
@@ -190,7 +192,7 @@ void CRUITextWidget::draw(LVDrawBuf * buf) {
         getFont()->DrawTextString(buf, rc2.left, rc2.top,
                 line2.c_str(), line2.length(),
                 '?');
-        CRLog::trace("Draw: %d [%s] [%s]", rc.height(), LCSTR(line1), LCSTR(line2));
+        //CRLog::trace("Draw: %d [%s] [%s]", rc.height(), LCSTR(line1), LCSTR(line2));
     }
 }
 

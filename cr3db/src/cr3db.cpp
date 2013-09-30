@@ -163,9 +163,11 @@ bool CRBookDB::fillCaches() {
 	_seriesCache.clear();
 	_folderCache.clear();
 	_authorCache.clear();
+    _catalogCache.clear();
 	int seriesCount = 0;
 	int folderCount = 0;
 	int authorCount = 0;
+    int catalogCount = 0;
 	CRLog::trace("Filling series cache");
 	SQLiteStatement stmt(&_db);
 	err = stmt.prepare("select id, name from series;") != 0 || err;
@@ -198,7 +200,20 @@ bool CRBookDB::fillCaches() {
 		_authorCache.put(item);
 		authorCount++;
 	}
-    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders", authorCount, seriesCount, folderCount);
+    CRLog::trace("Filling catalogs cache");
+    err = stmt.prepare("select id, name, url, login, password, last_usage from opds_catalog;") != 0 || err;
+    while (stmt.step() == DB_ROW) {
+        BookDBCatalog * item = new BookDBCatalog();
+        item->id = stmt.getInt(0);
+        item->name = stmt.getText(1);
+        item->url = stmt.getText(2);
+        item->login = stmt.getText(3);
+        item->password = stmt.getText(4);
+        item->lastUsage = stmt.getInt64(5);
+        _catalogCache.put(item);
+        catalogCount++;
+    }
+    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders, %d opds catalogs", authorCount, seriesCount, folderCount, catalogCount);
 	return !err;
 }
 
@@ -531,21 +546,21 @@ bool CRBookDB::updateBook(BookDBBook * book, BookDBBook * fromCache)
 	sql += " WHERE id = ?;";
 	stmt.prepare(sql.c_str());
 	stmt.bindInt64(index, book->id);
-	if (pathnameIndex >= 0) stmt.bindText(pathnameIndex, book->pathname);
-	if (filenameIndex >= 0) stmt.bindText(filenameIndex, book->filename);
-	if (arcnameIndex >= 0) stmt.bindText(arcnameIndex, book->arcname);
-	if (titleIndex >= 0) stmt.bindText(titleIndex, book->title);
-	if (seriesNumberIndex >= 0) stmt.bindInt(seriesNumberIndex, book->seriesNumber);
-	if (formatIndex >= 0) stmt.bindInt(formatIndex, book->format);
-	if (filesizeIndex >= 0) stmt.bindInt(filesizeIndex, book->filesize);
-	if (arcsizeIndex >= 0) stmt.bindInt(arcsizeIndex, book->arcsize);
-	if (createTimeIndex >= 0) stmt.bindInt64(createTimeIndex, book->createTime);
-	if (lastAccessTimeIndex >= 0) stmt.bindInt64(lastAccessTimeIndex, book->lastAccessTime);
-	if (flagsIndex >= 0) stmt.bindInt(flagsIndex, book->flags);
-	if (languageIndex >= 0) stmt.bindText(languageIndex, book->language);
+    if (pathnameIndex >= 0) err = stmt.bindText(pathnameIndex, book->pathname) != DB_OK || err;
+    if (filenameIndex >= 0) err = stmt.bindText(filenameIndex, book->filename) != DB_OK || err;
+    if (arcnameIndex >= 0) err = stmt.bindText(arcnameIndex, book->arcname) != DB_OK || err;
+    if (titleIndex >= 0) err = stmt.bindText(titleIndex, book->title) != DB_OK || err;
+    if (seriesNumberIndex >= 0) err = stmt.bindInt(seriesNumberIndex, book->seriesNumber) != DB_OK || err;
+    if (formatIndex >= 0) err = stmt.bindInt(formatIndex, book->format) != DB_OK || err;
+    if (filesizeIndex >= 0) err = stmt.bindInt(filesizeIndex, book->filesize) != DB_OK || err;
+    if (arcsizeIndex >= 0) err = stmt.bindInt(arcsizeIndex, book->arcsize) != DB_OK || err;
+    if (createTimeIndex >= 0) err = stmt.bindInt64(createTimeIndex, book->createTime) != DB_OK || err;
+    if (lastAccessTimeIndex >= 0) err = stmt.bindInt64(lastAccessTimeIndex, book->lastAccessTime) != DB_OK || err;
+    if (flagsIndex >= 0) err = stmt.bindInt(flagsIndex, book->flags) != DB_OK || err;
+    if (languageIndex >= 0) err = stmt.bindText(languageIndex, book->language) != DB_OK || err;
 
-	if (folderIndex >= 0) stmt.bindKey(folderIndex, !book->folder ? 0 : book->folder->id);
-	if (seriesIndex >= 0) stmt.bindKey(seriesIndex, !book->series ? 0 : book->series->id);
+    if (folderIndex >= 0) err = stmt.bindKey(folderIndex, !book->folder ? 0 : book->folder->id) != DB_OK || err;
+    if (seriesIndex >= 0) err = stmt.bindKey(seriesIndex, !book->series ? 0 : book->series->id) != DB_OK || err;
 
 	if (stmt.step() == DB_DONE) {
 		if (authorsChanged) {
@@ -1205,6 +1220,35 @@ void CRBookLastPositionCache::sort() {
     }
 }
 
+static int compare_last_usage_time(const BookDBCatalog ** p1, const BookDBCatalog ** p2) {
+    lInt64 t1 = (*p1)->lastUsage;
+    lInt64 t2 = (*p2)->lastUsage;
+    if (t1 > t2)
+        return -1;
+    if (t1 < t2)
+        return 1;
+    return 0;
+}
+
+void BookDBCatalogCache::getAll(LVPtrVector<BookDBCatalog> & catalogs) {
+    catalogs.clear();
+    LVHashTable<lUInt64, BookDBCatalog *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBCatalog *>::pair * item = iter.next();
+        if (!item)
+            break;
+        catalogs.add(item->value->clone());
+    }
+    catalogs.sort(compare_last_usage_time);
+}
+
+bool CRBookDB::loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    CR_UNUSED(guard);
+    _catalogCache.getAll(catalogs);
+    return true;
+}
+
 /// protected by mutex
 bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
@@ -1475,5 +1519,42 @@ void BookDBFolderCache::clear() {
 			break;
 		items.add(item->value);
 	}
+}
+
+
+
+
+
+BookDBCatalog * BookDBCatalogCache::get(lInt64 key) {
+    return _byId.get(key);
+}
+
+BookDBCatalog * BookDBCatalogCache::get(const DBString & name) {
+    return _byName.get(name);
+}
+
+void BookDBCatalogCache::put(BookDBCatalog * item) {
+    BookDBCatalog * oldById = _byId.get(item->id);
+    if (oldById == item) { // already the same item
+        return;
+    }
+    if (oldById) {
+        _byId.remove(item->id);
+        _byName.remove(oldById->name);
+        delete oldById;
+    }
+    _byId.set(item->id, item);
+    _byName.set(item->name, item);
+}
+
+void BookDBCatalogCache::clear() {
+    LVPtrVector<BookDBCatalog> items;
+    LVHashTable<lUInt64, BookDBCatalog *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBCatalog *>::pair * item = iter.next();
+        if (!item)
+            break;
+        items.add(item->value);
+    }
 }
 

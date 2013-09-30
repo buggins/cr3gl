@@ -117,22 +117,33 @@ public:
     lInt64 lastUsage;
     BookDBCatalog() {}
     BookDBCatalog(const char * _name, const char * _url) : name(_name), url(_url), lastUsage(GetCurrentTimeMillis()) { }
-    BookDBCatalog(const BookDBFolder & v) {
-        id = v.id;
+    BookDBCatalog(const BookDBCatalog & v) : BookDBEntity(v) {
         name = v.name;
+        url = v.url;
+        login = v.login;
+        password = v.password;
+        lastUsage = v.lastUsage;
     }
-    BookDBCatalog & operator = (const BookDBFolder & v) {
+    BookDBCatalog & operator = (const BookDBCatalog & v) {
         id = v.id;
         name = v.name;
+        url = v.url;
+        login = v.login;
+        password = v.password;
+        lastUsage = v.lastUsage;
         return *this;
     }
-    bool operator == (const BookDBFolder & v) const {
+    bool operator == (const BookDBCatalog & v) const {
         if (this == NULL && &v == NULL)
             return true;
         if (this == NULL || &v == NULL)
             return false;
         return id == v.id &&
-                name == v.name;
+                name == v.name &&
+                url == v.url &&
+                login == v.login &&
+                password == v.password &&
+                lastUsage == v.lastUsage;
     }
     BookDBCatalog * clone() const { return new BookDBCatalog(*this); }
 };
@@ -336,12 +347,26 @@ class BookDBFolderCache {
 	LVHashTable<DBString, BookDBFolder *> _byName;
 public:
 	BookDBFolderCache() : _byId(1000), _byName(1000) {}
-	BookDBFolder * get(lInt64 key);
-	BookDBFolder * getClone(lInt64 key) { BookDBFolder * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
+    BookDBFolder * getClone(lInt64 key) { BookDBFolder * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
+    BookDBFolder * get(lInt64 key);
 	BookDBFolder * get(const DBString & name);
 	void put(BookDBFolder * item);
 	void clear();
 	~BookDBFolderCache() { clear(); }
+};
+
+class BookDBCatalogCache {
+    LVHashTable<lUInt64, BookDBCatalog *> _byId;
+    LVHashTable<DBString, BookDBCatalog *> _byName;
+public:
+    BookDBCatalogCache() : _byId(1000), _byName(1000) {}
+    BookDBCatalog * getClone(lInt64 key) { BookDBCatalog * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
+    BookDBCatalog * get(lInt64 key);
+    BookDBCatalog * get(const DBString & name);
+    void getAll(LVPtrVector<BookDBCatalog> & catalogs);
+    void put(BookDBCatalog * item);
+    void clear();
+    ~BookDBCatalogCache() { clear(); }
 };
 
 class BookDBBookCache {
@@ -396,6 +421,7 @@ class CRBookDB {
 	BookDBSeriesCache _seriesCache;
 	BookDBAuthorCache _authorCache;
 	BookDBFolderCache _folderCache;
+    BookDBCatalogCache _catalogCache;
 	BookDBBookCache _bookCache;
     CRBookLastPositionCache _lastPositionCache;
 	BookDBBook * loadBookToCache(lInt64 id);
@@ -448,6 +474,8 @@ public:
 
     /// protected by mutex
     bool loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions);
+
+    bool loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs);
 
     /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);

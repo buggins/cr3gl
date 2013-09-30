@@ -197,6 +197,9 @@ void InitCREngine(lString16 exePath) {
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesi.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbd.ttf");
     crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbi.ttf");
+    crconfig.uiFontFace = "Arial";
+    crconfig.monoFontFace = "Courier New";
+    crconfig.fallbackFontFace = "Arial Unicode MS";
 #endif
 
     crconfig.setupUserDir(UnicodeToUtf8(exePath));
@@ -225,7 +228,9 @@ void InitCREngine(lString16 exePath) {
         deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("/"));
         deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8(homedir));
         deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8(homedir) + "/Downloads");
-        crconfig.uiFontFace = "DjVu Sans";
+        crconfig.uiFontFace = "DejaVu Sans";
+        crconfig.monoFontFace = "DejaVu Sans Mono";
+        crconfig.fallbackFontFace = "Liberation Sans";
     }
 #endif
 

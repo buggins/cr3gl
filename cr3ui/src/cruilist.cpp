@@ -167,7 +167,6 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
             for (int col = 0; col < _colCount; col++) {
                 int idx = i + col;
                 if (idx < _itemSizes.length()) {
-                    lvPoint sz = _itemSizes[idx];
                     childRc.left = clientRc.left + col * clientRc.width() / _colCount;
                     childRc.right = col < _colCount - 1 ? clientRc.left + (col + 1) * clientRc.width() / _colCount : clientRc.right;
                     //CRLog::trace("layout list item [%d] (%d,%d, %d,%d)", i, childRc.left, childRc.top, childRc.right, childRc.bottom);
