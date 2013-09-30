@@ -465,7 +465,7 @@ bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
         x = rc.left;
     if (x > rc.right)
         x = rc.right;
-    int pos = _minValue + (x - rc.left + (_maxValue - _minValue) / 2) * (_maxValue - _minValue) / rc.width();
+    int pos = _minValue + ((x - rc.left) * (_maxValue - _minValue) + rc.width() / 2) / rc.width();
     switch (action) {
     case ACTION_DOWN:
         updatePos(pos);

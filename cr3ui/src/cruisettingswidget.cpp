@@ -145,11 +145,14 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     setClipRect(buf, rc);
     applyPadding(rc);
     // draw
-    lUInt32 textColor = 0;
+    lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
+    lUInt32 bgColor = _props->getColorDef(PROP_BACKGROUND_COLOR, 0);
+    lString16 bgTexture = _props->getStringDef(PROP_BACKGROUND_IMAGE);
     int fontSize = _props->getIntDef(PROP_FONT_SIZE);
     lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
     lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
     SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+    buf->FillRect(rc, bgColor);
     fmt.draw(*buf, rc, 0, 0);
 }
 
@@ -212,6 +215,69 @@ void CRUIFontSizeEditorWidget::layout(int left, int top, int right, int bottom) 
     }
     CRUISettingsEditor::layout(left, top, right, bottom);
 }
+
+
+CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    lUInt32 cl = props->getColorDef(setting->getSettingId().c_str(), 0);
+    _sliderR = new CRUISliderWidget(0, 255, ((cl >> 16) & 255));
+    _sliderR->setId("R");
+    _sliderR->setPadding(PT_TO_PX(4));
+    _sliderR->setScrollPosCallback(this);
+    _sliderG = new CRUISliderWidget(0, 255, ((cl >> 8) & 255));
+    _sliderG->setId("G");
+    _sliderG->setPadding(PT_TO_PX(4));
+    _sliderG->setScrollPosCallback(this);
+    _sliderB = new CRUISliderWidget(0, 255, ((cl >> 0) & 255));
+    _sliderB->setId("B");
+    _sliderB->setPadding(PT_TO_PX(4));
+    _sliderB->setScrollPosCallback(this);
+    addChild(_sliderR);
+    addChild(_sliderG);
+    addChild(_sliderB);
+    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xC0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xC0808080);
+    _sample->setPadding(PT_TO_PX(3));
+    addChild(_sample);
+}
+
+bool CRUIColorEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
+    if (!manual)
+        return false;
+    CRLog::trace("CRUIColorEditorWidget::onScrollPosChange(%s, %d)", widget->getId().c_str(), pos);
+    pos &= 255;
+    lUInt32 cl = _props->getColorDef(_settings->getSettingId().c_str(), 0);
+    if (widget->getId() == "R")
+        cl = (cl & 0x00FFFF) | (pos << 16);
+    if (widget->getId() == "G")
+        cl = (cl & 0xFF00FF) | (pos << 8);
+    if (widget->getId() == "B")
+        cl = (cl & 0xFFFF00) | (pos << 0);
+    _props->setColor(_settings->getSettingId().c_str(), cl);
+    _sample->invalidate();
+    return true;
+}
+
+
+CRUISettingsEditor * CRUIColorSetting::createEditor(CRPropRef props) {
+    return new CRUIColorEditorWidget(props, this);
+}
+
+lString16 CRUIColorSetting::getDescription(CRPropRef props) const {
+    lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
+    char str[32];
+    sprintf(str, "#%06X", cl);
+    return Utf8ToUnicode(str);
+}
+
 
 lString16 CRUIFontSizeSetting::getDescription(CRPropRef props) const {
     int sz = props->getIntDef(PROP_FONT_SIZE, 24);
