@@ -369,7 +369,7 @@ public:
         _entries.add(new CRDirItem(lString8(BOOKS_BY_TITLE_TAG), false));
         _entries.add(new CRDirItem(lString8(BOOKS_BY_SERIES_TAG), false));
         _entries.add(new CRDirItem(lString8(BOOKS_BY_FILENAME_TAG), false));
-        _entries.add(new CRDirItem(lString8(SEARCH_RESULTS_TAG), false));
+        //_entries.add(new CRDirItem(lString8(SEARCH_RESULTS_TAG), false));
         if (currentBook) {
             for (int i = 0; i < currentBook->authors.length(); i++) {
                 lString8 author(currentBook->authors[i]->fileAs.c_str());
@@ -451,13 +451,39 @@ public:
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {
+    LVPtrVector<CRDirEntry> _entries;
 public:
-    CRUIOnlineCatalogsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_ONLINE_CATALOGS) {
+    void init() {
+        _entries.clear();
+        LVPtrVector<BookDBCatalog> catalogs;
+        bookDB->loadOpdsCatalogs(catalogs);
+        for (int i = 0; i < catalogs.length(); i++) {
+            BookDBCatalog * item = catalogs[i];
+            CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item);
+            _entries.add(entry);
+        }
+    }
 
+    CRUIOnlineCatalogsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_ONLINE_CATALOGS) {
+        init();
 	}
     virtual lString8 getItemIcon(int index) {
         CR_UNUSED(index);
         return lString8("internet");
+    }
+    virtual void measure(int baseWidth, int baseHeight) {
+        init();
+        CRUILinearLayout::measure(baseWidth, baseHeight);
+    }
+    virtual int getItemCount(CRUIListWidget * list) {
+        CR_UNUSED(list);
+        return _entries.length();
+    }
+    virtual lString16 getItemText(int index) {
+        if (index < 0 || index >= _entries.length())
+            return lString16();
+        CRDirEntry * item = _entries[index];
+        return item->getTitle();
     }
 };
 

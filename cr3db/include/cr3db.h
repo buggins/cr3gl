@@ -444,6 +444,8 @@ class CRBookDB {
     bool saveFolder(BookDBFolder * folder);
     bool saveAuthor(BookDBAuthor * author);
     bool saveBook(BookDBBook * book);
+
+    void addOpdsCatalogs(const char * catalogs[]);
 public:
     CRBookDB() : _mutex(concurrencyProvider->createMutex()) {
     }

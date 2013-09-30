@@ -39,6 +39,7 @@ enum DIR_TYPE {
     DIR_TYPE_DOWNLOADS,
     DIR_TYPE_FAVORITE,
     DIR_TYPE_RECENT,
+    DIR_TYPE_OPDS_CATALOG,
     DIR_TYPE_BOOKS_BY_AUTHOR,
     DIR_TYPE_BOOKS_BY_TITLE,
     DIR_TYPE_BOOKS_BY_SERIES,
@@ -62,9 +63,9 @@ protected:
 public:
 	CRDirEntry(const lString8 & pathname, bool archive) : _pathName(pathname), _isArchive(archive) {}
 	virtual ~CRDirEntry() {}
-	const lString8 & getPathName() const { return _pathName; }
-    lString8 getFileName() const;
-	lString16 getTitle() const;
+    virtual const lString8 & getPathName() const { return _pathName; }
+    virtual lString8 getFileName() const;
+    virtual lString16 getTitle() const;
     lString16 getSeriesName(bool numberFirst) const;
     lString16 getSeriesNameOnly() const;
     int getSeriesNumber() const;
@@ -189,6 +190,8 @@ public:
 
 #define SEARCH_RESULTS_PREFIX "@search:"
 
+#define OPDS_CATALOGS_TAG "@catalogs:"
+
 
 class CRRecentBookItem : public CRFileItem {
     BookDBBookmark * _lastPosition;
@@ -208,6 +211,23 @@ public:
     bool onLastPositionUpdated(BookDBBook * book, BookDBBookmark * position);
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_RECENT; }
     CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
+};
+
+class CROpdsCatalogsItem : public CRDirContentItem {
+protected:
+
+    LVAutoPtr<BookDBCatalog> _catalog;
+
+    /// load from DB
+    virtual bool scan();
+
+public:
+    //virtual void setCatalog(BookDBCatalog * catalog) { _catalog = catalog->clone(); }
+    virtual lString16 getTitle() const { return Utf8ToUnicode(_catalog->name.c_str()); }
+    virtual DIR_TYPE getDirType() const { return DIR_TYPE_OPDS_CATALOG; }
+    CROpdsCatalogsItem(const BookDBCatalog * catalog) : CRDirContentItem(lString8(OPDS_CATALOGS_TAG) + lString8::itoa(catalog->id), false), _catalog(catalog->clone()) {}
+    CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false), _catalog(((CROpdsCatalogsItem*)dir)->_catalog->clone()) {}
+    virtual CRDirEntry * clone() const { CROpdsCatalogsItem * res = new CROpdsCatalogsItem(this); return res; }
 };
 
 class CRBookDBLookupItem : public CRDirContentItem {

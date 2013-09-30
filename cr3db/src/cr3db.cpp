@@ -12,7 +12,7 @@
 CRBookDB * bookDB = NULL;
 
 
-#define DB_VERSION 21
+#define DB_VERSION 24
 
 /// creates/upgrades DB schema
 bool CRBookDB::updateSchema()
@@ -104,8 +104,8 @@ bool CRBookDB::updateSchema()
 				"id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"name VARCHAR NOT NULL COLLATE NOCASE, "
 				"url VARCHAR NOT NULL COLLATE NOCASE, "
-				"login VARCHAR NOT NULL COLLATE NOCASE, "
-				"password VARCHAR NOT NULL COLLATE NOCASE, "
+                "login VARCHAR COLLATE NOCASE, "
+                "password VARCHAR COLLATE NOCASE, "
 				"last_usage INTEGER DEFAULT 0"
 				");") < 0 || err;
 //	if (currentVersion < 7) {
@@ -127,6 +127,19 @@ bool CRBookDB::updateSchema()
 		err = !_db.addColumnIfNotExists("opds_catalog", "login", "ALTER TABLE opds_catalog ADD COLUMN login VARCHAR NULL COLLATE NOCASE;") || err;
 		err = !_db.addColumnIfNotExists("opds_catalog", "password", "ALTER TABLE opds_catalog ADD COLUMN password VARCHAR NULL COLLATE NOCASE;") || err;
 	}
+    const char * CATALOGS1[] = {
+            "http://www.feedbooks.com/catalog.atom", "Feedbooks",
+            "http://bookserver.archive.org/catalog/", "Internet Archive",
+            "http://m.gutenberg.org/", "Project Gutenberg",
+//              "http://ebooksearch.webfactional.com/catalog.atom", "eBookSearch",
+            "http://bookserver.revues.org/", "Revues.org",
+            "http://www.legimi.com/opds/root.atom", "Legimi",
+            "http://www.ebooksgratuits.com/opds/", "Ebooks libres et gratuits",
+            NULL, NULL
+    };
+    if (currentVersion < 24)
+        addOpdsCatalogs(CATALOGS1);
+
 
 	//==============================================================
 	// add more updates above this line
@@ -252,6 +265,31 @@ bool CRBookDB::saveSeries(BookDBSeries * item) {
 	return !err;
 }
 
+void CRBookDB::addOpdsCatalogs(const char * catalogs[]) {
+    SQLiteStatement stmt(&_db);
+    SQLiteStatement stmtCheck(&_db);
+    bool err = false;
+    err = stmt.prepare("INSERT INTO opds_catalog (name, url, login, password) VALUES (?,?,'','');") != 0 || err;
+    err = stmtCheck.prepare("SELECT COUNT(*) FROM opds_catalog WHERE name = ? OR url = ?;") != 0 || err;
+    for (int i = 0; catalogs[i]; i += 2) {
+
+        if (!err) {
+            stmtCheck.reset(true);
+            stmtCheck.bindText(1, catalogs[i + 1]);
+            stmtCheck.bindText(2, catalogs[i]);
+            if (stmtCheck.step() == DB_ROW) {
+                if (stmtCheck.getInt(0) == 0) {
+                    stmt.reset(true);
+                    stmt.bindText(1, catalogs[i + 1]);
+                    stmt.bindText(2, catalogs[i]);
+                    err = (stmt.step() != DB_DONE) || err;
+                }
+            } else {
+                err = true;
+            }
+        }
+    }
+}
 
 bool CRBookDB::saveFolder(BookDBFolder * item) {
 	if (!item)

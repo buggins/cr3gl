@@ -572,6 +572,8 @@ CRDirContentItem * CRDirCache::getOrAdd(CRDirItem * dir) {
     DIR_TYPE type = dir->getDirType();
     if (type == DIR_TYPE_BOOKS_BY_AUTHOR || type == DIR_TYPE_BOOKS_BY_TITLE || type == DIR_TYPE_BOOKS_BY_SERIES || type == DIR_TYPE_BOOKS_BY_FILENAME) {
         newItem = new CRBookDBLookupItem(dir->getPathName());
+    } else if (type == DIR_TYPE_OPDS_CATALOG) {
+        newItem = new CROpdsCatalogsItem(dir);
     } else {
         newItem = new CRDirCacheItem(dir);
     }
@@ -1022,6 +1024,22 @@ bool CRRecentBooksItem::onLastPositionUpdated(BookDBBook * book, BookDBBookmark 
         _entries.insert(0, item);
     }
     return true; // order changed
+}
+
+/// load from DB
+bool CROpdsCatalogsItem::scan() {
+    if (_scanned)
+        return true;
+    LVPtrVector<BookDBCatalog> catalogs;
+    bookDB->loadOpdsCatalogs(catalogs);
+    for (int i = 0; i < catalogs.length(); i++) {
+        BookDBCatalog * item = catalogs[i];
+        CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item);
+        entry->_pathName = lString8(OPDS_CATALOGS_TAG) + lString8::itoa(item->id);
+        _entries.add(entry);
+    }
+    _scanned = true;
+    return true;
 }
 
 bool CRRecentBooksItem::scan() {
