@@ -296,8 +296,10 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     }
 
 
-    addChild(_colorPane);
-    addChild(_colorCorrectionPane);
+    CRUIFrameLayout * frame = new CRUIFrameLayout();
+    frame->addChild(_colorPane);
+    frame->addChild(_colorCorrectionPane);
+    addChild(frame);
 
     _colorCorrectionPane->setVisibility(INVISIBLE);
 

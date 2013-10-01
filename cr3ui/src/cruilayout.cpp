@@ -186,6 +186,65 @@ void CRUIContainerWidget::draw(LVDrawBuf * buf) {
 	}
 }
 
+
+
+/// measure dimensions
+void CRUIFrameLayout::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    lvRect padding;
+    getPadding(padding);
+    lvRect margin = getMargin();
+    int maxw = baseWidth;
+    int maxh = baseHeight;
+    if (getMaxWidth() != UNSPECIFIED && maxw > getMaxWidth())
+        maxw = getMaxWidth();
+    if (getMaxHeight() != UNSPECIFIED && maxh > getMaxHeight())
+        maxh = getMaxHeight();
+    maxw = maxw - (margin.left + margin.right + padding.left + padding.right);
+    maxh = maxh - (margin.top + margin.bottom + padding.top + padding.bottom);
+    int w = 0;
+    int h = 0;
+    for (int i = 0; i < getChildCount(); i++) {
+        CRUIWidget * child = getChild(i);
+        if (child->getVisibility() == GONE)
+            continue;
+        child->measure(maxw, maxh);
+        if (w < child->getMeasuredWidth())
+            w = child->getMeasuredWidth();
+        if (h < child->getMeasuredHeight())
+            h = child->getMeasuredHeight();
+    }
+    defMeasure(baseWidth, baseHeight, w, h);
+}
+
+/// updates widget position based on specified rectangle
+void CRUIFrameLayout::layout(int left, int top, int right, int bottom) {
+    _pos.left = left;
+    _pos.top = top;
+    _pos.right = right;
+    _pos.bottom = bottom;
+    applyAlign(_pos, _measuredWidth, _measuredHeight);
+    lvRect clientRc = _pos;
+    applyMargin(clientRc);
+    applyPadding(clientRc);
+
+    lvRect childRc = clientRc;
+    for (int i = 0; i < getChildCount(); i++) {
+        CRUIWidget * child = getChild(i);
+        if (child->getVisibility() == GONE)
+            continue;
+        child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
+    }
+}
+
+
+
+
+
 struct Cell {
     int index;
     int width;

@@ -51,6 +51,16 @@ public:
 	CRUIHorizontalLayout() : CRUILinearLayout(false) {}
 };
 
+class CRUIFrameLayout : public CRUIContainerWidget {
+public:
+    /// creates frame layout (all children occupy the same space)
+    CRUIFrameLayout() { }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+};
+
 class CRUITableLayout : public CRUIContainerWidget {
 protected:
     int _colCount;
