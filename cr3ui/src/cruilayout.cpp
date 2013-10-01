@@ -186,6 +186,225 @@ void CRUIContainerWidget::draw(LVDrawBuf * buf) {
 	}
 }
 
+struct Cell {
+    int index;
+    int width;
+    int height;
+    int weight;
+    bool hfill;
+    bool vfill;
+    Cell() : index(0), width(0), height(0), weight(1), hfill(false), vfill(false) {}
+};
 
+lvPoint CRUITableLayout::layoutTable(LVArray<Col> &_cols, LVArray<Row> & _rows, int maxw, int maxh, bool fillx, bool filly) {
+    lvPoint sz(maxw, maxh);
+    // init cells
+    LVPtrVector<Cell> _cells;
+    int rowcount = (getChildCount() + _colCount - 1) / _colCount;
+    for (int i = 0; i < rowcount; i++) {
+        Row row;
+        _rows.add(row);
+    }
+    for (int i = 0; i < _colCount; i++) {
+        Col col;
+        _cols.add(col);
+    }
+    for (int row = 0; row < rowcount; row++) {
+        for (int col = 0; col < _colCount; col++) {
+            int i = row * _colCount + col;
+            Cell * cell = new Cell();
+            cell->index = i;
+            if (i < getChildCount()) {
+                CRUIWidget * child = getChild(i);
+                cell->vfill = child->getLayoutHeight() == FILL_PARENT;
+                cell->hfill = child->getLayoutWidth() == FILL_PARENT;
+                child->measure(maxw, maxh);
+                cell->width = child->getMeasuredWidth();
+                cell->height = child->getMeasuredHeight();
+                cell->weight = child->getLayoutWeight();
+                if (cell->hfill) {
+                    _cols[col].fill = true;
+                    if (_cols[col].weight < cell->weight)
+                        _cols[col].weight = cell->weight;
+                } else {
+                    if (_cols[col].maxw < cell->width)
+                        _cols[col].maxw = cell->width;
+                }
+            }
+            _cells.add(cell);
+        }
+    }
+    int colw = maxw / _colCount;
+    int totalcolweight = 0;
+    int totalcolwidth = 0;
+    for (int i = 0; i < _colCount; i++) {
+        if (_cols[i].maxw > colw) {
+            _cols[i].fill = true;
+            _cols[i].weight = 1;
+        }
+        if (_cols[i].fill) {
+            totalcolweight += _cols[i].weight;
+        } else {
+            totalcolwidth += _cols[i].maxw;
+        }
+    }
+    // distribute extra space between FILL cols
+    int wleft = maxw - totalcolwidth;
+    for (int i = 0; i < _colCount; i++) {
+        if (_cols[i].fill) {
+            _cols[i].width = wleft * _cols[i].weight / totalcolweight;
+            totalcolwidth += _cols[i].width;
+        } else {
+            _cols[i].width = _cols[i].maxw;
+        }
+    }
+    // fill H space
+    if (fillx && totalcolwidth < maxw) {
+        int extraw = (maxw - totalcolwidth) / _colCount;
+        if (extraw > 0) {
+            for (int i = 0; i < _colCount; i++) {
+                _cols[i].width += extraw;
+            }
+        }
+    }
+    // init row params
+    for (int row = 0; row < rowcount; row++) {
+        for (int col = 0; col < _colCount; col++) {
+            int i = row * _colCount + col;
+            Cell * cell = _cells[i];
+            if (i < getChildCount()) {
+                CRUIWidget * child = getChild(i);
+                child->measure(_cols[col].width, maxh);
+                cell->width = child->getMeasuredWidth();
+                cell->height = child->getMeasuredHeight();
+                if (cell->vfill) {
+                    _rows[row].fill = true;
+                    if (_rows[row].weight < cell->weight)
+                        _rows[row].weight = cell->weight;
+                } else {
+                    if (_rows[row].maxh < cell->height)
+                        _rows[row].maxh = cell->height;
+                }
+            }
+        }
+    }
+    // update row heights
+    int rowh = maxh / rowcount;
+    int totalrowweight = 0;
+    int totalrowheight = 0;
+    for (int i = 0; i < rowcount; i++) {
+        if (_rows[i].maxh > rowh) {
+            _rows[i].fill = true;
+            _rows[i].weight = 1;
+        }
+        if (_rows[i].fill) {
+            totalrowweight += _rows[i].weight;
+        } else {
+            totalrowheight += _rows[i].maxh;
+        }
+    }
+    // distribute extra space between FILL rows
+    int hleft = maxh - totalrowheight;
+    for (int i = 0; i < rowcount; i++) {
+        if (_rows[i].fill) {
+            _rows[i].height = hleft * _rows[i].weight / totalrowweight;
+            totalrowheight += _rows[i].height;
+        } else {
+            _rows[i].height = _rows[i].maxh;
+        }
+    }
+    // fill V space
+    if (filly && totalrowheight < maxh) {
+        int extrah = (maxh - totalrowheight) / rowcount;
+        if (extrah > 0) {
+            for (int i = 0; i < rowcount; i++) {
+                _rows[i].height += extrah;
+            }
+        }
+    }
+    // finally measure cells with known row and col sizes
+    for (int row = 0; row < rowcount; row++) {
+        for (int col = 0; col < _colCount; col++) {
+            int i = row * _colCount + col;
+            Cell * cell = _cells[i];
+            if (i < getChildCount()) {
+                CRUIWidget * child = getChild(i);
+                child->measure(_cols[col].width, _rows[row].height);
+                cell->width = _cols[col].width;
+                cell->height = _rows[row].height;
+            }
+        }
+    }
+    // calc size
+    if (!totalcolweight && totalcolwidth < maxw)
+        sz.x = totalcolwidth;
+    else
+        sz.x = maxw;
+    if (!totalrowweight && totalrowheight < maxh)
+        sz.y = totalrowheight;
+    else
+        sz.y = maxh;
+    return sz;
+}
 
+/// measure dimensions
+void CRUITableLayout::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    lvRect padding;
+    getPadding(padding);
+    lvRect margin = getMargin();
+    int maxw = baseWidth;
+    int maxh = baseHeight;
+    if (getMaxWidth() != UNSPECIFIED && maxw > getMaxWidth())
+        maxw = getMaxWidth();
+    if (getMaxHeight() != UNSPECIFIED && maxh > getMaxHeight())
+        maxh = getMaxHeight();
+    maxw = maxw - (margin.left + margin.right + padding.left + padding.right);
+    maxh = maxh - (margin.top + margin.bottom + padding.top + padding.bottom);
+
+    LVArray<Col> _cols;
+    LVArray<Row> _rows;
+    lvPoint sz = layoutTable(_cols, _rows, maxw, maxh, getLayoutWidth() == FILL_PARENT, getLayoutHeight() == FILL_PARENT);
+    defMeasure(baseWidth, baseHeight, sz.x, sz.y);
+}
+
+/// updates widget position based on specified rectangle
+void CRUITableLayout::layout(int left, int top, int right, int bottom) {
+    _pos.left = left;
+    _pos.top = top;
+    _pos.right = right;
+    _pos.bottom = bottom;
+    if (!getChildCount())
+        return;
+    applyAlign(_pos, _measuredWidth, _measuredHeight);
+    lvRect clientRc = _pos;
+    applyMargin(clientRc);
+    applyPadding(clientRc);
+
+    lvRect childRc = clientRc;
+
+    LVArray<Col> _cols;
+    LVArray<Row> _rows;
+    layoutTable(_cols, _rows, childRc.width(), childRc.height(), true, true);
+
+    int rowcount = (getChildCount() + _colCount - 1) / _colCount;
+    int y = childRc.top;
+    // finally measure cells with known row and col sizes
+    for (int row = 0; row < rowcount; row++) {
+        int x = childRc.left;
+        for (int col = 0; col < _colCount; col++) {
+            int i = row * _colCount + col;
+            if (i < getChildCount()) {
+                CRUIWidget * child = getChild(i);
+                child->layout(x, y, x + _cols[col].width, y + _rows[row].height);
+            }
+            x += _cols[col].width;
+        }
+        y += _rows[row].height;
+    }
+}
 

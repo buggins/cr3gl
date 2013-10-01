@@ -51,6 +51,35 @@ public:
 	CRUIHorizontalLayout() : CRUILinearLayout(false) {}
 };
 
+class CRUITableLayout : public CRUIContainerWidget {
+protected:
+    int _colCount;
+    struct Col {
+        int width;
+        int maxw; // max width of non-FILL columns
+        bool fill; // has FILL_PARENT cell
+        int weight; // max weight of FILL_PARENT cell
+        Col() : width(0), maxw(-1), fill(false), weight(0) {}
+    };
+    struct Row {
+        int height;
+        int maxh; // max height of non-FILL columns
+        bool fill; // has FILL_PARENT cell
+        int weight; // max weight of FILL_PARENT cell
+        Row() : height(0), maxh(-1), fill(false), weight(0) {}
+    };
+
+
+    lvPoint layoutTable(LVArray<Col> &_cols, LVArray<Row> & _rows, int maxw, int maxh, bool fillx, bool filly);
+public:
+    /// creates table (multicolumn vertical) layout
+    CRUITableLayout(int colCount) : _colCount(colCount) { }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+};
+
 
 
 #endif /* CRUILAYOUT_H_ */

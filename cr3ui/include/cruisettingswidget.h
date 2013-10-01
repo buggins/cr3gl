@@ -225,15 +225,33 @@ public:
     virtual void layout(int left, int top, int right, int bottom);
 };
 
-class CRUIColorEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
+class CRUISettingsListItemWidget;
+class CRUIColorEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback, public CRUIOnClickListener {
 protected:
+    CRUISettingsCheckbox * _enableTextureSetting;
+    CRUISettingsListItemWidget * _checkbox;
     CRUISliderWidget * _sliderR;
     CRUISliderWidget * _sliderG;
     CRUISliderWidget * _sliderB;
+    CRUISliderWidget * _sliderRB;
+    CRUISliderWidget * _sliderGB;
+    CRUISliderWidget * _sliderBB;
+    CRUISliderWidget * _sliderRC;
+    CRUISliderWidget * _sliderGC;
+    CRUISliderWidget * _sliderBC;
+    CRUIVerticalLayout * _colorPane;
+    CRUIVerticalLayout * _colorCorrectionPane;
     CRUIFontSampleWidget * _sample;
 public:
     CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual ~CRUIColorEditorWidget() {
+        if (_enableTextureSetting)
+            delete _enableTextureSetting;
+    }
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onClick(CRUIWidget * widget);
+    void updateMode();
+
 };
 
 class CRUISettingsListItemWidget;

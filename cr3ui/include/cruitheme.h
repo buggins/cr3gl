@@ -104,6 +104,8 @@ namespace CRUI {
     };
 }
 
+
+
 class CRResourceResolver {
 	lString8Collection _dirList;
 	lString16 resourceToFileName(const char * res);
@@ -117,7 +119,7 @@ public:
     CRResourceResolver(lString8Collection & dirList)
         : _dirList(dirList), _imageSourceMap(1000),
         _iconMap(1000),
-        _iconColorTransformAdd(0x808080), _iconColorTransformMultiply(0x202020)
+        _iconColorTransformAdd(COLOR_TRANSFORM_BRIGHTNESS_NONE), _iconColorTransformMultiply(COLOR_TRANSFORM_CONTRAST_NONE)
     {
     }
     void setIconColorTransform(lUInt32 add, lUInt32 multiply = 0x202020) {

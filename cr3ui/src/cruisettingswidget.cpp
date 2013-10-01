@@ -201,24 +201,106 @@ void CRUIFontSizeEditorWidget::layout(int left, int top, int right, int bottom) 
     CRUISettingsEditor::layout(left, top, right, bottom);
 }
 
+static CRUISliderWidget * createColorSlider(const char * id, int value, CRUIOnScrollPosCallback * callback) {
+    CRUISliderWidget * _slider = new CRUISliderWidget(0, 255, value);
+    _slider->setId(id);
+    _slider->setPadding(PT_TO_PX(4));
+    _slider->setScrollPosCallback(callback);
+    return _slider;
+}
+
+static int brightnessSettingToSlider(CRPropRef props, int shift) {
+    lUInt32 color = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+    int v = (color >> shift) & 255;
+    return v;
+}
+
+static int contrastSettingToSlider(CRPropRef props, int shift) {
+    lUInt32 color = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+    int v = (color >> shift) & 255;
+    return v;
+}
+
+static void brightnessSettingFromSlider(CRPropRef props, int shift, int pos) {
+    lUInt32 color = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+    color = color & ~(255 << shift);
+    color = color | ((pos & 255) << shift);
+    props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, color);
+}
+
+static void contrastSettingFromSlider(CRPropRef props, int shift, int pos) {
+    lUInt32 color = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+    color = color & ~(255 << shift);
+    color = color | ((pos & 255) << shift);
+    props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, color);
+}
+
+bool CRUIColorEditorWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "ENABLE_TEXTURE") {
+        _enableTextureSetting->toggle(_props);
+        updateMode();
+    }
+    return true;
+}
+
+void CRUIColorEditorWidget::updateMode() {
+    bool textureEnabled = (_settings->getSettingId() == PROP_BACKGROUND_COLOR) && _props->getBoolDef(PROP_BACKGROUND_IMAGE_ENABLED, true);
+    if (textureEnabled) {
+        _colorPane->setVisibility(INVISIBLE);
+        _colorCorrectionPane->setVisibility(VISIBLE);
+    } else {
+        _colorPane->setVisibility(VISIBLE);
+        _colorCorrectionPane->setVisibility(INVISIBLE);
+    }
+    invalidate();
+}
 
 CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+
+    _colorPane = new CRUIVerticalLayout();
+    _colorCorrectionPane = new CRUIVerticalLayout();
     lUInt32 cl = props->getColorDef(setting->getSettingId().c_str(), 0);
-    _sliderR = new CRUISliderWidget(0, 255, ((cl >> 16) & 255));
-    _sliderR->setId("R");
-    _sliderR->setPadding(PT_TO_PX(4));
-    _sliderR->setScrollPosCallback(this);
-    _sliderG = new CRUISliderWidget(0, 255, ((cl >> 8) & 255));
-    _sliderG->setId("G");
-    _sliderG->setPadding(PT_TO_PX(4));
-    _sliderG->setScrollPosCallback(this);
-    _sliderB = new CRUISliderWidget(0, 255, ((cl >> 0) & 255));
-    _sliderB->setId("B");
-    _sliderB->setPadding(PT_TO_PX(4));
-    _sliderB->setScrollPosCallback(this);
-    addChild(_sliderR);
-    addChild(_sliderG);
-    addChild(_sliderB);
+
+
+
+    _sliderR = createColorSlider("R",((cl >> 16) & 255), this);
+    _sliderG = createColorSlider("G",((cl >> 8) & 255), this);
+    _sliderB = createColorSlider("B",((cl >> 0) & 255), this);
+
+    _colorPane->addChild(_sliderR);
+    _colorPane->addChild(_sliderG);
+    _colorPane->addChild(_sliderB);
+
+    if (setting->getSettingId() == PROP_BACKGROUND_COLOR) {
+        _enableTextureSetting = new CRUISettingsCheckbox(STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED, NULL, PROP_BACKGROUND_IMAGE_ENABLED, STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED_VALUE_ON, STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED_VALUE_OFF);
+        _checkbox = new CRUISettingsListItemWidget();
+        _checkbox->setId("ENABLE_TEXTURE");
+        _checkbox->setSetting(_enableTextureSetting, _props);
+        _checkbox->setOnClickListener(this);
+        addChild(_checkbox);
+
+        _sliderRB = createColorSlider("RB", brightnessSettingToSlider(_props, 16), this);
+        _sliderGB = createColorSlider("GB", brightnessSettingToSlider(_props, 8), this);
+        _sliderBB = createColorSlider("BB", brightnessSettingToSlider(_props, 0), this);
+        _sliderRC = createColorSlider("RC", contrastSettingToSlider(_props, 16), this);
+        _sliderGC = createColorSlider("GC", contrastSettingToSlider(_props, 8), this);
+        _sliderBC = createColorSlider("BC", contrastSettingToSlider(_props, 0), this);
+
+        _colorCorrectionPane->addChild(new CRUITextWidget(lString16("Color correction")));
+        CRUITableLayout * table = new CRUITableLayout(2);
+        table->addChild(new CRUITextWidget(lString16("Brightness"))); table->addChild(new CRUITextWidget(lString16("Contrast")));
+        table->addChild(_sliderRB); table->addChild(_sliderRC);
+        table->addChild(_sliderGB); table->addChild(_sliderGC);
+        table->addChild(_sliderBB); table->addChild(_sliderBC);
+        _colorCorrectionPane->addChild(table);
+    }
+
+
+    addChild(_colorPane);
+    addChild(_colorCorrectionPane);
+
+    _colorCorrectionPane->setVisibility(INVISIBLE);
+
     CRUITextWidget * separator = new CRUITextWidget(lString16(""));
     separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     separator->setPadding(PT_TO_PX(2));
@@ -231,6 +313,8 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _sample->setBackground(0xC0808080);
     _sample->setPadding(PT_TO_PX(3));
     addChild(_sample);
+
+    updateMode();
 }
 
 bool CRUIColorEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {

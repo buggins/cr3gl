@@ -95,7 +95,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 	if (!pointInside && !event->getWidget())
 		return false;
     int action = event->getAction();
-    if (widget->onTouchEventPreProcess(event)) {
+    if (widget->getVisibility() == VISIBLE && widget->onTouchEventPreProcess(event)) {
         if (action == ACTION_DOWN) {
             //CRLog::trace("setting widget on DOWN");
             if (!event->getWidget())
@@ -107,7 +107,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 	if (!event->getWidget()) { // if not not assigned on widget
 		for (int i=0; i<widget->getChildCount(); i++) {
 			CRUIWidget * child = widget->getChild(i);
-			if (dispatchTouchEvent(child, event)) {
+            if (child->getVisibility() == VISIBLE && dispatchTouchEvent(child, event)) {
 				if (action == ACTION_DOWN) {
 					//CRLog::trace("setting widget on DOWN");
 					if (!event->getWidget())
@@ -144,7 +144,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 		}
 	}
 	//CRLog::trace("calling widget->onTouchEvent");
-	bool res = widget->onTouchEvent(event);
+    bool res = widget->getVisibility() == VISIBLE && widget->onTouchEvent(event);
 	if (res && action == ACTION_FOCUS_OUT) // if FOCUS_OUT returned true - stop tracking movements outside
 		event->_data[0]->_isOutside = true;
 	if (pointInside)
