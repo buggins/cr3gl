@@ -6,6 +6,8 @@
  */
 
 #include "cruitheme.h"
+#include "cruisettings.h"
+
 using namespace CRUI;
 
 //==============================================================================================================
@@ -317,6 +319,37 @@ LVImageSourceRef CRResourceResolver::applyColorTransform(LVImageSourceRef src) {
     if (src.isNull() || (_iconColorTransformAdd == 0x808080 && _iconColorTransformMultiply == 0x202020))
         return src;
     return LVCreateColorTransformImageSource(src, _iconColorTransformAdd, _iconColorTransformMultiply);
+}
+
+const CRUIBackgroundImageResource * CRResourceResolver::findBackground(lString8 id) {
+    for (int i = 0; i < _backgroundResources.length(); i ++) {
+        if (_backgroundResources[i]->getId() == id)
+            return _backgroundResources[i];
+    }
+    return NULL;
+}
+
+CRUIImageRef CRResourceResolver::getBackgroundImage(CRPropRef props) {
+    bool textureEnabled = props->getBoolDef(PROP_BACKGROUND_IMAGE_ENABLED, true);
+    lString8 backgroundId = UnicodeToUtf8(props->getStringDef(PROP_BACKGROUND_IMAGE));
+    const CRUIBackgroundImageResource * res = findBackground(backgroundId);
+    if (textureEnabled && res) {
+        LVImageSourceRef img = getImageSource(res->getFileName().c_str());
+        if (!img.isNull()) {
+            lUInt32 brightness = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+            lUInt32 contrast = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+            return CRUIImageRef(new CRUIBitmapImage(LVCreateColorTransformImageSource(img, brightness, contrast), res->isNinePatch(), res->isTiled()));
+        }
+    }
+    lUInt32 bgColor = props->getColorDef(PROP_BACKGROUND_COLOR, 0);
+    return CRUIImageRef(new CRUISolidFillImage(bgColor, 1));
+}
+
+LVImageSourceRef CRResourceResolver::getBackgroundImageSource(lString8 id) {
+    const CRUIBackgroundImageResource * res = findBackground(id);
+    if (res)
+        return getImageSource(res->getFileName().c_str());
+    return LVImageSourceRef();
 }
 
 LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {

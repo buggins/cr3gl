@@ -341,9 +341,9 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_DAY, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_NIGHT, COLOR_TRANSFORM_CONTRAST_NONE);
 
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "paper1.jpg");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "paper1.jpg");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "paper1.jpg");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "@paper1");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@paper1");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@paper1");
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
     _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");

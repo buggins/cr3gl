@@ -7,6 +7,7 @@
 #include "cruitheme.h"
 #include "crui.h"
 #include "crcoverpages.h"
+#include "stringresource.h"
 
 using namespace CRUI;
 
@@ -327,6 +328,17 @@ void CRUIConfig::initEngine() {
         CRLog::error("Error while filling caches");
 
     CRSetupDirectoryCacheManager();
+
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER1), lString8("paper1.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper2"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric1"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC1), lString8("tx_fabric.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric2"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC2), lString8("tx_fabric_indigo_fibre.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand1"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND1), lString8("tx_sand.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand2"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND2), lString8("tx_gray_sand.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@wall1"), lString8(STR_RESOURCE_BACKGROUND_NAME_WALL1), lString8("tx_green_wall.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook1"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK1), lString8("tx_old_book.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook2"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK2), lString8("tx_old_paper.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
 
     createDefaultTheme();
 }

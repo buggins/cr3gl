@@ -131,20 +131,7 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     applyPadding(rc);
     // draw
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
-    lUInt32 bgColor = _props->getColorDef(PROP_BACKGROUND_COLOR, 0);
-    lString8 bgTexture = UnicodeToUtf8(_props->getBoolDef(PROP_BACKGROUND_IMAGE_ENABLED, true) ? _props->getStringDef(PROP_BACKGROUND_IMAGE) : lString16());
-    CRUIImageRef bgImage;
-    if (!bgTexture.empty()) {
-        LVImageSourceRef img = resourceResolver->getImageSource(bgTexture.c_str());
-        if (!img.isNull()) {
-            lUInt32 brightness = _props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
-            lUInt32 contrast = _props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
-            bgImage = CRUIImageRef(new CRUIBitmapImage(LVCreateColorTransformImageSource(img, brightness, contrast), false, true));
-        }
-    }
-    if (bgImage.isNull()) {
-        bgImage = CRUIImageRef(new CRUISolidFillImage(bgColor, 1));
-    }
+    CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
     int fontSize = _props->getIntDef(PROP_FONT_SIZE);
     lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
     lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);

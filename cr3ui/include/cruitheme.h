@@ -9,6 +9,7 @@
 #define CRUITHEME_H_
 
 #include <crengine.h>
+#include <cri18n.h>
 
 class CRUIImage {
 public:
@@ -106,6 +107,23 @@ namespace CRUI {
 
 
 
+class CRUIBackgroundImageResource {
+    lString8 id;
+    lString8 nameRes;
+    lString16 name;
+    lString8 fileName;
+    bool tiled;
+    bool ninePatch;
+public:
+    bool isTiled() const { return tiled; }
+    bool isNinePatch() const { return ninePatch; }
+    const lString8 & getId() const { return id; }
+    lString16 getName() const { return name.empty() ? _16(nameRes.c_str()) : name; }
+    const lString8 & getFileName() const { return fileName; }
+    CRUIBackgroundImageResource(lString8 _id, lString8 _nameRes, lString8 _fileName, bool _tiled = true) : id(_id), nameRes(_nameRes), fileName(_fileName), tiled(_tiled), ninePatch(_fileName.pos(".9")>=0) {}
+    CRUIBackgroundImageResource(lString8 _id, lString16 _name, lString8 _fileName, bool _tiled = true) : id(_id), name(_name), fileName(_fileName), tiled(_tiled), ninePatch(_fileName.pos(".9")>=0) {}
+};
+
 class CRResourceResolver {
 	lString8Collection _dirList;
 	lString16 resourceToFileName(const char * res);
@@ -113,8 +131,17 @@ class CRResourceResolver {
 	LVHashTable<lString8, CRUIImageRef> _iconMap;
     lUInt32 _iconColorTransformAdd;
     lUInt32 _iconColorTransformMultiply;
+
+    LVPtrVector<CRUIBackgroundImageResource> _backgroundResources;
+
     LVImageSourceRef applyColorTransform(LVImageSourceRef src);
 public:
+    void addBackground(CRUIBackgroundImageResource * res) { _backgroundResources.add(res); }
+    int backgroundCount() const { return _backgroundResources.length(); }
+    const CRUIBackgroundImageResource * getBackground(int index) { return _backgroundResources[index]; }
+    const CRUIBackgroundImageResource * findBackground(lString8 id);
+    LVImageSourceRef getBackgroundImageSource(lString8 id);
+    CRUIImageRef getBackgroundImage(CRPropRef props);
     void setDirList(lString8Collection & dirList);
     CRResourceResolver(lString8Collection & dirList)
         : _dirList(dirList), _imageSourceMap(1000),
