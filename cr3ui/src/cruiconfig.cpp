@@ -223,7 +223,7 @@ void CRUIConfig::createDefaultTheme() {
     CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
     settingsItemTitle->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
     //settingsItemTitle->setPadding(PT_TO_PX(2));
-    settingsItemTitle->setFontSize(FONT_SIZE_MEDIUM);
+    settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
     settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
     CRUIStyle * settingsItemLayout = currentTheme->addSubstyle("SETTINGS_ITEM_TEXT_LAYOUT");
     settingsItemLayout->setPadding(PT_TO_PX(2));

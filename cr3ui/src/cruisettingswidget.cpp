@@ -267,6 +267,14 @@ bool CRUIColorEditorWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "ENABLE_TEXTURE") {
         _enableTextureSetting->toggle(_props);
         _checkbox->setSetting(_enableTextureSetting, _props);
+        _props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+        _props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+        _sliderRB->setScrollPos(brightnessSettingToSlider(_props, 16));
+        _sliderGB->setScrollPos(brightnessSettingToSlider(_props, 8));
+        _sliderBB->setScrollPos(brightnessSettingToSlider(_props, 0));
+        _sliderRC->setScrollPos(contrastSettingToSlider(_props, 16));
+        _sliderGC->setScrollPos(contrastSettingToSlider(_props, 8));
+        _sliderBC->setScrollPos(contrastSettingToSlider(_props, 0));
         updateMode();
     }
     return true;
@@ -388,10 +396,11 @@ CRUIImageRef CRUIColorSetting::getValueIcon(CRPropRef props) const {
 }
 
 lString16 CRUIColorSetting::getDescription(CRPropRef props) const {
-    lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
-    char str[32];
-    sprintf(str, "#%06X", cl);
-    return Utf8ToUnicode(str);
+    return lString16();
+//    lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
+//    char str[32];
+//    sprintf(str, "#%06X", cl);
+//    return Utf8ToUnicode(str);
 }
 
 
@@ -419,8 +428,12 @@ CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef p
 bool CRUIBackgroundTextureEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
     CR_UNUSED(widget);
     const CRUIOptionItem * item = _settings->getOption(itemIndex);
+    if (item->getValue() == _currentValue)
+        return true;
     _currentValue = item->getValue();
     _props->setString(_settings->getSettingId().c_str(), _currentValue);
+    _props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+    _props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
     invalidate();
     return true;
 }
