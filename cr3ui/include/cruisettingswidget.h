@@ -142,6 +142,7 @@ public:
     /// create editor widget based on option type
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
     virtual bool hasCustomEditor() { return true; }
+    virtual CRUIImageRef getValueIcon(CRPropRef props) const;
 };
 
 class CRUIFontFaceSetting : public CRUISettingsOptionList {
@@ -232,6 +233,14 @@ protected:
     CRUIFontSampleWidget * _sample;
 public:
     CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+};
+
+class CRUIBackgroundTextureEditorWidget : public CRUISettingsOptionsListEditorWidget {
+protected:
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 

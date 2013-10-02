@@ -221,14 +221,16 @@ void CRUIConfig::createDefaultTheme() {
     settingsItem->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
     settingsItem->setMinHeight(MIN_ITEM_PX);
     CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
+    settingsItemTitle->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
     //settingsItemTitle->setPadding(PT_TO_PX(2));
-    settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
+    settingsItemTitle->setFontSize(FONT_SIZE_MEDIUM);
     settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
     CRUIStyle * settingsItemLayout = currentTheme->addSubstyle("SETTINGS_ITEM_TEXT_LAYOUT");
     settingsItemLayout->setPadding(PT_TO_PX(2));
     settingsItemLayout->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
     CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
     settingsItemIcon->setAlign(ALIGN_CENTER);
+    settingsItemIcon->setMargin(PT_TO_PX(3));
     CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
     settingsItemDescription->setFontSize(FONT_SIZE_SMALL);
     //settingsItemDescription->setPadding(PT_TO_PX(2));

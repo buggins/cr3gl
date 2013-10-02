@@ -55,6 +55,10 @@ public:
         _title->setText(_settings->getName());
         setDescription(_settings->getDescription(props));
         _righticon->setImage(_settings->getValueIcon(props));
+        _righticon->setMinWidth(MIN_ITEM_PX - PT_TO_PX(3));
+        _righticon->setMaxWidth(MIN_ITEM_PX - PT_TO_PX(3));
+        _righticon->setMinHeight(MIN_ITEM_PX - PT_TO_PX(3));
+        _righticon->setMaxHeight(MIN_ITEM_PX - PT_TO_PX(3));
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
 };
@@ -74,6 +78,11 @@ public:
         _lefticon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         _righticon = new CRUIImageWidget();
         _righticon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        _righticon->setMargin(PT_TO_PX(3));
+        _title->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        //_lefticon->setBackground(0x80FFFFFF);
+        //_title->setBackground(0x80C0C0C0);
+        //_righticon->setBackground(0x80A0A0A0);
         addChild(_lefticon);
         addChild(_title);
         addChild(_righticon);
@@ -89,14 +98,14 @@ public:
         _title->setText(_item->getName());
         _lefticon->setImage(isSelected ? "btn_radio_on" : "btn_radio_off");
         CRUIImageRef img = item->getRightImage();
+        int sz = MIN_ITEM_PX - PT_TO_PX(3*2);
+        _righticon->setMinWidth(sz);
+        _righticon->setMaxWidth(sz);
+        _righticon->setMinHeight(sz);
+        _righticon->setMaxHeight(sz);
         if (img.isNull()) {
             _righticon->setVisibility(GONE);
         } else {
-            int sz = MIN_ITEM_PX * 3 / 4;
-            _righticon->setMinWidth(sz);
-            _righticon->setMaxWidth(sz);
-            _righticon->setMinHeight(sz);
-            _righticon->setMinHeight(sz);
             _righticon->setVisibility(VISIBLE);
             _righticon->setImage(img);
         }
@@ -374,7 +383,7 @@ CRUISettingsEditor * CRUIColorSetting::createEditor(CRPropRef props) {
 
 CRUIImageRef CRUIColorSetting::getValueIcon(CRPropRef props) const {
     lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
-    CRUIImageRef img(new CRUISolidFillImage(cl, MIN_ITEM_PX * 2 / 3));
+    CRUIImageRef img(new CRUISolidFillImage(cl, MIN_ITEM_PX - PT_TO_PX(3)));
     return img;
 }
 
@@ -390,6 +399,33 @@ lString16 CRUIFontSizeSetting::getDescription(CRPropRef props) const {
     int sz = props->getIntDef(PROP_FONT_SIZE, 24);
     return formatFontSize(sz);
 }
+
+
+CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
+    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xC0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xC0808080);
+    _sample->setPadding(PT_TO_PX(3));
+    addChild(_sample);
+}
+
+bool CRUIBackgroundTextureEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    const CRUIOptionItem * item = _settings->getOption(itemIndex);
+    _currentValue = item->getValue();
+    _props->setString(_settings->getSettingId().c_str(), _currentValue);
+    invalidate();
+    return true;
+}
+
+
 
 
 CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
@@ -630,9 +666,14 @@ CRUISettingsEditor * CRUIFontSizeSetting::createEditor(CRPropRef props) {
 
 /// create editor widget based on option type
 CRUISettingsEditor * CRUIBackgroundTextureSetting::createEditor(CRPropRef props) {
-    return new CRUISettingsOptionsListEditorWidget(props, this);
+    return new CRUIBackgroundTextureEditorWidget(props, this);
 }
 
 CRUIImageRef CRUITextureOptionItem::getRightImage() const {
     return resourceResolver->getBackgroundImage(_resource->getId());
+}
+
+CRUIImageRef CRUIBackgroundTextureSetting::getValueIcon(CRPropRef props) const {
+    lString8 id = UnicodeToUtf8(props->getStringDef(PROP_BACKGROUND_IMAGE));
+    return resourceResolver->getBackgroundImage(id);
 }

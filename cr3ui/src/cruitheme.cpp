@@ -343,9 +343,10 @@ CRUIImageRef CRResourceResolver::getBackgroundImage(CRPropRef props) {
     if (textureEnabled && res) {
         LVImageSourceRef img = getImageSource(res->getFileName().c_str());
         if (!img.isNull()) {
-            lUInt32 brightness = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
-            lUInt32 contrast = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
-            return CRUIImageRef(new CRUIBitmapImage(LVCreateColorTransformImageSource(img, brightness, contrast), res->isNinePatch(), res->isTiled()));
+            return CRUIImageRef(new CRUIBitmapImage(img, res->isNinePatch(), res->isTiled()));
+//            lUInt32 brightness = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+//            lUInt32 contrast = props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+//            return CRUIImageRef(new CRUIBitmapImage(LVCreateColorTransformImageSource(img, brightness, contrast), res->isNinePatch(), res->isTiled()));
         }
     }
     lUInt32 bgColor = props->getColorDef(PROP_BACKGROUND_COLOR, 0);
