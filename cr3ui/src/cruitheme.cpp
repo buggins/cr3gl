@@ -329,6 +329,13 @@ const CRUIBackgroundImageResource * CRResourceResolver::findBackground(lString8 
     return NULL;
 }
 
+CRUIImageRef CRResourceResolver::getBackgroundImage(lString8 id) {
+    LVImageSourceRef img = getBackgroundImageSource(id);
+    if (img.isNull())
+        return CRUIImageRef();
+    return CRUIImageRef(new CRUIBitmapImage(img, img->GetNinePatchInfo() != NULL, true));
+}
+
 CRUIImageRef CRResourceResolver::getBackgroundImage(CRPropRef props) {
     bool textureEnabled = props->getBoolDef(PROP_BACKGROUND_IMAGE_ENABLED, true);
     lString8 backgroundId = UnicodeToUtf8(props->getStringDef(PROP_BACKGROUND_IMAGE));

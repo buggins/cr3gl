@@ -289,6 +289,11 @@ void CRUIMainWidget::createReaderSettings() {
     fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN, STR_SETTINGS_FONT_EMBOLDEN_VALUE_ON, STR_SETTINGS_FONT_EMBOLDEN_VALUE_OFF));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_FONT_COLOR, NULL, PROP_FONT_COLOR));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_BACKGROUND_COLOR, NULL, PROP_BACKGROUND_COLOR));
+    CRUIBackgroundTextureSetting * textures = new CRUIBackgroundTextureSetting(STR_SETTINGS_BACKGROUND_TEXTURE, NULL, PROP_BACKGROUND_IMAGE);
+    for (int i = 0; i < resourceResolver->backgroundCount(); i++) {
+        textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
+    }
+    fontsAndColors->addChild(textures);
 
     _readerSettings.addChild(fontsAndColors);
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);

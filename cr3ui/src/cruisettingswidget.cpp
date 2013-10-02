@@ -65,16 +65,21 @@ protected:
     CRUITextWidget * _title;
     //CRUITextWidget * _description;
     CRUIImageWidget * _lefticon;
+    CRUIImageWidget * _righticon;
 public:
     CRUIOptionListItemWidget() {
         _title = new CRUITextWidget();
         //_description = new CRUITextWidget();
         _lefticon = new CRUIImageWidget();
         _lefticon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        _righticon = new CRUIImageWidget();
+        _righticon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         addChild(_lefticon);
         addChild(_title);
+        addChild(_righticon);
         _title->setStyle("SETTINGS_ITEM_TITLE");
         _lefticon->setStyle("SETTINGS_ITEM_ICON");
+        _righticon->setStyle("SETTINGS_ITEM_ICON");
         //_description->setStyle("SETTINGS_ITEM_DESCRIPTION");
         setStyle("SETTINGS_ITEM");
     }
@@ -83,6 +88,18 @@ public:
         _item = item;
         _title->setText(_item->getName());
         _lefticon->setImage(isSelected ? "btn_radio_on" : "btn_radio_off");
+        CRUIImageRef img = item->getRightImage();
+        if (img.isNull()) {
+            _righticon->setVisibility(GONE);
+        } else {
+            int sz = MIN_ITEM_PX * 3 / 4;
+            _righticon->setMinWidth(sz);
+            _righticon->setMaxWidth(sz);
+            _righticon->setMinHeight(sz);
+            _righticon->setMinHeight(sz);
+            _righticon->setVisibility(VISIBLE);
+            _righticon->setImage(img);
+        }
         //_description->setText(_item->getDescription());
     }
     virtual ~CRUIOptionListItemWidget() {}
@@ -526,6 +543,10 @@ lString16 CRUIOptionItem::getName() const {
     return _name.empty() ? _16(_nameRes.c_str()) : _name;
 }
 
+lString16 CRUITextureOptionItem::getName() const {
+    return _resource->getName();
+}
+
 const CRUIOptionItem * CRUISettingsOptionList::findOption(lString8 value) const {
     if (value.empty())
         return NULL;
@@ -605,4 +626,13 @@ CRUISettingsEditor * CRUISettingsList::createEditor(CRPropRef props) {
 /// create editor widget based on option type
 CRUISettingsEditor * CRUIFontSizeSetting::createEditor(CRPropRef props) {
     return new CRUIFontSizeEditorWidget(props, this);
+}
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIBackgroundTextureSetting::createEditor(CRPropRef props) {
+    return new CRUISettingsOptionsListEditorWidget(props, this);
+}
+
+CRUIImageRef CRUITextureOptionItem::getRightImage() const {
+    return resourceResolver->getBackgroundImage(_resource->getId());
 }

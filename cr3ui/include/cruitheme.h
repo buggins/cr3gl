@@ -122,6 +122,7 @@ public:
     const lString8 & getFileName() const { return fileName; }
     CRUIBackgroundImageResource(lString8 _id, lString8 _nameRes, lString8 _fileName, bool _tiled = true) : id(_id), nameRes(_nameRes), fileName(_fileName), tiled(_tiled), ninePatch(_fileName.pos(".9")>=0) {}
     CRUIBackgroundImageResource(lString8 _id, lString16 _name, lString8 _fileName, bool _tiled = true) : id(_id), name(_name), fileName(_fileName), tiled(_tiled), ninePatch(_fileName.pos(".9")>=0) {}
+    CRUIBackgroundImageResource(const CRUIBackgroundImageResource & v) : id(v.id), nameRes(v.nameRes), name(v.name), fileName(v.fileName), tiled(v.tiled), ninePatch(v.ninePatch) {}
 };
 
 class CRResourceResolver {
@@ -142,6 +143,7 @@ public:
     const CRUIBackgroundImageResource * findBackground(lString8 id);
     LVImageSourceRef getBackgroundImageSource(lString8 id);
     CRUIImageRef getBackgroundImage(CRPropRef props);
+    CRUIImageRef getBackgroundImage(lString8 id);
     void setDirList(lString8Collection & dirList);
     CRResourceResolver(lString8Collection & dirList)
         : _dirList(dirList), _imageSourceMap(1000),

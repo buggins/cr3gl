@@ -87,6 +87,7 @@ public:
 
 /// option item for option list setting
 class CRUIOptionItem {
+protected:
     lString8 _value;
     lString8 _nameRes;
     lString16 _name;
@@ -94,8 +95,20 @@ public:
     CRUIOptionItem(lString8 value, lString8 nameRes) : _value(value), _nameRes(nameRes) {}
     CRUIOptionItem(const char * value, const char * nameRes) : _value(value), _nameRes(nameRes) {}
     CRUIOptionItem(lString8 value, lString16 name) : _value(value), _name(name) {}
-    lString16 getName() const;
-    const lString8 & getValue() const { return _value; }
+    virtual lString16 getName() const;
+    virtual const lString8 & getValue() const { return _value; }
+    virtual CRUIImageRef getRightImage() const { return CRUIImageRef(); }
+    virtual ~CRUIOptionItem() {}
+};
+
+/// option item for option list setting
+class CRUITextureOptionItem : public CRUIOptionItem {
+    CRUIBackgroundImageResource * _resource;
+public:
+    CRUITextureOptionItem(const CRUIBackgroundImageResource * item) : CRUIOptionItem(item->getId(), item->getName()), _resource(new CRUIBackgroundImageResource(*item)) {}
+    virtual CRUIImageRef getRightImage() const;
+    virtual lString16 getName() const;
+    virtual ~CRUITextureOptionItem() { delete _resource; }
 };
 
 class CRUISettingsOptionList : public CRUISettingsItem {
@@ -120,6 +133,15 @@ public:
 
     }
     virtual ~CRUISettingsOptionList() {}
+};
+
+class CRUIBackgroundTextureSetting : public CRUISettingsOptionList {
+public:
+    CRUIBackgroundTextureSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsOptionList(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
 };
 
 class CRUIFontFaceSetting : public CRUISettingsOptionList {
