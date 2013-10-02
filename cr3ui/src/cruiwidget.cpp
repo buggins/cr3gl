@@ -123,6 +123,48 @@ bool CRUIWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
 bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
 	if (_onTouchListener != NULL)
 		return _onTouchListener->onTouch(this, event);
+    if (_onClickListener != NULL) {
+        /// motion event handler, returns true if it handled event
+        int action = event->getAction();
+        CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+        switch (action) {
+        case ACTION_DOWN:
+            setState(STATE_PRESSED, STATE_PRESSED);
+            //CRLog::trace("button DOWN");
+            break;
+        case ACTION_UP:
+            {
+                setState(0, STATE_PRESSED);
+                bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+                if (isLong && onLongClickEvent())
+                    return true;
+                onClickEvent();
+            }
+            // fire onclick
+            //CRLog::trace("button UP");
+            break;
+        case ACTION_FOCUS_IN:
+            setState(STATE_PRESSED, STATE_PRESSED);
+            //CRLog::trace("button FOCUS IN");
+            break;
+        case ACTION_FOCUS_OUT:
+            setState(0, STATE_PRESSED);
+            //CRLog::trace("button FOCUS OUT");
+            break;
+        case ACTION_CANCEL:
+            setState(0, STATE_PRESSED);
+            //CRLog::trace("button CANCEL");
+            break;
+        case ACTION_MOVE:
+            // ignore
+            //CRLog::trace("button MOVE");
+            break;
+        default:
+            // do nothing
+            break;
+        }
+        return true;
+    }
 	return false;
 }
 

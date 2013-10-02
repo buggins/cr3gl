@@ -132,12 +132,27 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     // draw
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
     lUInt32 bgColor = _props->getColorDef(PROP_BACKGROUND_COLOR, 0);
-    lString16 bgTexture = _props->getStringDef(PROP_BACKGROUND_IMAGE);
+    lString8 bgTexture = UnicodeToUtf8(_props->getBoolDef(PROP_BACKGROUND_IMAGE_ENABLED, true) ? _props->getStringDef(PROP_BACKGROUND_IMAGE) : lString16());
+    CRUIImageRef bgImage;
+    if (!bgTexture.empty()) {
+        LVImageSourceRef img = resourceResolver->getImageSource(bgTexture.c_str());
+        if (!img.isNull()) {
+            lUInt32 brightness = _props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+            lUInt32 contrast = _props->getColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
+            bgImage = CRUIImageRef(new CRUIBitmapImage(LVCreateColorTransformImageSource(img, brightness, contrast), false, true));
+        }
+    }
+    if (bgImage.isNull()) {
+        bgImage = CRUIImageRef(new CRUISolidFillImage(bgColor, 1));
+    }
     int fontSize = _props->getIntDef(PROP_FONT_SIZE);
     lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
     lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
     SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
-    buf->FillRect(rc, bgColor);
+
+    // draw background
+    bgImage->draw(buf, rc, 0, 0);
+    // draw text
     fmt.draw(*buf, rc, 0, 0);
 }
 
@@ -238,6 +253,7 @@ static void contrastSettingFromSlider(CRPropRef props, int shift, int pos) {
 bool CRUIColorEditorWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "ENABLE_TEXTURE") {
         _enableTextureSetting->toggle(_props);
+        _checkbox->setSetting(_enableTextureSetting, _props);
         updateMode();
     }
     return true;
@@ -260,8 +276,6 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _colorPane = new CRUIVerticalLayout();
     _colorCorrectionPane = new CRUIVerticalLayout();
     lUInt32 cl = props->getColorDef(setting->getSettingId().c_str(), 0);
-
-
 
     _sliderR = createColorSlider("R",((cl >> 16) & 255), this);
     _sliderG = createColorSlider("G",((cl >> 8) & 255), this);
@@ -333,6 +347,18 @@ bool CRUIColorEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos
     if (widget->getId() == "B")
         cl = (cl & 0xFFFF00) | (pos << 0);
     _props->setColor(_settings->getSettingId().c_str(), cl);
+    if (widget->getId() == "RB")
+        brightnessSettingFromSlider(_props, 16, pos);
+    else if (widget->getId() == "GB")
+        brightnessSettingFromSlider(_props, 8, pos);
+    else if (widget->getId() == "BB")
+        brightnessSettingFromSlider(_props, 0, pos);
+    else if (widget->getId() == "RC")
+        contrastSettingFromSlider(_props, 16, pos);
+    else if (widget->getId() == "GC")
+        contrastSettingFromSlider(_props, 8, pos);
+    else if (widget->getId() == "BC")
+        contrastSettingFromSlider(_props, 0, pos);
     _sample->invalidate();
     return true;
 }
