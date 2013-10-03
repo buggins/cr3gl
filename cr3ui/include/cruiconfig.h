@@ -64,6 +64,14 @@ struct CRUIConfig {
     LVPtrVector<CRUIInterfaceLanguage> interfaceLanguages;
     LVPtrVector<CRUIHyphenationDictionary> hyphenationDictionaries;
 
+    bool setHyphenationDictionary(lString8 id, lString8 fallbackId);
+
+    void setInterfaceLanguage(lString8 id);
+
+    CRUIHyphenationDictionary * findHyphenationDictionary(lString8 id);
+
+    CRUIInterfaceLanguage * findInterfaceLanguage(lString8 id);
+
     /// sets resourceDir, i18ndir, hyphdir
     void setupResources(lString8 baseDir);
 

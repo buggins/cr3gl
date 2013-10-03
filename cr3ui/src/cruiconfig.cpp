@@ -9,6 +9,7 @@
 #include "crcoverpages.h"
 #include "stringresource.h"
 #include "cruisettings.h"
+#include "hyphman.h"
 
 using namespace CRUI;
 
@@ -326,7 +327,7 @@ void CRUIConfig::initEngine() {
 
     // I18N
     CRIniFileTranslator * fallbackTranslator = CRIniFileTranslator::create((i18nDir + "en.ini").c_str());
-    CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create((i18nDir + "ru.ini").c_str());
+    CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create((i18nDir + "en.ini").c_str());
     CRI18NTranslator::setTranslator(mainTranslator);
     CRI18NTranslator::setDefTranslator(fallbackTranslator);
 
@@ -356,7 +357,62 @@ void CRUIConfig::initEngine() {
     createDefaultTheme();
 }
 
+bool CRUIConfig::setHyphenationDictionary(lString8 id, lString8 fallbackId) {
+    if (id == PROP_HYPHENATION_DICT_VALUE_NONE) {
+        HyphMan::activateDictionary(lString16(HYPH_DICT_ID_NONE));
+        return true;
+    }
+    if (id == PROP_HYPHENATION_DICT_VALUE_ALGORITHM) {
+        HyphMan::activateDictionary(lString16(HYPH_DICT_ID_ALGORITHM));
+        return true;
+    }
+    CRUIHyphenationDictionary * dict = findHyphenationDictionary(id);
+    if (!dict && id.length() > 2) {
+        id = id.substr(0, 2);
+        dict = findHyphenationDictionary(id);
+    }
+    if (!dict)
+        dict = findHyphenationDictionary(fallbackId);
+    if (!dict && fallbackId.length() > 2) {
+        fallbackId = fallbackId.substr(0, 2);
+        dict = findHyphenationDictionary(fallbackId);
+    }
+    if (!dict) {
+        return false;
+    }
+    LVStreamRef stream = LVOpenFileStream(dict->fileName.c_str(), LVOM_READ);
+    if (stream.isNull())
+        return false;
+    return HyphMan::activateDictionaryFromStream(stream);
+}
 
+CRUIHyphenationDictionary * CRUIConfig::findHyphenationDictionary(lString8 id) {
+    for (int i = 0; i < hyphenationDictionaries.length(); i++) {
+        if (hyphenationDictionaries[i]->id == id)
+            return hyphenationDictionaries[i];
+    }
+    return NULL;
+}
+
+CRUIInterfaceLanguage * CRUIConfig::findInterfaceLanguage(lString8 id) {
+    if (id == PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM)
+        id = systemLanguage;
+    for (int i = 0; i < interfaceLanguages.length(); i++) {
+        if (interfaceLanguages[i]->id == id)
+            return interfaceLanguages[i];
+    }
+    return NULL;
+}
+
+void CRUIConfig::setInterfaceLanguage(lString8 id) {
+    CRUIInterfaceLanguage * lang = findInterfaceLanguage(id);
+    if (!lang)
+        lang = findInterfaceLanguage(lString8("en"));
+    if (lang) {
+        CRIniFileTranslator * mainTranslator = CRIniFileTranslator::create(lang->fileName.c_str());
+        CRI18NTranslator::setTranslator(mainTranslator);
+    }
+}
 
 void CRUIConfig::uninitEngine() {
     CRStopCoverpageManager();

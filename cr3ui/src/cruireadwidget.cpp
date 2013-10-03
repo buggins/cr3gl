@@ -315,28 +315,7 @@ bool setHyph(lString8 bookLang, lString8 settingsLang) {
         return false;
     lastBookLang = bookLang;
     lastSettingsLang = settingsLang;
-    LVStreamRef stream;
-    if (!bookLang.empty()) {
-        stream = LVOpenFileStream((crconfig.hyphDir + bookLang + ".pattern").c_str(), LVOM_READ);
-    }
-    if (stream.isNull() && bookLang.length() > 2) {
-        bookLang = bookLang.substr(0, 2);
-        stream = LVOpenFileStream((crconfig.hyphDir + bookLang + ".pattern").c_str(), LVOM_READ);
-    }
-    if (stream.isNull() && !settingsLang.empty() && settingsLang[0] != '@') {
-        stream = LVOpenFileStream((crconfig.hyphDir + settingsLang + ".pattern").c_str(), LVOM_READ);
-        if (stream.isNull() && settingsLang.length() > 2) {
-            settingsLang = settingsLang.substr(0, 2);
-            stream = LVOpenFileStream((crconfig.hyphDir + settingsLang + ".pattern").c_str(), LVOM_READ);
-        }
-    }
-    if (stream.isNull() && settingsLang[0] != '@')
-        settingsLang = UnicodeToUtf8(HYPH_DICT_ID_NONE);
-    if (!stream.isNull()) {
-        return HyphMan::activateDictionaryFromStream(stream);
-    } else {
-        return HyphMan::activateDictionary(Utf8ToUnicode(settingsLang));
-    }
+    return crconfig.setHyphenationDictionary(bookLang, settingsLang);
 }
 
 bool CRUIReadWidget::openBook(const CRFileItem * file) {
@@ -690,6 +669,11 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         }
         if (key == PROP_BACKGROUND_COLOR || key == PROP_BACKGROUND_IMAGE || key == PROP_BACKGROUND_IMAGE_ENABLED || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST)
             backgroundChanged = true;
+        if (key == PROP_HYPHENATION_DICT) {
+            setHyph(lastBookLang, value);
+            _docview->requestRender();
+            invalidate();
+        }
     }
     if (backgroundChanged) {
         _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));

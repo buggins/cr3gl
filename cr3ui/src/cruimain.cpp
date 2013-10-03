@@ -465,6 +465,11 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         lString8 key(_newSettings->getName(i));
         lString16 oldValue = _currentSettings->getStringDef(key.c_str());
         lString16 newValue = _newSettings->getValue(i);
+        if (key == PROP_APP_INTERFACE_LANGUAGE) {
+            lString8 lang = UnicodeToUtf8(newValue);
+            crconfig.setInterfaceLanguage(lang);
+            requestLayout();
+        }
     }
     _currentSettings->set(_newSettings);
     saveSettings();
