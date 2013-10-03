@@ -237,7 +237,7 @@ void CRUIConfig::createDefaultTheme() {
     settingsItemDescription->setAlign(ALIGN_BOTTOM | ALIGN_LEFT);
 
 
-    resourceResolver->setIconColorTransform(0x898480, 0x28241E);
+    resourceResolver->setIconColorTransform(0x948880, 0x404040);
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image
     lvRect hardcoverNeutralRect(60, 12, 300, 20); // area with neutral color
