@@ -50,7 +50,7 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     LVAppendPathDelimiter(cssDir);
     interfaceLanguages.add(new CRUIInterfaceLanguage(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM, STR_INTERFACE_LANGUAGE_VALUE_SYSTEM, lString8()));
     interfaceLanguages.add(new CRUIInterfaceLanguage("en", STR_INTERFACE_LANGUAGE_VALUE_EN, i18nDir + "en.ini"));
-    interfaceLanguages.add(new CRUIInterfaceLanguage("ru", STR_INTERFACE_LANGUAGE_VALUE_EN, i18nDir + "ru.ini"));
+    interfaceLanguages.add(new CRUIInterfaceLanguage("ru", STR_INTERFACE_LANGUAGE_VALUE_RU, i18nDir + "ru.ini"));
     hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_NONE, PROP_HYPHENATION_DICT_VALUE_NONE, STR_HYPHENATION_DICTIONARY_VALUE_NONE, lString8()));
     hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_ALGORITHM, PROP_HYPHENATION_DICT_VALUE_ALGORITHM, STR_HYPHENATION_DICTIONARY_VALUE_ALGORITHM, lString8()));
     hyphenationDictionaries.add(new CRUIHyphenationDictionary("en", "en", STR_HYPHENATION_DICTIONARY_VALUE_EN, hyphDir + "en.pattern"));

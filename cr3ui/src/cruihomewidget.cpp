@@ -24,8 +24,8 @@ class CRUIMainWidget;
 class CRUINowReadingWidget : public CRUILinearLayout {
     CRCoverWidget * _cover;
 	CRUILinearLayout * _captionLayout;
-	CRUILinearLayout * _layout;
-	CRUIImageRef _coverImage;
+    CRUILinearLayout * _buttonLayout;
+    CRUIImageRef _coverImage;
 	CRUIButton * _menuButton;
 	CRUITextWidget * _caption;
 	CRUITextWidget * _title;
@@ -42,24 +42,28 @@ public:
         //_cover->setBackground(0xC0808000);
         //_cover->setBackground("home_frame.9.png");
 		addChild(_cover);
-		_layout = new CRUILinearLayout(true);
-		addChild(_layout);
-		_captionLayout = new CRUILinearLayout(false);
-		_menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
+        _buttonLayout = new CRUILinearLayout(true);
+        _captionLayout = new CRUILinearLayout(true);
+        _captionLayout->setBackground(0x80C0C0C0);
+        addChild(_captionLayout);
+        _menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
         _menuButton->setOnClickListener(home);
         _menuButton->setId("MENU");
+        _menuButton->setAlign(ALIGN_TOP | ALIGN_LEFT);
+        _buttonLayout->addChild(_menuButton);
+        CRUIWidget * spacer = new CRUIWidget();
+        spacer->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
+        _buttonLayout->addChild(spacer);
         _caption = new CRUITextWidget(STR_NOW_READING);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
         //_caption->setBackground(0xE0404040);
 		_caption->setAlign(ALIGN_LEFT|ALIGN_TOP);
-		_caption->setPadding(PT_TO_PX(4));
+        _caption->setPadding(PT_TO_PX(5));
         _caption->setStyle("HOME_LIST_CAPTION");
 		_captionLayout->addChild(_caption);
-		_captionLayout->addChild(_menuButton);
         _captionLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 
-		_layout->addChild(_captionLayout);
 		lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
 		_title = new CRUITextWidget(lString16(L"War and Peace"));
 		_title->setFontSize(FONT_SIZE_MEDIUM);
@@ -78,17 +82,18 @@ public:
         spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(1);
         CRUIWidget * spacer2 = new CRUIWidget();
         spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(2);
-        _layout->addChild(spacer1);
-        _layout->addChild(_authors);
-		_layout->addChild(_title);
-		_layout->addChild(_info);
-        _layout->addChild(spacer2);
+        _captionLayout->addChild(spacer1);
+        _captionLayout->addChild(_authors);
+        _captionLayout->addChild(_title);
+        _captionLayout->addChild(_info);
+        _captionLayout->addChild(spacer2);
 
 //		_layout->addChild(testButton);
 
-		_layout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+        _captionLayout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 
-	}
+        addChild(_buttonLayout);
+    }
 
     void onThemeChanged() {
         _cover->setMargin(PT_TO_PX(4));
