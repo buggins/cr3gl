@@ -396,6 +396,7 @@ CRUIImageRef CRUIColorSetting::getValueIcon(CRPropRef props) const {
 }
 
 lString16 CRUIColorSetting::getDescription(CRPropRef props) const {
+    CR_UNUSED(props);
     return lString16();
 //    lUInt32 cl = props->getColorDef(getSettingId().c_str(), 0);
 //    char str[32];

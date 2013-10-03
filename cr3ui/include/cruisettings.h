@@ -18,6 +18,8 @@
 #define PROP_APP_THEME_NIGHT "app.ui.theme.night"
 #define PROP_APP_LOCALE "app.locale.name"
 #define PROP_NIGHT_MODE "crengine.night.mode"
+#define PROP_APP_INTERFACE_LANGUAGE "app.ui.lang"
+#define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
 
 //#define PROP_FONT_COLOR "font.color.default"
 #define PROP_FONT_COLOR_DAY        "font.color.day"

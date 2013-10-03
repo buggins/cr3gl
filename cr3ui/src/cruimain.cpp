@@ -270,8 +270,14 @@ void CRUIMainWidget::createBrowserSettings() {
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+    CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
+    for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
+        CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
+        uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
+    }
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(themes);
+    _browserSettings.addChild(uilangs);
 }
 
 void CRUIMainWidget::createReaderSettings() {
@@ -294,8 +300,22 @@ void CRUIMainWidget::createReaderSettings() {
         textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
     }
     fontsAndColors->addChild(textures);
-
     _readerSettings.addChild(fontsAndColors);
+
+    CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
+    for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
+        CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
+        uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
+    }
+    _readerSettings.addChild(uilangs);
+
+    CRUISettingsOptionList * hyph = new CRUISettingsOptionList(STR_SETTINGS_HYPHENATION_DICTIONARY, NULL, PROP_HYPHENATION_DICT);
+    for (int i = 0; i < crconfig.hyphenationDictionaries.length(); i++) {
+        CRUIHyphenationDictionary * dict = crconfig.hyphenationDictionaries[i];
+        hyph->addOption(new CRUIOptionItem(dict->id.c_str(), dict->nameRes.c_str()));
+    }
+    _readerSettings.addChild(hyph);
+
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
@@ -318,6 +338,8 @@ CRUIMainWidget::CRUIMainWidget()
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
+    _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);
+    _currentSettings->setStringDef(PROP_HYPHENATION_DICT, "en");
     _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);

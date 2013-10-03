@@ -8,6 +8,7 @@
 #include "crui.h"
 #include "crcoverpages.h"
 #include "stringresource.h"
+#include "cruisettings.h"
 
 using namespace CRUI;
 
@@ -43,6 +44,16 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     crconfig.i18nDir = baseDir + "i18n";
     crconfig.hyphDir = baseDir + "hyph";
     crconfig.cssDir = baseDir + "hyph";
+    LVAppendPathDelimiter(i18nDir);
+    LVAppendPathDelimiter(hyphDir);
+    LVAppendPathDelimiter(cssDir);
+    interfaceLanguages.add(new CRUIInterfaceLanguage(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM, STR_INTERFACE_LANGUAGE_VALUE_SYSTEM, lString8()));
+    interfaceLanguages.add(new CRUIInterfaceLanguage("en", STR_INTERFACE_LANGUAGE_VALUE_EN, i18nDir + "en.ini"));
+    interfaceLanguages.add(new CRUIInterfaceLanguage("ru", STR_INTERFACE_LANGUAGE_VALUE_EN, i18nDir + "ru.ini"));
+    hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_NONE, PROP_HYPHENATION_DICT_VALUE_NONE, STR_HYPHENATION_DICTIONARY_VALUE_NONE, lString8()));
+    hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_ALGORITHM, PROP_HYPHENATION_DICT_VALUE_ALGORITHM, STR_HYPHENATION_DICTIONARY_VALUE_ALGORITHM, lString8()));
+    hyphenationDictionaries.add(new CRUIHyphenationDictionary("en", "en", STR_HYPHENATION_DICTIONARY_VALUE_EN, hyphDir + "en.pattern"));
+    hyphenationDictionaries.add(new CRUIHyphenationDictionary("ru", "ru", STR_HYPHENATION_DICTIONARY_VALUE_RU, hyphDir + "ru.pattern"));
 }
 
 static int nearestIconSize(int sz) {
@@ -355,4 +366,16 @@ void CRUIConfig::uninitEngine() {
         delete bookDB;
         bookDB = NULL;
     }
+}
+
+lString16 CRUIInterfaceLanguage::getName() {
+    if (nameRes.empty())
+        return name;
+    return _16(nameRes.c_str());
+}
+
+lString16 CRUIHyphenationDictionary::getName() {
+    if (nameRes.empty())
+        return name;
+    return _16(nameRes.c_str());
 }

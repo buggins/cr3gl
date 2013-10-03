@@ -2,6 +2,32 @@
 #define CRUICONFIG_H
 
 #include <lvstring.h>
+#include <lvptrvec.h>
+
+struct CRUIInterfaceLanguage {
+    lString8 id;
+    lString8 nameRes;
+    lString16 name;
+    lString8 fileName;
+    lString16 getName();
+    CRUIInterfaceLanguage(const char * _id, const char * _nameRes, lString8 _fileName)
+        : id(_id), nameRes(_nameRes), fileName(_fileName) {
+
+    }
+};
+
+struct CRUIHyphenationDictionary {
+    lString8 id;
+    lString8 langCode;
+    lString8 nameRes;
+    lString16 name;
+    lString8 fileName;
+    lString16 getName();
+    CRUIHyphenationDictionary(const char * _id, const char * _langCode, const char * _nameRes, lString8 _fileName)
+        : id(_id), langCode(_langCode), nameRes(_nameRes), fileName(_fileName) {
+
+    }
+};
 
 struct CRUIConfig {
     lString8 logFile;
@@ -35,8 +61,12 @@ struct CRUIConfig {
     /// separate font files to register
     lString8Collection fontFiles;
 
+    LVPtrVector<CRUIInterfaceLanguage> interfaceLanguages;
+    LVPtrVector<CRUIHyphenationDictionary> hyphenationDictionaries;
+
     /// sets resourceDir, i18ndir, hyphdir
     void setupResources(lString8 baseDir);
+
     void createDefaultTheme();
     /// sets coverCache, docCache, iniFile, dbFile
     void setupUserDir(lString8 baseDir);

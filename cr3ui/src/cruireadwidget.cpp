@@ -678,6 +678,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
 
 // apply changed settings
 void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) {
+    CR_UNUSED(oldSettings);
     CRPropRef docviewprops = LVCreatePropsContainer();
     bool backgroundChanged = false;
     for (int i = 0; i < changed->getCount(); i++) {
