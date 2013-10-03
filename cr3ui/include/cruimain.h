@@ -255,7 +255,7 @@ public:
     // apply changed settings
     void applySettings();
     // apply changed settings
-    void applySettings(CRPropRef changed);
+    void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings);
     CRUISettingsList * findSettings(lString8 path);
 
     CRRunnable * createUpdateCallback();

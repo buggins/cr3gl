@@ -86,7 +86,7 @@ public:
     }
 
     // apply changed settings
-    virtual void applySettings(CRPropRef changed) { CR_UNUSED(changed); }
+    virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) { CR_UNUSED3(changed, oldSettings, newSettings); }
 };
 
 class CRUITitleBarWidget : public CRUILinearLayout {

@@ -133,7 +133,7 @@ public:
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 
     // apply changed settings
-    virtual void applySettings(CRPropRef changed);
+    virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings);
 
 
     bool onTapZone(int zone, bool additionalAction);

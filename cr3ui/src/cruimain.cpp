@@ -24,9 +24,9 @@ void CRUIMainWidget::onThemeChanged()
 {
     if (!_history.length()) {
         _home = new CRUIHomeWidget(this);
-        _home->applySettings(_currentSettings);
+        _home->applySettings(_currentSettings, _currentSettings, _currentSettings);
         _read = new CRUIReadWidget(this);
-        _read->applySettings(_currentSettings);
+        _read->applySettings(_currentSettings, _currentSettings, _currentSettings);
         _history.add(new HomeItem(this, _home));
         return;
     } else {
@@ -430,15 +430,15 @@ void CRUIMainWidget::applySettings() {
         if (oldValue != newValue)
             diff->setString(_newSettings->getName(i), _newSettings->getValue(i));
     }
-    applySettings(diff);
+    applySettings(diff, _currentSettings, _newSettings);
 }
 
 // apply changed settings
-void CRUIMainWidget::applySettings(CRPropRef changed) {
+void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) {
     if (changed.isNull() || changed->getCount() == 0)
         return; // no changes
     for (int i = 0; i < _history.length(); i++)
-        _history[i]->getWidget()->applySettings(changed);
+        _history[i]->getWidget()->applySettings(changed, oldSettings, newSettings);
     for (int i = 0; i <_newSettings->getCount(); i++) {
         lString8 key(_newSettings->getName(i));
         lString16 oldValue = _currentSettings->getStringDef(key.c_str());
