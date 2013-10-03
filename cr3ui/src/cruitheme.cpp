@@ -7,6 +7,7 @@
 
 #include "cruitheme.h"
 #include "cruisettings.h"
+#include "crui.h"
 
 using namespace CRUI;
 
@@ -81,6 +82,272 @@ CRUIStyle * CRUITheme::find(const lString8 &id) {
 	return this;
 }
 
+class CRUIThemeParser : public LVXMLParserCallback
+{
+protected:
+    CRUITheme * theme;
+    CRUIStyle * style;
+public:
+    CRUIThemeParser(CRUITheme * _theme) : theme(_theme), style(NULL)
+    {
+    }
+    /// called on parsing end
+    virtual void OnStop() { }
+    /// called on opening tag end
+    virtual void OnTagBody() {}
+    /// called on opening tag
+    virtual ldomNode * OnTagOpen( const lChar16 * nsname, const lChar16 * tagname)
+    {
+        CR_UNUSED(nsname);
+        if (!lStr_cmp(tagname, "theme")) {
+            style = theme;
+        } else if (!lStr_cmp(tagname, "style")) {
+            if (style)
+                style = style->addSubstyle(lString8());
+        }
+        return NULL;
+    }
+    /// called on closing
+    virtual void OnTagClose( const lChar16 * nsname, const lChar16 * tagname )
+    {
+        CR_UNUSED(nsname);
+        if (!lStr_cmp(tagname, "theme")) {
+            style = NULL;
+        } else if (!lStr_cmp(tagname, "style")) {
+            if (style && style != theme) {
+                if (!style->getStateMask() && style->getStateValue())
+                    style->setStateMask(style->getStateValue());
+                if (!style->styleId().empty() && style != theme) {
+                    theme->registerStyle(style);
+                }
+                style = style->getParentStyle();
+                if (!style)
+                    style = theme;
+            }
+        }
+    }
+
+    static bool split(lString8 str, lString8Collection & result, lString8 delimiter = lString8(",")) {
+        result.split(str, delimiter);
+        for (int i = 0; i < result.length(); i++) {
+            result[i] = result[i].trim();
+        }
+        return result.length() > 0;
+    }
+
+    static lUInt8 parseState(lString8 str) {
+        lUInt8 res = 0;
+        if (str.pos("disabled") >= 0)
+            res |= STATE_DISABLED;
+        if (str.pos("focused") >= 0)
+            res |= STATE_FOCUSED;
+        if (str.pos("pressed") >= 0)
+            res |= STATE_PRESSED;
+        return res;
+    }
+
+    static int parseLayoutParam(lString8 str) {
+        if (str == "fillParent" || str == "FILL_PARENT")
+            return FILL_PARENT;
+        return WRAP_CONTENT;
+    }
+
+    static int parseSize(lString8 str) {
+        int result = 0;
+        if (str == "unspecified" || str.empty())
+            return UNSPECIFIED;
+        if (str.endsWith("pt")) {
+            result = str.substr(0, str.length() - 2).atoi();
+            return PT_TO_PX(result);
+        }
+        if (str.endsWith("mm")) {
+            result = str.substr(0, str.length() - 2).atoi();
+            return MM_TO_PX(result);
+        }
+        if (str.endsWith("px")) {
+            return str.substr(0, str.length() - 2).atoi();
+        }
+        if (str.endsWith("%")) {
+            return str.substr(0, str.length() - 1).atoi() * deviceInfo.shortSide / 100;
+        }
+        if (str.endsWith("%mi")) { // % of min item size
+            return str.substr(0, str.length() - 1).atoi() * MIN_ITEM_PX / 100;
+        }
+        return str.atoi();
+    }
+
+    static int parseAlign(lString8 str) {
+        int res = 0;
+        lString8Collection list;
+        split(str, list, lString8("|"));
+        for (int i = 0; i < list.length(); i++) {
+            lString8 s = list[i];
+            if (s == "left")
+                res |= ALIGN_LEFT;
+            else if (s == "right")
+                res |= ALIGN_RIGHT;
+            else if (s == "hcenter")
+                res |= ALIGN_HCENTER;
+            else if (s == "top")
+                res |= ALIGN_TOP;
+            else if (s == "bottom")
+                res |= ALIGN_BOTTOM;
+            else if (s == "vcenter")
+                res |= ALIGN_VCENTER;
+            else if (s == "center")
+                res |= ALIGN_CENTER;
+        }
+        return res;
+    }
+
+    /// called on element attribute
+    virtual void OnAttribute( const lChar16 * nsname, const lChar16 * attrname, const lChar16 * attrvalue )
+    {
+        CR_UNUSED(nsname);
+        if (!style)
+            return;
+        lString8 value = UnicodeToUtf8(attrvalue);
+        lString16 value16(attrvalue);
+        lString8Collection list;
+        if (!lStr_cmp(attrname, "id")) {
+            style->setStyleId(value);
+        } else if (!lStr_cmp(attrname, "state")) {
+            style->setStateValue(parseState(value));
+        } else if (!lStr_cmp(attrname, "stateMask")) {
+            style->setStateMask(parseState(value));
+        } else if (!lStr_cmp(attrname, "minWidth")) {
+            style->setMinWidth(parseSize(value));
+        } else if (!lStr_cmp(attrname, "maxWidth")) {
+            style->setMaxWidth(parseSize(value));
+        } else if (!lStr_cmp(attrname, "minHeight")) {
+            style->setMinHeight(parseSize(value));
+        } else if (!lStr_cmp(attrname, "maxHeight")) {
+            style->setMaxHeight(parseSize(value));
+        } else if (!lStr_cmp(attrname, "layoutParams")) {
+            split(value, list);
+            if (list.length() == 2) {
+                style->setLayoutParams(parseLayoutParam(list[0]), parseLayoutParam(list[1]));
+            }
+        } else if (!lStr_cmp(attrname, "margin")) {
+            split(value, list);
+            if (list.length() == 4) {
+                lvRect rc(parseSize(list[0]), parseSize(list[1]), parseSize(list[2]), parseSize(list[3]));
+                style->setMargin(rc);
+            } else if (list.length() == 1) {
+                style->setMargin(parseSize(list[0]));
+            }
+        } else if (!lStr_cmp(attrname, "padding")) {
+            split(value, list);
+            if (list.length() == 4) {
+                lvRect rc(parseSize(list[0]), parseSize(list[1]), parseSize(list[2]), parseSize(list[3]));
+                style->setPadding(rc);
+            } else if (list.length() == 1) {
+                style->setPadding(parseSize(list[0]));
+            }
+        } else if (!lStr_cmp(attrname, "align")) {
+            style->setAlign(parseAlign(value));
+        } else if (!lStr_cmp(attrname, "fontSize")) {
+            if (value == "xsmall")
+                style->setFontSize(FONT_SIZE_XSMALL);
+            else if (value == "small")
+                style->setFontSize(FONT_SIZE_SMALL);
+            else if (value == "medium")
+                style->setFontSize(FONT_SIZE_MEDIUM);
+            else if (value == "large")
+                style->setFontSize(FONT_SIZE_LARGE);
+            else if (value == "xlarge")
+                style->setFontSize(FONT_SIZE_XLARGE);
+            else {
+                style->setFontSize(parseSize(value));
+            }
+        } else if (!lStr_cmp(attrname, "textColor")) {
+            lUInt32 cl;
+            if (CRPropAccessor::parseColor(value16, cl))
+                style->setTextColor(cl);
+        } else if (!lStr_cmp(attrname, "background")) {
+            lUInt32 cl;
+            if (CRPropAccessor::parseColor(value16, cl)) {
+                style->setBackground(cl);
+                return;
+            }
+            bool tiled = false;
+            if (value.endsWith("|tiled")) {
+                value = value.substr(0, value.length() - 6); // remove |tiled
+                tiled = true;
+            }
+            style->setBackground(value.c_str(), tiled);
+        } else if (!lStr_cmp(attrname, "background2")) {
+            lUInt32 cl;
+            if (CRPropAccessor::parseColor(value16, cl)) {
+                style->setBackground2(cl);
+                return;
+            }
+            bool tiled = false;
+            if (value.endsWith("|tiled")) {
+                value = value.substr(0, value.length() - 6); // remove |tiled
+                tiled = true;
+            }
+            style->setBackground2(value.c_str(), tiled);
+        } else if (!lStr_cmp(attrname, "listDelimiterHorizontal")) {
+            if (value.startsWith("#")) {
+                split(value,list);
+                int sz = 1;
+                if (list.length() > 1)
+                    sz = parseSize(list[1]);
+                lUInt32 cl;
+                if (CRPropAccessor::parseColor(Utf8ToUnicode(list[0]), cl)) {
+                    style->setListDelimiterHorizontal(CRUIImageRef(new CRUISolidFillImage(cl, sz)));
+                    return;
+                }
+            }
+            style->setListDelimiterHorizontal(value.c_str());
+        } else if (!lStr_cmp(attrname, "listDelimiterVertical")) {
+            if (value.startsWith("#")) {
+                split(value,list);
+                int sz = 1;
+                if (list.length() > 1)
+                    sz = parseSize(list[1]);
+                lUInt32 cl;
+                if (CRPropAccessor::parseColor(Utf8ToUnicode(list[0]), cl)) {
+                    style->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(cl, sz)));
+                    return;
+                }
+            }
+            style->setListDelimiterVertical(value.c_str());
+        }
+    }
+    /// called on text
+    virtual void OnText( const lChar16 * text, int len, lUInt32 flags )
+    {
+        CR_UNUSED3(text, len, flags);
+    }
+    /// add named BLOB data to document
+    virtual bool OnBlob(lString16 name, const lUInt8 * data, int size) {
+        CR_UNUSED3(name, data, size);
+        return false;
+    }
+
+};
+
+
+
+/// reads theme from XML file
+bool CRUITheme::loadFromFile(lString8 fileName) {
+
+    LVStreamRef stream = LVOpenFileStream(fileName.c_str(), LVOM_READ);
+    if (stream.isNull())
+        return false;
+
+    CRUIThemeParser reader(this);
+    LVXMLParser parser( stream, &reader );
+    if ( !parser.CheckFormat() )
+        return false;
+    if ( !parser.Parse() )
+        return false;
+    return _substyles.length() > 0;
+}
+
+
 
 CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 stateValue) :
 		_theme(theme), _styleId(id),
@@ -89,6 +356,7 @@ CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 st
 		_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL),
 		_stateMask(stateMask), _stateValue(stateValue),
 		_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
+        _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
 		_align(ALIGN_TOP_LEFT)
 {
 
@@ -148,6 +416,14 @@ int CRUIStyle::getMaxWidth()
 int CRUIStyle::getMinWidth()
 {
 	return _minWidth;
+}
+
+int CRUIStyle::getLayoutWidth() {
+    return _layoutWidth;
+}
+
+int CRUIStyle::getLayoutHeight() {
+    return _layoutHeight;
 }
 
 CRUIImageRef CRUIStyle::getListDelimiterHorizontal() {

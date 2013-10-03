@@ -65,12 +65,12 @@ namespace CRUI {
 		FILL_PARENT  = 0x40000000,
 		WRAP_CONTENT = 0x20000000,
 		UNSPECIFIED  = 0x10000000,
-		PARENT_COLOR = 0xFFAAAAAA,
+        PARENT_COLOR = 0xFFAAAAAA
 	};
 	enum CRUIWidgetState {
 		STATE_DISABLED = 1,
 		STATE_FOCUSED = 2,
-		STATE_PRESSED = 4,
+        STATE_PRESSED = 4
 	};
 	// font sizes
 	enum CRUIFontSizeOption {
@@ -80,7 +80,7 @@ namespace CRUI {
 		FONT_SIZE_MEDIUM = 253,
 		FONT_SIZE_LARGE = 254,
 		FONT_SIZE_XLARGE = 255,
-		FONT_USE_PARENT = 249,
+        FONT_USE_PARENT = 249
 	};
 
 	enum CRUIAlignmentOption {
@@ -192,6 +192,8 @@ protected:
 	int _maxWidth;
 	int _minHeight;
 	int _maxHeight;
+    int _layoutWidth;
+    int _layoutHeight;
 	lUInt32 _align;
 	lString8 _listDelimiterHorizontal;
 	lString8 _listDelimiterVertical;
@@ -204,14 +206,20 @@ public:
 	CRUIStyle(CRUITheme * theme, lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
 	virtual ~CRUIStyle();
 	virtual CRUITheme * getTheme() { return _theme; }
-	virtual CRUIStyle * addSubstyle(lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
+    CRUIStyle * getParentStyle() { return _parentStyle; }
+    void setStyleId(lString8 id) { _styleId = id; }
+    virtual CRUIStyle * addSubstyle(lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
 	virtual CRUIStyle * addSubstyle(const char * id = NULL, lUInt8 stateMask = 0, lUInt8 stateValue = 0) {
 		return addSubstyle(lString8(id), stateMask, stateValue);
 	}
 	virtual CRUIStyle * addSubstyle(lUInt8 stateMask, lUInt8 stateValue) {
 		return addSubstyle(lString8::empty_str, stateMask, stateValue);
 	}
-	/// try finding substyle for state, return this style if matching substyle is not found
+    void setStateMask(lUInt8 mask) { _stateMask = mask; }
+    void setStateValue(lUInt8 value) { _stateValue = value; }
+    lUInt8 getStateMask() { return _stateMask; }
+    lUInt8 getStateValue() { return _stateValue; }
+    /// try finding substyle for state, return this style if matching substyle is not found
 	virtual CRUIStyle * find(lUInt8 stateValue);
 	/// try to find style by id starting from this style, then substyles recursively, return NULL if not found
 	virtual CRUIStyle * find(const lString8 &id);
@@ -219,6 +227,11 @@ public:
 
 	virtual void setStateFilter(lUInt8 mask, lUInt8 value) { _stateMask = mask; _stateValue = value; }
 
+    CRUIStyle * setLayoutParams(int width, int height) {
+        _layoutWidth = (width == CRUI::FILL_PARENT ? CRUI::FILL_PARENT : (width == CRUI::WRAP_CONTENT ? CRUI::WRAP_CONTENT : CRUI::UNSPECIFIED));
+        _layoutHeight = (height == CRUI::FILL_PARENT ? CRUI::FILL_PARENT : (height == CRUI::WRAP_CONTENT ? CRUI::WRAP_CONTENT : CRUI::UNSPECIFIED));
+        return this;
+    }
     CRUIStyle * setPadding(const lvRect & padding) { _padding = padding; return this; }
     CRUIStyle * setPadding(int w) { _padding.left = _padding.top = _padding.right = _padding.bottom = w; return this; }
     CRUIStyle * setMargin(const lvRect & margin) { _margin = margin; return this; }
@@ -233,6 +246,8 @@ public:
 	virtual int getMaxHeight();
 	virtual int getMaxWidth();
 	virtual int getMinWidth();
+    virtual int getLayoutWidth();
+    virtual int getLayoutHeight();
 
 	virtual CRUIStyle * setFontSize(lUInt8 fontSize) { _fontSize = fontSize; return this; }
 	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
@@ -272,6 +287,8 @@ public:
 	CRUIStyle * setFontForSize(lUInt8 size, LVFontRef font);
 	LVFontRef getFontForSize(lUInt8 size);
 	CRUITheme(lString8 name);
+    /// reads theme from XML file
+    bool loadFromFile(lString8 fileName);
 };
 
 extern CRUITheme * currentTheme;

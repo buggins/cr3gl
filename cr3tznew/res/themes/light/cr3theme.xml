@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme
+    id="light"
+    description="Light"
+    textColor="#000000"
+>
+    <style
+        id="BUTTON"
+        fontSize="large"
+        background="btn_default_normal.9"
+    >
+        <style
+            state="pressed" stateMask="pressed"
+            background="btn_default_pressed.9"
+        />
+        <style
+            state="focused" stateMask="focused"
+            background="btn_default_selected.9"
+        />
+        <style
+            state="disabled" stateMask="disabled"
+            textColor="0x80000000"
+        />
+    </style>
+
+</theme>
