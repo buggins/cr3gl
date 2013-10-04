@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme
-    id="dark"
-    description="Dark"
-    textColor="#FFFFC0"
+    id="light"
+    description="Light"
+    textColor="#000000"
 >
-
-    <color id="ICON_COLOR_TRANSFORM_BRIGHTNESS" value="0xC0B0A0"/>
+    <color id="ICON_COLOR_TRANSFORM_BRIGHTNESS" value="0x948880"/>
     <color id="ICON_COLOR_TRANSFORM_CONTRAST" value="0x404040"/>
     <style
         id="BUTTON"
@@ -22,7 +21,7 @@
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80FFFFFF"
+            textColor="0x80000000"
         />
     </style>
     <style
@@ -31,15 +30,15 @@
     >
         <style
             state="pressed" stateMask="pressed"
-            background="0xC0404000"
+            background="0xC0C0C080"
         />
         <style
             state="focused" stateMask="focused"
-            background="0xE0404000"
+            background="0xE0C0C080"
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80FFFFFF"
+            textColor="0x80000000"
         />
     </style>
     <style
@@ -49,43 +48,43 @@
     >
         <style
             state="pressed" stateMask="pressed"
-            background="0x40404000"
+            background="0x40C0C080"
         />
         <style
             state="focused" stateMask="focused"
-            background="0x40404000"
+            background="0x40C0C080"
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80404000"
+            textColor="0x80000000"
         />
     </style>
 
     <style
         id = "HOME_WIDGET"
-        background="tx_wood_dark_v3.jpg|tiled"
+        background="#FFFFFF"
         background2="list_shadow_vertical.9"
     />
     <style
         id = "FILE_LIST"
-        background="tx_wood_dark_v3.jpg|tiled"
+        background="#FFFFFF"
         background2="list_shadow_vertical.9"
-        listDelimiterVertical="divider_dark_v3"
+        listDelimiterVertical="#C0808080,2pt"
     />
     <style
         id = "HOME_LIST_CAPTION"
-        textColor="0x00FFE0C0"
+        textColor="0x00402000"
         fontSize="small"
     />
     <style
         id = "TOOL_BAR"
-        background="tx_wood_dark_v3.jpg|tiled"
+        background="#FFFFFF"
         background2="toolbar_shadow.9"
         fontSize="small"
     />
     <style
         id = "POPUP_FRAME"
-        background="tx_wood_dark_v3.jpg|tiled"
+        background="#E0E0E0"
         background2="toolbar_shadow.9"
         padding="2pt"
     />
@@ -98,16 +97,11 @@
     />
     <style
         id = "MENU_LIST"
-        listDelimiterVertical="divider_dark_v3"
+        listDelimiterVertical="#C0808080,2pt"
     />
     <style
         id = "MENU_ITEM"
         padding="0pt"
-    />
-    <style
-        id = "MENU_ITEM"
-        padding="0pt"
-        margin="0pt"
     />
     <style
         id = "MENU_ITEM_ICON"
@@ -124,12 +118,12 @@
     />
     <style
         id = "SETTINGS_WIDGET"
-        background="tx_wood_dark_v3.jpg|tiled"
+        background="#FFFFFF"
         background2="list_shadow_vertical.9"
     />
     <style
         id = "MENU_LIST"
-        listDelimiterVertical="divider_dark_v3"
+        listDelimiterVertical="#C0808080,2pt"
     />
     <style
         id = "SETTINGS_ITEM_LIST"

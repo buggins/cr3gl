@@ -4,6 +4,8 @@
     description="Light"
     textColor="#000000"
 >
+    <color id="ICON_COLOR_TRANSFORM_BRIGHTNESS" value="0x948880"/>
+    <color id="ICON_COLOR_TRANSFORM_CONTRAST" value="0x404040"/>
     <style
         id="BUTTON"
         fontSize="large"
@@ -102,19 +104,14 @@
         padding="0pt"
     />
     <style
-        id = "MENU_ITEM"
-        padding="0pt"
-        margin="0pt"
-    />
-    <style
         id = "MENU_ITEM_ICON"
         padding="0pt"
-        margin="1pt"
+        margin="2pt"
         align="center"
     />
     <style
         id = "MENU_ITEM_TEXT"
-        padding="0pt"
+        padding="2pt"
         margin="2pt"
         fontSize="medium"
         align="left|vcenter"

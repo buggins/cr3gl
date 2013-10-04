@@ -16,10 +16,12 @@ using namespace CRUI;
 
 CRUITheme * currentTheme = NULL;
 
-CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100)
+CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(100)
 {
 	_theme = this;
 	_align = ALIGN_LEFT | ALIGN_TOP;
+    setColor(lString8(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), 0x948880);
+    setColor(lString8(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST), 0x404040);
 }
 
 LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
@@ -87,8 +89,11 @@ class CRUIThemeParser : public LVXMLParserCallback
 protected:
     CRUITheme * theme;
     CRUIStyle * style;
+    lString8 colorId;
+    lString8 colorValue;
+    bool insideColor;
 public:
-    CRUIThemeParser(CRUITheme * _theme) : theme(_theme), style(NULL)
+    CRUIThemeParser(CRUITheme * _theme) : theme(_theme), style(NULL), insideColor(false)
     {
     }
     /// called on parsing end
@@ -104,6 +109,10 @@ public:
         } else if (!lStr_cmp(tagname, "style")) {
             if (style)
                 style = style->addSubstyle(lString8());
+        } else if (!lStr_cmp(tagname, "color")) {
+            colorId.clear();
+            colorValue.clear();
+            insideColor = true;
         }
         return NULL;
     }
@@ -124,6 +133,13 @@ public:
                 if (!style)
                     style = theme;
             }
+        } else if (!lStr_cmp(tagname, "color")) {
+            if (!colorId.empty() && !colorValue.empty()) {
+                lUInt32 cl;
+                if (CRPropAccessor::parseColor(Utf8ToUnicode(colorValue), cl))
+                    theme->setColor(colorId, cl);
+            }
+            insideColor = false;
         }
     }
 
@@ -209,6 +225,14 @@ public:
         lString8 value = UnicodeToUtf8(attrvalue);
         lString16 value16(attrvalue);
         lString8Collection list;
+        if (insideColor) {
+            if (!lStr_cmp(attrname, "id")) {
+                colorId = value;
+            } else if (!lStr_cmp(attrname, "value")) {
+                colorValue = value;
+            }
+            return;
+        }
         if (!lStr_cmp(attrname, "id")) {
             style->setStyleId(value);
         } else if (!lStr_cmp(attrname, "state")) {

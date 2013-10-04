@@ -264,7 +264,7 @@ void CRUIConfig::loadTheme(lString8 theme) {
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
 
-    resourceResolver->setIconColorTransform(0x948880, 0x404040);
+    resourceResolver->setIconColorTransform(currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST));
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image
     lvRect hardcoverNeutralRect(60, 12, 300, 20); // area with neutral color

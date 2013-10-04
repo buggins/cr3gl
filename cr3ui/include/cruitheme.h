@@ -274,6 +274,9 @@ public:
 	virtual CRUIStyle * setAlign(lUInt32 align) { _align = align; return this; }
 };
 
+#define COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS "ICON_COLOR_TRANSFORM_BRIGHTNESS"
+#define COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST "ICON_COLOR_TRANSFORM_BRIGHTNESS"
+
 class CRUITheme : public CRUIStyle {
 protected:
 	LVFontRef _fontXSmall;
@@ -281,12 +284,23 @@ protected:
 	LVFontRef _fontLarge;
 	LVFontRef _fontXLarge;
 	LVHashTable<lString8, CRUIStyle *> _map;
+    LVHashTable<lString8, lUInt32> _colors;
 public:
 	virtual CRUIStyle * find(const lString8 &id);
 	void registerStyle(CRUIStyle * style);
 	CRUIStyle * setFontForSize(lUInt8 size, LVFontRef font);
 	LVFontRef getFontForSize(lUInt8 size);
 	CRUITheme(lString8 name);
+    void setColor(lString8 id, lUInt32 value) {
+        _colors.set(id, value);
+    }
+    lUInt32 getColor(lString8 id) {
+        return _colors.get(id);
+    }
+    lUInt32 getColor(const char * id) {
+        return _colors.get(lString8(id));
+    }
+
     /// reads theme from XML file
     bool loadFromFile(lString8 fileName);
 };
