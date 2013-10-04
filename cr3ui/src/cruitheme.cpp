@@ -289,11 +289,13 @@ public:
             }
             style->setBackground2(value.c_str(), tiled);
         } else if (!lStr_cmp(attrname, "listDelimiterHorizontal")) {
-            if (value.startsWith("#")) {
+            if (value.startsWith("#") || value.startsWith("0x")) { // color[,size]
                 split(value,list);
                 int sz = 1;
                 if (list.length() > 1)
                     sz = parseSize(list[1]);
+                if (sz < 1)
+                    sz = 1;
                 lUInt32 cl;
                 if (CRPropAccessor::parseColor(Utf8ToUnicode(list[0]), cl)) {
                     style->setListDelimiterHorizontal(CRUIImageRef(new CRUISolidFillImage(cl, sz)));
@@ -302,11 +304,13 @@ public:
             }
             style->setListDelimiterHorizontal(value.c_str());
         } else if (!lStr_cmp(attrname, "listDelimiterVertical")) {
-            if (value.startsWith("#")) {
+            if (value.startsWith("#") || value.startsWith("0x")) { // color[,size]
                 split(value,list);
                 int sz = 1;
                 if (list.length() > 1)
                     sz = parseSize(list[1]);
+                if (sz < 1)
+                    sz = 1;
                 lUInt32 cl;
                 if (CRPropAccessor::parseColor(Utf8ToUnicode(list[0]), cl)) {
                     style->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(cl, sz)));
@@ -333,6 +337,7 @@ public:
 
 /// reads theme from XML file
 bool CRUITheme::loadFromFile(lString8 fileName) {
+    CRLog::info("Loading theme %s", fileName.c_str());
 
     LVStreamRef stream = LVOpenFileStream(fileName.c_str(), LVOM_READ);
     if (stream.isNull())

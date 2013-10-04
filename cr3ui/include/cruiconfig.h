@@ -38,6 +38,8 @@ struct CRUIConfig {
     lString8 coverCacheDir;
     lString8 docCacheDir;
     lString8 i18nDir;
+    lString8 themesDir;
+    lString8 currentThemeDir;
     lString8 uiFontFace;
     lString8 fallbackFontFace;
     lString8 monoFontFace;
@@ -75,7 +77,8 @@ struct CRUIConfig {
     /// sets resourceDir, i18ndir, hyphdir
     void setupResources(lString8 baseDir);
 
-    void createDefaultTheme();
+    /// loads theme from themesDirectory + "/" + theme + "/cr3theme.xml"; pass empty string to reload current theme
+    void loadTheme(lString8 theme);
     /// sets coverCache, docCache, iniFile, dbFile
     void setupUserDir(lString8 baseDir);
 

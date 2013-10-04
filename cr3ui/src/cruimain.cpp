@@ -379,7 +379,7 @@ CRUIMainWidget::CRUIMainWidget()
     }
     createBrowserSettings();
     createReaderSettings();
-    onThemeChanged();
+    applySettings(_currentSettings, _currentSettings, _currentSettings);
 }
 
 CRUIMainWidget::~CRUIMainWidget() {
@@ -459,21 +459,28 @@ void CRUIMainWidget::applySettings() {
 void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) {
     if (changed.isNull() || changed->getCount() == 0)
         return; // no changes
+    bool themeChanged = false;
     for (int i = 0; i < _history.length(); i++)
         _history[i]->getWidget()->applySettings(changed, oldSettings, newSettings);
-    for (int i = 0; i <_newSettings->getCount(); i++) {
-        lString8 key(_newSettings->getName(i));
-        lString16 oldValue = _currentSettings->getStringDef(key.c_str());
-        lString16 newValue = _newSettings->getValue(i);
+    for (int i = 0; i <changed->getCount(); i++) {
+        lString8 key(changed->getName(i));
+        lString16 oldValue = oldSettings->getStringDef(key.c_str());
+        lString16 newValue = changed->getValue(i);
         if (key == PROP_APP_INTERFACE_LANGUAGE) {
             lString8 lang = UnicodeToUtf8(newValue);
             crconfig.setInterfaceLanguage(lang);
             requestLayout();
         }
+        if (key == PROP_APP_THEME) {
+            crconfig.loadTheme(UnicodeToUtf8(newValue));
+            themeChanged = true;
+        }
     }
-    _currentSettings->set(_newSettings);
+    _currentSettings->set(LVClonePropsContainer(newSettings));
     saveSettings();
     invalidate();
+    if (themeChanged)
+        onThemeChanged();
 }
 
 void CRUIMainWidget::saveSettings() {

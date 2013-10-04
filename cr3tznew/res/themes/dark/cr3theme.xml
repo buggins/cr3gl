@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme
-    id="light"
-    description="Light"
-    textColor="#000000"
+    id="dark"
+    description="Dark"
+    textColor="#FFFFFF"
 >
     <style
         id="BUTTON"
@@ -19,7 +19,7 @@
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80000000"
+            textColor="0x80FFFFFF"
         />
     </style>
     <style
@@ -36,7 +36,7 @@
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80000000"
+            textColor="0x80FFFFFF"
         />
     </style>
     <style
@@ -54,35 +54,35 @@
         />
         <style
             state="disabled" stateMask="disabled"
-            textColor="0x80000000"
+            textColor="0x80FFFFFF"
         />
     </style>
 
     <style
         id = "HOME_WIDGET"
-        background="tx_wood_v3.jpg|tiled"
+        background="tx_wood_dark_v3.jpg|tiled"
         background2="list_shadow_vertical.9"
     />
     <style
         id = "FILE_LIST"
-        background="tx_wood_v3.jpg|tiled"
+        background="tx_wood_dark_v3.jpg|tiled"
         background2="list_shadow_vertical.9"
-        listDelimiterVertical="divider_light_v3"
+        listDelimiterVertical="divider_dark_v3"
     />
     <style
         id = "HOME_LIST_CAPTION"
-        textColor="0x00402000"
+        textColor="0x00FFE0C0"
         fontSize="small"
     />
     <style
         id = "TOOL_BAR"
-        background="tx_wood_v3.jpg|tiled"
+        background="tx_wood_dark_v3.jpg|tiled"
         background2="toolbar_shadow.9"
         fontSize="small"
     />
     <style
         id = "POPUP_FRAME"
-        background="tx_wood_v3.jpg|tiled"
+        background="tx_wood_dark_v3.jpg|tiled"
         background2="toolbar_shadow.9"
         padding="2pt"
     />
@@ -95,7 +95,7 @@
     />
     <style
         id = "MENU_LIST"
-        listDelimiterVertical="divider_light_v3"
+        listDelimiterVertical="divider_dark_v3"
     />
     <style
         id = "MENU_ITEM"
@@ -121,12 +121,12 @@
     />
     <style
         id = "SETTINGS_WIDGET"
-        background="tx_wood_v3.jpg|tiled"
+        background="tx_wood_dark_v3.jpg|tiled"
         background2="list_shadow_vertical.9"
     />
     <style
         id = "MENU_LIST"
-        listDelimiterVertical="divider_light_v3"
+        listDelimiterVertical="divider_dark_v3"
     />
     <style
         id = "SETTINGS_ITEM_LIST"

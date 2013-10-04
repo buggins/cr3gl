@@ -39,12 +39,9 @@ public:
         //int coverSize = deviceInfo.shortSide / 4;
         _cover = new CRCoverWidget(_home->getMain(), NULL, 75, 100);
         _cover->setMargin(PT_TO_PX(4));
-        //_cover->setBackground(0xC0808000);
-        //_cover->setBackground("home_frame.9.png");
 		addChild(_cover);
         _buttonLayout = new CRUILinearLayout(true);
         _captionLayout = new CRUILinearLayout(true);
-        _captionLayout->setBackground(0x80C0C0C0);
         addChild(_captionLayout);
         _menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
         _menuButton->setOnClickListener(home);
@@ -57,7 +54,6 @@ public:
         _caption = new CRUITextWidget(STR_NOW_READING);
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
-        //_caption->setBackground(0xE0404040);
 		_caption->setAlign(ALIGN_LEFT|ALIGN_TOP);
         _caption->setPadding(PT_TO_PX(5));
         _caption->setStyle("HOME_LIST_CAPTION");
@@ -75,9 +71,6 @@ public:
 		_info->setFontSize(FONT_SIZE_SMALL);
 		_info->setPadding(pad);
 
-//		CRUIButton * testButton = new CRUIButton(lString16(), "ic_menu_more");
-//		testButton->setMinWidth(100);
-
         CRUIWidget * spacer1 = new CRUIWidget();
         spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(1);
         CRUIWidget * spacer2 = new CRUIWidget();
@@ -87,8 +80,6 @@ public:
         _captionLayout->addChild(_title);
         _captionLayout->addChild(_info);
         _captionLayout->addChild(spacer2);
-
-//		_layout->addChild(testButton);
 
         _captionLayout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 

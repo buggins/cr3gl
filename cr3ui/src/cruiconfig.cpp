@@ -41,13 +41,17 @@ void CRUIConfig::setupUserDir(lString8 baseDir) {
 void CRUIConfig::setupResources(lString8 baseDir) {
     LVAppendPathDelimiter(baseDir);
     CRLog::info("Setting up resources directory: %s", baseDir.c_str());
-    crconfig.resourceDir = baseDir;
-    crconfig.i18nDir = baseDir + "i18n";
-    crconfig.hyphDir = baseDir + "hyph";
-    crconfig.cssDir = baseDir + "hyph";
+    resourceDir = baseDir;
+    i18nDir = baseDir + "i18n";
+    hyphDir = baseDir + "hyph";
+    cssDir = baseDir + "css";
+    themesDir = baseDir + "themes";
     LVAppendPathDelimiter(i18nDir);
     LVAppendPathDelimiter(hyphDir);
     LVAppendPathDelimiter(cssDir);
+    LVAppendPathDelimiter(themesDir);
+    currentThemeDir = themesDir + "light";
+    LVAppendPathDelimiter(currentThemeDir);
     interfaceLanguages.add(new CRUIInterfaceLanguage(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM, STR_INTERFACE_LANGUAGE_VALUE_SYSTEM, lString8()));
     interfaceLanguages.add(new CRUIInterfaceLanguage("en", STR_INTERFACE_LANGUAGE_VALUE_EN, i18nDir + "en.ini"));
     interfaceLanguages.add(new CRUIInterfaceLanguage("ru", STR_INTERFACE_LANGUAGE_VALUE_RU, i18nDir + "ru.ini"));
@@ -141,7 +145,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
         dirs.add(resourceDir + "screen-density-normal");
     }
     resourceResolver->setDirList(dirs);
-    createDefaultTheme();
+    loadTheme(lString8());
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
@@ -150,104 +154,115 @@ void CRUIConfig::setupResourcesForScreenSize() {
 }
 
 
-void CRUIConfig::createDefaultTheme() {
+void CRUIConfig::loadTheme(lString8 theme) {
     if (currentTheme)
         delete currentTheme;
+    if (!theme.empty()) {
+        if (theme.startsWith("@"))
+            theme = theme.substr(1);
+        currentThemeDir = themesDir + theme;
+        LVAppendPathDelimiter(currentThemeDir);
+    }
     currentTheme = new CRUITheme(lString8("BLACK"));
-    currentTheme->setTextColor(0x000000);
+    if (!currentTheme->loadFromFile(currentThemeDir + "cr3theme.xml")) {
+        // cannot load! create default theme
+        currentTheme->setTextColor(0x000000);
+#if 0
+
+        //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
+        //currentTheme->setListDelimiterVertical("list_delimiter_h.png");
+        CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
+        //keyboard_key_feedback_background.9
+        buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
+        //buttonStyle->setBackground("keyboard_key_feedback_background.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
+        //buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
+        buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");
+        buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
+        buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
+        buttonStyle = currentTheme->addSubstyle("BUTTON_NOBACKGROUND");
+        buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground(0xC0C0C080);
+        buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0xE0C0C080);
+        buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
+        CRUIStyle * listItemStyle = currentTheme->addSubstyle("LIST_ITEM");
+        listItemStyle->setMargin(0)->setPadding(7);
+        listItemStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0x40C0C080);
+        listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
+
+        CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
+        homeStyle->setBackground("tx_wood_v3.jpg", true);
+        homeStyle->setBackground2("list_shadow_vertical.9");
+
+        CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
+        fileListStyle->setBackground("tx_wood_v3.jpg", true);
+        fileListStyle->setBackground2("list_shadow_vertical.9");
+        fileListStyle->setListDelimiterVertical("divider_light_v3.png");
+
+        CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
+        homeListCaption->setTextColor(0x00402000);
+        homeListCaption->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+        CRUIStyle * toolbar = currentTheme->addSubstyle("TOOL_BAR");
+       toolbar->setBackground("tx_wood_v3.jpg", true);
+        toolbar->setBackground2("toolbar_shadow.9");
+        toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
+
+        CRUIStyle * popupframe = currentTheme->addSubstyle("POPUP_FRAME");
+        popupframe->setBackground("tx_wood_v3.jpg", true);
+        popupframe->setBackground2("toolbar_shadow.9");
+        popupframe->setPadding(PT_TO_PX(2));
+
+        CRUIStyle * popupframehandle = currentTheme->addSubstyle("POPUP_FRAME_HANDLE");
+        popupframehandle->setPadding(PT_TO_PX(4));
+        popupframehandle->setMargin(PT_TO_PX(0));
+        popupframehandle->setBackground(0xE0808080);
+        popupframehandle->setBackground("home_frame.9");
+
+        CRUIStyle * menulist = currentTheme->addSubstyle("MENU_LIST");
+        menulist->setListDelimiterVertical("divider_light_v3");
+        CRUIStyle * menuitem = currentTheme->addSubstyle("MENU_ITEM");
+        menuitem->setPadding(PT_TO_PX(0));
+        CRUIStyle * menuitemicon = currentTheme->addSubstyle("MENU_ITEM_ICON");
+        menuitemicon->setMargin(PT_TO_PX(1));
+        menuitemicon->setAlign(ALIGN_CENTER);
+        CRUIStyle * menuitemtext = currentTheme->addSubstyle("MENU_ITEM_TEXT");
+        menuitemtext->setMargin(PT_TO_PX(2));
+        menuitemtext->setFontSize(CRUI::FONT_SIZE_MEDIUM);
+        menuitemtext->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+
+        CRUIStyle * settingsWindow = currentTheme->addSubstyle("SETTINGS_WIDGET");
+        settingsWindow->setBackground("tx_wood_v3.jpg", true);
+        settingsWindow->setBackground2("list_shadow_vertical.9");
+        CRUIStyle * settingsList = currentTheme->addSubstyle("SETTINGS_ITEM_LIST");
+        settingsList->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(0x60A08060, 2)));
+        //settingsList->setListDelimiterVertical("divider_light_v3");
+        CRUIStyle * settingsItem = currentTheme->addSubstyle("SETTINGS_ITEM");
+        settingsItem->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
+        settingsItem->setMinHeight(MIN_ITEM_PX);
+        CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
+        settingsItemTitle->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
+        //settingsItemTitle->setPadding(PT_TO_PX(2));
+        settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
+        settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+        CRUIStyle * settingsItemLayout = currentTheme->addSubstyle("SETTINGS_ITEM_TEXT_LAYOUT");
+        settingsItemLayout->setPadding(PT_TO_PX(2));
+        settingsItemLayout->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
+        CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
+        settingsItemIcon->setAlign(ALIGN_CENTER);
+        settingsItemIcon->setMargin(PT_TO_PX(3));
+        CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
+        settingsItemDescription->setFontSize(FONT_SIZE_SMALL);
+        //settingsItemDescription->setPadding(PT_TO_PX(2));
+        settingsItemDescription->setAlign(ALIGN_BOTTOM | ALIGN_LEFT);
+#endif
+    }
+
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, uiFontFace, 0));
     currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
-
-    //currentTheme->setListDelimiterVertical(resourceResolver->getIcon("divider_light_v3.png"));
-    //currentTheme->setListDelimiterVertical("list_delimiter_h.png");
-    CRUIStyle * buttonStyle = currentTheme->addSubstyle("BUTTON");
-    //keyboard_key_feedback_background.9
-    buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE);
-    //buttonStyle->setBackground("keyboard_key_feedback_background.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
-    //buttonStyle->setBackground("btn_default_normal.9")->setFontSize(FONT_SIZE_LARGE)->setPadding(10);
-    buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground("btn_default_pressed.9");
-    buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground("btn_default_selected.9");
-    buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-    buttonStyle = currentTheme->addSubstyle("BUTTON_NOBACKGROUND");
-    buttonStyle->addSubstyle(STATE_PRESSED, STATE_PRESSED)->setBackground(0xC0C0C080);
-    buttonStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0xE0C0C080);
-    buttonStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-    CRUIStyle * listItemStyle = currentTheme->addSubstyle("LIST_ITEM");
-    listItemStyle->setMargin(0)->setPadding(7);
-    listItemStyle->addSubstyle(STATE_FOCUSED, STATE_FOCUSED)->setBackground(0x40C0C080);
-    listItemStyle->addSubstyle(STATE_DISABLED, STATE_DISABLED)->setTextColor(0x80000000);
-
-    CRUIStyle * homeStyle = currentTheme->addSubstyle("HOME_WIDGET");
-    homeStyle->setBackground("tx_wood_v3.jpg", true);
-    homeStyle->setBackground2("list_shadow_vertical.9");
-
-    CRUIStyle * fileListStyle = currentTheme->addSubstyle("FILE_LIST");
-    fileListStyle->setBackground("tx_wood_v3.jpg", true);
-    fileListStyle->setBackground2("list_shadow_vertical.9");
-    fileListStyle->setListDelimiterVertical("divider_light_v3.png");
-
-    CRUIStyle * homeListCaption = currentTheme->addSubstyle("HOME_LIST_CAPTION");
-    homeListCaption->setTextColor(0x00402000);
-    homeListCaption->setFontSize(CRUI::FONT_SIZE_SMALL);
-
-    CRUIStyle * toolbar = currentTheme->addSubstyle("TOOL_BAR");
-   toolbar->setBackground("tx_wood_v3.jpg", true);
-    toolbar->setBackground2("toolbar_shadow.9");
-    toolbar->setFontSize(CRUI::FONT_SIZE_SMALL);
-
-    CRUIStyle * popupframe = currentTheme->addSubstyle("POPUP_FRAME");
-    popupframe->setBackground("tx_wood_v3.jpg", true);
-    popupframe->setBackground2("toolbar_shadow.9");
-    popupframe->setPadding(PT_TO_PX(2));
-
-    CRUIStyle * popupframehandle = currentTheme->addSubstyle("POPUP_FRAME_HANDLE");
-    popupframehandle->setPadding(PT_TO_PX(4));
-    popupframehandle->setMargin(PT_TO_PX(0));
-    popupframehandle->setBackground(0xE0808080);
-    popupframehandle->setBackground("home_frame.9");
-
-    CRUIStyle * menulist = currentTheme->addSubstyle("MENU_LIST");
-    menulist->setListDelimiterVertical("divider_light_v3");
-    CRUIStyle * menuitem = currentTheme->addSubstyle("MENU_ITEM");
-    menuitem->setPadding(PT_TO_PX(0));
-    CRUIStyle * menuitemicon = currentTheme->addSubstyle("MENU_ITEM_ICON");
-    menuitemicon->setMargin(PT_TO_PX(1));
-    menuitemicon->setAlign(ALIGN_CENTER);
-    CRUIStyle * menuitemtext = currentTheme->addSubstyle("MENU_ITEM_TEXT");
-    menuitemtext->setMargin(PT_TO_PX(2));
-    menuitemtext->setFontSize(CRUI::FONT_SIZE_MEDIUM);
-    menuitemtext->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
-
-    CRUIStyle * settingsWindow = currentTheme->addSubstyle("SETTINGS_WIDGET");
-    settingsWindow->setBackground("tx_wood_v3.jpg", true);
-    settingsWindow->setBackground2("list_shadow_vertical.9");
-    CRUIStyle * settingsList = currentTheme->addSubstyle("SETTINGS_ITEM_LIST");
-    settingsList->setListDelimiterVertical(CRUIImageRef(new CRUISolidFillImage(0x60A08060, 2)));
-    //settingsList->setListDelimiterVertical("divider_light_v3");
-    CRUIStyle * settingsItem = currentTheme->addSubstyle("SETTINGS_ITEM");
-    settingsItem->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
-    settingsItem->setMinHeight(MIN_ITEM_PX);
-    CRUIStyle * settingsItemTitle = currentTheme->addSubstyle("SETTINGS_ITEM_TITLE");
-    settingsItemTitle->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(0), PT_TO_PX(3), PT_TO_PX(0)));
-    //settingsItemTitle->setPadding(PT_TO_PX(2));
-    settingsItemTitle->setFontSize(FONT_SIZE_LARGE);
-    settingsItemTitle->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
-    CRUIStyle * settingsItemLayout = currentTheme->addSubstyle("SETTINGS_ITEM_TEXT_LAYOUT");
-    settingsItemLayout->setPadding(PT_TO_PX(2));
-    settingsItemLayout->setAlign(ALIGN_VCENTER | ALIGN_LEFT);
-    CRUIStyle * settingsItemIcon = currentTheme->addSubstyle("SETTINGS_ITEM_ICON");
-    settingsItemIcon->setAlign(ALIGN_CENTER);
-    settingsItemIcon->setMargin(PT_TO_PX(3));
-    CRUIStyle * settingsItemDescription = currentTheme->addSubstyle("SETTINGS_ITEM_DESCRIPTION");
-    settingsItemDescription->setFontSize(FONT_SIZE_SMALL);
-    //settingsItemDescription->setPadding(PT_TO_PX(2));
-    settingsItemDescription->setAlign(ALIGN_BOTTOM | ALIGN_LEFT);
-
 
     resourceResolver->setIconColorTransform(0x948880, 0x404040);
 
@@ -354,7 +369,7 @@ void CRUIConfig::initEngine() {
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook2"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK2), lString8("tx_old_paper.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
 
-    createDefaultTheme();
+    loadTheme(lString8());
 }
 
 bool CRUIConfig::setHyphenationDictionary(lString8 id, lString8 fallbackId) {
