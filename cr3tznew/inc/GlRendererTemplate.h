@@ -15,11 +15,15 @@
 #include "cruimain.h"
 #include "gldrawbuf.h"
 
+
 class LVDocView;
+class CoolReaderApp;
 class GlRendererTemplate :
 	public Tizen::Graphics::Opengl::IGlRenderer,
-	public CRUIScreenUpdateManagerCallback
+	public CRUIScreenUpdateManagerCallback,
+	public CRUIPlatform
 {
+		CoolReaderApp * _app;
 		LVDocView * _docview;
 	    CRUIMainWidget * _widget;
 		CRUIEventManager * _eventManager;
@@ -28,7 +32,7 @@ class GlRendererTemplate :
 		bool _updateRequested;
 public:
 
-	GlRendererTemplate(void);
+	GlRendererTemplate(CoolReaderApp * app);
 	~GlRendererTemplate(void);
 
 	CRUIEventAdapter * getEventAdapter() { return _eventAdapter; }
@@ -48,6 +52,8 @@ public:
 
     /// set animation fps (0 to disable) and/or update screen instantly
     virtual void setScreenUpdateMode(bool updateNow, int animationFps);
+    /// CRUIScreenUpdateManagerCallback implementation - exit application
+	virtual void exitApp();
 
     void setPlayer(Tizen::Graphics::Opengl::GlPlayer * player) {
     	__player = player;

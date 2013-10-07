@@ -12,6 +12,7 @@
 #include "glfont.h"
 #include "cr3tizen.h"
 #include "lvstring.h"
+#include "cruiconfig.h"
 
 using namespace Tizen::App;
 using namespace Tizen::Base;
@@ -67,6 +68,8 @@ CoolReaderApp::OnAppInitialized(void)
 
 	pCoolReaderFrame->AddKeyEventListener(*this);
 
+    crconfig.setupResourcesForScreenSize();
+
 	{
 		__player = new Tizen::Graphics::Opengl::GlPlayer;
 		//__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
@@ -78,7 +81,7 @@ CoolReaderApp::OnAppInitialized(void)
 		__player->Start();
 	}
 
-	__renderer = new GlRendererTemplate();
+	__renderer = new GlRendererTemplate(this);
 	__player->SetIGlRenderer(__renderer);
 //	if (pCoolReaderFrame->GetCurrentForm())
 //		pCoolReaderFrame->GetCurrentForm()->AddTouchEventListener(*__renderer->getEventAdapter());
@@ -171,12 +174,6 @@ CoolReaderApp::OnKeyPressed(const Control& source, KeyCode keyCode)
 void
 CoolReaderApp::OnKeyReleased(const Control& source, KeyCode keyCode)
 {
-	// TODO:
-
-	if (keyCode == Tizen::Ui::KEY_BACK || keyCode == Tizen::Ui::KEY_ESC)
-	{
-		Terminate();
-	}
 }
 
 void

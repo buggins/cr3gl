@@ -280,6 +280,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
 
     crconfig.initEngine();
+	LVSetTizenLogger();
 }
 
 
@@ -376,6 +377,7 @@ static bool checkModifier(int & modifiers, int flag, KEY_EVENT_TYPE action, Tize
 			modifiers = modifiers & (~flag);
 		return true;
 	}
+	return false;
 }
 
 static int translateKey(Tizen::Ui::KeyCode keyCode) {

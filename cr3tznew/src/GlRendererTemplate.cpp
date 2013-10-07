@@ -6,6 +6,7 @@
 #include "fileinfo.h"
 #include "cruimain.h"
 #include "cruiwidget.h"
+#include "CoolReader.h"
 
 using namespace CRUI;
 
@@ -13,8 +14,9 @@ const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
 const GLfloat ZERO = GLfloat( 0.0f);
 
-GlRendererTemplate::GlRendererTemplate(void)
-	: _backbuffer(NULL)
+GlRendererTemplate::GlRendererTemplate(CoolReaderApp * app)
+	: _app(app)
+	, _backbuffer(NULL)
 	, _updateRequested(false)
 	, __controlWidth(0)
 	, __controlHeight(0)
@@ -171,6 +173,11 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 	// Assign target control height
 
 	__controlHeight = height;
+}
+
+/// CRUIScreenUpdateManagerCallback implementation - exit application
+void GlRendererTemplate::exitApp() {
+	_app->Terminate();
 }
 
 /// set animation fps (0 to disable) and/or update screen instantly
