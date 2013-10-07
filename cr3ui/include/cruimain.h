@@ -25,7 +25,10 @@ public:
 
 class CRUIPlatform {
 public:
+	/// completely exit app
 	virtual void exitApp() = 0;
+	/// minimize app or show Home Screen
+	virtual void minimizeApp() = 0;
 	virtual ~CRUIPlatform() {}
 };
 

@@ -53,6 +53,8 @@ void CRUIMainWidget::showHome() {
 void CRUIMainWidget::back() {
     if (_history.hasBack()) {
         startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY);
+    } else {
+    	_platform->minimizeApp();
     }
 }
 

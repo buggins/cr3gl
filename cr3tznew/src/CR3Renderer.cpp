@@ -150,36 +150,24 @@ CR3Renderer::Resume(void)
 int
 CR3Renderer::GetTargetControlWidth(void)
 {
-	// TODO:
-	// Return target control width
-
 	return __controlWidth;
 }
 
 int
 CR3Renderer::GetTargetControlHeight(void)
 {
-	// TODO:
-	// Return target control height
-
 	return __controlHeight;
 }
 
 void
 CR3Renderer::SetTargetControlWidth(int width)
 {
-	// TODO:
-	// Assign target control width
-
 	__controlWidth = width;
 }
 
 void
 CR3Renderer::SetTargetControlHeight(int height)
 {
-	// TODO:
-	// Assign target control height
-
 	__controlHeight = height;
 }
 
@@ -187,6 +175,14 @@ CR3Renderer::SetTargetControlHeight(int height)
 void CR3Renderer::exitApp() {
 	_app->Terminate();
 }
+
+/// minimize app or show Home Screen
+void CR3Renderer::minimizeApp() {
+	/// TODO: just hide
+	_app->Terminate();
+
+}
+
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {

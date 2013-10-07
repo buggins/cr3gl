@@ -18,6 +18,7 @@ CoolReaderFrame::~CoolReaderFrame(void)
 void CoolReaderFrame::setRenderer(CR3Renderer * renderer) {
 	_renderer = renderer;
 	AddTouchEventListener(*_renderer->getEventAdapter());
+	AddKeyEventListener(*_renderer->getEventAdapter());
 }
 
 /**

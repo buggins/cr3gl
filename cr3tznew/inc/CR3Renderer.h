@@ -50,14 +50,20 @@ public:
 	virtual void SetTargetControlWidth(int width);
 	virtual void SetTargetControlHeight(int height);
 
-    /// set animation fps (0 to disable) and/or update screen instantly
-    virtual void setScreenUpdateMode(bool updateNow, int animationFps);
-    /// CRUIScreenUpdateManagerCallback implementation - exit application
-	virtual void exitApp();
-
     void setPlayer(Tizen::Graphics::Opengl::GlPlayer * player) {
     	__player = player;
     }
+
+    /// set animation fps (0 to disable) and/or update screen instantly
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps);
+
+    // CRUIPlatform implementation
+    /// CRUIScreenUpdateManagerCallback implementation - exit application
+	virtual void exitApp();
+	/// minimize app or show Home Screen
+	virtual void minimizeApp();
+
+
 private:
 	int __controlWidth;
 	int __controlHeight;
