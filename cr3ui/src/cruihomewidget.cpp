@@ -747,8 +747,9 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
     case CMD_MENU:
     {
         CRUIActionList actions;
-        actions.add(ACTION_EXIT);
         actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_HELP);
+        actions.add(ACTION_EXIT);
         //actions.add(ACTION_BACK);
         lvRect margins;
         margins.right = MIN_ITEM_PX * 5 / 4;

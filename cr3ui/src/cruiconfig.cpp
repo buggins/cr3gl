@@ -46,10 +46,12 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     hyphDir = baseDir + "hyph";
     cssDir = baseDir + "css";
     themesDir = baseDir + "themes";
+    manualsDir = baseDir + "manuals";
     LVAppendPathDelimiter(i18nDir);
     LVAppendPathDelimiter(hyphDir);
     LVAppendPathDelimiter(cssDir);
     LVAppendPathDelimiter(themesDir);
+    LVAppendPathDelimiter(manualsDir);
     currentThemeDir = themesDir + "light";
     LVAppendPathDelimiter(currentThemeDir);
     interfaceLanguages.add(new CRUIInterfaceLanguage(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM, STR_INTERFACE_LANGUAGE_VALUE_SYSTEM, lString8()));
