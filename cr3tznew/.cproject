@@ -578,6 +578,423 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
+		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.292946169.443839466">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.292946169.443839466" moduleId="org.eclipse.cdt.core.settings" name="Debug_ARM">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="exe" artifactName="CoolReader3" buildArtefactType="org.tizen.nativecpp.buildArtefactType.app" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecpp.buildArtefactType.app" description="Debug/ARM" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.292946169.443839466" name="Debug_ARM" parent="org.tizen.nativecpp.config.sbi.gcc45.app.debug">
+					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.debug.292946169.443839466." name="/" resourcePath="">
+						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug.1726271769" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.debug">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.335450758" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/CoolReader3/Debug}" enableAutoBuild="true" id="org.tizen.nativecpp.target.sbi.gnu.builder.1614034736" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecpp.target.sbi.gnu.builder"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.1465819197" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver"/>
+							<tool command="arm-linux-gnueabi-g++" id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.467998849" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.865638115" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="sbi.gnu.cpp.compiler.option.debugging.level.666311608" name="Debug level" superClass="sbi.gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="sbi.gnu.cpp.compiler.option.debug.applog.570500581" name="Enable application logging (-D_APP_LOG)" superClass="sbi.gnu.cpp.compiler.option.debug.applog" value="true" valueType="boolean"/>
+								<option id="sbi.gnu.cpp.compiler.option.877443943" name="Tizen-Target" superClass="sbi.gnu.cpp.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="tizen-device-2.2.native_gcc45.armel.cpp.app"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.1497976885" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_cflags.cpp.291434532" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.cpp.compiler.option.frameworks_cflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value=" -fPIE"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.include.paths.1939391207" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/chmlib/src}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.468615852" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
+									<listOptionValue builtIn="false" value="osp"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1258567081" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+									<listOptionValue builtIn="false" value="DEBUG"/>
+									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+								</option>
+								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.369009817" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
+							</tool>
+							<tool command="arm-linux-gnueabi-gcc" id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.237644545" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1723843761" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+								<option id="sbi.gnu.c.compiler.option.debugging.level.2065740102" name="Debug level" superClass="sbi.gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="sbi.gnu.c.compiler.option.debug.applog.428045121" name="Enable application logging (-D_APP_LOG)" superClass="sbi.gnu.c.compiler.option.debug.applog" value="true" valueType="boolean"/>
+								<option id="sbi.gnu.c.compiler.option.1262280404" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="tizen-device-2.2.native_gcc45.armel.cpp.app"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1170288122" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.cpp.1352322658" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value=" -fPIE"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.1786601803" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/chmlib/src}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.950838852" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
+									<listOptionValue builtIn="false" value="osp"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2058924395" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+									<listOptionValue builtIn="false" value="DEBUG"/>
+									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.preprocess.1183128675" name="Preprocess only (-E)" superClass="gnu.c.compiler.option.preprocessor.preprocess" value="false" valueType="boolean"/>
+								<inputType id="sbi.gnu.c.compiler.tizen.inputType.397514926" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.284479568" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base"/>
+							<tool command="arm-linux-gnueabi-g++" id="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.1041289525" name="C++ Linker" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker">
+								<option id="sbi.gnu.cpp.linker.option.frameworks_lflags.cpp.1248243130" name="Tizen-Frameworks-Other-Lflags" superClass="sbi.gnu.cpp.linker.option.frameworks_lflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value="-Xlinker --as-needed"/>
+									<listOptionValue builtIn="false" value="-pie -lpthread "/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/opt/usr/apps/CoolReader/lib&quot;"/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/home/developer/sdk_tools/lib&quot;"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib/osp&quot;"/>
+									<listOptionValue builtIn="false" value="-losp-uifw"/>
+									<listOptionValue builtIn="false" value="-losp-appfw"/>
+									<listOptionValue builtIn="false" value="-losp-image"/>
+									<listOptionValue builtIn="false" value="-losp-json"/>
+									<listOptionValue builtIn="false" value="-losp-ime"/>
+									<listOptionValue builtIn="false" value="-losp-net"/>
+									<listOptionValue builtIn="false" value="-lpthread"/>
+									<listOptionValue builtIn="false" value="-losp-content"/>
+									<listOptionValue builtIn="false" value="-losp-locations"/>
+									<listOptionValue builtIn="false" value="-losp-telephony"/>
+									<listOptionValue builtIn="false" value="-losp-uix"/>
+									<listOptionValue builtIn="false" value="-losp-media"/>
+									<listOptionValue builtIn="false" value="-losp-messaging"/>
+									<listOptionValue builtIn="false" value="-losp-web"/>
+									<listOptionValue builtIn="false" value="-losp-social"/>
+									<listOptionValue builtIn="false" value="-losp-wifi"/>
+									<listOptionValue builtIn="false" value="-losp-bluetooth"/>
+									<listOptionValue builtIn="false" value="-losp-nfc"/>
+									<listOptionValue builtIn="false" value="-losp-face"/>
+									<listOptionValue builtIn="false" value="-losp-speech-tts"/>
+									<listOptionValue builtIn="false" value="-losp-shell"/>
+									<listOptionValue builtIn="false" value="-losp-shell-core"/>
+									<listOptionValue builtIn="false" value="-losp-speech-stt"/>
+									<listOptionValue builtIn="false" value="-losp-vision"/>
+									<listOptionValue builtIn="false" value="-lxml2"/>
+									<listOptionValue builtIn="false" value="-lalut"/>
+									<listOptionValue builtIn="false" value="-lopenal"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.178695893" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.1172780105" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.935820367" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool command="arm-linux-gnueabi-as" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1041317355" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2115292420" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.1946004913" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.360514364" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3db/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3db/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3gl/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
+						<entry excluding="crgl.cpp|crgui.cpp|w32utils.cpp|xutils.cpp|s32utils.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libjpeg"/>
+						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
+						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
+						<entry excluding="gxvalid/gxvopbd.c|gxvalid/gxvfeat.c|pfr/pfrsbit.c|gxvalid/gxvmorx4.c|sfnt/ttpost.c|gxvalid/gxvmorx1.c|cff/cffgload.c|gxvalid/gxvmod.c|tools|cache/ftcmanag.c|bdf/bdfdrivr.c|gxvalid/gxvjust.c|lzw/ftzopen.c|autofit/afangles.c|truetype/ttpic.c|truetype/ttinterp.c|sfnt/ttkern.c|gzip/inflate.c|otvalid/otvgsub.c|type1/t1driver.c|bdf/bdflib.c|cff/cffobjs.c|gxvalid/gxvcommn.c|gxvalid/gxvmort.c|pshinter/pshrec.c|cff/cf2hints.c|autofit/afindic.c|autofit/aflatin2.c|truetype/ttgload.c|autofit/afhints.c|otvalid/otvmath.c|gzip/infcodes.c|autofit/afmodule.c|base/ftstream.c|cache/ftcsbits.c|sfnt/pngshim.c|base/fttrigon.c|gzip/inftrees.c|gxvalid/gxvlcar.c|cache/ftcglyph.c|gxvalid/gxvmort5.c|otvalid/otvcommn.c|docs|pshinter/pshmod.c|otvalid/otvjstf.c|pfr/pfrcmap.c|psaux/psauxmod.c|sfnt/sfdriver.c|truetype/ttpload.c|base/ftsnames.c|sfnt/sfobjs.c|psnames/psmodule.c|psaux/t1cmap.c|builds|gxvalid/gxvmort2.c|autofit/afdummy.c|raster/ftraster.c|type42/t42drivr.c|base/ftcalc.c|otvalid/otvbase.c|pshinter/pshglob.c|pfr/pfrdrivr.c|autofit/afpic.c|psnames/pspic.c|smooth/ftgrays.c|psaux/psobjs.c|raster/ftrend1.c|cff/cf2intrp.c|cff/cffdrivr.c|type42/t42parse.c|gxvalid/gxvprop.c|autofit/afcjk.c|gxvalid/gxvfgen.c|type1/t1objs.c|cff/cf2stack.c|psaux/t1decode.c|sfnt/ttcmap.c|base/ftadvanc.c|cache/ftccache.c|cff/cf2read.c|cid/cidload.c|base/ftutil.c|pcf/pcfutil.c|type1/t1load.c|cache/ftccmap.c|base/ftobjs.c|pfr/pfrgload.c|type1/t1parse.c|sfnt/ttmtx.c|psaux/afmparse.c|gxvalid/gxvkern.c|autofit/aflatin.c|sfnt/ttbdf.c|sfnt/sfntpic.c|gxvalid/gxvmort0.c|sfnt/ttsbit0.c|autofit/afloader.c|gxvalid/gxvmorx0.c|raster/rastpic.c|base/ftmac.c|gxvalid/gxvmort4.c|base/ftgloadr.c|cff/cf2error.c|gzip/infutil.c|sfnt/ttload.c|cid/cidgload.c|autofit/afwarp.c|pshinter/pshalgo.c|cff/cffpic.c|cid/cidobjs.c|gxvalid/gxvmort1.c|otvalid/otvgdef.c|gxvalid/gxvmorx5.c|gzip/zutil.c|cid/cidparse.c|cache/ftcimage.c|cff/cffload.c|gzip/infblock.c|cache/ftcmru.c|cache/ftcbasic.c|sfnt/ttsbit.c|gxvalid/gxvtrak.c|cff/cf2font.c|otvalid/otvgpos.c|truetype/ttdriver.c|gzip/adler32.c|cff/cf2arrst.c|truetype/ttsubpix.c|autofit/afglobal.c|base/ftrfork.c|pfr/pfrobjs.c|smooth/ftspic.c|gxvalid/gxvbsln.c|otvalid/otvmod.c|pcf/pcfread.c|devel|pfr/pfrload.c|truetype/ttobjs.c|type1/t1gload.c|gxvalid/gxvmorx.c|psaux/psconv.c|truetype/ttgxvar.c|objs|cff/cf2blues.c|pcf/pcfdrivr.c|base/ftoutln.c|type42/t42objs.c|cff/cf2ft.c|cid/cidriver.c|type1/t1afm.c|pshinter/pshpic.c|cff/cffcmap.c|cff/cffparse.c|gxvalid/gxvmorx2.c|smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/freetype/src"/>
+						<entry excluding="riscos.c|xml.c|postscript.c|draw.c|startup.c|saveas.c|imgtrans.c|icons.c|drawfile.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|fonts_r.c|dib2sprt.c|dib2eps.c|Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
+						<entry excluding="test_chmLib.c|extract_chmLib.c|enumdir_chmLib.c|enum_chmLib.c|chm_http.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/chmlib/src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1296880442.1268344646">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1296880442.1268344646" moduleId="org.eclipse.cdt.core.settings" name="Release_ARM">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="exe" artifactName="${ProjName}" buildArtefactType="org.tizen.nativecpp.buildArtefactType.app" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecpp.buildArtefactType.app" description="Release/ARM" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1296880442.1268344646" name="Release_ARM" parent="org.tizen.nativecpp.config.sbi.gcc45.app.release">
+					<folderInfo id="org.tizen.nativecpp.config.sbi.gcc45.app.release.1296880442.1268344646." name="/" resourcePath="">
+						<toolChain id="org.tizen.nativecpp.toolchain.sbi.gcc45.app.release.2038901434" name="Tizen Native Toolchain" superClass="org.tizen.nativecpp.toolchain.sbi.gcc45.app.release">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.1116078291" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<builder buildPath="${workspace_loc:/CoolReader3/Release}" id="org.tizen.nativecpp.target.sbi.gnu.builder.836798" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecpp.target.sbi.gnu.builder"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.gnu.archiver.1200144763" name="Archiver" superClass="org.tizen.nativecpp.tool.sbi.gnu.archiver"/>
+							<tool command="arm-linux-gnueabi-g++" id="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler.22625123" name="C++ Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.1188369361" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="sbi.gnu.cpp.compiler.option.debugging.level.703780505" name="Debug level" superClass="sbi.gnu.cpp.compiler.option.debugging.level"/>
+								<option id="sbi.gnu.cpp.compiler.option.debug.applog.1680063508" name="Enable application logging (-D_APP_LOG)" superClass="sbi.gnu.cpp.compiler.option.debug.applog"/>
+								<option id="sbi.gnu.cpp.compiler.option.457553621" name="Tizen-Target" superClass="sbi.gnu.cpp.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="tizen-device-2.2.native_gcc45.armel.cpp.app"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp.387977969" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_cflags.cpp.1372254698" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.cpp.compiler.option.frameworks_cflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value=" -fPIE"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.include.paths.2016247668" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/chmlib/src}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks.cpp.1253309171" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.cpp" valueType="userObjs">
+									<listOptionValue builtIn="false" value="osp"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1668428976" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="NDEBUG"/>
+									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+								</option>
+								<inputType id="sbi.gnu.cpp.compiler.tizen.inputType.1442616817" superClass="sbi.gnu.cpp.compiler.tizen.inputType"/>
+							</tool>
+							<tool command="arm-linux-gnueabi-gcc" id="org.tizen.nativecpp.tool.sbi.gnu.c.compiler.2120249810" name="C Compiler" superClass="org.tizen.nativecpp.tool.sbi.gnu.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.198268932" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+								<option id="sbi.gnu.c.compiler.option.debugging.level.32143433" name="Debug level" superClass="sbi.gnu.c.compiler.option.debugging.level"/>
+								<option id="sbi.gnu.c.compiler.option.debug.applog.166369337" name="Enable application logging (-D_APP_LOG)" superClass="sbi.gnu.c.compiler.option.debug.applog"/>
+								<option id="sbi.gnu.c.compiler.option.1658775136" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="tizen-device-2.2.native_gcc45.armel.cpp.app"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.cpp.1420336060" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.cpp" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.cpp.1384051607" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value=" -fPIE"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.803612212" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;/home/lve/tizen-sdk/library&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/osp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/crengine/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/zlib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libpng}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/libjpeg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/freetype/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3ui/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3gl/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/cr3db/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/antiword}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/cr3/chmlib/src}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks.cpp.1579148695" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.cpp" valueType="userObjs">
+									<listOptionValue builtIn="false" value="osp"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.702818955" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="NDEBUG"/>
+									<listOptionValue builtIn="false" value="USE_FONTCONFIG=0"/>
+									<listOptionValue builtIn="false" value="CR3_PATCH=1"/>
+									<listOptionValue builtIn="false" value="FT2_BUILD_LIBRARY=1"/>
+									<listOptionValue builtIn="false" value="DOC_DATA_COMPRESSION_LEVEL=1"/>
+									<listOptionValue builtIn="false" value="DOC_BUFFER_SIZE=0xA00000"/>
+									<listOptionValue builtIn="false" value="ENABLE_CACHE_FILE_CONTENTS_VALIDATION=1"/>
+									<listOptionValue builtIn="false" value="LDOM_USE_OWN_MEM_MAN=0"/>
+									<listOptionValue builtIn="false" value="CR3_ANTIWORD_PATCH=1"/>
+									<listOptionValue builtIn="false" value="ENABLE_ANTIWORD=1"/>
+									<listOptionValue builtIn="false" value="MAX_IMAGE_SCALE_MUL=2"/>
+									<listOptionValue builtIn="false" value="_LINUX=1"/>
+									<listOptionValue builtIn="false" value="LINUX=1"/>
+								</option>
+								<inputType id="sbi.gnu.c.compiler.tizen.inputType.857188980" superClass="sbi.gnu.c.compiler.tizen.inputType"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.865526204" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base"/>
+							<tool command="arm-linux-gnueabi-g++" id="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker.587905383" name="C++ Linker" superClass="org.tizen.nativecpp.tool.sbi.gnu.cpp.linker">
+								<option id="sbi.gnu.cpp.linker.option.frameworks_lflags.cpp.1773700446" name="Tizen-Frameworks-Other-Lflags" superClass="sbi.gnu.cpp.linker.option.frameworks_lflags.cpp" valueType="stringList">
+									<listOptionValue builtIn="false" value="-Xlinker --as-needed"/>
+									<listOptionValue builtIn="false" value="-pie -lpthread "/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/opt/usr/apps/CoolReader/lib&quot;"/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/home/developer/sdk_tools/lib&quot;"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib/osp&quot;"/>
+									<listOptionValue builtIn="false" value="-losp-uifw"/>
+									<listOptionValue builtIn="false" value="-losp-appfw"/>
+									<listOptionValue builtIn="false" value="-losp-image"/>
+									<listOptionValue builtIn="false" value="-losp-json"/>
+									<listOptionValue builtIn="false" value="-losp-ime"/>
+									<listOptionValue builtIn="false" value="-losp-net"/>
+									<listOptionValue builtIn="false" value="-lpthread"/>
+									<listOptionValue builtIn="false" value="-losp-content"/>
+									<listOptionValue builtIn="false" value="-losp-locations"/>
+									<listOptionValue builtIn="false" value="-losp-telephony"/>
+									<listOptionValue builtIn="false" value="-losp-uix"/>
+									<listOptionValue builtIn="false" value="-losp-media"/>
+									<listOptionValue builtIn="false" value="-losp-messaging"/>
+									<listOptionValue builtIn="false" value="-losp-web"/>
+									<listOptionValue builtIn="false" value="-losp-social"/>
+									<listOptionValue builtIn="false" value="-losp-wifi"/>
+									<listOptionValue builtIn="false" value="-losp-bluetooth"/>
+									<listOptionValue builtIn="false" value="-losp-nfc"/>
+									<listOptionValue builtIn="false" value="-losp-face"/>
+									<listOptionValue builtIn="false" value="-losp-speech-tts"/>
+									<listOptionValue builtIn="false" value="-losp-shell"/>
+									<listOptionValue builtIn="false" value="-losp-shell-core"/>
+									<listOptionValue builtIn="false" value="-losp-speech-stt"/>
+									<listOptionValue builtIn="false" value="-losp-vision"/>
+									<listOptionValue builtIn="false" value="-lxml2"/>
+									<listOptionValue builtIn="false" value="-lalut"/>
+									<listOptionValue builtIn="false" value="-lopenal"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.1986075737" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.1562354636" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1888926857" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool command="arm-linux-gnueabi-as" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1310603391" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
+								<option id="gnu.both.asm.option.include.paths.1113627776" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CR3Tizen/cr3/cr3ui/include}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1752046293" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecpp.tool.sbi.po.compiler.943020628" name="PO Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.po.compiler"/>
+							<tool id="org.tizen.nativecpp.tool.sbi.edc.compiler.1069149018" name="EDC Resource Compiler" superClass="org.tizen.nativecpp.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="res"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3ui/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3db/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3db/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3gl/include"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/cr3gl/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/include"/>
+						<entry excluding="crgl.cpp|crgui.cpp|w32utils.cpp|xutils.cpp|s32utils.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/crengine/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libjpeg"/>
+						<entry excluding="minigzip.c|example.c|examples|projects|win32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/zlib"/>
+						<entry excluding="shell.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/sqlite"/>
+						<entry excluding="pngtest.c|example.c|scripts|projects" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/libpng"/>
+						<entry excluding="gxvalid/gxvopbd.c|gxvalid/gxvfeat.c|pfr/pfrsbit.c|gxvalid/gxvmorx4.c|sfnt/ttpost.c|gxvalid/gxvmorx1.c|cff/cffgload.c|gxvalid/gxvmod.c|tools|cache/ftcmanag.c|bdf/bdfdrivr.c|gxvalid/gxvjust.c|lzw/ftzopen.c|autofit/afangles.c|truetype/ttpic.c|truetype/ttinterp.c|sfnt/ttkern.c|gzip/inflate.c|otvalid/otvgsub.c|type1/t1driver.c|bdf/bdflib.c|cff/cffobjs.c|gxvalid/gxvcommn.c|gxvalid/gxvmort.c|pshinter/pshrec.c|cff/cf2hints.c|autofit/afindic.c|autofit/aflatin2.c|truetype/ttgload.c|autofit/afhints.c|otvalid/otvmath.c|gzip/infcodes.c|autofit/afmodule.c|base/ftstream.c|cache/ftcsbits.c|sfnt/pngshim.c|base/fttrigon.c|gzip/inftrees.c|gxvalid/gxvlcar.c|cache/ftcglyph.c|gxvalid/gxvmort5.c|otvalid/otvcommn.c|docs|pshinter/pshmod.c|otvalid/otvjstf.c|pfr/pfrcmap.c|psaux/psauxmod.c|sfnt/sfdriver.c|truetype/ttpload.c|base/ftsnames.c|sfnt/sfobjs.c|psnames/psmodule.c|psaux/t1cmap.c|builds|gxvalid/gxvmort2.c|autofit/afdummy.c|raster/ftraster.c|type42/t42drivr.c|base/ftcalc.c|otvalid/otvbase.c|pshinter/pshglob.c|pfr/pfrdrivr.c|autofit/afpic.c|psnames/pspic.c|smooth/ftgrays.c|psaux/psobjs.c|raster/ftrend1.c|cff/cf2intrp.c|cff/cffdrivr.c|type42/t42parse.c|gxvalid/gxvprop.c|autofit/afcjk.c|gxvalid/gxvfgen.c|type1/t1objs.c|cff/cf2stack.c|psaux/t1decode.c|sfnt/ttcmap.c|base/ftadvanc.c|cache/ftccache.c|cff/cf2read.c|cid/cidload.c|base/ftutil.c|pcf/pcfutil.c|type1/t1load.c|cache/ftccmap.c|base/ftobjs.c|pfr/pfrgload.c|type1/t1parse.c|sfnt/ttmtx.c|psaux/afmparse.c|gxvalid/gxvkern.c|autofit/aflatin.c|sfnt/ttbdf.c|sfnt/sfntpic.c|gxvalid/gxvmort0.c|sfnt/ttsbit0.c|autofit/afloader.c|gxvalid/gxvmorx0.c|raster/rastpic.c|base/ftmac.c|gxvalid/gxvmort4.c|base/ftgloadr.c|cff/cf2error.c|gzip/infutil.c|sfnt/ttload.c|cid/cidgload.c|autofit/afwarp.c|pshinter/pshalgo.c|cff/cffpic.c|cid/cidobjs.c|gxvalid/gxvmort1.c|otvalid/otvgdef.c|gxvalid/gxvmorx5.c|gzip/zutil.c|cid/cidparse.c|cache/ftcimage.c|cff/cffload.c|gzip/infblock.c|cache/ftcmru.c|cache/ftcbasic.c|sfnt/ttsbit.c|gxvalid/gxvtrak.c|cff/cf2font.c|otvalid/otvgpos.c|truetype/ttdriver.c|gzip/adler32.c|cff/cf2arrst.c|truetype/ttsubpix.c|autofit/afglobal.c|base/ftrfork.c|pfr/pfrobjs.c|smooth/ftspic.c|gxvalid/gxvbsln.c|otvalid/otvmod.c|pcf/pcfread.c|devel|pfr/pfrload.c|truetype/ttobjs.c|type1/t1gload.c|gxvalid/gxvmorx.c|psaux/psconv.c|truetype/ttgxvar.c|objs|cff/cf2blues.c|pcf/pcfdrivr.c|base/ftoutln.c|type42/t42objs.c|cff/cf2ft.c|cid/cidriver.c|type1/t1afm.c|pshinter/pshpic.c|cff/cffcmap.c|cff/cffparse.c|gxvalid/gxvmorx2.c|smooth/ftsmooth.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/freetype/src"/>
+						<entry excluding="riscos.c|xml.c|postscript.c|draw.c|startup.c|saveas.c|imgtrans.c|icons.c|drawfile.c|png2sprt.c|png2eps.c|output.c|main_u.c|main_ros.c|jpeg2sprt.c|jpeg2eps.c|fonts_r.c|dib2sprt.c|dib2eps.c|Win32-only|Unix-only|Resources|Docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/antiword"/>
+						<entry excluding="test_chmLib.c|extract_chmLib.c|enumdir_chmLib.c|enum_chmLib.c|chm_http.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cr3/chmlib/src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="CoolReader3.org.tizen.nativecpp.target.sbi.gcc45.app.1519727586" name="Tizen Application" projectType="org.tizen.nativecpp.target.sbi.gcc45.app"/>
