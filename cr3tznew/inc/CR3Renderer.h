@@ -10,7 +10,7 @@
 #include <gl.h>
 #include <FGrpIGlRenderer.h>
 #include <FGrpGlPlayer.h>
-#include <crui.h>
+#include "crui.h"
 #include "cr3tizen.h"
 #include "cruimain.h"
 #include "gldrawbuf.h"

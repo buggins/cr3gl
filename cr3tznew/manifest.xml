@@ -10,12 +10,7 @@
     </Requirements>
     <Apps>
         <ApiVersion>2.2</ApiVersion>
-        <Privileges>
-            <!--  Privilege>http://tizen.org/privilege/content.read</Privilege>
-            <Privilege>http://tizen.org/privilege/http</Privilege>
-            <Privilege>http://tizen.org/privilege/content.write</Privilege>
-            <Privilege>http://tizen.org/privilege/download</Privilege-->
-        </Privileges>
+        <Privileges/>
         <UiApp LaunchingHistoryVisible="True" Main="True" MenuIconVisible="True" Name="CoolReader3">
             <UiScalability CoordinateSystem="Physical"/>
             <UiTheme SystemTheme="White"/>
