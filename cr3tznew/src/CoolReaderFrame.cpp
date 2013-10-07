@@ -1,16 +1,47 @@
 #include "CoolReaderFrame.h"
 #include "lvstring.h"
+#include "CR3Renderer.h"
 
 using namespace Tizen::Base;
 using namespace Tizen::Ui;
 using namespace Tizen::Ui::Controls;
 
 CoolReaderFrame::CoolReaderFrame(void)// : _pCoolReaderForm(NULL)
+: _renderer(NULL)
 {
 }
 
 CoolReaderFrame::~CoolReaderFrame(void)
 {
+}
+
+void CoolReaderFrame::setRenderer(CR3Renderer * renderer) {
+	_renderer = renderer;
+	AddTouchEventListener(*_renderer->getEventAdapter());
+}
+
+/**
+ * Called when an orientation event occurs.
+ *
+ * @since	2.0
+ *
+ * @param[in]   source				The source of the event
+ * @param[in]   orientationStatus	The information about the orientation event
+ * @remarks		The orientation changed event is fired on Control for which orientation mode change has been enabled by calling SetOrientation().
+ * @see		Tizen::Ui::Controls::Frame
+ * @see		Tizen::Ui::Controls::Form
+ */
+void CoolReaderFrame::OnOrientationChanged(const Tizen::Ui::Control& source, Tizen::Ui::OrientationStatus orientationStatus) {
+	CRLog::trace("OnOrientationChanged: %d", (int)orientationStatus);
+	if (_renderer) {
+		int dx = GetWidth();
+		int dy = GetHeight();
+		CRLog::info("Screen orientation: %d, size %dx%d", (int)orientationStatus, dx, dy);
+		_renderer->SetTargetControlWidth(dx);
+		_renderer->SetTargetControlHeight(dy);
+		_renderer->setScreenUpdateMode(true, 15);
+	}
+	Invalidate(true);
 }
 
 void CoolReaderFrame::OnUserEventReceivedN (RequestId requestId, Tizen::Base::Collection::IList *pArgs) {
@@ -31,6 +62,9 @@ result
 CoolReaderFrame::OnInitializing(void)
 {
 	result r = E_SUCCESS;
+	AddOrientationEventListener(*this);
+	SetOrientation(ORIENTATION_AUTOMATIC);
+	//SetOrientation(ORIENTATION_LANDSCAPE);
 
 //	// Create a form
 //	CoolReaderForm* _pCoolReaderForm = new CoolReaderForm();
@@ -54,6 +88,8 @@ result
 CoolReaderFrame::OnTerminating(void)
 {
 	result r = E_SUCCESS;
+
+	RemoveOrientationEventListener(*this);
 
 	// TODO: Add your termination code here
 

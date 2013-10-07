@@ -18,7 +18,7 @@
 
 class LVDocView;
 class CoolReaderApp;
-class GlRendererTemplate :
+class CR3Renderer :
 	public Tizen::Graphics::Opengl::IGlRenderer,
 	public CRUIScreenUpdateManagerCallback,
 	public CRUIPlatform
@@ -32,8 +32,8 @@ class GlRendererTemplate :
 		bool _updateRequested;
 public:
 
-	GlRendererTemplate(CoolReaderApp * app);
-	~GlRendererTemplate(void);
+		CR3Renderer(CoolReaderApp * app);
+	~CR3Renderer(void);
 
 	CRUIEventAdapter * getEventAdapter() { return _eventAdapter; }
 

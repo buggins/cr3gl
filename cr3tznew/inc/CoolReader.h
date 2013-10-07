@@ -12,7 +12,7 @@
 
 #include <crengine.h>
 
-#include "GlRendererTemplate.h"
+#include "CR3Renderer.h"
 
 /**
  * [CoolReaderApp] UiApp must inherit from UiApp class
@@ -75,7 +75,7 @@ public:
 
 private:
 	Tizen::Graphics::Opengl::GlPlayer* __player;
-	GlRendererTemplate* __renderer; // Tizen::Graphics::Opengl::IGlRenderer
+	CR3Renderer* __renderer; // Tizen::Graphics::Opengl::IGlRenderer
 };
 
 #endif // _COOLREADER_H_

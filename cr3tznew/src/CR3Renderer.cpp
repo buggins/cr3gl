@@ -1,4 +1,4 @@
-#include "GlRendererTemplate.h"
+#include "CR3Renderer.h"
 #include "gldrawbuf.h"
 #include "glfont.h"
 #include <crengine.h>
@@ -14,7 +14,7 @@ const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
 const GLfloat ZERO = GLfloat( 0.0f);
 
-GlRendererTemplate::GlRendererTemplate(CoolReaderApp * app)
+CR3Renderer::CR3Renderer(CoolReaderApp * app)
 	: _app(app)
 	, _backbuffer(NULL)
 	, _updateRequested(false)
@@ -29,15 +29,16 @@ GlRendererTemplate::GlRendererTemplate(CoolReaderApp * app)
 	_widget = new CRUIMainWidget();
 	_eventManager->setRootWidget(_widget);
 	_widget->setScreenUpdater(this);
+	_widget->setPlatform(this);
 }
 
-GlRendererTemplate::~GlRendererTemplate(void)
+CR3Renderer::~CR3Renderer(void)
 {
 
 }
 
 bool
-GlRendererTemplate::InitializeGl(void)
+CR3Renderer::InitializeGl(void)
 {
 	// TODO:
 	// Initialize GL status. 
@@ -59,7 +60,7 @@ GlRendererTemplate::InitializeGl(void)
 }
 
 bool
-GlRendererTemplate::TerminateGl(void)
+CR3Renderer::TerminateGl(void)
 {
 	// TODO:
 	// Terminate and reset GL status. 
@@ -67,9 +68,9 @@ GlRendererTemplate::TerminateGl(void)
 }
 
 bool
-GlRendererTemplate::Draw(void)
+CR3Renderer::Draw(void)
 {
-	CRLog::debug("GlRendererTemplate::Draw is called");
+	CRLog::debug("CR3Renderer::Draw is called");
 
 	_updateRequested = false;
 
@@ -95,13 +96,20 @@ GlRendererTemplate::Draw(void)
 
 	_backbuffer->beforeDrawing();
 
+	lvRect pos = _widget->getPos();
+	bool sizeChanged = false;
+	if (pos.width() != __controlWidth || pos.height() != __controlHeight) {
+		sizeChanged = true;
+	}
+
 	bool needLayout, needDraw, animating;
 	CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
 	_widget->invalidate();
-	if (needLayout) {
+	if (needLayout || sizeChanged) {
 		//CRLog::trace("need layout");
 		_widget->measure(__controlWidth, __controlHeight);
 		_widget->layout(0, 0, _widget->getMeasuredWidth(), _widget->getMeasuredHeight());
+		needDraw = true;
 	}
 	if (needDraw) {
 		//CRLog::trace("need draw");
@@ -117,12 +125,12 @@ GlRendererTemplate::Draw(void)
 	glFlush();
 
 
-	//CRLog::debug("GlRendererTemplate::Draw exiting");
+	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;
 }
 
 bool
-GlRendererTemplate::Pause(void)
+CR3Renderer::Pause(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is paused. 
@@ -131,7 +139,7 @@ GlRendererTemplate::Pause(void)
 }
 
 bool
-GlRendererTemplate::Resume(void)
+CR3Renderer::Resume(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is resumed. 
@@ -140,7 +148,7 @@ GlRendererTemplate::Resume(void)
 }
 
 int
-GlRendererTemplate::GetTargetControlWidth(void)
+CR3Renderer::GetTargetControlWidth(void)
 {
 	// TODO:
 	// Return target control width
@@ -149,7 +157,7 @@ GlRendererTemplate::GetTargetControlWidth(void)
 }
 
 int
-GlRendererTemplate::GetTargetControlHeight(void)
+CR3Renderer::GetTargetControlHeight(void)
 {
 	// TODO:
 	// Return target control height
@@ -158,7 +166,7 @@ GlRendererTemplate::GetTargetControlHeight(void)
 }
 
 void
-GlRendererTemplate::SetTargetControlWidth(int width)
+CR3Renderer::SetTargetControlWidth(int width)
 {
 	// TODO:
 	// Assign target control width
@@ -167,7 +175,7 @@ GlRendererTemplate::SetTargetControlWidth(int width)
 }
 
 void
-GlRendererTemplate::SetTargetControlHeight(int height)
+CR3Renderer::SetTargetControlHeight(int height)
 {
 	// TODO:
 	// Assign target control height
@@ -176,12 +184,12 @@ GlRendererTemplate::SetTargetControlHeight(int height)
 }
 
 /// CRUIScreenUpdateManagerCallback implementation - exit application
-void GlRendererTemplate::exitApp() {
+void CR3Renderer::exitApp() {
 	_app->Terminate();
 }
 
 /// set animation fps (0 to disable) and/or update screen instantly
-void GlRendererTemplate::setScreenUpdateMode(bool updateNow, int animationFps) {
+void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 	//CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if (!animationFps) {
 		if (updateNow) {

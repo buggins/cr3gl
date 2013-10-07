@@ -8,6 +8,7 @@
 
 #include "CoolReader.h"
 #include "CoolReaderFrame.h"
+#include "CR3Renderer.h"
 
 #include "glfont.h"
 #include "cr3tizen.h"
@@ -66,9 +67,10 @@ CoolReaderApp::OnAppInitialized(void)
 	pCoolReaderFrame->SetName(L"CoolReader");
 	AddFrame(*pCoolReaderFrame);
 
-	pCoolReaderFrame->AddKeyEventListener(*this);
+	//pCoolReaderFrame->AddKeyEventListener(*this);
 
     crconfig.setupResourcesForScreenSize();
+    //crconfig.loadTheme(lString8());
 
 	{
 		__player = new Tizen::Graphics::Opengl::GlPlayer;
@@ -81,11 +83,11 @@ CoolReaderApp::OnAppInitialized(void)
 		__player->Start();
 	}
 
-	__renderer = new GlRendererTemplate(this);
+	__renderer = new CR3Renderer(this);
 	__player->SetIGlRenderer(__renderer);
 //	if (pCoolReaderFrame->GetCurrentForm())
 //		pCoolReaderFrame->GetCurrentForm()->AddTouchEventListener(*__renderer->getEventAdapter());
-	pCoolReaderFrame->AddTouchEventListener(*__renderer->getEventAdapter());
+	pCoolReaderFrame->setRenderer(__renderer);
 	__renderer->setPlayer(__player);
 
 	return true;

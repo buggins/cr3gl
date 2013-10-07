@@ -10,6 +10,8 @@
 
 using namespace CRUI;
 
+#define MIN_ITEM_SIZE_PT 33
+
 CRUIDeviceInfo deviceInfo;
 
 bool CRUIDeviceInfo::isSizeChanged(int dx, int dy) {
@@ -61,7 +63,7 @@ void CRUIDeviceInfo::setScreenDimensions(int dx, int dy, int _dpi) {
 		dpi = _dpi;
 	shortSideMillimeters = pixelsToMm(shortSide);
 	longSideMillimeters = pixelsToMm(longSide);
-    minListItemSize = ptToPixels(44);
+    minListItemSize = ptToPixels(MIN_ITEM_SIZE_PT);
 }
 
 

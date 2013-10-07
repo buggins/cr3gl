@@ -9,6 +9,7 @@
 #include <FGraphics.h>
 #include <gl.h>
 #include "crconcurrent.h"
+#include "CR3Renderer.h"
 
 
 class CRRunnableContainer : public Tizen::Base::Object
@@ -26,16 +27,31 @@ public:
 
 #define UI_UPDATE_REQUEST 12345
 
-class CoolReaderForm;
 class CoolReaderFrame
 	: public Tizen::Ui::Controls::Frame
+	, public Tizen::Ui::IOrientationEventListener
 {
+		CR3Renderer * _renderer;
 public:
 	CoolReaderFrame(void);
 	virtual ~CoolReaderFrame(void);
+
+	void setRenderer(CR3Renderer * renderer);
 //	CoolReaderForm* _pCoolReaderForm;
 //	CoolReaderForm* getForm() { return _pCoolReaderForm; }
 public:
+	/**
+	 * Called when an orientation event occurs.
+	 *
+	 * @since	2.0
+	 *
+	 * @param[in]   source				The source of the event
+	 * @param[in]   orientationStatus	The information about the orientation event
+	 * @remarks		The orientation changed event is fired on Control for which orientation mode change has been enabled by calling SetOrientation().
+	 * @see		Tizen::Ui::Controls::Frame
+	 * @see		Tizen::Ui::Controls::Form
+	 */
+	virtual void OnOrientationChanged(const Tizen::Ui::Control& source, Tizen::Ui::OrientationStatus orientationStatus);
 	virtual void OnUserEventReceivedN (RequestId requestId, Tizen::Base::Collection::IList *pArgs);
 	virtual result OnInitializing(void);
 	virtual result OnTerminating(void);

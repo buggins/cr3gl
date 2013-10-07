@@ -145,7 +145,7 @@
         id = "SETTINGS_ITEM_TITLE"
         padding="3pt,0pt,3pt,0pt"
         margin="0pt"
-        fontSize="large"
+        fontSize="medium"
         align="left|vcenter"
     />
     <style
