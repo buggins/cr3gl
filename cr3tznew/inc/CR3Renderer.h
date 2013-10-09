@@ -23,16 +23,16 @@ class CR3Renderer :
 	public CRUIScreenUpdateManagerCallback,
 	public CRUIPlatform
 {
-		CoolReaderApp * _app;
-		LVDocView * _docview;
-	    CRUIMainWidget * _widget;
-		CRUIEventManager * _eventManager;
-		CRUIEventAdapter * _eventAdapter;
-		GLDrawBuf * _backbuffer;
-		bool _updateRequested;
+	CoolReaderApp * _app;
+	LVDocView * _docview;
+	CRUIMainWidget * _widget;
+	CRUIEventManager * _eventManager;
+	CRUIEventAdapter * _eventAdapter;
+	GLDrawBuf * _backbuffer;
+	bool _updateRequested;
 public:
 
-		CR3Renderer(CoolReaderApp * app);
+	CR3Renderer(CoolReaderApp * app);
 	~CR3Renderer(void);
 
 	CRUIEventAdapter * getEventAdapter() { return _eventAdapter; }

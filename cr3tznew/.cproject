@@ -1015,4 +1015,5 @@
 		<resource resourceType="PROJECT" workspacePath="/CR3Tizen"/>
 	</storageModule>
 	<storageModule moduleId="com.samsung.tizen.nativeapp.projectInfo" version="1.0.0"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
