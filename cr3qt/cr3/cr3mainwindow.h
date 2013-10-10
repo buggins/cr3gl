@@ -88,6 +88,8 @@ public:
     // CRUI overrides
     virtual void setScreenUpdateMode(bool updateNow, int animationFps);
     virtual void exitApp();
+    /// minimize app or show Home Screen
+    virtual void minimizeApp();
 
 public slots:
     void renderLater();

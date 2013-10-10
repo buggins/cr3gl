@@ -272,6 +272,11 @@ void OpenGLWindow::setAnimating(bool animating)
 }
 //! [5]
 
+/// minimize app or show Home Screen
+void OpenGLWindow::minimizeApp() {
+
+}
+
 void OpenGLWindow::exitApp() {
     QApplication::exit();
 }
