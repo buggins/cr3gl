@@ -88,11 +88,11 @@ void CRUIConfig::setupResourcesForScreenSize() {
     int sz5 = sz / 19;
 
     minFontSize = sz1;
-    maxFontSize = sz5 * 150 / 100;
+    maxFontSize = sz / 8;
     if (maxFontSize > 180)
         maxFontSize = 180;
-    if (minFontSize < 8)
-        minFontSize = 8;
+    if (minFontSize < 9)
+        minFontSize = 9;
     defFontSize = sz3;
 
     // calculate folder icons size

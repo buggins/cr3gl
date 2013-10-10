@@ -22,6 +22,10 @@ CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(
 	_align = ALIGN_LEFT | ALIGN_TOP;
     setColor(lString8(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), 0x948880);
     setColor(lString8(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST), 0x404040);
+    setColor(lString8(COLOR_ID_SLIDER_LINE_COLOR_OUTER), 0x000000);
+    setColor(lString8(COLOR_ID_SLIDER_LINE_COLOR_INNER), 0xFFFFFF);
+    setColor(lString8(COLOR_ID_SLIDER_POINTER_COLOR_OUTER), 0x000000);
+    setColor(lString8(COLOR_ID_SLIDER_POINTER_COLOR_INNER), 0xFFFFFF);
 }
 
 LVFontRef CRUITheme::getFontForSize(lUInt8 size) {

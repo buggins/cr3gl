@@ -7,6 +7,10 @@
 >
     <color id="ICON_COLOR_TRANSFORM_BRIGHTNESS" value="0x948880"/>
     <color id="ICON_COLOR_TRANSFORM_CONTRAST" value="0x404040"/>
+    <color id="SLIDER_LINE_COLOR_OUTER"    value="0x000000"/>
+    <color id="SLIDER_LINE_COLOR_INNER"    value="0xFFFFFF"/>
+    <color id="SLIDER_POINTER_COLOR_OUTER" value="0x000000"/>
+    <color id="SLIDER_POINTER_COLOR_INNER" value="0xFFFFFF"/>
     <style
         id="BUTTON"
         background="btn_default_normal.9"

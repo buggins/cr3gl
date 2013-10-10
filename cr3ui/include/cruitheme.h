@@ -277,6 +277,10 @@ public:
 
 #define COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS "ICON_COLOR_TRANSFORM_BRIGHTNESS"
 #define COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST "ICON_COLOR_TRANSFORM_BRIGHTNESS"
+#define COLOR_ID_SLIDER_LINE_COLOR_OUTER "SLIDER_LINE_COLOR_OUTER"
+#define COLOR_ID_SLIDER_LINE_COLOR_INNER "SLIDER_LINE_COLOR_INNER"
+#define COLOR_ID_SLIDER_POINTER_COLOR_OUTER "SLIDER_POINTER_COLOR_OUTER"
+#define COLOR_ID_SLIDER_POINTER_COLOR_INNER "SLIDER_POINTER_COLOR_INNER"
 
 class CRUITheme : public CRUIStyle {
 protected:
@@ -297,7 +301,12 @@ public:
         _colors.set(id, value);
     }
     lUInt32 getColor(lString8 id) {
-        return _colors.get(id);
+        lUInt32 cl = 0xFF0000;
+        if (!_colors.get(id, cl)) {
+            //CRLog::error("Color not found in theme: %s", id.c_str());
+            cl = 0xFF0000;
+        }
+        return cl;
     }
     lUInt32 getColor(const char * id) {
         return _colors.get(lString8(id));

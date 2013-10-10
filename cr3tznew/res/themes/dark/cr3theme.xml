@@ -8,6 +8,10 @@
 
     <color id="ICON_COLOR_TRANSFORM_BRIGHTNESS" value="0xC0B0A0"/>
     <color id="ICON_COLOR_TRANSFORM_CONTRAST" value="0x404040"/>
+    <color id="SLIDER_LINE_COLOR_OUTER"    value="0xE0E0E0"/>
+    <color id="SLIDER_LINE_COLOR_INNER"    value="0x404040"/>
+    <color id="SLIDER_POINTER_COLOR_OUTER" value="0x404040"/>
+    <color id="SLIDER_POINTER_COLOR_INNER" value="0xC0A080"/>
     <style
         id="BUTTON"
         background="btn_default_normal.9"

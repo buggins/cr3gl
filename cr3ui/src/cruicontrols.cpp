@@ -422,21 +422,24 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     applyMargin(rc);
     setClipRect(buf, rc);
     applyPadding(rc);
-    int cx = PT_TO_PX(9);
-    int cy = PT_TO_PX(15);
-    int lh = PT_TO_PX(2);
+    int cx = MIN_ITEM_PX / 3;
+    int cy = MIN_ITEM_PX * 2 / 3;
+    int lh = MIN_ITEM_PX / 6;
     int y0 = (rc.top + rc.bottom) / 2;
     lvRect linerc = rc;
     linerc.left += cx / 2;
     linerc.right -= cx / 2;
     linerc.top = y0 - lh/2;
     linerc.bottom = linerc.top + lh;
-    buf->FillRect(linerc, 0x80000000);
+    buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_OUTER));
+    linerc.shrink(lh / 4);
+    buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_INNER));
+
     int x0 = linerc.left + linerc.width() * (_value - _minValue) / (_maxValue - _minValue);
     lvRect crc(x0 - cx / 2, y0 - cy / 2, x0 + cx / 2, y0 + cy / 2);
-    buf->FillRect(crc, 0x80FFFFFF);
-    crc.shrink(2);
-    buf->FillRect(crc, 0x80404040);
+    buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_OUTER));
+    crc.shrink(lh / 3);
+    buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_INNER));
 }
 
 void CRUISliderWidget::updatePos(int pos) {

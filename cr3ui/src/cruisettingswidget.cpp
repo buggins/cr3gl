@@ -190,22 +190,24 @@ CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettings
     _sizetext->setPadding(PT_TO_PX(6));
     _sizetext->setText(formatFontSize(sz));
     _sizetext->setFontSize(FONT_SIZE_XLARGE);
+    _sizetext->setMinHeight(MIN_ITEM_PX);
     _slider = new CRUISliderWidget(crconfig.minFontSize, crconfig.maxFontSize, sz);
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(this);
+    _slider->setMinHeight(MIN_ITEM_PX);
     addChild(_sizetext);
     addChild(_slider);
     CRUITextWidget * separator = new CRUITextWidget(lString16(""));
     separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xC0FFFFFF);
+    separator->setBackground(0xE0FFFFFF);
     addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
     _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(3));
+    _sample->setBackground(0xE0808080);
+    _sample->setPadding(PT_TO_PX(5));
     addChild(_sample);
 }
 
