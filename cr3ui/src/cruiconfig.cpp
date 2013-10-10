@@ -283,7 +283,7 @@ void CRUIConfig::clearGraphicsCaches() {
 	fontMan->clearGlyphCache();
 }
 
-void CRUIConfig::initEngine() {
+void CRUIConfig::initEngine(bool setLogger) {
 
     if (systemLanguage.empty())
         systemLanguage = "en";
@@ -296,10 +296,12 @@ void CRUIConfig::initEngine() {
     LVAppendPathDelimiter(i18nDir);
 
     // Logger
-    if (!logFile.empty())
-        CRLog::setFileLogger(logFile.c_str(), true);
-    else
-        CRLog::setStderrLogger();
+    if (setLogger) {
+		if (!logFile.empty())
+			CRLog::setFileLogger(logFile.c_str(), true);
+		else
+			CRLog::setStderrLogger();
+    }
     CRLog::setLogLevel(CRLog::LL_TRACE);
 
     // Concurrency

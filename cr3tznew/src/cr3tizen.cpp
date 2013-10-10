@@ -285,8 +285,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("/mnt/ums/Downloads"));
     deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
 
-    crconfig.initEngine();
-	LVSetTizenLogger();
+    crconfig.initEngine(false); // don't set logger
+	CRLog::info("Engine initialization done");
 }
 
 

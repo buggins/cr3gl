@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme
+    id="base"
+    description="Base theme"
+    textColor="#000000"
+>
+    <style
+        id="BUTTON"
+        fontSize="large"
+    />
+    <style
+        id="BUTTON_NOBACKGROUND"
+        fontSize="large"
+    />
+    <style
+        id="LIST_ITEM"
+        margin="0"
+        padding="3pt"
+    />
+
+    <style
+        id = "HOME_WIDGET"
+    />
+    <style
+        id = "FILE_LIST"
+    />
+    <style
+        id = "HOME_LIST_CAPTION"
+        fontSize="small"
+    />
+    <style
+        id = "TOOL_BAR"
+        fontSize="small"
+    />
+    <style
+        id = "POPUP_FRAME"
+        padding="2pt"
+    />
+    <style
+        id = "POPUP_FRAME_HANDLE"
+        padding="4pt"
+        margin="0pt"
+    />
+    <style
+        id = "MENU_LIST"
+    />
+    <style
+        id = "MENU_ITEM"
+        padding="0pt"
+    />
+    <style
+        id = "MENU_ITEM_ICON"
+        padding="0pt"
+        margin="2pt"
+        align="center"
+    />
+    <style
+        id = "MENU_ITEM_TEXT"
+        padding="2pt"
+        margin="2pt"
+        fontSize="medium"
+        align="left|vcenter"
+    />
+    <style
+        id = "SETTINGS_WIDGET"
+    />
+    <style
+        id = "MENU_LIST"
+    />
+    <style
+        id = "SETTINGS_ITEM_LIST"
+    />
+    <style
+        id = "SETTINGS_ITEM"
+        padding="3pt,0pt,3pt,0pt"
+        margin="0pt"
+        minHeight="100%mi"
+    />
+    <style
+        id = "SETTINGS_ITEM_TITLE"
+        padding="3pt,0pt,3pt,0pt"
+        margin="0pt"
+        fontSize="medium"
+        align="left|vcenter"
+    />
+    <style
+        id = "SETTINGS_ITEM_TEXT_LAYOUT"
+        padding="2pt"
+        align="left|vcenter"
+    />
+    <style
+        id = "SETTINGS_ITEM_ICON"
+        padding="3pt"
+        align="center"
+    />
+    <style
+        id = "SETTINGS_ITEM_DESCRIPTION"
+        padding="2pt"
+        fontSize="small"
+        align="bottom|left"
+    />
+</theme>

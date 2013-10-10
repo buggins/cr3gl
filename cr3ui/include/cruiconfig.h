@@ -88,7 +88,7 @@ struct CRUIConfig {
     /// on GL context close, delete all GL objects
     void clearGraphicsCaches();
 
-    void initEngine();
+    void initEngine(bool setLogger = true);
     void uninitEngine();
 
     CRUIConfig();

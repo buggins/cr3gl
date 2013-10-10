@@ -75,25 +75,38 @@ void CRUITheme::registerStyle(CRUIStyle * style)
 		_map.set(style->styleId(), style);
 }
 
-CRUIStyle * CRUITheme::find(const lString8 &id) {
+void CRUITheme::remove(CRUIStyle * style) {
+	for (int i = 0; i < _substyles.length(); i++) {
+		if (_substyles[i] == style) {
+			if (!style->getStyleId().empty())
+				_map.remove(style->getStyleId());
+			_substyles.remove(i);
+			break;
+		}
+	}
+	delete style;
+}
+
+CRUIStyle * CRUITheme::find(const lString8 &id, bool defaultToTheme) {
 	if (id.empty())
 		return this;
 	CRUIStyle * res = _map.get(id);
 	if (res)
 		return res;
-	return this;
+	return defaultToTheme ? this : NULL;
 }
 
 class CRUIThemeParser : public LVXMLParserCallback
 {
 protected:
+	lString8 basePath;
     CRUITheme * theme;
     CRUIStyle * style;
     lString8 colorId;
     lString8 colorValue;
     bool insideColor;
 public:
-    CRUIThemeParser(CRUITheme * _theme) : theme(_theme), style(NULL), insideColor(false)
+    CRUIThemeParser(CRUITheme * _theme, lString8 _basePath) : basePath(_basePath), theme(_theme), style(NULL), insideColor(false)
     {
     }
     /// called on parsing end
@@ -234,7 +247,23 @@ public:
             return;
         }
         if (!lStr_cmp(attrname, "id")) {
-            style->setStyleId(value);
+        	if (style != theme) {
+        		CRUIStyle * existing = theme->find(value, false);
+        		if (existing) {
+        			theme->remove(style);
+        			style = existing;
+        		}
+        	}
+        	if (style->getStyleId().empty())
+        		style->setStyleId(value);
+        } else if (!lStr_cmp(attrname, "base")) {
+        	if (!value.empty() && (!style || style == theme) && value != theme->getStyleId()) {
+        		// load base theme
+				lString8 baseThemePath = basePath + value;
+				LVAppendPathDelimiter(baseThemePath);
+				baseThemePath += "cr3theme.xml";
+				theme->loadFromFile(baseThemePath);
+        	}
         } else if (!lStr_cmp(attrname, "state")) {
             style->setStateValue(parseState(value));
         } else if (!lStr_cmp(attrname, "stateMask")) {
@@ -367,7 +396,11 @@ bool CRUITheme::loadFromFile(lString8 fileName) {
     if (stream.isNull())
         return false;
 
-    CRUIThemeParser reader(this);
+    lString16 fn16 = Utf8ToUnicode(fileName);
+    fn16 = LVExtractPath(fn16, true); // this theme dir
+    fn16 = fn16.substr(0, fn16.length() - 1); // remove trailing /
+    fn16 = LVExtractPath(fn16, true); // base theme dir
+    CRUIThemeParser reader(this, UnicodeToUtf8(fn16));
     LVXMLParser parser( stream, &reader );
     if ( !parser.CheckFormat() )
         return false;

@@ -207,6 +207,7 @@ public:
 	virtual ~CRUIStyle();
 	virtual CRUITheme * getTheme() { return _theme; }
     CRUIStyle * getParentStyle() { return _parentStyle; }
+    const lString8 & getStyleId() { return _styleId; }
     void setStyleId(lString8 id) { _styleId = id; }
     virtual CRUIStyle * addSubstyle(lString8 id = lString8::empty_str, lUInt8 stateMask = 0, lUInt8 stateValue = 0);
 	virtual CRUIStyle * addSubstyle(const char * id = NULL, lUInt8 stateMask = 0, lUInt8 stateValue = 0) {
@@ -286,7 +287,8 @@ protected:
 	LVHashTable<lString8, CRUIStyle *> _map;
     LVHashTable<lString8, lUInt32> _colors;
 public:
-	virtual CRUIStyle * find(const lString8 &id);
+    void remove(CRUIStyle * style);
+	virtual CRUIStyle * find(const lString8 &id, bool defaultToTheme = true);
 	void registerStyle(CRUIStyle * style);
 	CRUIStyle * setFontForSize(lUInt8 size, LVFontRef font);
 	LVFontRef getFontForSize(lUInt8 size);

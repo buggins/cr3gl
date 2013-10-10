@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme
     id="dark"
+    base="base"
     description="Dark"
     textColor="#FFFFC0"
 >
@@ -9,7 +10,6 @@
     <color id="ICON_COLOR_TRANSFORM_CONTRAST" value="0x404040"/>
     <style
         id="BUTTON"
-        fontSize="large"
         background="btn_default_normal.9"
     >
         <style
@@ -27,7 +27,6 @@
     </style>
     <style
         id="BUTTON_NOBACKGROUND"
-        fontSize="large"
     >
         <style
             state="pressed" stateMask="pressed"
@@ -44,8 +43,6 @@
     </style>
     <style
         id="LIST_ITEM"
-        margin="0"
-        padding="3pt"
     >
         <style
             state="pressed" stateMask="pressed"
@@ -75,26 +72,21 @@
     <style
         id = "HOME_LIST_CAPTION"
         textColor="0x00FFE0C0"
-        fontSize="small"
     />
     <style
         id = "TOOL_BAR"
         background="tx_wood_dark_v3.jpg|tiled"
         background2="toolbar_shadow.9"
-        fontSize="small"
     />
     <style
         id = "POPUP_FRAME"
         background="tx_wood_dark_v3.jpg|tiled"
         background2="toolbar_shadow.9"
-        padding="2pt"
     />
     <style
         id = "POPUP_FRAME_HANDLE"
         background="0xE0808080"
         background2="home_frame.9"
-        padding="4pt"
-        margin="0pt"
     />
     <style
         id = "MENU_LIST"
@@ -102,25 +94,15 @@
     />
     <style
         id = "MENU_ITEM"
-        padding="0pt"
     />
     <style
         id = "MENU_ITEM"
-        padding="0pt"
-        margin="0pt"
     />
     <style
         id = "MENU_ITEM_ICON"
-        padding="0pt"
-        margin="2pt"
-        align="center"
     />
     <style
         id = "MENU_ITEM_TEXT"
-        padding="2pt"
-        margin="2pt"
-        fontSize="medium"
-        align="left|vcenter"
     />
     <style
         id = "SETTINGS_WIDGET"
@@ -137,31 +119,17 @@
     />
     <style
         id = "SETTINGS_ITEM"
-        padding="3pt,0pt,3pt,0pt"
-        margin="0pt"
-        minHeight="100%mi"
     />
     <style
         id = "SETTINGS_ITEM_TITLE"
-        padding="3pt,0pt,3pt,0pt"
-        margin="0pt"
-        fontSize="medium"
-        align="left|vcenter"
     />
     <style
         id = "SETTINGS_ITEM_TEXT_LAYOUT"
-        padding="2pt"
-        align="left|vcenter"
     />
     <style
         id = "SETTINGS_ITEM_ICON"
-        padding="3pt"
-        align="center"
     />
     <style
         id = "SETTINGS_ITEM_DESCRIPTION"
-        padding="2pt"
-        fontSize="small"
-        align="bottom|left"
     />
 </theme>
