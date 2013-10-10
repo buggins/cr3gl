@@ -249,10 +249,12 @@ public:
         _itemWidget->setMargin(lvRect(PT_TO_PX(1), 0, PT_TO_PX(2), 0));
 
         setMargin(lvRect(PT_TO_PX(1), 0, PT_TO_PX(2), 0));
+        onThemeChanged();
 	}
 
     void onThemeChanged() {
         _caption->setPadding(3);
+        _caption->setFontSize(deviceInfo.shortSide / 30);
         _list->setPadding(PT_TO_PX(3));
         _itemImage->setPadding(PT_TO_PX(1));
         _textWidget->setPadding(PT_TO_PX(1));
@@ -754,7 +756,7 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
         actions.add(ACTION_EXIT);
         //actions.add(ACTION_BACK);
         lvRect margins;
-        margins.right = MIN_ITEM_PX * 5 / 4;
+        //margins.right = MIN_ITEM_PX * 5 / 4;
         showMenu(actions, ALIGN_TOP, margins, false);
         return true;
     }

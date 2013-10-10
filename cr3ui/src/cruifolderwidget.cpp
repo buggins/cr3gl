@@ -402,7 +402,7 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_BACK);
         lvRect margins;
-        margins.right = MIN_ITEM_PX * 120 / 100;
+        //margins.right = MIN_ITEM_PX * 120 / 100;
         showMenu(actions, ALIGN_TOP, margins, false);
         return true;
     }
