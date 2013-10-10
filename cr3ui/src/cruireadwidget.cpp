@@ -121,6 +121,7 @@ void CRUIReadWidget::prepareScroll(int direction) {
 
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
+    _popupControl.updateLayout(_pos);
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1, false);
@@ -146,7 +147,10 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
     drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
     // popup support
-    drawPopup(buf);
+    if (_popupControl.popupBackground)
+        _popupControl.popupBackground->draw(buf);
+    if (_popupControl.popup)
+        _popupControl.popup->draw(buf);
 }
 
 class BookLoadedNotificationTask : public CRRunnable {
@@ -382,14 +386,22 @@ bool CRUIReadWidget::renderIfNecessary() {
 
 /// overriden to treat popup as first child
 int CRUIReadWidget::getChildCount() {
+    int cnt = 0;
     if (_popupControl.popup)
-        return 1;
-    return 0;
+        cnt++;
+    if (_popupControl.popupBackground)
+        cnt++;
+    return cnt;
 }
 
 /// overriden to treat popup as first child
 CRUIWidget * CRUIReadWidget::getChild(int index) {
     CR_UNUSED(index);
+    if (index == 0) {
+        if (_popupControl.popupBackground)
+            return _popupControl.popupBackground;
+        return _popupControl.popup;
+    }
     return _popupControl.popup;
 }
 

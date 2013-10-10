@@ -4,24 +4,23 @@
 
 using namespace CRUI;
 
-//#define POPUP_ANIMATION_DURATION 200
-#define POPUP_ANIMATION_DURATION 2000
+#define POPUP_ANIMATION_DURATION 200
+//#define POPUP_ANIMATION_DURATION 2000
 
 //==========================================================
 
 int CRUIWindowWidget::getChildCount() {
-    return _children.length() + (_popupControl.popup ? 1 : 0);
+    return _children.length() + (_popupControl.popup ? 1 : 0) + (_popupControl.popupBackground ? 1 : 0);
 }
 
 CRUIWidget * CRUIWindowWidget::getChild(int index) {
-    if (_popupControl.popup) {
-        if (index == 0)
-            return _popupControl.popup;
-        else
-            return _children.get(index - 1);
-    } else {
-        return _children.get(index);
+    if (index < _children.length())
+        return _children[index];
+    if (index == _children.length()) {
+        if (_popupControl.popupBackground)
+            return _popupControl.popupBackground;
     }
+    return _popupControl.popup;
 }
 
 class CRUIPopupFrame : public CRUILinearLayout {
@@ -120,23 +119,10 @@ public:
     }
 };
 
-/// draws popup above content
-void CRUIWindowWidget::drawPopup(LVDrawBuf * buf) {
-    if (_popupControl.popup) {
-        // outer space background
-        buf->FillRect(_pos, _popupControl.getColor());
-        lvRect rc;
-        _popupControl.getRect(rc);
-        CRLog::trace("Drawing popup (%d, %d, %d, %d)", rc.left, rc.top, rc.right, rc.bottom);
-        _popupControl.popup->layout(rc.left, rc.top, rc.right, rc.bottom);
-        _popupControl.popup->draw(buf);
-    }
-}
-
 /// draws widget with its children to specified surface
 void CRUIWindowWidget::draw(LVDrawBuf * buf) {
+    _popupControl.updateLayout(_pos);
     CRUIFrameLayout::draw(buf);
-    drawPopup(buf);
 }
 
 /// start animation of popup closing
@@ -149,7 +135,23 @@ void PopupControl::animateClose() {
     closing = true;
 }
 
+/// update current position based on src and dst rectangles and progress
+void PopupControl::updateLayout(const lvRect & pos) {
+    if (!popup)
+        return;
+    if (parentRect != pos)
+        layout(parentRect);
+    if (popupBackground) {
+        popupBackground->layout(parentRect.left, parentRect.top, parentRect.right, parentRect.bottom);
+        popupBackground->setBackground(getColor());
+    }
+    lvRect rc;
+    getRect(rc);
+    popup->layout(rc.left, rc.top, rc.right, rc.bottom);
+}
+
 void PopupControl::layout(const lvRect & pos) {
+    parentRect = pos;
     popup->measure(pos.width() - margins.left - margins.right, pos.height() - margins.top - margins.bottom);
     width = popup->getMeasuredWidth();
     height = popup->getMeasuredHeight();
@@ -244,6 +246,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     widget = frame;
     _popupControl.close();
     _popupControl.popup = widget;
+    _popupControl.popupBackground = new CRUIWidget();
     _popupControl.align = location;
     _popupControl.margins = margins;
     _popupControl.layout(_pos);

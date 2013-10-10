@@ -105,7 +105,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
         return true;
     }
 	if (!event->getWidget()) { // if not not assigned on widget
-		for (int i=0; i<widget->getChildCount(); i++) {
+        for (int i=widget->getChildCount() - 1; i >= 0; i--) {
 			CRUIWidget * child = widget->getChild(i);
             if (child->getVisibility() == VISIBLE && dispatchTouchEvent(child, event)) {
 				if (action == ACTION_DOWN) {
@@ -200,7 +200,7 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
         return true;
     }
     if (!event->getWidget()) { // if not not assigned on widget
-        for (int i=0; i<widget->getChildCount(); i++) {
+        for (int i = widget->getChildCount() - 1; i >= 0; i--) {
             CRUIWidget * child = widget->getChild(i);
             if (dispatchKeyEvent(child, event)) {
                 if (action == KEY_ACTION_PRESS) {

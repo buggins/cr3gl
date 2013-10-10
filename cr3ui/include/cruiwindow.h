@@ -10,12 +10,14 @@ public:
     lInt64 startTs;
     lInt64 endTs;
     CRUIWidget * popup; // popup widget
+    CRUIWidget * popupBackground; // popup background widget
     lUInt32 outerColor; // to apply on surface outside popup
     int width;
     int height;
     int align;       // where is destination rectangle located
     int progress;
     bool closing;
+    lvRect parentRect;
     lvRect srcRect;
     lvRect dstRect;
     lvRect margins;
@@ -23,18 +25,23 @@ public:
         if (popup)
             delete popup;
         popup = NULL;
+        if (popupBackground)
+            delete popupBackground;
+        popupBackground = NULL;
     }
     /// returns rect for current progress
     void getRect(lvRect & rc);
     /// calculates src and dst rectangles for updated parent position/size
     void layout(const lvRect & pos);
+    /// update current position based on src and dst rectangles and progress
+    void updateLayout(const lvRect & pos);
     /// calculates outer background color for current progress
     lUInt32 getColor();
 
     /// start animation of popup closing
     void animateClose();
 
-    PopupControl() : popup(NULL), closing(false) {
+    PopupControl() : popup(NULL), popupBackground(NULL), closing(false) {
 
     }
 
@@ -52,9 +59,6 @@ protected:
     PopupControl _popupControl;
 
     void preparePopup(CRUIWidget * widget, int location, const lvRect & margins);
-
-    /// draws popup above content
-    virtual void drawPopup(LVDrawBuf * buf);
 
 public:
     CRUIWindowWidget(CRUIMainWidget * main) : _main(main) {
