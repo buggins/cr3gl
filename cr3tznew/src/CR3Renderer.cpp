@@ -17,12 +17,13 @@ const GLfloat ZERO = GLfloat( 0.0f);
 CR3Renderer::CR3Renderer(CoolReaderApp * app)
 	: _app(app)
 	, _backbuffer(NULL)
-	, _updateRequested(false)
+	//, _updateRequested(false)
 	, __controlWidth(0)
 	, __controlHeight(0)
 	, __angle(0)
 	, __player(NULL)
 	, __playerStarted(true)
+	, __playerDrawOnce(0)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
@@ -67,13 +68,21 @@ CR3Renderer::TerminateGl(void)
 	return true;
 }
 
-#define USE_BACKBUFFER 0
+#define USE_BACKBUFFER 1
 bool
 CR3Renderer::Draw(void)
 {
 	CRLog::debug("CR3Renderer::Draw is called");
+	if (__playerDrawOnce > 0) {
+		__playerDrawOnce--;
+		if (__playerDrawOnce == 1 && __playerStarted) {
+			__playerStarted = false;
+			__player->Pause();
+			return true;
+		}
+	}
 
-	_updateRequested = false;
+	//_updateRequested = false;
 
 	glShadeModel(GL_SMOOTH);
 	glViewport(0, 0, GetTargetControlWidth(), GetTargetControlHeight());
@@ -136,6 +145,7 @@ CR3Renderer::Draw(void)
 	glFlush();
 
 	buf.afterDrawing();
+
 
 	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;
@@ -200,24 +210,32 @@ void CR3Renderer::minimizeApp() {
 void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 	//CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if (!animationFps) {
+		if (__playerDrawOnce < 2)
+			__playerDrawOnce = 2;
+//		if (__playerStarted) {
+////			__playerDrawOnce = true;
+//			//CRLog::trace("Pausing player");
+////			__player->Pause();
+////			__playerStarted = false;
+//		}
 		if (updateNow) {
-			//CRLog::trace("Updating player");
-			if (!_updateRequested) {
-				_updateRequested = true;
-				__player->Redraw();
+			if (!__playerStarted) {
+				__playerStarted = true;
+				__player->Resume();
 			}
-		}
-		if (__playerStarted) {
-			//CRLog::trace("Pausing player");
-			__player->Pause();
-			__playerStarted = false;
+//			//CRLog::trace("Updating player");
+//			if (!_updateRequested) {
+//				_updateRequested = true;
+//				__player->Redraw();
+//			}
 		}
 	} else {
+		__playerDrawOnce = 0;
 		if (!__playerStarted) {
 			//CRLog::trace("Resuming player");
-			__player->SetFps(animationFps);
-			__player->Resume();
 			__playerStarted = true;
+			__player->SetFps(30);//);
+			__player->Resume();
 		}
 	}
 }

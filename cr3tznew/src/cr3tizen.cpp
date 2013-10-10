@@ -166,21 +166,21 @@ public:
 
 public:
     virtual CRMutex * createMutex() {
-		CRLog::debug("Tizen - create mutex");
+		//CRLog::debug("Tizen - create mutex");
         return new TizenMutex();
     }
 
     virtual CRMonitor * createMonitor() {
-		CRLog::debug("Tizen - create monitor");
+		//CRLog::debug("Tizen - create monitor");
         return new TizenMonitor();
     }
 
     virtual CRThread * createThread(CRRunnable * threadTask) {
-		CRLog::debug("Tizen - create thread");
+		//CRLog::debug("Tizen - create thread");
         return new TizenThread(threadTask);
     }
     virtual void executeGui(CRRunnable * task) {
-		CRLog::debug("Tizen - execute GUI");
+		//CRLog::debug("Tizen - execute GUI");
         guiExecutor->execute(task);
     }
 

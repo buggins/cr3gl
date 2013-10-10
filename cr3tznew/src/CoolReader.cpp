@@ -73,12 +73,12 @@ CoolReaderApp::OnAppInitialized(void)
     //crconfig.loadTheme(lString8());
 
 	{
-		__player = new Tizen::Graphics::Opengl::GlPlayer;
-		//__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame->GetCurrentForm());
+		__player = new Tizen::Graphics::Opengl::GlPlayer();
 		__player->Construct(Tizen::Graphics::Opengl::EGL_CONTEXT_CLIENT_VERSION_1_X, pCoolReaderFrame);
 
-		__player->SetFps(5);
-		__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_RGB565);
+		__player->SetFps(30);
+		//__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_RGB565);
+		__player->SetEglAttributePreset(Tizen::Graphics::Opengl::EGL_ATTRIBUTES_PRESET_ARGB8888);
 
 		__player->Start();
 	}

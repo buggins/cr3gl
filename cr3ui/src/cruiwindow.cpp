@@ -4,7 +4,8 @@
 
 using namespace CRUI;
 
-#define POPUP_ANIMATION_DURATION 200
+//#define POPUP_ANIMATION_DURATION 200
+#define POPUP_ANIMATION_DURATION 2000
 
 //==========================================================
 
@@ -126,6 +127,7 @@ void CRUIWindowWidget::drawPopup(LVDrawBuf * buf) {
         buf->FillRect(_pos, _popupControl.getColor());
         lvRect rc;
         _popupControl.getRect(rc);
+        CRLog::trace("Drawing popup (%d, %d, %d, %d)", rc.left, rc.top, rc.right, rc.bottom);
         _popupControl.popup->layout(rc.left, rc.top, rc.right, rc.bottom);
         _popupControl.popup->draw(buf);
     }
@@ -216,9 +218,9 @@ lUInt32 PopupControl::getColor() {
 void PopupControl::getRect(lvRect & rc) {
     int p = closing ? 1000 - progress : progress;
     if (p <= 0) {
-        rc = srcRect;
+        rc = closing ? dstRect : srcRect;
     } else if (p >= 1000) {
-        rc = dstRect;
+        rc = closing ? srcRect : dstRect;
     } else {
         rc.left = srcRect.left + (dstRect.left - srcRect.left) * p / 1000;
         rc.right = srcRect.right + (dstRect.right - srcRect.right) * p / 1000;

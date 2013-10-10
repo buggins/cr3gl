@@ -1138,12 +1138,12 @@ void GLDrawBuf::afterDrawing()
 			checkError("afterDrawing - glBindFramebuffer");
 			//glFlush();
 		}
-        glMatrixMode(GL_MODELVIEW);
+        //glMatrixMode(GL_MODELVIEW);
         //glPopMatrix();
-        checkError("glPopMatrix");
-        glMatrixMode(GL_PROJECTION);
+        //checkError("glPopMatrix");
+        //glMatrixMode(GL_PROJECTION);
         //glPopMatrix();
-        checkError("glPopMatrix");
+        //checkError("glPopMatrix");
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
     }

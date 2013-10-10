@@ -29,7 +29,7 @@ class CR3Renderer :
 	CRUIEventManager * _eventManager;
 	CRUIEventAdapter * _eventAdapter;
 	GLDrawBuf * _backbuffer;
-	bool _updateRequested;
+	//bool _updateRequested;
 public:
 
 	CR3Renderer(CoolReaderApp * app);
@@ -70,6 +70,7 @@ private:
 	int __angle;
 	Tizen::Graphics::Opengl::GlPlayer * __player;
 	bool __playerStarted;
+	int __playerDrawOnce;
 };
 
 #endif /* _GLRENDERERTEMPLATE_H_ */

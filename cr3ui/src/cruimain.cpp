@@ -136,6 +136,7 @@ void CRUIMainWidget::onDocumentRenderFinished(lString8 pathname) {
         }
         startAnimation(newpos, WINDOW_ANIMATION_DELAY);
     } else {
+    	CRLog::trace("updating screen after render is finished");
         update();
     }
 }
