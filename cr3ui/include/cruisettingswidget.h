@@ -189,6 +189,7 @@ protected:
 public:
     CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting), _callback(NULL) {}
     virtual void setCallback(CRUISettingsEditorCallback * callback) { _callback = callback; }
+    virtual void setOnDragListener(CRUIDragListener * listener) { CR_UNUSED(listener); }
 };
 
 class CRUISettingsListEditor : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
@@ -196,6 +197,7 @@ protected:
     CRUIListWidget * _list;
 public:
     CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting);
+    virtual void setOnDragListener(CRUIDragListener * listener) { _list->setOnDragListener(listener); }
     virtual ~CRUISettingsListEditor() {}
 };
 
@@ -305,6 +307,8 @@ public:
     CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings);
     virtual bool onClick(CRUIWidget * widget);
     virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done);
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
 };
 
 

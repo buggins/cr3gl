@@ -37,6 +37,13 @@ public:
 	virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
 };
 
+class CRUIDragListener {
+public:
+    /// return true if drag operation is intercepted
+    virtual bool onStartDragging(const CRUIMotionEvent * event, bool vertical) = 0;
+    virtual ~CRUIDragListener() {}
+};
+
 class CRUIListWidget : public CRUIWidget {
 protected:
 	bool _vertical;
@@ -50,6 +57,7 @@ protected:
     int _colCount;
 	CRUIOnListItemClickListener * _onItemClickListener;
 	CRUIOnListItemLongClickListener * _onItemLongClickListener;
+    CRUIDragListener * _onStartDragCallback;
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
     ScrollControl _scroll;
@@ -68,7 +76,9 @@ public:
 		return this;
 	}
 
-	virtual CRUIOnListItemClickListener * getOnItemClickListener() { return _onItemClickListener; }
+    virtual CRUIDragListener * getOnDragListener() { return _onStartDragCallback; }
+    virtual void setOnDragListener(CRUIDragListener * listener) { _onStartDragCallback = listener; }
+    virtual CRUIOnListItemClickListener * getOnItemClickListener() { return _onItemClickListener; }
 	virtual CRUIOnListItemLongClickListener * getOnItemLongClickListener() { return _onItemLongClickListener; }
 	virtual CRUIOnListItemClickListener * setOnItemClickListener(CRUIOnListItemClickListener * listener) { CRUIOnListItemClickListener * old = _onItemClickListener; _onItemClickListener = listener; return old; }
 	virtual CRUIOnListItemLongClickListener * setOnItemLongClickListener(CRUIOnListItemLongClickListener * listener) { CRUIOnListItemLongClickListener * old = _onItemLongClickListener; _onItemLongClickListener = listener; return old; }

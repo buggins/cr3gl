@@ -23,6 +23,11 @@ CRUIWidget * CRUIWindowWidget::getChild(int index) {
     return _popupControl.popup;
 }
 
+/// return true if drag operation is intercepted
+bool CRUIWindowWidget::onStartDragging(const CRUIMotionEvent * event, bool vertical) {
+    return getMain()->startDragging(event, vertical);
+}
+
 class CRUIPopupFrame : public CRUILinearLayout {
     PopupControl * _control;
     CRUIWidget * _body;

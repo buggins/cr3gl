@@ -4,6 +4,7 @@
 #include "cruilayout.h"
 #include "cruiaction.h"
 #include "cruicontrols.h"
+#include "cruilist.h"
 
 class PopupControl {
 public:
@@ -51,7 +52,7 @@ public:
 };
 
 /// base class for full screen widgets, supporting popups
-class CRUIWindowWidget : public CRUIFrameLayout {
+class CRUIWindowWidget : public CRUIFrameLayout, public CRUIDragListener {
 protected:
     CRUIMainWidget * _main;
     CRUILinearLayout * _body;
@@ -61,6 +62,9 @@ protected:
     void preparePopup(CRUIWidget * widget, int location, const lvRect & margins);
 
 public:
+    /// return true if drag operation is intercepted
+    virtual bool onStartDragging(const CRUIMotionEvent * event, bool vertical);
+
     CRUIWindowWidget(CRUIMainWidget * main) : _main(main) {
     	_body = new CRUIVerticalLayout();
     	addChild(_body);

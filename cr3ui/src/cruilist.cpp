@@ -20,7 +20,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
   _ownAdapter(false), _scrollOffset(0),
   _maxScrollOffset(0), _topItem(0), _selectedItem(-1), _dragStartOffset(NO_DRAG),
   _colCount(1),
-  _onItemClickListener(NULL), _onItemLongClickListener(NULL)
+  _onItemClickListener(NULL), _onItemLongClickListener(NULL), _onStartDragCallback(NULL)
 {
     setStyle("MENU_LIST");
 }
@@ -403,8 +403,12 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 		} else if (isDragging) {
 			setScrollOffset(_dragStartOffset - delta);
         } else if (!isDragging) {
-            if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X))
-                startDragging(event, !isVertical());
+            if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
+                if (_onStartDragCallback)
+                    _onStartDragCallback->onStartDragging(event, !isVertical());
+                else
+                    startDragging(event, !isVertical());
+            }
         }
 		// ignore
 		//CRLog::trace("list MOVE");

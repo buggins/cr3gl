@@ -632,6 +632,7 @@ CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem *
     CRUISettingsEditor * editor = settings->createEditor(main->getNewSettings());
     if (editor) {
         editor->setCallback(this);
+        editor->setOnDragListener(this);
         editor->setLayoutParams(FILL_PARENT, FILL_PARENT);
         _body->addChild(editor);
     }
@@ -654,6 +655,33 @@ void CRUISettingsWidget::onSettingChange(CRUISettingsItem * setting, bool done) 
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
         _main->back();
+    }
+    return true;
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUISettingsWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    int action = event->getAction();
+    int delta = event->getX() - event->getStartX();
+    //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
+    switch (action) {
+    case ACTION_DOWN:
+        break;
+    case ACTION_UP:
+        break;
+    case ACTION_FOCUS_IN:
+        break;
+    case ACTION_FOCUS_OUT:
+        return false; // to continue tracking
+        break;
+    case ACTION_CANCEL:
+        break;
+    case ACTION_MOVE:
+        if ((delta > DRAG_THRESHOLD_X) || (-delta > DRAG_THRESHOLD_X))
+            getMain()->startDragging(event, false);
+        break;
+    default:
+        return CRUIWidget::onTouchEvent(event);
     }
     return true;
 }
