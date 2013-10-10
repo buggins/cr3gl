@@ -491,6 +491,20 @@ void CRUIMainWidget::saveSettings() {
         _currentSettings->saveToStream(stream.get());
 }
 
+void CRUIMainWidget::beforeNavigation(NavHistoryItem * from, NavHistoryItem * to) {
+    from->getWidget()->beforeNavigationFrom();
+    to->getWidget()->beforeNavigationTo();
+}
+
+void CRUIMainWidget::afterNavigation(NavHistoryItem * from, NavHistoryItem * to) {
+    if (from->getMode() == MODE_SETTINGS && to->getMode() != MODE_SETTINGS) {
+    	CRLog::info("Closed settings - applying changes");
+        applySettings();
+    }
+    from->getWidget()->afterNavigationFrom();
+    to->getWidget()->afterNavigationTo();
+}
+
 void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEvent * event) {
     if (_animation.active) {
         stopAnimation();
@@ -498,9 +512,7 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     int oldpos = _history.pos();
     if (newpos == oldpos)
         return;
-    if (_history[oldpos]->getMode() == MODE_SETTINGS && _history[newpos]->getMode() != MODE_SETTINGS) {
-        applySettings();
-    }
+    beforeNavigation(_history[oldpos], _history[newpos]);
     CRUIWidget * newWidget = _history[newpos]->getWidget();
     CRUIWidget * oldWidget = _history[oldpos]->getWidget();
     if (!newWidget || !oldWidget)
@@ -570,6 +582,7 @@ void CRUIMainWidget::stopAnimation() {
         delete _animation.newimage;
         _animation.newimage = NULL;
     }
+    afterNavigation(_history[_animation.oldpos], _history[_animation.newpos]);
     _history.setPos(_animation.newpos);
     requestLayout();
     update();

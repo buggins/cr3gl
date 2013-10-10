@@ -362,8 +362,7 @@ void CRUIConfig::initEngine(bool setLogger) {
 
     CRSetupDirectoryCacheManager();
 
-    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER1), lString8("paper1.jpg")));
-    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper2"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric1"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC1), lString8("tx_fabric.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric2"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC2), lString8("tx_fabric_indigo_fibre.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand1"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND1), lString8("tx_sand.jpg")));

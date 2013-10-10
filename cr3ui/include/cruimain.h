@@ -246,6 +246,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void createBrowserSettings();
     void createReaderSettings();
 
+    void beforeNavigation(NavHistoryItem * from, NavHistoryItem * to);
+    void afterNavigation(NavHistoryItem * from, NavHistoryItem * to);
     void startAnimation(int newpos, int duration, const CRUIMotionEvent * event = NULL);
     void stopAnimation();
     /// if not initialized, run background tasks

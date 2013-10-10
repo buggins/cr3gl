@@ -87,6 +87,11 @@ public:
 
     // apply changed settings
     virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) { CR_UNUSED3(changed, oldSettings, newSettings); }
+
+    virtual void beforeNavigationFrom() {}
+    virtual void afterNavigationFrom() {}
+    virtual void beforeNavigationTo() {}
+    virtual void afterNavigationTo() {}
 };
 
 class CRUITitleBarWidget : public CRUILinearLayout {

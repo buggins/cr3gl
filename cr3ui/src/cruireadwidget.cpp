@@ -721,7 +721,7 @@ void CRUIReadWidget::OnFormatStart() {
 
 /// document formatting finished
 void CRUIReadWidget::OnFormatEnd() {
-
+	invalidate();
 }
 
 /// format progress, called with values 0..100
