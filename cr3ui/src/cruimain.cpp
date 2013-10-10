@@ -7,7 +7,8 @@ using namespace CRUI;
 #include "stringresource.h"
 #include "cruiconfig.h"
 
-#define WINDOW_ANIMATION_DELAY 250
+//#define WINDOW_ANIMATION_DELAY 250
+#define WINDOW_ANIMATION_DELAY 750
 #define SLOW_OPERATION_POPUP_DELAY 150
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000
 #define SLOW_OPERATION_DIM_COLOR 0x80404040

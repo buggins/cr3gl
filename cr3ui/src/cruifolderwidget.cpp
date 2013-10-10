@@ -374,9 +374,9 @@ void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL), _fileList(NULL), _dir(NULL)
 {
     _title = new CRUITitleBarWidget(lString16("File list"), this, true);
-	addChild(_title);
+	_body->addChild(_title);
     _fileList = new CRUIFileListWidget(this);
-	addChild(_fileList);
+	_body->addChild(_fileList);
     _fileList->setOnItemClickListener(this);
 }
 

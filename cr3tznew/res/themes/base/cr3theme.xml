@@ -95,7 +95,7 @@
     />
     <style
         id = "SETTINGS_ITEM_DESCRIPTION"
-        padding="2pt"
+        padding="3pt,2pt,3pt,0pt"
         fontSize="small"
         align="bottom|left"
     />

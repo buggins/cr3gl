@@ -633,11 +633,11 @@ CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : CRUIWindowWidget(main){
     _fileSystem = new CRUIFileSystemDirsWidget(this);
     _library = new CRUILibraryWidget(this);
     _onlineCatalogsList = new CRUIOnlineCatalogsWidget(this);
-	addChild(_currentBook);
-	addChild(_recentBooksList);
-	addChild(_fileSystem);
-	addChild(_library);
-	addChild(_onlineCatalogsList);
+	_body->addChild(_currentBook);
+	_body->addChild(_recentBooksList);
+	_body->addChild(_fileSystem);
+	_body->addChild(_library);
+	_body->addChild(_onlineCatalogsList);
 	setStyle("HOME_WIDGET");
 }
 
@@ -646,6 +646,7 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 {
     _measuredWidth = baseWidth;
 	_measuredHeight = baseHeight;
+	_body->setMeasured(baseWidth, baseHeight);
     bool vertical = baseWidth < baseHeight * 85 / 100;
 	if (vertical) {
         int nowReadingH = baseHeight * 20 / 100;
@@ -672,6 +673,7 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 {
 	CRUIWidget::layout(left, top, right, bottom);
+	_body->layout(left, top, right, bottom);
 	int w = (right - left);
 	int h = (bottom - top);
     bool vertical = w < h * 85 / 100;

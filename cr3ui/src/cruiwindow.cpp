@@ -133,7 +133,7 @@ void CRUIWindowWidget::drawPopup(LVDrawBuf * buf) {
 
 /// draws widget with its children to specified surface
 void CRUIWindowWidget::draw(LVDrawBuf * buf) {
-    CRUILinearLayout::draw(buf);
+    CRUIFrameLayout::draw(buf);
     drawPopup(buf);
 }
 

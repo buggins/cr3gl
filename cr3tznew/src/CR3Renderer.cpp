@@ -67,6 +67,7 @@ CR3Renderer::TerminateGl(void)
 	return true;
 }
 
+#define USE_BACKBUFFER 0
 bool
 CR3Renderer::Draw(void)
 {
@@ -77,6 +78,7 @@ CR3Renderer::Draw(void)
 	glShadeModel(GL_SMOOTH);
 	glViewport(0, 0, GetTargetControlWidth(), GetTargetControlHeight());
 	glEnable (GL_BLEND);
+	glDisable(GL_ALPHA_TEST);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glDisable(GL_CULL_FACE);
@@ -85,8 +87,10 @@ CR3Renderer::Draw(void)
 	glLoadIdentity();
 	glOrthof(0, GetTargetControlWidth(), GetTargetControlHeight(), 0, -1.0f, 1.0f);
 	glClearColor(1, 1, 1, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 32, false);
+#if USE_BACKBUFFER == 1
 	if (!_backbuffer) {
 		_backbuffer = new GLDrawBuf(GetTargetControlWidth(), GetTargetControlHeight(), 32, true);
 	} else if (_backbuffer->GetWidth() != GetTargetControlWidth() || _backbuffer->GetHeight() != GetTargetControlHeight()) {
@@ -95,6 +99,7 @@ CR3Renderer::Draw(void)
 	}
 
 	_backbuffer->beforeDrawing();
+#endif
 
 	lvRect pos = _widget->getPos();
 	bool sizeChanged = false;
@@ -113,17 +118,24 @@ CR3Renderer::Draw(void)
 	}
 	if (needDraw) {
 		//CRLog::trace("need draw");
+#if USE_BACKBUFFER == 1
 		_widget->draw(_backbuffer);
+#else
+		buf.beforeDrawing();
+		_widget->draw(&buf);
+#endif
 	}
+#if USE_BACKBUFFER == 1
 	_backbuffer->afterDrawing();
 
-	GLDrawBuf buf(GetTargetControlWidth(), GetTargetControlHeight(), 32, false);
 	buf.beforeDrawing();
 	_backbuffer->DrawTo(&buf, 0, 0, 0, NULL);
-	buf.afterDrawing();
-
+#endif
+	glDisable(GL_BLEND);
+	glDisable(GL_ALPHA_TEST);
 	glFlush();
 
+	buf.afterDrawing();
 
 	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;

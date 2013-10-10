@@ -296,6 +296,10 @@ public:
                 glTranslatef(-x, -y, 0);
             }
 
+        	glEnable(GL_BLEND);
+        	glDisable(GL_ALPHA_TEST);
+        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	    	LVGLSetColor(color);
 	    	//glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	    	//glDisable(GL_LIGHTING);
@@ -336,6 +340,7 @@ public:
 	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	    	glDisableClientState(GL_VERTEX_ARRAY);
             glDisable(GL_BLEND);
+            glDisable(GL_ALPHA_TEST);
             glDisable(GL_TEXTURE_2D);
 		}
 	}
@@ -662,10 +667,11 @@ public:
     			x1,y0,0};
     	GLfloat colors[6 * 4];
     	LVGLFillColor(color, colors, 6);
+
+    	glEnable(GL_BLEND);
+    	glDisable(GL_ALPHA_TEST);
     	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         checkError("glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-        glEnable(GL_BLEND);
-        checkError("glEnable(GL_BLEND)");
         glEnableClientState(GL_VERTEX_ARRAY);
         checkError("glEnableClientState(GL_VERTEX_ARRAY)");
         glEnableClientState(GL_COLOR_ARRAY);
@@ -680,6 +686,7 @@ public:
 
     	glDisableClientState(GL_COLOR_ARRAY);
     	glDisableClientState(GL_VERTEX_ARRAY);
+    	glDisable(GL_ALPHA_TEST);
     	glDisable(GL_BLEND);
     }
 };
@@ -862,7 +869,9 @@ public:
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
     	//GLfloat colors[6 * 4];
     	//LVGLFillColor(color, colors, 6);
-    	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    	glEnable(GL_BLEND);
+    	glDisable(GL_ALPHA_TEST);
+    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     	//LVGLSetColor(0xFFFFFF);
     	glColor4f(1,1,1,1);
     	glActiveTexture(GL_TEXTURE0);
@@ -889,7 +898,10 @@ public:
     	//glDisableClientState(GL_COLOR_ARRAY);
     	glDisableClientState(GL_VERTEX_ARRAY);
     	glDisable(GL_TEXTURE_2D);
-        checkError("glDisable(GL_TEXTURE_2D)");
+    	checkError("glDisable(GL_TEXTURE_2D)");
+
+    	glDisable(GL_ALPHA_TEST);
+    	glDisable(GL_BLEND);
     }
 };
 
@@ -1124,6 +1136,7 @@ void GLDrawBuf::afterDrawing()
 			//CRLog::debug("Finished render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
+			//glFlush();
 		}
         glMatrixMode(GL_MODELVIEW);
         //glPopMatrix();

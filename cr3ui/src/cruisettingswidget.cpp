@@ -627,13 +627,13 @@ lString8 CRUISettingsOptionList::getValue(CRPropRef props) const {
 CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings) : CRUIWindowWidget(main), _settings(settings)
 {
     _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
-    addChild(_titlebar);
+    _body->addChild(_titlebar);
     setStyle("SETTINGS_WIDGET");
     CRUISettingsEditor * editor = settings->createEditor(main->getNewSettings());
     if (editor) {
         editor->setCallback(this);
         editor->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        addChild(editor);
+        _body->addChild(editor);
     }
 }
 

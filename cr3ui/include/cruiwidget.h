@@ -209,6 +209,7 @@ public:
 
     int getMeasuredWidth() { return _measuredWidth; }
     int getMeasuredHeight() { return _measuredHeight; }
+    void setMeasured(int width, int height) { _measuredWidth = width; _measuredHeight = height; }
 
 	/// measure dimensions
 	virtual void measure(int baseWidth, int baseHeight);

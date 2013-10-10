@@ -44,9 +44,10 @@ public:
 };
 
 /// base class for full screen widgets, supporting popups
-class CRUIWindowWidget : public CRUILinearLayout {
+class CRUIWindowWidget : public CRUIFrameLayout {
 protected:
     CRUIMainWidget * _main;
+    CRUILinearLayout * _body;
 
     PopupControl _popupControl;
 
@@ -56,7 +57,10 @@ protected:
     virtual void drawPopup(LVDrawBuf * buf);
 
 public:
-    CRUIWindowWidget(CRUIMainWidget * main) : CRUILinearLayout(true), _main(main) {}
+    CRUIWindowWidget(CRUIMainWidget * main) : _main(main) {
+    	_body = new CRUIVerticalLayout();
+    	addChild(_body);
+    }
     virtual ~CRUIWindowWidget() {  }
 
     /// returns main widget

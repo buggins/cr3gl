@@ -128,13 +128,14 @@ public:
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
+        	glEnable(GL_BLEND);
+        	glDisable(GL_ALPHA_TEST);
+        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	    	LVGLSetColor(color);
 	    	glActiveTexture(GL_TEXTURE0);
 	    	glEnable(GL_TEXTURE_2D);
 	    	glBindTexture(GL_TEXTURE_2D, textureId);
-
-	    	glEnable(GL_BLEND);
-	    	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	    	glEnableClientState(GL_VERTEX_ARRAY);
 	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -146,7 +147,8 @@ public:
 	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	    	glDisableClientState(GL_VERTEX_ARRAY);
 	    	glDisable(GL_TEXTURE_2D);
-	    	glDisable(GL_BLEND);
+        	glDisable(GL_ALPHA_TEST);
+        	glDisable(GL_BLEND);
 		}
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {

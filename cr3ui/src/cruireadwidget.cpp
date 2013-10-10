@@ -352,6 +352,9 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
     CR_UNUSED(pathname);
     CRLog::trace("Render is finished - unlocking document");
     _locked = false;
+    invalidate();
+    _scrollCache.clear();
+    //_main->update();
 }
 
 /// returns true if document is ready, false if background rendering is in progress
