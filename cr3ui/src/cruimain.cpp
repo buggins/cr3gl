@@ -23,17 +23,8 @@ void applyThemeChange(CRUIWidget * widget) {
 
 void CRUIMainWidget::onThemeChanged()
 {
-    if (!_history.length()) {
-        _home = new CRUIHomeWidget(this);
-        _home->applySettings(_currentSettings, _currentSettings, _currentSettings);
-        _read = new CRUIReadWidget(this);
-        _read->applySettings(_currentSettings, _currentSettings, _currentSettings);
-        _history.add(new HomeItem(this, _home));
-        return;
-    } else {
-        applyThemeChange(_home);
-        applyThemeChange(_read);
-    }
+    applyThemeChange(_home);
+    applyThemeChange(_read);
 
     for (int i = 0; i < _history.length(); i++) {
         CRUIWidget * widget = _history[i]->getWidget();
@@ -393,6 +384,11 @@ CRUIMainWidget::CRUIMainWidget()
     }
     createBrowserSettings();
     createReaderSettings();
+
+    _home = new CRUIHomeWidget(this);
+    _read = new CRUIReadWidget(this);
+    _history.add(new HomeItem(this, _home));
+
     applySettings(_currentSettings, _currentSettings, _currentSettings);
 }
 

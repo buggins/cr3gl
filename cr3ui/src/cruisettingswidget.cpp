@@ -172,7 +172,9 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
 
     lvRect margins;
     getPadding(margins);
+    _docview->Resize(rc.width(), rc.height());
     _docview->setPageMargins(margins);
+    //_docview->updateLayout();
     //applyPadding(rc);
     // draw
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
@@ -184,12 +186,11 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     _docview->setBackground(bgImage);
     _docview->setFontSize(fontSize);
     _docview->setDefaultFontFace(face);
-    _docview->Resize(rc.width(), rc.height());
     buf->SetTextColor(textColor);
 
     // draw background
     LVRendPageList pageList;
-    _docview->Render(rc.width(), rc.height(), &pageList);
+    _docview->Render(0, 0, &pageList);
     LVRendPageInfo * page = pageList[0];
     bgImage->draw(buf, rc, 0, 0);
     _docview->drawPageTo(buf, *page, &rc, 1, 0);
@@ -235,7 +236,7 @@ CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettings
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(8));
+    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
@@ -378,7 +379,7 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(8));
+    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 
     updateMode();
@@ -452,7 +453,7 @@ CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef p
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(8));
+    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
@@ -483,7 +484,7 @@ CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettings
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(8));
+    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 

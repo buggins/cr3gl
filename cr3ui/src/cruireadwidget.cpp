@@ -643,15 +643,22 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     CR_UNUSED(oldSettings);
     CRPropRef docviewprops = LVCreatePropsContainer();
     bool backgroundChanged = false;
+    bool needClearCache = false;
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
         if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR
                 || key == PROP_FONT_SIZE || key == PROP_FONT_FACE) {
             docviewprops->setString(key.c_str(), value.c_str());
+            if (key == PROP_FONT_COLOR) {
+                _docview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
+                needClearCache = true;
+            }
         }
-        if (key == PROP_BACKGROUND_COLOR || key == PROP_BACKGROUND_IMAGE || key == PROP_BACKGROUND_IMAGE_ENABLED || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST)
+        if (key == PROP_BACKGROUND_COLOR || key == PROP_BACKGROUND_IMAGE || key == PROP_BACKGROUND_IMAGE_ENABLED || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
             backgroundChanged = true;
+            needClearCache = true;
+        }
         if (key == PROP_HYPHENATION_DICT) {
             setHyph(lastBookLang, value);
             _docview->requestRender();
@@ -660,6 +667,8 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     }
     if (backgroundChanged) {
         _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));
+    }
+    if (needClearCache) {
         _scrollCache.clear();
     }
     if (docviewprops->getCount())
@@ -817,6 +826,8 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
             buf->beforeDrawing();
             int oldpos = _docview->GetPos();
             _docview->SetPos(pos, false);
+            buf->SetTextColor(_docview->getTextColor());
+            buf->SetBackgroundColor(_docview->getBackgroundColor());
             _docview->Draw(*buf, false);
             _docview->SetPos(oldpos, false);
             buf->afterDrawing();
