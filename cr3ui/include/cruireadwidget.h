@@ -28,7 +28,36 @@ public:
     virtual ~CRDocumentRenderCallback() {}
 };
 
-class CRUIDocView;
+class CRUIDocView : public LVDocView {
+    CRUIImageRef background;
+    //CRUIImageRef backgroundScrollLeft;
+    //CRUIImageRef backgroundScrollRight;
+public:
+    CRUIDocView() : LVDocView() {
+        //background = resourceResolver->getIcon("leather.jpg", true);
+        background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
+    }
+    /// clears page background
+    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
+//    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
+//        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
+//        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
+        lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+        background->draw(&drawbuf, rc, offsetX, offsetY);
+//        drawbuf.FillRect(rc, 0xE0E0C040);
+//        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
+//			lvRect leftrc = rc;
+//			leftrc.right = leftrc.left + backgroundScrollLeft->originalWidth();
+//			backgroundScrollLeft->draw(&drawbuf, leftrc, 0, offsetY);
+//			lvRect rightrc = rc;
+//			rightrc.left = rightrc.right - backgroundScrollRight->originalWidth();
+//			backgroundScrollRight->draw(&drawbuf, rightrc, 0, offsetY);
+//        }
+    }
+    virtual void setBackground(CRUIImageRef img) {
+        background = img;
+    }
+};
 
 class CRUIReadWidget : public CRUIWindowWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
 {

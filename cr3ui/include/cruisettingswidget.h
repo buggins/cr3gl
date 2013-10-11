@@ -220,10 +220,13 @@ public:
     CRUISettingsSampleWidget(CRPropRef props) : _props(props) {}
 };
 
+class CRUIDocView;
 class CRUIFontSampleWidget : public CRUISettingsSampleWidget {
 protected:
+    CRUIDocView * _docview;
 public:
-    CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSampleWidget(props) {}
+    CRUIFontSampleWidget(CRPropRef props);
+    virtual ~CRUIFontSampleWidget();
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
     /// draws widget with its children to specified surface

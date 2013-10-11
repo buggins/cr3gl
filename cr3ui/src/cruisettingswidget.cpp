@@ -137,6 +137,20 @@ CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem
 }
 
 
+CRUIFontSampleWidget::CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSampleWidget(props) {
+    _docview = new CRUIDocView();
+    lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
+    LVArray<int> fontSizes;
+    for (int i = crconfig.minFontSize; i <= crconfig.maxFontSize; i++)
+        fontSizes.add(i);
+    _docview->setFontSizes(fontSizes, false);
+    _docview->createDefaultDocument(lString16(), sample);
+    _docview->setViewMode(DVM_SCROLL, 1);
+}
+
+CRUIFontSampleWidget::~CRUIFontSampleWidget() {
+    delete _docview;
+}
 
 /// measure dimensions
 void CRUIFontSampleWidget::measure(int baseWidth, int baseHeight) {
@@ -151,22 +165,36 @@ void CRUIFontSampleWidget::measure(int baseWidth, int baseHeight) {
 void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     CRUIWidget::draw(buf);
     lvRect rc = _pos;
-    applyMargin(rc);
     LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
     setClipRect(buf, rc);
-    applyPadding(rc);
+    applyMargin(rc);
+
+    lvRect margins;
+    getPadding(margins);
+    _docview->setPageMargins(margins);
+    //applyPadding(rc);
     // draw
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
     CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
     int fontSize = _props->getIntDef(PROP_FONT_SIZE);
     lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
-    lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
-    SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+    //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+    _docview->setTextColor(textColor);
+    _docview->setBackground(bgImage);
+    _docview->setFontSize(fontSize);
+    _docview->setDefaultFontFace(face);
+    _docview->Resize(rc.width(), rc.height());
+    buf->SetTextColor(textColor);
 
     // draw background
+    LVRendPageList pageList;
+    _docview->Render(rc.width(), rc.height(), &pageList);
+    LVRendPageInfo * page = pageList[0];
     bgImage->draw(buf, rc, 0, 0);
+    _docview->drawPageTo(buf, *page, &rc, 1, 0);
     // draw text
-    fmt.draw(*buf, rc, 0, 0);
+    //fmt.draw(*buf, rc, 0, 0);
 }
 
 static lString16 formatFontSize(int sz) {
@@ -207,7 +235,7 @@ CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettings
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(5));
+    _sample->setPadding(PT_TO_PX(8));
     addChild(_sample);
 }
 
@@ -350,7 +378,7 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(3));
+    _sample->setPadding(PT_TO_PX(8));
     addChild(_sample);
 
     updateMode();
@@ -424,7 +452,7 @@ CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef p
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
     _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(3));
+    _sample->setPadding(PT_TO_PX(8));
     addChild(_sample);
 }
 
@@ -454,8 +482,8 @@ CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettings
     _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(3));
+    _sample->setBackground(0xE0808080);
+    _sample->setPadding(PT_TO_PX(8));
     addChild(_sample);
 }
 
