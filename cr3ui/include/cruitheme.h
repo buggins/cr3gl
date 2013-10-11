@@ -284,17 +284,13 @@ public:
 
 class CRUITheme : public CRUIStyle {
 protected:
-	LVFontRef _fontXSmall;
-	LVFontRef _fontSmall;
-	LVFontRef _fontLarge;
-	LVFontRef _fontXLarge;
 	LVHashTable<lString8, CRUIStyle *> _map;
     LVHashTable<lString8, lUInt32> _colors;
+    LVHashTable<unsigned, LVFontRef> _fonts;
 public:
     void remove(CRUIStyle * style);
 	virtual CRUIStyle * find(const lString8 &id, bool defaultToTheme = true);
 	void registerStyle(CRUIStyle * style);
-	CRUIStyle * setFontForSize(lUInt8 size, LVFontRef font);
 	LVFontRef getFontForSize(lUInt8 size);
 	CRUITheme(lString8 name);
     void setColor(lString8 id, lUInt32 value) {

@@ -55,21 +55,16 @@ public:
 		_caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 		_caption->setFontSize(FONT_SIZE_SMALL);
 		_caption->setAlign(ALIGN_LEFT|ALIGN_TOP);
-        _caption->setPadding(PT_TO_PX(5));
         _caption->setStyle("HOME_LIST_CAPTION");
 		_captionLayout->addChild(_caption);
         _captionLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 
-		lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
 		_title = new CRUITextWidget(lString16(L"War and Peace"));
 		_title->setFontSize(FONT_SIZE_MEDIUM);
-		_title->setPadding(pad);
 		_authors = new CRUITextWidget(lString16(L"Leo Tolstoy"));
 		_authors->setFontSize(FONT_SIZE_SMALL);
-		_authors->setPadding(pad);
 		_info = new CRUITextWidget(lString16(L"fb2 3245K 1891"));
 		_info->setFontSize(FONT_SIZE_SMALL);
-		_info->setPadding(pad);
 
         CRUIWidget * spacer1 = new CRUIWidget();
         spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT)->setLayoutWeight(1);
@@ -84,9 +79,10 @@ public:
         _captionLayout->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
 
         addChild(_buttonLayout);
+        onThemeChanged();
     }
 
-    void onThemeChanged() {
+    virtual void onThemeChanged() {
         _cover->setMargin(PT_TO_PX(4));
         _caption->setPadding(PT_TO_PX(4));
         lvRect pad(PT_TO_PX(4), 0, PT_TO_PX(4), 0);
@@ -203,7 +199,6 @@ public:
     CRUIHomeItemListWidget(CRUIHomeWidget * home, const char * captionResourceId) : CRUILinearLayout(true), _home(home) {
 		_caption = new CRUITextWidget(captionResourceId);
 		_caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
-        _caption->setPadding(lvRect(PT_TO_PX(3), PT_TO_PX(2), PT_TO_PX(3), PT_TO_PX(2)));
         //_caption->setFontSize(CRUI::FONT_SIZE_SMALL);
         _caption->setStyle("HOME_LIST_CAPTION");
 //		lvRect rc;
@@ -252,13 +247,12 @@ public:
         onThemeChanged();
 	}
 
-    void onThemeChanged() {
-        _caption->setPadding(3);
+    virtual void onThemeChanged() {
         _caption->setFontSize(deviceInfo.shortSide / 30);
         _list->setPadding(PT_TO_PX(3));
         _itemImage->setPadding(PT_TO_PX(1));
         _textWidget->setPadding(PT_TO_PX(1));
-        _itemWidget->setPadding(PT_TO_PX(2));
+        _itemWidget->setPadding(PT_TO_PX(1));
         _itemWidget->setMaxWidth(deviceInfo.shortSide / 5);
         _itemWidget->setMinWidth(deviceInfo.minListItemSize * 3 / 2);
         setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
@@ -508,7 +502,6 @@ public:
     CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUILinearLayout(true), _home(home) {
         _caption = new CRUITextWidget(STR_RECENT_BOOKS);
         _caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
-        _caption->setPadding(3);
         _caption->setStyle("HOME_LIST_CAPTION");
         addChild(_caption);
         _list = new CRUIListWidget(false, this);
@@ -543,11 +536,12 @@ public:
         _itemWidget->setStyle("LIST_ITEM");
 
         setMargin(lvRect(PT_TO_PX(2), 0, PT_TO_PX(2), 0));
+        onThemeChanged();
     }
 
-    void onThemeChanged() {
-        _caption->setPadding(3);
+    virtual void onThemeChanged() {
         _list->setPadding(PT_TO_PX(3));
+        _caption->setFontSize(deviceInfo.shortSide / 30);
         _itemImage->setPadding(PT_TO_PX(1));
         _textWidget->setPadding(PT_TO_PX(1));
         _itemWidget->setPadding(PT_TO_PX(2));

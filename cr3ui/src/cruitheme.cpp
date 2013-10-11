@@ -8,6 +8,7 @@
 #include "cruitheme.h"
 #include "cruisettings.h"
 #include "crui.h"
+#include "cruiconfig.h"
 
 using namespace CRUI;
 
@@ -16,7 +17,7 @@ using namespace CRUI;
 
 CRUITheme * currentTheme = NULL;
 
-CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(100)
+CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(100), _fonts(100)
 {
 	_theme = this;
 	_align = ALIGN_LEFT | ALIGN_TOP;
@@ -29,48 +30,36 @@ CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(
 }
 
 LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
-	LVFontRef res;
+    LVFontRef res = _fonts.get(size);
+    if (!res.isNull())
+        return res;
+    int sz = size;
 	switch (size) {
 	case FONT_SIZE_XSMALL:
-		res = _fontXSmall;
+        sz = deviceInfo.shortSide / 38;
 		break;
 	case FONT_SIZE_SMALL:
-		res = _fontSmall;
-		break;
-	case FONT_SIZE_LARGE:
-		res = _fontLarge;
-		break;
+        sz = deviceInfo.shortSide / 32;
+        break;
+    case FONT_SIZE_MEDIUM:
+        sz = deviceInfo.shortSide / 28;
+        break;
+    case FONT_SIZE_LARGE:
+        sz = deviceInfo.shortSide / 24;
+        break;
 	case FONT_SIZE_XLARGE:
-		res = _fontXLarge;
-		break;
-	default:
-		res = _font;
-		break;
+        sz = deviceInfo.shortSide / 19;
+        break;
+    default:
+        break; // do nothing
 	}
-	if (res.isNull())
-		res = _font;
+    if (sz > crconfig.maxFontSize)
+        sz = crconfig.maxFontSize;
+    if (sz < crconfig.minFontSize)
+        sz = crconfig.minFontSize;
+    res = fontMan->GetFont(sz, 400, false, css_ff_sans_serif, crconfig.uiFontFace, 0);
+    _fonts.set(sz, res);
 	return res;
-}
-
-CRUIStyle * CRUITheme::setFontForSize(lUInt8 size, LVFontRef font) {
-	switch (size) {
-	case FONT_SIZE_XSMALL:
-		_fontXSmall = font;
-		break;
-	case FONT_SIZE_SMALL:
-		_fontSmall = font;
-		break;
-	case FONT_SIZE_LARGE:
-		_fontLarge = font;
-		break;
-	case FONT_SIZE_XLARGE:
-		_fontXLarge = font;
-		break;
-	default:
-		_font = font;
-		break;
-	}
-	return this;
 }
 
 void CRUITheme::registerStyle(CRUIStyle * style)

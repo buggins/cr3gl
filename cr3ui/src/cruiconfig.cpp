@@ -82,7 +82,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
     // calculate fonts size
     int sz = deviceInfo.shortSide;
     int sz1 = sz / 38;
-    int sz2 = sz / 32;
+    //int sz2 = sz / 32;
     int sz3 = sz / 28;
     int sz4 = sz / 24;
     int sz5 = sz / 19;
@@ -148,11 +148,6 @@ void CRUIConfig::setupResourcesForScreenSize() {
     }
     resourceResolver->setDirList(dirs);
     loadTheme(lString8());
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(sz1, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(sz2, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(sz3, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(sz4, 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(sz5, 400, false, css_ff_sans_serif, uiFontFace, 0));
 }
 
 
@@ -259,12 +254,6 @@ void CRUIConfig::loadTheme(lString8 theme) {
         settingsItemDescription->setAlign(ALIGN_BOTTOM | ALIGN_LEFT);
 #endif
     }
-
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XSMALL, fontMan->GetFont(PT_TO_PX(6), 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_SMALL, fontMan->GetFont(PT_TO_PX(8), 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_MEDIUM, fontMan->GetFont(PT_TO_PX(12), 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_LARGE, fontMan->GetFont(PT_TO_PX(16), 400, false, css_ff_sans_serif, uiFontFace, 0));
-    currentTheme->setFontForSize(CRUI::FONT_SIZE_XLARGE, fontMan->GetFont(PT_TO_PX(22), 400, false, css_ff_sans_serif, uiFontFace, 0));
 
     resourceResolver->setIconColorTransform(currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST));
 

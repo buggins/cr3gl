@@ -37,7 +37,8 @@ void CRUIMainWidget::onThemeChanged()
 
     for (int i = 0; i < _history.length(); i++) {
         CRUIWidget * widget = _history[i]->getWidget();
-        applyThemeChange(widget);
+        if (widget != _home && widget != _read)
+            applyThemeChange(widget);
     }
     requestLayout();
 }
@@ -468,7 +469,7 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         _history[i]->getWidget()->applySettings(changed, oldSettings, newSettings);
     for (int i = 0; i <changed->getCount(); i++) {
         lString8 key(changed->getName(i));
-        lString16 oldValue = oldSettings->getStringDef(key.c_str());
+        //lString16 oldValue = oldSettings->getStringDef(key.c_str());
         lString16 newValue = changed->getValue(i);
         if (key == PROP_APP_INTERFACE_LANGUAGE) {
             lString8 lang = UnicodeToUtf8(newValue);
