@@ -120,7 +120,7 @@ public:
         //_layout->setBackground(0x80C0C0C0);
         addChild(_layout);
         setMinWidth(MIN_ITEM_PX);
-        setMinHeight(MIN_ITEM_PX);
+        setMinHeight(MIN_ITEM_PX * 2 / 3);
         setMargin(PT_TO_PX(1));
         setStyle("LIST_ITEM");
     }
@@ -134,11 +134,12 @@ public:
         //_icon->setMaxHeight(iconDy);
         //_layout->setMaxHeight(_iconDy);
         //_layout->setMinHeight(_iconDy);
-        int maxHeight = deviceInfo.minListItemSize * 3 / 2;
+        int maxHeight = deviceInfo.minListItemSize * 2 / 3;
         CRUIImageRef icon = _icon->getImage();
         if (!icon.isNull())
             if (maxHeight < icon->originalHeight() + PT_TO_PX(2))
                 maxHeight = icon->originalHeight() + PT_TO_PX(2);
+        _layout->setMinHeight(deviceInfo.minListItemSize * 2 / 3);
         _layout->setMaxHeight(maxHeight);
 
         _entry = entry;
@@ -396,18 +397,20 @@ bool CRUIFolderWidget::onLongClick(CRUIWidget * widget) {
         lString8 lastPath = path;
         for (;;) {
             LVRemovePathDelimiter(path);
-            if (path == lastPath)
-                break;
             path = LVExtractPath(path);
             if (path == lastPath)
                 break;
+            LVRemovePathDelimiter(path);
             CRUIAction action(CMD_SHOW_FOLDER);
             action.icon_res = "folder_icon";
             action.name = Utf8ToUnicode(path);
             action.sparam = path;
             actions.add(&action);
             lastPath = path;
+            if (path=="/" || path.endsWith(":\\") || path.endsWith("\\\\") || path == "@/" || path == "@\\")
+                break;
         }
+        actions.add(ACTION_CURRENT_BOOK);
         actions.add(ACTION_READER_HOME);
         lvRect margins;
         //margins.right = MIN_ITEM_PX * 120 / 100;

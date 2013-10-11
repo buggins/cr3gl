@@ -254,6 +254,10 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 }
 
 void CRUIMainWidget::openBook(const CRFileItem * file) {
+    if (!file) {
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        file = dir && dir->itemCount() ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+    }
     if (!file)
         return;
     CRLog::debug("Opening book %s", file->getPathName().c_str());
@@ -705,6 +709,12 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_READER_HOME:
         showHome();
+        return true;
+    case CMD_CURRENT_BOOK:
+        openBook(NULL);
+        return true;
+    case CMD_SHOW_FOLDER:
+        showFolder(action->sparam, false);
         return true;
     case CMD_HELP:
     	CRFileItem f(crconfig.manualsDir + "help_template_en.fb2", false);
