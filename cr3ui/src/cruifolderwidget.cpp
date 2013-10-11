@@ -373,7 +373,7 @@ void CRUIFolderWidget::setDirectory(CRDirContentItem * dir)
 
 CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL), _fileList(NULL), _dir(NULL)
 {
-    _title = new CRUITitleBarWidget(lString16("File list"), this, true);
+    _title = new CRUITitleBarWidget(lString16("File list"), this, this, true);
 	_body->addChild(_title);
     _fileList = new CRUIFileListWidget(this);
 	_body->addChild(_fileList);
@@ -385,6 +385,16 @@ bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
         onAction(CMD_BACK);
     else if (widget->getId() == "MENU") {
         onAction(CMD_MENU);
+    }
+    return true;
+}
+
+bool CRUIFolderWidget::onLongClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        // TODO: show navigation menu
+        onAction(CMD_BACK);
+    else if (widget->getId() == "MENU") {
+        onAction(CMD_SETTINGS);
     }
     return true;
 }

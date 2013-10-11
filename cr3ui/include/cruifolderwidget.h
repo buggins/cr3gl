@@ -17,7 +17,7 @@ class CRUIFileListWidget;
 
 class CRUIMainWidget;
 
-class CRUIFolderWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener {
+class CRUIFolderWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener, public CRUIOnLongClickListener {
 	CRUITitleBarWidget * _title;
 	CRUIFileListWidget * _fileList;
     CRDirContentItem * _dir;
@@ -28,6 +28,7 @@ public:
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
     virtual bool onClick(CRUIWidget * widget);
+    virtual bool onLongClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual void setDirectory(CRDirContentItem * _dir);
     /// override to handle menu or other action

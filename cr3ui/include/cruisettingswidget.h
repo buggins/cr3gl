@@ -300,12 +300,13 @@ public:
     virtual ~CRUISettingsListWidget() {}
 };
 
-class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUISettingsEditorCallback {
+class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnLongClickListener, public CRUISettingsEditorCallback {
     CRUISettingsItem * _settings;
     CRUITitleBarWidget * _titlebar;
 public:
     CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings);
     virtual bool onClick(CRUIWidget * widget);
+    virtual bool onLongClick(CRUIWidget * widget);
     virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);

@@ -329,7 +329,7 @@ bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
 
 
 
-CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, bool hasMenuButton) : CRUILinearLayout(false) {
+CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, CRUIOnLongClickListener * buttonLongClickListener, bool hasMenuButton) : CRUILinearLayout(false) {
     setStyle("TOOL_BAR");
     setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     if (hasMenuButton)
@@ -351,7 +351,9 @@ CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * bu
     if (hasMenuButton) {
         _menuButton->setId(lString8("MENU"));
         _menuButton->setOnClickListener(buttonListener);
+        _menuButton->setOnLongClickListener(buttonLongClickListener);
     }
     _backButton->setId(lString8("BACK"));
     _backButton->setOnClickListener(buttonListener);
+    _backButton->setOnLongClickListener(buttonLongClickListener);
 }

@@ -52,9 +52,14 @@ void CRUIMainWidget::showHome() {
     startAnimation(0, WINDOW_ANIMATION_DELAY);
 }
 
-void CRUIMainWidget::back() {
+void CRUIMainWidget::back(bool fast) {
     if (_history.hasBack()) {
-        startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY);
+        int newpos = _history.pos() - 1;
+        if (fast && _history.currentMode() == MODE_SETTINGS) {
+            while (_history[newpos]->getMode() == MODE_SETTINGS && newpos > 0)
+                newpos--;
+        }
+        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
     } else {
     	_platform->minimizeApp();
     }

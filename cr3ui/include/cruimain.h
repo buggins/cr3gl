@@ -321,7 +321,7 @@ public:
     void showHome();
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);
-    void back();
+    void back(bool fast = false);
 
     virtual void onAllCoverpagesReady(int newpos);
     virtual void onDirectoryScanFinished(CRDirContentItem * item);

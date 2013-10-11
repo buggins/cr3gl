@@ -111,7 +111,7 @@ class CRUITitleBarWidget : public CRUILinearLayout {
     CRUIButton * _menuButton;
     CRUITextWidget * _caption;
 public:
-    CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, bool hasMenuButton);
+    CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, CRUIOnLongClickListener * buttonLongClickListener, bool hasMenuButton);
     void setTitle(lString16 title) {
         _caption->setText(title);
     }

@@ -628,7 +628,7 @@ lString8 CRUISettingsOptionList::getValue(CRPropRef props) const {
 
 CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem * settings) : CRUIWindowWidget(main), _settings(settings)
 {
-    _titlebar = new CRUITitleBarWidget(settings->getName(), this, false);
+    _titlebar = new CRUITitleBarWidget(settings->getName(), this, this, false);
     _body->addChild(_titlebar);
     setStyle("SETTINGS_WIDGET");
     CRUISettingsEditor * editor = settings->createEditor(main->getNewSettings());
@@ -657,6 +657,14 @@ void CRUISettingsWidget::onSettingChange(CRUISettingsItem * setting, bool done) 
 bool CRUISettingsWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
         _main->back();
+    }
+    return true;
+}
+
+bool CRUISettingsWidget::onLongClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK") {
+        // todo: close all settings instantly
+        _main->back(true);
     }
     return true;
 }
