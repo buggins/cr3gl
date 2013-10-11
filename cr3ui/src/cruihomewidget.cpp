@@ -61,8 +61,10 @@ public:
 
 		_title = new CRUITextWidget(lString16(L"War and Peace"));
 		_title->setFontSize(FONT_SIZE_MEDIUM);
+        _title->setMaxLines(2);
 		_authors = new CRUITextWidget(lString16(L"Leo Tolstoy"));
 		_authors->setFontSize(FONT_SIZE_SMALL);
+        _authors->setMaxLines(2);
 		_info = new CRUITextWidget(lString16(L"fb2 3245K 1891"));
 		_info->setFontSize(FONT_SIZE_SMALL);
 

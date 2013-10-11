@@ -332,6 +332,8 @@ public:
 
     virtual void clearImageCaches();
 
+    CRFileItem * createManualBook();
+
     CRUIMainWidget();
     virtual ~CRUIMainWidget();
 };

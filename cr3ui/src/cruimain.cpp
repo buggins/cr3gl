@@ -694,6 +694,27 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return _history.currentWidget()->onTouchEvent(event);
 }
 
+CRFileItem * CRUIMainWidget::createManualBook() {
+    lString8 fn = crconfig.manualsDir + "help_template_en.fb2";
+    CRFileItem * f = new CRFileItem(fn, false);
+    LVPtrVector<BookDBBook> books;
+    BookDBBook * book = NULL;
+    book = bookDB->loadBook(fn);
+    if (!book)
+        book = new BookDBBook();
+    book->pathname = DBString(fn.c_str());
+    book->filename = DBString(LVExtractFilename(fn).c_str());
+    book->title = DBString(_8(STR_ACTION_HELP).c_str());
+    BookDBFolder * folder = new BookDBFolder();
+    folder->name = DBString(LVExtractPath(fn).c_str());
+    book->folder = folder;
+    books.add(book);
+    if (book->id == 0)
+        bookDB->saveBooks(books);
+    f->setBook(book->clone());
+    return f;
+}
+
 /// handle menu or other action
 bool CRUIMainWidget::onAction(const CRUIAction * action) {
     if (!action)
@@ -713,8 +734,11 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
         showFolder(action->sparam, false);
         return true;
     case CMD_HELP:
-    	CRFileItem f(crconfig.manualsDir + "help_template_en.fb2", false);
-    	openBook(&f);
+        {
+            CRFileItem * book = createManualBook();
+            openBook(book);
+            delete book;
+        }
         return true;
     }
     return false;
