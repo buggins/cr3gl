@@ -390,10 +390,29 @@ bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
 }
 
 bool CRUIFolderWidget::onLongClick(CRUIWidget * widget) {
-    if (widget->getId() == "BACK")
-        // TODO: show navigation menu
-        onAction(CMD_BACK);
-    else if (widget->getId() == "MENU") {
+    if (widget->getId() == "BACK") {
+        CRUIActionList actions;
+        lString8 path = _dir->getPathName();
+        lString8 lastPath = path;
+        for (;;) {
+            LVRemovePathDelimiter(path);
+            if (path == lastPath)
+                break;
+            path = LVExtractPath(path);
+            if (path == lastPath)
+                break;
+            CRUIAction action(CMD_SHOW_FOLDER);
+            action.icon_res = "folder_icon";
+            action.name = Utf8ToUnicode(path);
+            action.sparam = path;
+            actions.add(&action);
+            lastPath = path;
+        }
+        actions.add(ACTION_READER_HOME);
+        lvRect margins;
+        //margins.right = MIN_ITEM_PX * 120 / 100;
+        showMenu(actions, ALIGN_TOP, margins, false);
+    } else if (widget->getId() == "MENU") {
         onAction(CMD_SETTINGS);
     }
     return true;
@@ -408,9 +427,10 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     case CMD_MENU:
     {
         CRUIActionList actions;
-        actions.add(ACTION_EXIT);
-        actions.add(ACTION_SETTINGS);
         actions.add(ACTION_BACK);
+        actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_READER_HOME);
+        actions.add(ACTION_EXIT);
         lvRect margins;
         //margins.right = MIN_ITEM_PX * 120 / 100;
         showMenu(actions, ALIGN_TOP, margins, false);

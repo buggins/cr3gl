@@ -703,6 +703,9 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
         if (getPlatform() != NULL)
             getPlatform()->exitApp();
         return true;
+    case CMD_READER_HOME:
+        showHome();
+        return true;
     case CMD_HELP:
     	CRFileItem f(crconfig.manualsDir + "help_template_en.fb2", false);
     	openBook(&f);
