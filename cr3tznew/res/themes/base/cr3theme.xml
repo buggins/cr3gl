@@ -62,6 +62,9 @@
         align="left|vcenter"
     />
     <style
+        id = "CONTROL_POPUP"
+    />
+    <style
         id = "SETTINGS_WIDGET"
     />
     <style

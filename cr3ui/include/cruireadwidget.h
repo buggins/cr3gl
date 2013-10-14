@@ -59,7 +59,11 @@ public:
     }
 };
 
-class CRUIReadWidget : public CRUIWindowWidget, public CRDocumentLoadCallback, public CRDocumentRenderCallback, public LVDocViewCallback
+class CRUIReadWidget : public CRUIWindowWidget
+        , public CRDocumentLoadCallback
+        , public CRDocumentRenderCallback
+        , public LVDocViewCallback
+        , public CRUIOnScrollPosCallback
 {
     CRUIDocView * _docview;
     bool _isDragging;
@@ -168,6 +172,9 @@ public:
     bool onTapZone(int zone, bool additionalAction);
 
     void prepareScroll(int direction);
+
+    void showGoToPercentPopup();
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
 
     // DocView callback
     /// on starting file loading

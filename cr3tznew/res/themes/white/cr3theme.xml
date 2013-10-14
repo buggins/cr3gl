@@ -105,6 +105,11 @@
         id = "MENU_ITEM_TEXT"
     />
     <style
+        id = "CONTROL_POPUP"
+        background="#FFFFFF"
+        background2="list_shadow_vertical.9"
+    />
+    <style
         id = "SETTINGS_WIDGET"
         background="#FFFFFF"
         background2="list_shadow_vertical.9"

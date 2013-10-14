@@ -105,9 +105,14 @@
         id = "MENU_ITEM_TEXT"
     />
     <style
-        id = "SETTINGS_WIDGET"
+        id = "CONTROL_POPUP"
         background="tx_wood_v3.jpg|tiled"
         background2="list_shadow_vertical.9"
+    />
+    <style
+        id = "SETTINGS_WIDGET"
+        background="tx_wood_v3.jpg|tiled"
+        background2="home_frame.9"
     />
     <style
         id = "MENU_LIST"

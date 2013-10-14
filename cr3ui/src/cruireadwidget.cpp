@@ -609,6 +609,49 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    if (!manual)
+        return false;
+    CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
+    if (title) {
+        char s[100];
+        sprintf(s, "%d.%02d", pos / 100, pos % 100);
+        lString16 str = _16(STR_ACTION_GOTO_PERCENT);
+        str += ": ";
+        str += s;
+        title->setText(str);
+    }
+    int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
+    if (maxpos < 0)
+        maxpos = 0;
+    int p = pos * maxpos / 10000;
+    _docview->SetPos(p, false);
+    _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
+    invalidate();
+    return true;
+}
+
+void CRUIReadWidget::showGoToPercentPopup() {
+    CRUIVerticalLayout * popup = new CRUIVerticalLayout();
+    popup->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    popup->setPadding(MIN_ITEM_PX / 3);
+
+    int percent = _docview->getPosPercent();
+    CRUITextWidget * title = new CRUITextWidget(_16(STR_ACTION_GOTO_PERCENT));
+    title->setId("POPUP_TITLE");
+    title->setFontSize(FONT_SIZE_LARGE);
+    popup->addChild(title);
+    CRUISliderWidget * slider = new CRUISliderWidget(0, 10000, percent);
+    slider->setId("POSITION_PERCENT");
+    slider->setScrollPosCallback(this);
+    popup->addChild(slider);
+    lvRect margins;
+    margins.left = 0;
+    margins.right = 0;
+    margins.bottom = MIN_ITEM_PX / 3;
+    preparePopup(popup, ALIGN_BOTTOM, margins);
+}
+
 /// override to handle menu or other action
 bool CRUIReadWidget::onAction(const CRUIAction * action) {
     if (!action)
@@ -621,11 +664,15 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
+    case CMD_GOTO_PERCENT:
+        showGoToPercentPopup();
+        return true;
     case CMD_MENU:
     {
         CRUIActionList actions;
         actions.add(ACTION_EXIT);
         actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_GOTO_PERCENT);
         actions.add(ACTION_BACK);
         lvRect margins;
         showMenu(actions, ALIGN_TOP, margins, false);
