@@ -476,8 +476,11 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     if (changed.isNull() || changed->getCount() == 0)
         return; // no changes
     bool themeChanged = false;
-    for (int i = 0; i < _history.length(); i++)
-        _history[i]->getWidget()->applySettings(changed, oldSettings, newSettings);
+    _read->applySettings(changed, oldSettings, newSettings);
+    for (int i = 0; i < _history.length(); i++) {
+        if (_history[i]->getMode() != MODE_READ)
+            _history[i]->getWidget()->applySettings(changed, oldSettings, newSettings);
+    }
     for (int i = 0; i <changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         //lString16 oldValue = oldSettings->getStringDef(key.c_str());

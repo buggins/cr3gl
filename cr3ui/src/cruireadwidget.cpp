@@ -736,7 +736,11 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 needClearCache = true;
             }
         }
-        if (key == PROP_BACKGROUND_COLOR || key == PROP_BACKGROUND_IMAGE || key == PROP_BACKGROUND_IMAGE_ENABLED || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
+        if (key == PROP_BACKGROUND_COLOR
+                || key == PROP_BACKGROUND_IMAGE
+                || key == PROP_BACKGROUND_IMAGE_ENABLED
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
             backgroundChanged = true;
             needClearCache = true;
         }
