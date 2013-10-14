@@ -16,6 +16,7 @@
 #include "cruiconfig.h"
 #include "lvstsheet.h"
 #include "hyphman.h"
+#include "stringresource.h"
 
 using namespace CRUI;
 
@@ -606,13 +607,22 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+void CRUIReadWidget::goToPosition(lString16 path) {
+    _docview->goLink(path, true);
+}
+
+// formats percent value 0..10000  as  XXX.XX%
+static lString16 formatPercent(int percent) {
+    char s[100];
+    sprintf(s, "%d.%02d%%", percent / 100, percent % 100);
+    return Utf8ToUnicode(s);
+}
+
 static void updateScrollPosMessage(CRUIWidget * title, int pos) {
     if (title) {
-        char s[100];
-        sprintf(s, "%d.%02d", pos / 100, pos % 100);
         lString16 str = _16(STR_ACTION_GOTO_PERCENT);
         str += ": ";
-        str += s;
+        str += formatPercent(pos);
         title->setText(str);
     }
 }
@@ -630,6 +640,18 @@ bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool 
     _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
     invalidate();
     return true;
+}
+
+bool CRUIReadWidget::hasTOC() {
+    LVTocItem * toc = _docview->getToc();
+    return toc && toc->getChildCount();
+}
+
+void CRUIReadWidget::showTOC() {
+    if (!hasTOC())
+        return;
+    CRUITOCWidget * widget = new CRUITOCWidget(_main, this);
+    _main->showTOC(widget);
 }
 
 void CRUIReadWidget::showGoToPercentPopup() {
@@ -672,12 +694,17 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_GOTO_PERCENT:
         showGoToPercentPopup();
         return true;
+    case CMD_TOC:
+        showTOC();
+        return true;
     case CMD_MENU:
     {
         CRUIActionList actions;
         actions.add(ACTION_EXIT);
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_GOTO_PERCENT);
+        if (hasTOC())
+            actions.add(ACTION_TOC);
         actions.add(ACTION_BACK);
         lvRect margins;
         showMenu(actions, ALIGN_TOP, margins, false);
@@ -921,4 +948,82 @@ void CRUIReadWidget::ScrollModePageCache::clear() {
     maxpos = 0;
 }
 
+
+static void addTocItems(LVPtrVector<LVTocItem, false> & toc, LVTocItem * item) {
+    if (item->getParent())
+        toc.add(item);
+    for (int i = 0; i < item->getChildCount(); i++)
+        addTocItems(toc, item->getChild(i));
+}
+
+CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRUIWindowWidget(main), _readWidget(read) {
+    _title = new CRUITitleBarWidget(lString16(), this, this, false);
+    _title->setTitle(STR_READER_TOC);
+    _body->addChild(_title);
+    _list = new CRUIListWidget(true, this);
+    _list->setOnItemClickListener(this);
+    _list->setStyle("SETTINGS_ITEM_LIST");
+    _body->addChild(_list);
+    addTocItems(_toc, read->getDocView()->getToc());
+    _itemWidget = new CRUIHorizontalLayout();
+    _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
+    _itemWidget->setPadding(PT_TO_PX(2));
+    _chapter = new CRUITextWidget();
+    _page = new CRUITextWidget();
+    _itemWidget->addChild(_chapter);
+    _itemWidget->addChild(_page);
+    _page->setAlign(ALIGN_RIGHT|ALIGN_VCENTER);
+    _chapter->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
+    _chapter->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _itemWidget->setStyle("LIST_ITEM");
+}
+
+int CRUITOCWidget::getItemCount(CRUIListWidget * list) {
+    CR_UNUSED(list);
+    return _toc.length();
+}
+
+CRUIWidget * CRUITOCWidget::getItemWidget(CRUIListWidget * list, int index) {
+    CR_UNUSED(list);
+    LVTocItem * item = _toc[index];
+    _chapter->setText(item->getName());
+    _page->setText(formatPercent(item->getPercent()));
+    lvRect padding;
+    padding.left = (item->getLevel() - 1) * MIN_ITEM_PX / 3;
+    _chapter->setPadding(padding);
+    return _itemWidget;
+}
+
+// list item click
+bool CRUITOCWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    LVTocItem * item = _toc[itemIndex];
+    _readWidget->goToPosition(item->getPath());
+    onAction(CMD_BACK);
+    return true;
+}
+
+bool CRUITOCWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+bool CRUITOCWidget::onLongClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+/// handle menu or other action
+bool CRUITOCWidget::onAction(const CRUIAction * action) {
+    switch (action->id) {
+    case CMD_BACK:
+        _main->back();
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 

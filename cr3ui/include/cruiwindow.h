@@ -117,6 +117,9 @@ public:
     void setTitle(lString16 title) {
         _caption->setText(title);
     }
+    void setTitle(const char * title) {
+        _caption->setText(title);
+    }
 };
 
 

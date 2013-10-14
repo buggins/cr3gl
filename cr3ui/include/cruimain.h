@@ -13,7 +13,8 @@ enum VIEW_MODE {
     MODE_HOME,
     MODE_FOLDER,
     MODE_SETTINGS,
-    MODE_READ
+    MODE_READ,
+    MODE_TOC
 };
 
 class CRUIScreenUpdateManagerCallback {
@@ -85,6 +86,19 @@ public:
     }
     virtual VIEW_MODE getMode() { return MODE_SETTINGS; }
     SettingsItem(CRUIMainWidget * _main, CRUISettingsWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class TOCItem : public NavHistoryItem {
+public:
+    // recreate on config change
+    virtual CRUIWindowWidget * recreate() {
+        lvRect pos = ((CRUIWidget*)main)->getPos();
+        widget->measure(pos.width(), pos.height());
+        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_TOC; }
+    TOCItem(CRUIMainWidget * _main, CRUITOCWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class FolderItem : public NavHistoryItem {
@@ -321,6 +335,7 @@ public:
     void showHome();
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);
+    void showTOC(CRUITOCWidget * toc);
     void back(bool fast = false);
 
     virtual void onAllCoverpagesReady(int newpos);

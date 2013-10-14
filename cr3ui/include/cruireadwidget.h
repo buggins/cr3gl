@@ -59,6 +59,38 @@ public:
     }
 };
 
+class CRUIReadWidget;
+class LVTocItem;
+class CRUITOCWidget : public CRUIWindowWidget, public CRUIListAdapter
+        , public CRUIOnListItemClickListener
+        , public CRUIOnClickListener
+        , public CRUIOnLongClickListener
+{
+    CRUIReadWidget * _readWidget;
+    CRUITitleBarWidget * _title;
+    CRUIListWidget * _list;
+    LVPtrVector<LVTocItem, false> _toc;
+    CRUIHorizontalLayout * _itemWidget;
+    CRUITextWidget * _chapter;
+    CRUITextWidget * _page;
+public:
+    // list adapter methods
+    virtual int getItemCount(CRUIListWidget * list);
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    // list item click
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+    // on click
+    virtual bool onClick(CRUIWidget * widget);
+    virtual bool onLongClick(CRUIWidget * widget);
+    /// override to handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
+
+    CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read);
+    virtual ~CRUITOCWidget() { delete _itemWidget; }
+};
+
 class CRUIReadWidget : public CRUIWindowWidget
         , public CRDocumentLoadCallback
         , public CRDocumentRenderCallback
@@ -174,7 +206,11 @@ public:
     void prepareScroll(int direction);
 
     void showGoToPercentPopup();
+    void showTOC();
+    bool hasTOC();
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+
+    void goToPosition(lString16 path);
 
     // DocView callback
     /// on starting file loading

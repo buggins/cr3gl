@@ -170,6 +170,12 @@ void CRUIMainWidget::showSettings(CRUISettingsItem * setting) {
     }
 }
 
+void CRUIMainWidget::showTOC(CRUITOCWidget * toc) {
+    _history.setNext(new TOCItem(this, toc));
+    int newpos = _history.pos() + 1;
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+}
+
 void CRUIMainWidget::showSlowOperationPopup()
 {
 	if (_popup) {
