@@ -69,10 +69,7 @@ void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
-    _pos.left = left;
-    _pos.top = top;
-    _pos.bottom = bottom;
-    _pos.right = right;
+    CRUIWindowWidget::layout(left, top, right, bottom);
     if (!_locked) {
         if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top) {
             _docview->Resize(right-left, bottom-top);
@@ -609,10 +606,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
-bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
-    if (!manual)
-        return false;
-    CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
+static void updateScrollPosMessage(CRUIWidget * title, int pos) {
     if (title) {
         char s[100];
         sprintf(s, "%d.%02d", pos / 100, pos % 100);
@@ -621,6 +615,13 @@ bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool 
         str += s;
         title->setText(str);
     }
+}
+
+bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    if (!manual)
+        return false;
+    CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
+    updateScrollPosMessage(title, pos);
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
         maxpos = 0;
@@ -637,14 +638,18 @@ void CRUIReadWidget::showGoToPercentPopup() {
     popup->setPadding(MIN_ITEM_PX / 3);
 
     int percent = _docview->getPosPercent();
+
     CRUITextWidget * title = new CRUITextWidget(_16(STR_ACTION_GOTO_PERCENT));
     title->setId("POPUP_TITLE");
     title->setFontSize(FONT_SIZE_LARGE);
+    updateScrollPosMessage(title, percent);
     popup->addChild(title);
+
     CRUISliderWidget * slider = new CRUISliderWidget(0, 10000, percent);
     slider->setId("POSITION_PERCENT");
     slider->setScrollPosCallback(this);
     popup->addChild(slider);
+
     lvRect margins;
     margins.left = 0;
     margins.right = 0;

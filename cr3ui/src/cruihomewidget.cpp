@@ -670,7 +670,7 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 /// updates widget position based on specified rectangle
 void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 {
-	CRUIWidget::layout(left, top, right, bottom);
+    CRUIWindowWidget::layout(left, top, right, bottom);
 	_body->layout(left, top, right, bottom);
 	int w = (right - left);
 	int h = (bottom - top);

@@ -327,6 +327,15 @@ bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     return false;
 }
 
+/// updates widget position based on specified rectangle
+void CRUIWindowWidget::layout(int left, int top, int right, int bottom) {
+    CRUIFrameLayout::layout(left, top, right, bottom);
+    if (_popupControl.popup) {
+        _popupControl.layout(_pos);
+        _popupControl.updateLayout(_pos);
+        //_popupControl.
+    }
+}
 
 
 CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * buttonListener, CRUIOnLongClickListener * buttonLongClickListener, bool hasMenuButton) : CRUILinearLayout(false) {

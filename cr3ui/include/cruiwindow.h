@@ -80,6 +80,8 @@ public:
     virtual CRUIWidget * getChild(int index);
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
+    /// updates widget position based on specified rectangle
+    void layout(int left, int top, int right, int bottom);
 
     /// motion event handler - before children, returns true if it handled event
     virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
