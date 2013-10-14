@@ -608,7 +608,9 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 }
 
 void CRUIReadWidget::goToPosition(lString16 path) {
-    _docview->goLink(path, true);
+    ldomXPointer pt = _docview->getDocument()->createXPointer(path);
+    _docview->goToBookmark(pt);
+    _scrollCache.clear();
 }
 
 // formats percent value 0..10000  as  XXX.XX%
