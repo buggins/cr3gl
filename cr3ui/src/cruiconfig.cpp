@@ -104,18 +104,19 @@ void CRUIConfig::setupResourcesForScreenSize() {
         int recentH = deviceInfo.height * 25 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH) / 3;
         folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
-        menuIconSize = MIN_ITEM_PX - PT_TO_PX(4);
+        menuIconSize = MIN_ITEM_PX * 2 / 3 - PT_TO_PX(4);
     } else {
         int nowReadingH = deviceInfo.height * 30 / 100;
         int recentH = deviceInfo.height * 40 / 100;
         int otherH = (deviceInfo.height - nowReadingH - recentH);
         folderIconSize = otherH - sz5*2 - sz4 - PT_TO_PX(4);
-        menuIconSize = MIN_ITEM_PX - PT_TO_PX(4);
+        menuIconSize = MIN_ITEM_PX * 2 / 3 - PT_TO_PX(4);
     }
     folderIconSize = nearestIconSize(folderIconSize);
     menuIconSize = nearestIconSize(menuIconSize);
 
     lString8Collection dirs;
+    lString8Collection themedirs;
 
     char s[32];
     sprintf(s, "icons/%dx%d", menuIconSize, menuIconSize);
@@ -128,38 +129,57 @@ void CRUIConfig::setupResourcesForScreenSize() {
         dirs.add(resourceDir + "screen-density-normal");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-xhigh");
+        themedirs.add(currentThemeDir + "screen-density-normal");
+        themedirs.add(currentThemeDir + "screen-density-high");
+        themedirs.add(currentThemeDir + "screen-density-xhigh");
     } else if (deviceInfo.shortSide <= 480) {
     	CRLog::info("screen density high");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-normal");
+        themedirs.add(currentThemeDir + "screen-density-high");
+        themedirs.add(currentThemeDir + "screen-density-xhigh");
+        themedirs.add(currentThemeDir + "screen-density-normal");
     } else if (deviceInfo.shortSide <= 800) {
     	CRLog::info("screen density xhigh");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-xxhigh");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-normal");
+        themedirs.add(currentThemeDir + "screen-density-xhigh");
+        themedirs.add(currentThemeDir + "screen-density-xxhigh");
+        themedirs.add(currentThemeDir + "screen-density-high");
+        themedirs.add(currentThemeDir + "screen-density-normal");
     } else {
     	CRLog::info("screen density xxhigh");
         dirs.add(resourceDir + "screen-density-xxhigh");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-normal");
+        themedirs.add(currentThemeDir + "screen-density-xxhigh");
+        themedirs.add(currentThemeDir + "screen-density-xhigh");
+        themedirs.add(currentThemeDir + "screen-density-high");
+        themedirs.add(currentThemeDir + "screen-density-normal");
     }
     resourceResolver->setDirList(dirs);
-    loadTheme(lString8());
+    resourceResolver->setThemeDirList(themedirs);
+    loadTheme();
 }
 
 
-void CRUIConfig::loadTheme(lString8 theme) {
-    if (currentTheme)
-        delete currentTheme;
+/// loads theme from themesDirectory + "/" + theme + "/cr3theme.xml"; pass empty string to reload current theme
+void CRUIConfig::setTheme(lString8 theme) {
     if (!theme.empty()) {
         if (theme.startsWith("@"))
             theme = theme.substr(1);
         currentThemeDir = themesDir + theme;
         LVAppendPathDelimiter(currentThemeDir);
     }
+}
+
+void CRUIConfig::loadTheme() {
+    if (currentTheme)
+        delete currentTheme;
     currentTheme = new CRUITheme(lString8("BLACK"));
     if (!currentTheme->loadFromFile(currentThemeDir + "cr3theme.xml")) {
         // cannot load! create default theme
@@ -361,7 +381,8 @@ void CRUIConfig::initEngine(bool setLogger) {
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@wall1"), lString8(STR_RESOURCE_BACKGROUND_NAME_WALL1), lString8("tx_green_wall.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
 
-    loadTheme(lString8());
+    setTheme(lString8("light"));
+    setupResourcesForScreenSize();
 }
 
 bool CRUIConfig::setHyphenationDictionary(lString8 id, lString8 fallbackId) {

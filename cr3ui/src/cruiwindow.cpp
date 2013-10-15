@@ -345,7 +345,10 @@ CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * bu
         _menuButton = new CRUIImageButton("ic_menu_more");
     else
         _menuButton = NULL;
-    _backButton = new CRUIImageButton("ic_menu_back");
+    //_backButton = new CRUIImageButton("ic_menu_back");
+    //_backButton = new CRUIImageButton("00_button_left");
+    //_backButton = new CRUIImageButton("backspace");
+    _backButton = new CRUIImageButton("back");
     _caption = new CRUITextWidget(title);
     _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     _caption->setFontSize(FONT_SIZE_MEDIUM);

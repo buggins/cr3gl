@@ -605,15 +605,17 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 		return lString16::empty_str;
 	if (path[0] == '#') {
 		// by resource id: TODO
-	} else if (path[0] == '/' || path[0] == ASSET_PATH_PREFIX) { // @
+    } else if (path[0] == '/' || path[0] == ASSET_PATH_PREFIX || (path[1] == ':' && path[2] == '\\')) { // / @ :\\
 		// absolute path
 		if (LVFileExists(path)) {
 			return path;
 		}
 	} else {
-		// relative path
-		for (int i=0; i<_dirList.length(); i++) {
-			lString16 dir = Utf8ToUnicode(_dirList[i]);
+        int dirs = _dirList.length();
+        int themedirs = _themeDirList.length();
+        // relative path
+        for (int i=0; i<dirs + themedirs; i++) {
+            lString16 dir = Utf8ToUnicode(i < dirs ? _dirList[i] : _themeDirList[i - dirs]);
 			LVAppendPathDelimiter(dir);
 			lString16 fn = dir + path;
 			if (LVFileExists(fn)) {
@@ -631,6 +633,13 @@ lString16 CRResourceResolver::resourceToFileName(const char * res) {
 		}
 	}
 	return lString16::empty_str;
+}
+
+void CRResourceResolver::setThemeDirList(lString8Collection & dirList) {
+    _imageSourceMap.clear();
+    _iconMap.clear();
+    _themeDirList.clear();
+    _themeDirList.addAll(dirList);
 }
 
 void CRResourceResolver::setDirList(lString8Collection & dirList) {

@@ -156,20 +156,20 @@ void OpenGLWindow::render()
 
     QSize sz = size();
     if (deviceInfo.isSizeChanged(sz.width(), sz.height())) {
-        int dpi = 72;
-        int minsz = sz.width() < sz.height() ? sz.width() : sz.height();
-        if (minsz >= 320)
-            dpi = 120;
-        if (minsz >= 480)
-            dpi = 160;
-        if (minsz >= 640)
-            dpi = 200;
-        if (minsz >= 800)
-            dpi = 250;
-        if (minsz >= 900)
-            dpi = 300;
-        dpi = 100;
-        deviceInfo.setScreenDimensions(sz.width(), sz.height(), dpi);
+//        int dpi = 72;
+//        int minsz = sz.width() < sz.height() ? sz.width() : sz.height();
+//        if (minsz >= 320)
+//            dpi = 120;
+//        if (minsz >= 480)
+//            dpi = 160;
+//        if (minsz >= 640)
+//            dpi = 200;
+//        if (minsz >= 800)
+//            dpi = 250;
+//        if (minsz >= 900)
+//            dpi = 300;
+//        dpi = 100;
+        deviceInfo.setScreenDimensions(sz.width(), sz.height(), 200); // dpi
         adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");
         _widget->onThemeChanged();

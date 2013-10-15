@@ -79,7 +79,7 @@ struct CRUIConfig {
     void setupResources(lString8 baseDir);
 
     /// loads theme from themesDirectory + "/" + theme + "/cr3theme.xml"; pass empty string to reload current theme
-    void loadTheme(lString8 theme);
+    void setTheme(lString8 themeName);
     /// sets coverCache, docCache, iniFile, dbFile
     void setupUserDir(lString8 baseDir);
 
@@ -92,6 +92,9 @@ struct CRUIConfig {
     void uninitEngine();
 
     CRUIConfig();
+private:
+    /// loads theme from themesDirectory + "/" + theme + "/cr3theme.xml"; pass empty string to reload current theme
+    void loadTheme();
 };
 
 extern CRUIConfig crconfig;

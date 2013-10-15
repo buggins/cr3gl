@@ -422,8 +422,12 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     applyMargin(rc);
     setClipRect(buf, rc);
     applyPadding(rc);
-    int cx = MIN_ITEM_PX / 3;
-    int cy = MIN_ITEM_PX * 2 / 3;
+
+    CRUIImageRef handle = resourceResolver->getIcon("00_slider_handle");
+
+
+    int cx = handle.isNull() ? MIN_ITEM_PX / 3 : handle->originalWidth();
+    int cy = handle.isNull() ? MIN_ITEM_PX * 2 / 3 : handle->originalHeight();
     int lh = MIN_ITEM_PX / 6;
     int y0 = (rc.top + rc.bottom) / 2;
     lvRect linerc = rc;
@@ -437,9 +441,13 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
 
     int x0 = linerc.left + linerc.width() * (_value - _minValue) / (_maxValue - _minValue);
     lvRect crc(x0 - cx / 2, y0 - cy / 2, x0 + cx / 2, y0 + cy / 2);
-    buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_OUTER));
-    crc.shrink(lh / 3);
-    buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_INNER));
+    if (handle.isNull()) {
+        buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_OUTER));
+        crc.shrink(lh / 3);
+        buf->FillRect(crc, currentTheme->getColor(COLOR_ID_SLIDER_POINTER_COLOR_INNER));
+    } else {
+        handle->draw(buf, crc);
+    }
 }
 
 void CRUISliderWidget::updatePos(int pos) {

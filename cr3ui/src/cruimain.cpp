@@ -491,7 +491,8 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             requestLayout();
         }
         if (key == PROP_APP_THEME) {
-            crconfig.loadTheme(UnicodeToUtf8(newValue));
+            crconfig.setTheme(UnicodeToUtf8(newValue));
+            crconfig.setupResourcesForScreenSize();
             themeChanged = true;
         }
     }

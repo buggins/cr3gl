@@ -23,6 +23,7 @@ public:
     virtual lString8 getValue(CRPropRef props) const { CR_UNUSED(props); return lString8(); }
     virtual lString16 getDescription(CRPropRef props) const;
     virtual CRUIImageRef getValueIcon(CRPropRef props) const;
+    virtual bool fixedValueIconSize() const { return true; }
     virtual lString8 getValueIconRes(CRPropRef props) const;
     virtual int childCount() const { return 0; }
     virtual CRUISettingsItem * getChild(int index) const { CR_UNUSED(index); return NULL; }
@@ -83,6 +84,7 @@ public:
     virtual bool isChecked(CRPropRef props) const;
     virtual lString16 getDescription(CRPropRef props) const;
     virtual lString8 getValueIconRes(CRPropRef props) const;
+    virtual bool fixedValueIconSize() const { return false; }
 };
 
 /// option item for option list setting

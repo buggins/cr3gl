@@ -55,10 +55,18 @@ public:
         _title->setText(_settings->getName());
         setDescription(_settings->getDescription(props));
         _righticon->setImage(_settings->getValueIcon(props));
-        _righticon->setMinWidth(MIN_ITEM_PX - PT_TO_PX(3));
-        _righticon->setMaxWidth(MIN_ITEM_PX - PT_TO_PX(3));
-        _righticon->setMinHeight(MIN_ITEM_PX - PT_TO_PX(3));
-        _righticon->setMaxHeight(MIN_ITEM_PX - PT_TO_PX(3));
+        if (settings->fixedValueIconSize()) {
+            _righticon->setMinWidth(MIN_ITEM_PX - PT_TO_PX(4));
+            _righticon->setMaxWidth(MIN_ITEM_PX - PT_TO_PX(4));
+            _righticon->setMinHeight(MIN_ITEM_PX - PT_TO_PX(4));
+            _righticon->setMaxHeight(MIN_ITEM_PX - PT_TO_PX(4));
+        } else {
+            _righticon->setMinWidth(UNSPECIFIED);
+            _righticon->setMaxWidth(UNSPECIFIED);
+            _righticon->setMinHeight(UNSPECIFIED);
+            _righticon->setMaxHeight(UNSPECIFIED);
+        }
+
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
 };
@@ -547,7 +555,10 @@ CRUIImageRef CRUISettingsItem::getValueIcon(CRPropRef props) const {
 
 lString8 CRUISettingsItem::getValueIconRes(CRPropRef props) const {
     CR_UNUSED(props);
-    return lString8("ic_menu_forward");
+    //return lString8("ic_menu_forward");
+    //return lString8("00_button_right");
+    //return lString8("arrow");
+    return lString8("forward");
 }
 
 //CRUISettingsItem * CRUISettingsItem::findSetting(lString8 name) {
@@ -595,10 +606,21 @@ bool CRUISettingsListWidget::onListItemClick(CRUIListWidget * widget, int itemIn
 }
 
 lString8 CRUISettingsCheckbox::getValueIconRes(CRPropRef props) const {
+#if 1
+    if (isChecked(props))
+        return lString8("checked_checkbox");
+    else
+        return lString8("unchecked_checkbox");
+//    if (isChecked(props))
+//        return lString8("00_button_on");
+//    else
+//        return lString8("00_button_off");
+#else
     if (isChecked(props))
         return lString8("btn_check_on");
     else
         return lString8("btn_check_off");
+#endif
 }
 
 lString16 CRUISettingsCheckbox::getDescription(CRPropRef props) const {

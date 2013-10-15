@@ -127,7 +127,8 @@ public:
 
 class CRResourceResolver {
 	lString8Collection _dirList;
-	lString16 resourceToFileName(const char * res);
+    lString8Collection _themeDirList;
+    lString16 resourceToFileName(const char * res);
 	LVHashTable<lString8, LVImageSourceRef> _imageSourceMap;
 	LVHashTable<lString8, CRUIImageRef> _iconMap;
     lUInt32 _iconColorTransformAdd;
@@ -145,6 +146,7 @@ public:
     CRUIImageRef getBackgroundImage(CRPropRef props);
     CRUIImageRef getBackgroundImage(lString8 id);
     void setDirList(lString8Collection & dirList);
+    void setThemeDirList(lString8Collection & dirList);
     CRResourceResolver(lString8Collection & dirList)
         : _dirList(dirList), _imageSourceMap(1000),
         _iconMap(1000),
