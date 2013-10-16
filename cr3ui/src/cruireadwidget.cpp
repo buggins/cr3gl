@@ -239,6 +239,7 @@ bool CRUIReadWidget::restorePosition() {
 }
 
 void CRUIReadWidget::updatePosition() {
+    CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
         return;
     ldomXPointer ptr = _docview->getBookmark();
@@ -378,6 +379,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
             _scroll.stop();
         return;
     }
+    bool scrollWasActive = _scroll.isActive();
     CRUIWidget::animate(millisPassed);
     bool changed = _scroll.animate(millisPassed);
     if (changed) {
@@ -390,7 +392,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
             _scroll.stop();
         }
     }
-    if (!_scroll.isActive())
+    if (scrollWasActive && !_scroll.isActive())
         updatePosition();
 }
 
