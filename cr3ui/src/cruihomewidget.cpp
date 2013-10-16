@@ -32,9 +32,10 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 	CRUITextWidget * _authors;
 	CRUITextWidget * _info;
     CRUIHomeWidget * _home;
+    const CRDirEntry * _lastBook;
 public:
 
-    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
+    CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home), _lastBook(NULL) {
         setId("HOME_CURRENT_BOOK");
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
         //int coverSize = deviceInfo.shortSide / 4;
@@ -118,20 +119,31 @@ public:
     }
 
     virtual ~CRUINowReadingWidget() {
+        if (_lastBook)
+            delete _lastBook;
     }
 
     void updateLastBook(const CRDirEntry * lastBook) {
-        if (lastBook) {
-            _title->setText(lastBook->getTitle());
-            _authors->setText(lastBook->getAuthorNames(false));
-            _info->setText(lastBook->getSeriesName(true));
+        if (_lastBook) {
+            if (lastBook && _lastBook->getPathName() == lastBook->getPathName())
+                return; // no change
+            delete _lastBook;
+        }
+        _lastBook = lastBook ? lastBook->clone() : NULL;
+        CRLog::trace("updateLastBook");
+        if (_lastBook) {
+            _title->setText(_lastBook->getTitle());
+            _authors->setText(_lastBook->getAuthorNames(false));
+            _info->setText(_lastBook->getSeriesName(true));
         } else {
             _title->setText(lString16());
             _authors->setText(lString16());
             _info->setText(lString16());
         }
         _cover->setBook(lastBook);
+        requestLayout();
         invalidate();
+        _home->getMain()->update(true);
     }
 
     const CRFileItem * getLastBook() {
@@ -503,6 +515,7 @@ public:
     }
 
     CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUILinearLayout(true), _home(home) {
+        setId("RECENT_BOOKS");
         _caption = new CRUITextWidget(STR_RECENT_BOOKS);
         _caption->setLayoutParams(CRUI::FILL_PARENT, CRUI::WRAP_CONTENT);
         _caption->setStyle("HOME_LIST_CAPTION");
@@ -512,6 +525,7 @@ public:
         _list->setBackground("home_frame.9.png");
         _list->setPadding(PT_TO_PX(1));
         _list->setOnItemClickListener(this);
+        _list->setId("RECENT_BOOKS_LIST");
         addChild(_list);
 
         _itemImage = new CRCoverWidget(home->getMain(), NULL, 75, 100);

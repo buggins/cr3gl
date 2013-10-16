@@ -18,7 +18,8 @@ public:
     ~CRCoverWidget() { if (_book) delete _book; }
     /// calculates cover image size (to request in cache) by control size
     lvPoint calcCoverSize(int width, int height);
-    virtual void setSize(int width, int height);
+    /// returns true if size is changed
+    virtual bool setSize(int width, int height);
     /// sets book to clone of specified item
     virtual void setBook(const CRDirEntry * book);
     /// measure dimensions

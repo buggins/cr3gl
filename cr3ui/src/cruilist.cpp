@@ -129,6 +129,7 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIListWidget::layout(int left, int top, int right, int bottom) {
+    CRUIWidget::layout(left, top, right, bottom);
     _pos.left = left;
     _pos.top = top;
     _pos.right = right;
@@ -401,14 +402,18 @@ bool CRUIListWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			_selectedItem = -1;
 			_dragStartOffset = _scrollOffset;
 			setScrollOffset(_dragStartOffset - delta);
+            invalidate();
 		} else if (isDragging) {
 			setScrollOffset(_dragStartOffset - delta);
+            invalidate();
         } else if (!isDragging) {
             if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
                 if (_onStartDragCallback)
                     _onStartDragCallback->onStartDragging(event, !isVertical());
-                else
+                else {
                     startDragging(event, !isVertical());
+                    invalidate();
+                }
             }
         }
 		// ignore

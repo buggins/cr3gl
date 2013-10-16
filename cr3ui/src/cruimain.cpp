@@ -75,12 +75,14 @@ void CRUIMainWidget::onAllCoverpagesReady(int newpos) {
 }
 
 void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
+    CRLog::trace("CRUIMainWidget::onDirectoryScanFinished");
     if (item->getDirType() == DIR_TYPE_RECENT) {
         // set recent book
         if (item->itemCount() > 0) {
+            _home->requestLayout();
             //_home->setLastBook(item->getItem(0));
         }
-        update();
+        update(true);
         return;
     }
     if (_pendingFolder == item->getPathName()) {
@@ -103,7 +105,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
             startAnimation(newpos, WINDOW_ANIMATION_DELAY);
         }
     } else {
-        update();
+        update(true);
     }
 }
 
@@ -134,7 +136,7 @@ void CRUIMainWidget::onDocumentRenderFinished(lString8 pathname) {
         startAnimation(newpos, WINDOW_ANIMATION_DELAY);
     } else {
     	CRLog::trace("updating screen after render is finished");
-        update();
+        update(true);
     }
 }
 
@@ -204,7 +206,7 @@ void CRUIMainWidget::showSlowOperationPopup()
     _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, SLOW_OPERATION_DIM_COLOR);
     _popup->measure(_pos.width(), _pos.height());
     _popup->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    update();
+    update(true);
 }
 
 void CRUIMainWidget::hideSlowOperationPopup()
@@ -442,6 +444,7 @@ void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
+    CRLog::trace("CRUIMainWidget::layout");
     if (_popupBackground)
         return;
     _history.currentWidget()->layout(left, top, right, bottom);
@@ -454,11 +457,16 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
     _layoutRequested = false;
 }
 
-/// draw now
-void CRUIMainWidget::update() {
+/// draw now if force == true, layout/draw if necessary when force == false
+void CRUIMainWidget::update(bool force) {
+    if (force)
+        invalidate();
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
-    setScreenUpdateMode(true, animating ? 30 : 0);
+    if (force)
+        needDraw = true;
+    if (needDraw)
+        setScreenUpdateMode(needDraw, animating ? 30 : 0);
 }
 
 // apply changed settings
@@ -581,7 +589,7 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
         stopAnimation();
     } else {
         requestLayout();
-        update();
+        update(true);
     }
 }
 
@@ -605,7 +613,7 @@ void CRUIMainWidget::stopAnimation() {
     afterNavigation(_history[_animation.oldpos], _history[_animation.newpos]);
     _history.setPos(_animation.newpos);
     requestLayout();
-    update();
+    update(true);
 }
 
 void CRUIMainWidget::animate(lUInt64 millisPassed) {
@@ -638,7 +646,7 @@ public:
     MainWidgetUpdateCallback(CRUIMainWidget * main) : _main(main) {}
     virtual void run() {
         _main->requestLayout();
-        _main->update();
+        _main->update(true);
     }
 };
 

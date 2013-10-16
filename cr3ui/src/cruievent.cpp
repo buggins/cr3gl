@@ -160,7 +160,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 }
 
 void CRUIEventManager::updateScreen() {
-	_rootWidget->update();
+    _rootWidget->update(false);
 }
 
 bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {

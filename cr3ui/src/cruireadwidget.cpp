@@ -44,6 +44,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : CRUIWindowWidget(main),
     _isDragging(false), _dragStartOffset(0), _locked(false),
     _fileItem(NULL), _lastPosition(NULL)
 {
+    setId("READ");
     _docview = new CRUIDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
 	LVArray<int> sizes;
@@ -565,7 +566,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 //            setScrollOffset(_dragStartOffset - delta);
 //        else
 //            _selectedItem = index;
-        invalidate();
+        //invalidate();
         //CRLog::trace("list FOCUS IN");
         break;
     case ACTION_FOCUS_OUT:
@@ -573,7 +574,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 //            setScrollOffset(_dragStartOffset - delta);
 //        else
 //            _selectedItem = -1;
-        invalidate();
+        //invalidate();
         return false; // to continue tracking
         //CRLog::trace("list FOCUS OUT");
         break;
@@ -588,11 +589,11 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             _docview->SetPos(_dragStartOffset - delta, false);
             prepareScroll(-delta);
             invalidate();
-            _main->update();
+            _main->update(true);
         } else if (_isDragging) {
             _docview->SetPos(_dragStartOffset - delta, false);
             invalidate();
-            _main->update();
+            _main->update(true);
         } else if (!_isDragging) {
             if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
                 _main->startDragging(event, false);

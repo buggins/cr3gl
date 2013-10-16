@@ -285,8 +285,8 @@ public:
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
 
-    /// draw now
-    virtual void update();
+    /// draw now if force == true, layout/draw if necessary when force == false
+    virtual void update(bool force);
 
     /// forward screen update request to external code
     virtual void setScreenUpdateMode(bool updateNow, int animationFps) {

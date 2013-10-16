@@ -97,31 +97,31 @@ void adaptThemeForScreenSize() {
 void OpenGLWindow::mousePressEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
     event->accept();
-    renderIfChanged();
+    //renderIfChanged();
 }
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
     event->accept();
-    renderIfChanged();
+    //renderIfChanged();
 }
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
     event->accept();
-    renderIfChanged();
+    //renderIfChanged();
 }
 
 void OpenGLWindow::keyPressEvent(QKeyEvent * event) {
     _eventAdapter->dispatchKeyEvent(event);
     event->accept();
-    renderIfChanged();
+    //renderIfChanged();
 }
 
 void OpenGLWindow::keyReleaseEvent(QKeyEvent * event) {
     _eventAdapter->dispatchKeyEvent(event);
     event->accept();
-    renderIfChanged();
+    //renderIfChanged();
 }
 
 void OpenGLWindow::setScreenUpdateMode(bool updateNow, int animationFps) {
@@ -136,11 +136,11 @@ void OpenGLWindow::renderIfChanged()
     CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
     if (animating) {
         setAnimating(true);
-        CRLog::trace("needLayout=%s needDraw=%s animating=true", needLayout ? "true" : "false", needDraw ? "true" : "false");
+        //CRLog::trace("needLayout=%s needDraw=%s animating=true", needLayout ? "true" : "false", needDraw ? "true" : "false");
     } else {
         setAnimating(false);
         if (needLayout || needDraw) {
-            CRLog::trace("needLayout=%s needDraw=%s animating=false", needLayout ? "true" : "false", needDraw ? "true" : "false");
+            //CRLog::trace("needLayout=%s needDraw=%s animating=false", needLayout ? "true" : "false", needDraw ? "true" : "false");
             renderLater();
         }
     }
@@ -150,7 +150,7 @@ void OpenGLWindow::render()
 {
     if (!m_device)
         m_device = new QOpenGLPaintDevice;
-    //CRLog::trace("Render is called");
+    CRLog::trace("Render is called");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glClearColor(1,1,1,1);
 
@@ -189,6 +189,7 @@ void OpenGLWindow::render()
         _widget->layout(0, 0, sz.width(), sz.height());
         //CRLog::trace("done layout");
     }
+    needDraw = true;
     if (needDraw) {
         //CRLog::trace("need draw");
         _widget->draw(&buf);

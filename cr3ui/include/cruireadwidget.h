@@ -148,6 +148,9 @@ class CRUIReadWidget : public CRUIWindowWidget
 
 
 public:
+    CRUIReadWidget(CRUIMainWidget * main);
+    virtual ~CRUIReadWidget();
+
 
     /// restore last position from DB
     bool restorePosition();
@@ -160,9 +163,6 @@ public:
     virtual void onDocumentRenderFinished(lString8 pathname);
 
     CRUIDocView * getDocView() { return _docview; }
-
-    CRUIReadWidget(CRUIMainWidget * main);
-	virtual ~CRUIReadWidget();
 
     bool openBook(const CRFileItem * file);
     void closeBook();

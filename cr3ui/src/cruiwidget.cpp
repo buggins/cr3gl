@@ -454,26 +454,33 @@ void CRUIWidget::animate(lUInt64 millisPassed)
         getChild(i)->animate(millisPassed);
 }
 
+#define DEBUG_SCREEN_UPDATE 0
 static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
     if (widget->isLayoutRequested()) {
         if (!needLayout) {
+#if DEBUG_SCREEN_UPDATE
             CRLog::trace("found needLayout for %s", widget->getId().c_str());
             for (int i = 0; i < widget->getChildCount(); i++) {
                 CRUIWidget * child = widget->getChild(i);
                 CRLog::trace("child %d = %s", i, child->getId().c_str());
             }
+#endif
             needLayout = true;
         }
     }
     if (widget->isDrawRequested()) {
         if (!needRedraw) {
-            CRLog::trace("found needRedraw");
+#if DEBUG_SCREEN_UPDATE
+            CRLog::trace("found needRedraw for %s", widget->getId().c_str());
+#endif
             needRedraw = true;
         }
     }
     if (widget->isAnimating()) {
         if (!animating) {
-            CRLog::trace("found animating");
+#if DEBUG_SCREEN_UPDATE
+            CRLog::trace("found animating for %s", widget->getId().c_str());
+#endif
             animating = true;
         }
     }

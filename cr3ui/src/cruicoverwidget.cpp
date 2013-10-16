@@ -4,20 +4,25 @@
 
 using namespace CRUI;
 
-void CRCoverWidget::setSize(int width, int height) {
+bool CRCoverWidget::setSize(int width, int height) {
+    if (_dx == width && _dy == height)
+        return false; // no change
+    // changed
     _dx = width;
     _dy = height;
     setMinWidth(width);
     setMaxWidth(width);
     setMinHeight(height);
     setMaxHeight(height);
-    requestLayout();
+    requestLayout(true);
+    return true;
 }
 
 void CRCoverWidget::setBook(const CRDirEntry * book) {
     if (_book)
         delete _book;
     _book = book ? book->clone() : NULL;
+    invalidate();
 }
 
 /// measure dimensions
