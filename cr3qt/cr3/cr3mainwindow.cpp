@@ -136,9 +136,11 @@ void OpenGLWindow::renderIfChanged()
     CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
     if (animating) {
         setAnimating(true);
+        CRLog::trace("needLayout=%s needDraw=%s animating=true", needLayout ? "true" : "false", needDraw ? "true" : "false");
     } else {
         setAnimating(false);
         if (needLayout || needDraw) {
+            CRLog::trace("needLayout=%s needDraw=%s animating=false", needLayout ? "true" : "false", needDraw ? "true" : "false");
             renderLater();
         }
     }

@@ -142,12 +142,8 @@ void CRUITextWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUITextWidget::layout(int left, int top, int right, int bottom) {
-	_pos.left = left;
-	_pos.top = top;
-	_pos.right = right;
-	_pos.bottom = bottom;
-	_layoutRequested = false;
-    lString16 text = getText();
+    CRUIWidget::layout(left, top, right, bottom);
+    //lString16 text = getText();
     //CRLog::trace("Layout: %d %d [%s]", right - left, bottom - top, LCSTR(text));
 }
 
@@ -215,10 +211,7 @@ void CRUIImageWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIImageWidget::layout(int left, int top, int right, int bottom) {
-	_pos.left = left;
-	_pos.top = top;
-	_pos.right = right;
-	_pos.bottom = bottom;
+    CRUIWidget::layout(left, top, right, bottom);
 }
 /// draws widget with its children to specified surface
 void CRUIImageWidget::draw(LVDrawBuf * buf) {

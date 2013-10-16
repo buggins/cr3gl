@@ -67,6 +67,7 @@ public:
 
     CRUIWindowWidget(CRUIMainWidget * main) : _main(main) {
     	_body = new CRUIVerticalLayout();
+        _body->setId("WINDOW_BODY");
     	addChild(_body);
     }
     virtual ~CRUIWindowWidget() {  }

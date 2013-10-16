@@ -35,6 +35,7 @@ class CRUINowReadingWidget : public CRUILinearLayout {
 public:
 
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home) {
+        setId("HOME_CURRENT_BOOK");
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
         //int coverSize = deviceInfo.shortSide / 4;
         _cover = new CRCoverWidget(_home->getMain(), NULL, 75, 100);
@@ -637,6 +638,7 @@ CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : CRUIWindowWidget(main){
 	_body->addChild(_library);
 	_body->addChild(_onlineCatalogsList);
 	setStyle("HOME_WIDGET");
+    setId("HOME_WIDGET");
 }
 
 /// measure dimensions
@@ -702,6 +704,7 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 		_library->layout(left, y, (left + right) / 2, y + otherH);
 		_onlineCatalogsList->layout((left + right) / 2, y, right, y + otherH);
 	}
+    _layoutRequested = false;
 }
 
 bool CRUIHomeWidget::onKeyEvent(const CRUIKeyEvent * event) {

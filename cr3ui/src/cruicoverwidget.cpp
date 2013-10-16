@@ -29,10 +29,7 @@ void CRCoverWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRCoverWidget::layout(int left, int top, int right, int bottom) {
-    _pos.left = left;
-    _pos.top = top;
-    _pos.right = right;
-    _pos.bottom = bottom;
+    CRUIWidget::layout(left, top, right, bottom);
 }
 /// draws widget with its children to specified surface
 void CRCoverWidget::draw(LVDrawBuf * buf) {

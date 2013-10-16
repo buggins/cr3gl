@@ -162,6 +162,7 @@ void CRUILinearLayout::layout(int left, int top, int right, int bottom) {
             x = childRc.right;
         }
 	}
+    _layoutRequested = false;
 }
 
 
@@ -239,6 +240,7 @@ void CRUIFrameLayout::layout(int left, int top, int right, int bottom) {
             continue;
         child->layout(childRc.left, childRc.top, childRc.right, childRc.bottom);
     }
+    _layoutRequested = false;
 }
 
 
@@ -465,5 +467,6 @@ void CRUITableLayout::layout(int left, int top, int right, int bottom) {
         }
         y += _rows[row].height;
     }
+    _layoutRequested = false;
 }
 

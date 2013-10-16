@@ -191,8 +191,8 @@ public:
 
 
 
-	virtual bool isLayoutRequested() { return _layoutRequested; }
-	virtual void requestLayout(bool updateParent = true) {
+    virtual bool isLayoutRequested() { return getVisibility() != CRUI::GONE && _layoutRequested; }
+    virtual void requestLayout(bool updateParent = false) {
 		_layoutRequested = true;
 		if (updateParent && _parent)
 			_parent->requestLayout(true);
@@ -201,7 +201,7 @@ public:
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating() { return false; }
     virtual bool isAnimatingRecursive();
-    virtual bool isDrawRequested() { return _drawRequested; }
+    virtual bool isDrawRequested() { return getVisibility() != CRUI::GONE && _drawRequested; }
 	virtual void invalidate() {
 		_drawRequested = true;
 	}

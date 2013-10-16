@@ -129,11 +129,12 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIListWidget::layout(int left, int top, int right, int bottom) {
-	_pos.left = left;
-	_pos.top = top;
-	_pos.right = right;
-	_pos.bottom = bottom;
-	lvRect clientRc = _pos;
+    _pos.left = left;
+    _pos.top = top;
+    _pos.right = right;
+    _pos.bottom = bottom;
+    _layoutRequested = false;
+    lvRect clientRc = _pos;
 	applyMargin(clientRc);
 	applyPadding(clientRc);
 	int winsize = isVertical() ? clientRc.height() : clientRc.width();

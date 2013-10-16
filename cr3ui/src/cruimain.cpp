@@ -343,6 +343,7 @@ CRUIMainWidget::CRUIMainWidget()
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
 {
+    setId("MAIN");
     _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
     LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_READ);
@@ -450,6 +451,7 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
     _pos.bottom = bottom;
     if (_popup)
         _popup->layout(left, top, right, bottom);
+    _layoutRequested = false;
 }
 
 /// draw now
@@ -696,6 +698,7 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         //CRLog::trace("Drawing popup");
         _popup->draw(buf);
     }
+    _drawRequested = false;
     setScreenUpdateMode(false, animating ? 30 : 0);
 }
 

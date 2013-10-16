@@ -383,6 +383,7 @@ void CRUIWidget::layout(int left, int top, int right, int bottom) {
 	_pos.top = top;
 	_pos.right = right;
 	_pos.bottom = bottom;
+    _layoutRequested = false;
 }
 
 bool CRUIWidget::setClipRect(LVDrawBuf * buf, lvRect & rc) {
@@ -454,12 +455,28 @@ void CRUIWidget::animate(lUInt64 millisPassed)
 }
 
 static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
-	if (widget->isLayoutRequested())
-		needLayout = true;
-	if (widget->isDrawRequested())
-		needRedraw = true;
-    if (widget->isAnimating())
-        animating = true;
+    if (widget->isLayoutRequested()) {
+        if (!needLayout) {
+            CRLog::trace("found needLayout for %s", widget->getId().c_str());
+            for (int i = 0; i < widget->getChildCount(); i++) {
+                CRUIWidget * child = widget->getChild(i);
+                CRLog::trace("child %d = %s", i, child->getId().c_str());
+            }
+            needLayout = true;
+        }
+    }
+    if (widget->isDrawRequested()) {
+        if (!needRedraw) {
+            CRLog::trace("found needRedraw");
+            needRedraw = true;
+        }
+    }
+    if (widget->isAnimating()) {
+        if (!animating) {
+            CRLog::trace("found animating");
+            animating = true;
+        }
+    }
     for (int i = 0; i < widget->getChildCount(); i++)
         checkUpdateOptions(widget->getChild(i), needLayout, needRedraw, animating);
 }
