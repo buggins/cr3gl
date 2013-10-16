@@ -429,11 +429,22 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     linerc.right -= cx / 2;
     linerc.top = y0 - lh/2;
     linerc.bottom = linerc.top + lh;
+    bool hasGradient = _color1 != 0xFFFFFFFF || _color2 != 0xFFFFFFFF;
     if (line.isNull()) {
         buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_OUTER));
         linerc.shrink(lh / 4);
         buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_INNER));
     } else {
+        if (hasGradient) {
+            lvRect rc = linerc;
+//            const CR9PatchInfo * ninePatch = line->getNinePatchInfo();
+//            if (ninePatch) {
+//                rc.shrinkBy(ninePatch->padding);
+//            } else {
+//                rc.shrink(lh / 4);
+//            }
+            buf->GradientRect(rc.left, rc.top, rc.right, rc.bottom, _color1, _color2, _color2, _color1);
+        }
         line->draw(buf, linerc);
     }
 

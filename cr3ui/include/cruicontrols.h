@@ -96,6 +96,7 @@ protected:
     int _minValue;
     int _maxValue;
     int _value;
+    lUInt32 _color1, _color2;
     CRUIOnScrollPosCallback * _callback;
     void updatePos(int pos);
 public:
@@ -106,6 +107,13 @@ public:
     void setMinScrollPos(int value) { _minValue = value; }
     void setMaxScrollPos(int value) { _maxValue = value; }
     void setScrollPosCallback(CRUIOnScrollPosCallback * callback) { _callback = callback; }
+    /// set line background gradient left, right
+    void setColors(lUInt32 color1, lUInt32 color2) {
+        _color1 = color1;
+        _color2 = color2;
+        invalidate();
+    }
+
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
     /// updates widget position based on specified rectangle
@@ -115,7 +123,9 @@ public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
 
-    CRUISliderWidget(int minValue, int maxValue, int currentValue) :  _minValue(minValue), _maxValue(maxValue), _value(currentValue), _callback(NULL) {
+    CRUISliderWidget(int minValue, int maxValue, int currentValue) :  _minValue(minValue), _maxValue(maxValue), _value(currentValue)
+      , _color1(0xFFFFFFFF), _color2(0xFFFFFFFF)
+      , _callback(NULL) {
         setScrollPos(currentValue);
     }
     virtual ~CRUISliderWidget() {}

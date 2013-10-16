@@ -30,14 +30,16 @@ lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
     lUInt32 n2 = (((cl2 >> 8) & 0xFF00FF) * alpha + ((cl1 >> 8) & 0xFF00FF) * opaque) & 0xFF00FF00;
     return n1 | n2;
 }
+
 void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 colorBottom) {
-	lvRect rc2 = rc;
-	for (int y = 0; y < rc.height(); y++) {
-		int alpha = (y * 255) / rc.height();
-		rc2.top = rc.top + y;
-		rc2.bottom = rc.top + y + 1;
-		buf->FillRect(rc2, applyAlpha(colorTop, colorBottom, alpha));
-	}
+    buf->GradientRect(rc.left, rc.top, rc.right, rc.bottom, colorTop, colorTop, colorBottom, colorBottom);
+//	lvRect rc2 = rc;
+//	for (int y = 0; y < rc.height(); y++) {
+//		int alpha = (y * 255) / rc.height();
+//		rc2.top = rc.top + y;
+//		rc2.bottom = rc.top + y + 1;
+//		buf->FillRect(rc2, applyAlpha(colorTop, colorBottom, alpha));
+//	}
 }
 
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : CRUIWindowWidget(main),

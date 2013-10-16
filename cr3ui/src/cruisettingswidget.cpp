@@ -288,11 +288,12 @@ void CRUIFontSizeEditorWidget::layout(int left, int top, int right, int bottom) 
     CRUISettingsEditor::layout(left, top, right, bottom);
 }
 
-static CRUISliderWidget * createColorSlider(const char * id, int value, CRUIOnScrollPosCallback * callback) {
+static CRUISliderWidget * createColorSlider(const char * id, int value, CRUIOnScrollPosCallback * callback, lUInt32 color1, lUInt32 color2) {
     CRUISliderWidget * _slider = new CRUISliderWidget(0, 255, value);
     _slider->setId(id);
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(callback);
+    _slider->setColors(color1, color2);
     return _slider;
 }
 
@@ -320,6 +321,12 @@ static void contrastSettingFromSlider(CRPropRef props, int shift, int pos) {
     color = color & ~(255 << shift);
     color = color | ((pos & 255) << shift);
     props->setColor(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, color);
+}
+
+static lUInt32 replaceColor(lUInt32 color, int shift, int value) {
+    color = color & ~(255 << shift);
+    color = color | ((value & 255) << shift);
+    return color;
 }
 
 bool CRUIColorEditorWidget::onClick(CRUIWidget * widget) {
@@ -357,9 +364,9 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _colorCorrectionPane = new CRUIVerticalLayout();
     lUInt32 cl = props->getColorDef(setting->getSettingId().c_str(), 0);
 
-    _sliderR = createColorSlider("R",((cl >> 16) & 255), this);
-    _sliderG = createColorSlider("G",((cl >> 8) & 255), this);
-    _sliderB = createColorSlider("B",((cl >> 0) & 255), this);
+    _sliderR = createColorSlider("R",((cl >> 16) & 255), this, replaceColor(cl, 16, 0), replaceColor(cl, 16, 255));
+    _sliderG = createColorSlider("G",((cl >> 8) & 255), this, replaceColor(cl, 8, 0), replaceColor(cl, 8, 255));
+    _sliderB = createColorSlider("B",((cl >> 0) & 255), this, replaceColor(cl, 0, 0), replaceColor(cl, 0, 255));
 
     _colorPane->addChild(_sliderR);
     _colorPane->addChild(_sliderG);
@@ -373,12 +380,12 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
         _checkbox->setOnClickListener(this);
         addChild(_checkbox);
 
-        _sliderRB = createColorSlider("RB", brightnessSettingToSlider(_props, 16), this);
-        _sliderGB = createColorSlider("GB", brightnessSettingToSlider(_props, 8), this);
-        _sliderBB = createColorSlider("BB", brightnessSettingToSlider(_props, 0), this);
-        _sliderRC = createColorSlider("RC", contrastSettingToSlider(_props, 16), this);
-        _sliderGC = createColorSlider("GC", contrastSettingToSlider(_props, 8), this);
-        _sliderBC = createColorSlider("BC", contrastSettingToSlider(_props, 0), this);
+        _sliderRB = createColorSlider("RB", brightnessSettingToSlider(_props, 16), this, 0x80000000, 0x80FF0000);
+        _sliderGB = createColorSlider("GB", brightnessSettingToSlider(_props, 8), this, 0x80000000, 0x8000FF00);
+        _sliderBB = createColorSlider("BB", brightnessSettingToSlider(_props, 0), this, 0x80000000, 0x800000FF);
+        _sliderRC = createColorSlider("RC", contrastSettingToSlider(_props, 16), this, 0x80000000, 0x80FF0000);
+        _sliderGC = createColorSlider("GC", contrastSettingToSlider(_props, 8), this, 0x80000000, 0x8000FF00);
+        _sliderBC = createColorSlider("BC", contrastSettingToSlider(_props, 0), this, 0x80000000, 0x800000FF);
 
         _colorCorrectionPane->addChild(new CRUITextWidget(lString16("Color correction")));
         CRUITableLayout * table = new CRUITableLayout(2);
@@ -420,12 +427,24 @@ bool CRUIColorEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos
     CRLog::trace("CRUIColorEditorWidget::onScrollPosChange(%s, %d)", widget->getId().c_str(), pos);
     pos &= 255;
     lUInt32 cl = _props->getColorDef(_settings->getSettingId().c_str(), 0);
-    if (widget->getId() == "R")
+    bool updateRgb = false;
+    if (widget->getId() == "R") {
         cl = (cl & 0x00FFFF) | (pos << 16);
-    if (widget->getId() == "G")
+        updateRgb = true;
+    }
+    if (widget->getId() == "G") {
         cl = (cl & 0xFF00FF) | (pos << 8);
-    if (widget->getId() == "B")
+        updateRgb = true;
+    }
+    if (widget->getId() == "B") {
         cl = (cl & 0xFFFF00) | (pos << 0);
+        updateRgb = true;
+    }
+    if (updateRgb) {
+        _sliderR->setColors(replaceColor(cl, 16, 0), replaceColor(cl, 16, 255));
+        _sliderG->setColors(replaceColor(cl, 8, 0), replaceColor(cl, 8, 255));
+        _sliderB->setColors(replaceColor(cl, 0, 0), replaceColor(cl, 0, 255));
+    }
     _props->setColor(_settings->getSettingId().c_str(), cl);
     if (widget->getId() == "RB")
         brightnessSettingFromSlider(_props, 16, pos);

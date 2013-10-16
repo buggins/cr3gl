@@ -655,18 +655,27 @@ public:
 	int y0;
 	int x1;
     int y1;
-    lUInt32 color;
-    GLFillRectItem(int _x0, int _y0, int _x1, int _y1, lUInt32 _color) : x0(_x0), y0(_y0), x1(_x1), y1(_y1), color(_color) { }
+    lUInt32 color1;
+    lUInt32 color2;
+    lUInt32 color3;
+    lUInt32 color4;
+    GLFillRectItem(int _x0, int _y0, int _x1, int _y1, lUInt32 _color1, lUInt32 _color2, lUInt32 _color3, lUInt32 _color4) : x0(_x0), y0(_y0), x1(_x1), y1(_y1)
+      , color1(_color1), color2(_color2) , color3(_color3) , color4(_color4) { }
     virtual void draw() {
     	GLfloat vertices[] = {
-    			x0,y0,0,
-    			x0,y1,0,
-    			x1,y1,0,
-    			x0,y0,0,
-    			x1,y1,0,
-    			x1,y0,0};
+                (float)x0,(float)y0,0,
+                (float)x0,(float)y1,0,
+                (float)x1,(float)y1,0,
+                (float)x0,(float)y0,0,
+                (float)x1,(float)y1,0,
+                (float)x1,(float)y0,0};
     	GLfloat colors[6 * 4];
-    	LVGLFillColor(color, colors, 6);
+        LVGLFillColor(color1, colors + 4*0, 1);
+        LVGLFillColor(color4, colors + 4*1, 1);
+        LVGLFillColor(color3, colors + 4*2, 1);
+        LVGLFillColor(color1, colors + 4*3, 1);
+        LVGLFillColor(color3, colors + 4*4, 1);
+        LVGLFillColor(color2, colors + 4*5, 1);
 
     	glEnable(GL_BLEND);
     	glDisable(GL_ALPHA_TEST);
@@ -691,6 +700,19 @@ public:
     }
 };
 
+/// draw gradient filled rectangle with colors for top-left, top-right, bottom-right, bottom-left
+void GLDrawBuf::GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4)
+{
+    if (_scene) {
+        lvRect rc(x0, y0, x1, y1);
+        lvRect clip;
+        GetClipRect(&clip);
+        if (rc.intersect(clip)) {
+            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color1, color2, color3, color4));
+        }
+    }
+}
+
 /// fills rectangle with specified color
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
@@ -699,7 +721,7 @@ void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
         lvRect clip;
         GetClipRect(&clip);
         if (rc.intersect(clip)) {
-            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color));
+            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color, color, color, color));
         }
 	}
 }

@@ -81,6 +81,8 @@ public:
     virtual lUInt32 GetAvgColor(lvRect & rc16);
     /// get linearly interpolated pixel value (coordinates are fixed floating points *16)
     virtual lUInt32 GetInterpolatedColor(int x16, int y16);
+    /// draw gradient filled rectangle with colors for top-left, top-right, bottom-right, bottom-left
+    virtual void GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
     /// fills rectangle with specified color
     virtual void FillRect( int x0, int y0, int x1, int y1, lUInt32 color );
     /// fills rectangle with specified color
