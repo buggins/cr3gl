@@ -463,9 +463,9 @@ void CRUIMainWidget::update(bool force) {
         invalidate();
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
-    if (force)
+    if (force || animating)
         needDraw = true;
-    if (needDraw)
+    if (needDraw || animating)
         setScreenUpdateMode(needDraw, animating ? 30 : 0);
 }
 

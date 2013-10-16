@@ -744,7 +744,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
-        if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR
+        if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
                 || key == PROP_FONT_SIZE || key == PROP_FONT_FACE) {
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {
