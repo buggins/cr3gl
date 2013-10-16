@@ -226,6 +226,10 @@ class CRUIDocView;
 class CRUIFontSampleWidget : public CRUISettingsSampleWidget {
 protected:
     CRUIDocView * _docview;
+    lUInt32 _lastPropsHash;
+    lvPoint _lastSize;
+    LVRendPageList _pageList;
+    void format();
 public:
     CRUIFontSampleWidget(CRPropRef props);
     virtual ~CRUIFontSampleWidget();

@@ -145,7 +145,7 @@ CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem
 }
 
 
-CRUIFontSampleWidget::CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSampleWidget(props) {
+CRUIFontSampleWidget::CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSampleWidget(props), _lastPropsHash(0) {
     _docview = new CRUIDocView();
     lString16 sample = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
     LVArray<int> fontSizes;
@@ -169,6 +169,44 @@ void CRUIFontSampleWidget::measure(int baseWidth, int baseHeight) {
     defMeasure(baseWidth, baseHeight, dx, dy);
 }
 
+void CRUIFontSampleWidget::format() {
+    lUInt32 h = 123;
+    for (int i = 0; i < _props->getCount(); i++) {
+        lString8 key(_props->getName(i));
+        lString16 value = _props->getValue(i);
+        h = h * 31 + getHash(key);
+        h = h * 31 + getHash(value);
+    }
+    bool changed = false;
+    if (_lastPropsHash != h) {
+        _lastPropsHash = h;
+        changed = true;
+    }
+    if (_lastSize.x != _pos.width() || _lastSize.y != _pos.height()) {
+        _lastSize.x = _pos.width();
+        _lastSize.y = _pos.height();
+        changed = true;
+    }
+    if (changed) {
+        lvRect rc = _pos;
+        applyMargin(rc);
+        lvRect margins;
+        getPadding(margins);
+        _docview->Resize(rc.width(), rc.height());
+        _docview->setPageMargins(margins);
+        lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
+        int fontSize = _props->getIntDef(PROP_FONT_SIZE);
+        lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
+        CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
+        //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+        _docview->setTextColor(textColor);
+        _docview->setBackground(bgImage);
+        _docview->setFontSize(fontSize);
+        _docview->setDefaultFontFace(face);
+        _docview->Render(0, 0, &_pageList);
+    }
+}
+
 /// draws widget with its children to specified surface
 void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     CRUIWidget::draw(buf);
@@ -177,33 +215,15 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     CR_UNUSED(saver);
     setClipRect(buf, rc);
     applyMargin(rc);
-
     lvRect margins;
     getPadding(margins);
-    _docview->Resize(rc.width(), rc.height());
-    _docview->setPageMargins(margins);
-    //_docview->updateLayout();
-    //applyPadding(rc);
-    // draw
-    lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
+    format();
     CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
-    int fontSize = _props->getIntDef(PROP_FONT_SIZE);
-    lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
-    //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
-    _docview->setTextColor(textColor);
-    _docview->setBackground(bgImage);
-    _docview->setFontSize(fontSize);
-    _docview->setDefaultFontFace(face);
-    buf->SetTextColor(textColor);
-
-    // draw background
-    LVRendPageList pageList;
-    _docview->Render(0, 0, &pageList);
-    LVRendPageInfo * page = pageList[0];
+    LVRendPageInfo * page = _pageList[0];
     bgImage->draw(buf, rc, 0, 0);
+    lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
+    buf->SetTextColor(textColor);
     _docview->drawPageTo(buf, *page, &rc, 1, 0);
-    // draw text
-    //fmt.draw(*buf, rc, 0, 0);
 }
 
 static lString16 formatFontSize(int sz) {

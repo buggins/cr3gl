@@ -424,6 +424,7 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     applyPadding(rc);
 
     CRUIImageRef handle = resourceResolver->getIcon("00_slider_handle");
+    CRUIImageRef line = resourceResolver->getIcon("home_frame.9");
 
 
     int cx = handle.isNull() ? MIN_ITEM_PX / 3 : handle->originalWidth();
@@ -435,9 +436,13 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     linerc.right -= cx / 2;
     linerc.top = y0 - lh/2;
     linerc.bottom = linerc.top + lh;
-    buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_OUTER));
-    linerc.shrink(lh / 4);
-    buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_INNER));
+    if (line.isNull()) {
+        buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_OUTER));
+        linerc.shrink(lh / 4);
+        buf->FillRect(linerc, currentTheme->getColor(COLOR_ID_SLIDER_LINE_COLOR_INNER));
+    } else {
+        line->draw(buf, linerc);
+    }
 
     int x0 = linerc.left + linerc.width() * (_value - _minValue) / (_maxValue - _minValue);
     lvRect crc(x0 - cx / 2, y0 - cy / 2, x0 + cx / 2, y0 + cy / 2);
