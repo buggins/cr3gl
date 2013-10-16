@@ -444,7 +444,7 @@ void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
-    CRLog::trace("CRUIMainWidget::layout");
+    //CRLog::trace("CRUIMainWidget::layout");
     if (_popupBackground)
         return;
     _history.currentWidget()->layout(left, top, right, bottom);

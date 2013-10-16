@@ -146,6 +146,8 @@ class CRUIReadWidget : public CRUIWindowWidget
     CRFileItem * _fileItem; // owned
     BookDBBookmark * _lastPosition; // owned
 
+    bool _startPositionIsUpdated;
+
 
 public:
     CRUIReadWidget(CRUIMainWidget * main);
@@ -211,6 +213,9 @@ public:
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
 
     void goToPosition(lString16 path);
+
+    virtual void beforeNavigationFrom();
+
 
     // DocView callback
     /// on starting file loading

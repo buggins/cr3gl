@@ -43,6 +43,7 @@ void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 color
 CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : CRUIWindowWidget(main),
     _isDragging(false), _dragStartOffset(0), _locked(false),
     _fileItem(NULL), _lastPosition(NULL)
+  , _startPositionIsUpdated(false)
 {
     setId("READ");
     _docview = new CRUIDocView();
@@ -238,6 +239,10 @@ bool CRUIReadWidget::restorePosition() {
     return false;
 }
 
+void CRUIReadWidget::beforeNavigationFrom() {
+    updatePosition();
+}
+
 void CRUIReadWidget::updatePosition() {
     CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
@@ -318,6 +323,8 @@ void CRUIReadWidget::onDocumentLoadFinished(lString8 pathname, bool success) {
         _fileItem = NULL;
         _lastPosition = NULL;
     }
+    // force update reading position - to refresh timestamp
+    _startPositionIsUpdated = false;
 }
 
 void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
@@ -326,6 +333,11 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
     _locked = false;
     invalidate();
     _scrollCache.clear();
+    if (!_startPositionIsUpdated) {
+        // call update position to refresh last access timestamp
+        _startPositionIsUpdated = true;
+        updatePosition();
+    }
     //_main->update();
 }
 
@@ -336,6 +348,7 @@ bool CRUIReadWidget::renderIfNecessary() {
         return false;
     }
     if (_docview->GetWidth() != _pos.width() || _docview->GetHeight() != _pos.height()) {
+        CRLog::trace("Changing docview size to %dx%d", _pos.width(), _pos.height());
         _docview->Resize(_pos.width(), _pos.height());
     }
     if (_docview->IsRendered())
@@ -405,8 +418,8 @@ void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
         return;
     CRLog::trace("animateScrollTo( %d -> %d )", _docview->GetPos(), newpos);
     _scroll.start(_docview->GetPos(), newpos, speed, SCROLL_FRICTION);
-    //invalidate();
-    //_main->update();
+    invalidate();
+    _main->update(true);
 }
 
 bool CRUIReadWidget::doCommand(int cmd, int param) {
@@ -925,7 +938,7 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
     }
     minpos = maxpos = -1;
     for (int k = 0; k < pages.length(); k++) {
-        CRLog::trace("page cache item [%d] %d..%d", k, pages[k]->pos, pages[k]->pos + pages[k]->dy);
+        //CRLog::trace("page cache item [%d] %d..%d", k, pages[k]->pos, pages[k]->pos + pages[k]->dy);
         if (minpos == -1 || minpos > pages[k]->pos) {
             minpos = pages[k]->pos;
         }

@@ -18,7 +18,8 @@ CRBookDB * bookDB = NULL;
 bool CRBookDB::updateSchema()
 {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     int currentVersion = _db.getVersion();
 	bool err = false;
 	err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS author ("
@@ -168,7 +169,8 @@ int CRBookDB::open(const char * pathname) {
 /// read DB content to caches
 bool CRBookDB::fillCaches() {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     if (!isOpened())
 		return false;
 	CRLog::trace("Filling caches");
@@ -743,7 +745,8 @@ bool CRBookDB::saveBook(BookDBBook * book) {
 
 bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     bool res = true;
 	for (int i = 0; i<books.length(); i++) {
 		res = saveBook(books[i]) && res;
@@ -754,7 +757,8 @@ bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
 /// saves last position for book
 bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     BookDBBook * cached = _bookCache.get(book->pathname);
     if (book->id == 0 && cached)
         book->id = cached->id;
@@ -862,7 +866,8 @@ BookDBBookmark * CRBookDB::loadLastPosition(BookDBBook * book) {
     if (!book)
         return NULL;
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     if (!book->id) {
         BookDBBook * cached = _bookCache.get(book->pathname);
         if (cached)
@@ -1045,7 +1050,8 @@ void PrefixCollection::add(lString16 value, int count, lInt64 bookId) {
 bool CRBookDB::findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes)
 {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     bool err = false;
     int searchStringLen = searchString.endsWith("%") ? searchString.length() - 1 : searchString.length();
     if (searchStringLen > 0 && !searchString.endsWith("%"))
@@ -1131,7 +1137,8 @@ bool CRBookDB::findBooks(SEARCH_FIELD field, lString16 searchString, lString8 fo
 
     {
         CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-        CR_UNUSED(guard);
+        SQLiteTransactionGuard dbGuard(_db);
+        CR_UNUSED2(guard, dbGuard);
 
         DBString pattern(UnicodeToUtf8(searchString).c_str());
         DBString folder(folderFilter.c_str());
@@ -1282,7 +1289,8 @@ void BookDBCatalogCache::getAll(LVPtrVector<BookDBCatalog> & catalogs) {
 
 bool CRBookDB::loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     _catalogCache.getAll(catalogs);
     return true;
 }
@@ -1290,7 +1298,8 @@ bool CRBookDB::loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs) {
 /// protected by mutex
 bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     books.clear();
     lastPositions.clear();
     if (!_lastPositionCache.length()) {
@@ -1340,7 +1349,8 @@ bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<Book
 /// protected by mutex
 bool CRBookDB::loadBooks(LVArray<lInt64> & keys, LVPtrVector<BookDBBook> & loaded) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     LVArray<lInt64> forLoad;
     for (int i = 0; i<keys.length(); i++) {
         BookDBBook * cached = _bookCache.get(keys[i]);
@@ -1360,7 +1370,8 @@ bool CRBookDB::loadBooks(LVArray<lInt64> & keys, LVPtrVector<BookDBBook> & loade
 
 bool CRBookDB::loadBooks(lString8Collection & pathnames, LVPtrVector<BookDBBook> & loaded, lString8Collection & notFound) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
-    CR_UNUSED(guard);
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
     for (int i = 0; i<pathnames.length(); i++) {
 		BookDBBook * cached = _bookCache.get(pathnames[i].c_str());
 		if (cached)

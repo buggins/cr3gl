@@ -71,8 +71,10 @@ class SQLiteDB {
 protected:
 	sqlite3 * _db;
 	const char * _filename;
+    int _insideTransaction;
+    bool _changeFlag;
 public:
-	SQLiteDB() : _db(NULL), _filename(NULL) {}
+    SQLiteDB() : _db(NULL), _filename(NULL), _insideTransaction(0), _changeFlag(false) {}
 	virtual ~SQLiteDB();
 	sqlite3 * getHandle() { return _db; }
 	const char * getFileName() { return _filename; }
@@ -100,6 +102,28 @@ public:
 	int getVersion();
 	/// sets database schema version
 	void setVersion(int version);
+
+    // transaction API
+
+    /// begins transaction (can be nested)
+    bool beginTransaction();
+    /// commits transaction
+    bool commit();
+    /// rollbacks transaction (can be nested)
+    bool rollback();
+    /// commits transaction if there were any changes, rollbacks otherwise
+    bool endTransaction();
+
+    /// sets change flag indicating that there are changes to commit
+    void setChangeFlag();
+};
+
+/// RAII invocation of DB transaction
+class SQLiteTransactionGuard {
+    SQLiteDB & _db;
+public:
+    SQLiteTransactionGuard(SQLiteDB & db) : _db(db) { _db.beginTransaction(); }
+    ~SQLiteTransactionGuard() { _db.endTransaction(); }
 };
 
 class SQLiteStatement {

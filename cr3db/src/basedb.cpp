@@ -218,6 +218,98 @@ void SQLiteDB::setVersion(int version) {
 	stmt.step();
 }
 
+#define DEBUG_TRANSACTIONS 0
+
+/// begins transaction
+bool SQLiteDB::beginTransaction() {
+    if (_insideTransaction > 0) {
+        _insideTransaction++;
+        return true;
+    }
+    _insideTransaction++;
+#if DEBUG_TRANSACTIONS == 1
+    CRLog::trace("BEGIN TRANSACTION");
+#endif
+    SQLiteStatement stmt(this);
+    if (stmt.prepare("BEGIN;") != DB_OK) {
+        CRLog::error("Failed to start transaction");
+        return false;
+    }
+    if (stmt.step() != DB_DONE) {
+        CRLog::error("Failed to start transaction");
+        return false;
+    }
+    _changeFlag = false;
+    return true;
+}
+
+/// commits transaction
+bool SQLiteDB::commit() {
+    if (_insideTransaction <= 0)
+        return false;
+    _insideTransaction--;
+    if (_insideTransaction > 0)
+        return true; // will commit later
+#if DEBUG_TRANSACTIONS == 1
+    CRLog::trace("COMMIT TRANSACTION");
+#endif
+    SQLiteStatement stmt(this);
+    if (stmt.prepare("COMMIT;") != DB_OK) {
+        CRLog::error("Failed to commit transaction");
+        return false;
+    }
+    if (stmt.step() != DB_DONE) {
+        CRLog::error("Failed to commit transaction");
+        return false;
+    }
+    _changeFlag = false;
+    return true;
+}
+
+/// rollbacks transaction
+bool SQLiteDB::rollback() {
+    if (_insideTransaction <= 0)
+        return false;
+    _insideTransaction--;
+    if (_insideTransaction > 0)
+        return true; // will commit later
+#if DEBUG_TRANSACTIONS == 1
+    CRLog::trace("ROLLBACK TRANSACTION");
+#endif
+    SQLiteStatement stmt(this);
+    if (stmt.prepare("ROLLBACK;") != DB_OK) {
+        CRLog::error("Failed to rollback transaction");
+        return false;
+    }
+    if (stmt.step() != DB_DONE) {
+        CRLog::error("Failed to rollback transaction");
+        return false;
+    }
+    _changeFlag = false;
+    return true;
+}
+
+/// commits transaction if there were any changes, rollbacks otherwise
+bool SQLiteDB::endTransaction() {
+    if (_insideTransaction <= 0) {
+        CRLog::error("Unexpected end transaction");
+        return false;
+    }
+    if (_changeFlag)
+        return commit();
+    else
+        return rollback();
+}
+
+/// sets change flag indicating that there are changes to commit
+void SQLiteDB::setChangeFlag() {
+    if (!_changeFlag && _insideTransaction > 0) {
+#if DEBUG_TRANSACTIONS == 1
+        CRLog::trace("Setting change flag for DB transaction");
+#endif
+        _changeFlag = true;
+    }
+}
 
 /// runs update, returns number of affected rows; -1 if error
 int SQLiteDB::executeUpdate(const char * sql) {
@@ -259,6 +351,8 @@ int SQLiteStatement::prepare(const char * sql) {
 		CRLog::error("SQLite Error %d while preparing query %s", res, sql);
 		_stmt = NULL;
 	} else {
+        if (!sqlite3_stmt_readonly(_stmt))
+            _db->setChangeFlag();
 		_sql = strdup(sql);
 		_parameterCount = sqlite3_bind_parameter_count(_stmt);
 	}
@@ -301,7 +395,8 @@ int SQLiteStatement::reset(bool clearBindings) {
 		_firstStepExecuted = false;
 		_columnCount = 0;
 		_rowsAffected = 0;
-		sqlite3_clear_bindings(_stmt);
+        if (clearBindings)
+            sqlite3_clear_bindings(_stmt);
 	}
 	return res;
 }

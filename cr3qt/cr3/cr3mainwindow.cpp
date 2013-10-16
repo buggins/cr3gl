@@ -150,7 +150,7 @@ void OpenGLWindow::render()
 {
     if (!m_device)
         m_device = new QOpenGLPaintDevice;
-    CRLog::trace("Render is called");
+    //CRLog::trace("Render is called");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glClearColor(1,1,1,1);
 
