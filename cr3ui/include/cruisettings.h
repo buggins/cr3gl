@@ -43,8 +43,8 @@
 //#define PROP_FONT_FACE               "font.face.default"
 //#define PROP_FONT_HINTING            "font.hinting.mode"
 //#define PROP_FONT_GAMMA              "font.gamma"
-#define PROP_FONT_GAMMA_DAY          "font.gamma.day"
-#define PROP_FONT_GAMMA_NIGHT        "font.gamma.night"
+#define PROP_FONT_GAMMA_INDEX_DAY          "font.gamma.index.day"
+#define PROP_FONT_GAMMA_INDEX_NIGHT        "font.gamma.index.night"
 
 #define PROP_APP_TAP_ZONE_ACTION_NORMAL "app.tapzone."
 #define PROP_APP_TAP_ZONE_ACTION_LONG "app.tapzone.long."

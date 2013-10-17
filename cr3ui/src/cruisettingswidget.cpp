@@ -195,46 +195,61 @@ void CRUIFontSampleWidget::format() {
         getPadding(margins);
         _docview->Resize(rc.width(), rc.height());
         _docview->setPageMargins(margins);
-        lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
-        int fontSize = _props->getIntDef(PROP_FONT_SIZE);
-        lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
-        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
-        int oldGammaIndex = fontMan->GetGammaIndex();
-        if (oldGammaIndex != gammaIndex) {
-            fontMan->SetGammaIndex(gammaIndex);
-            _docview->clearImageCache();
-            invalidate();
+        CRPropRef propsForDocview = LVCreatePropsContainer();
+        static const char * props_for_copy[] = {
+            PROP_FONT_COLOR,
+            PROP_FONT_SIZE,
+            PROP_FONT_FACE,
+            PROP_FONT_GAMMA_INDEX,
+            PROP_FONT_ANTIALIASING,
+            PROP_FONT_WEIGHT_EMBOLDEN,
+            PROP_FONT_HINTING,
+            NULL
+        };
+        for (int i = 0; props_for_copy[i]; i++) {
+            propsForDocview->setString(props_for_copy[i], _props->getStringDef(props_for_copy[i]));
         }
-        int antialiasingMode = _props->getIntDef(PROP_FONT_ANTIALIASING, 2);
-        if (antialiasingMode == 1) {
-            antialiasingMode = 2;
-        }
-        if (fontMan->GetAntialiasMode() != antialiasingMode) {
-            fontMan->SetAntialiasMode(antialiasingMode);
-            _docview->clearImageCache();
-            invalidate();
-        }
-        bool bold = _props->getBoolDef(PROP_FONT_WEIGHT_EMBOLDEN, false);
-        int v = bold ? STYLE_FONT_EMBOLD_MODE_EMBOLD
-                : STYLE_FONT_EMBOLD_MODE_NORMAL;
-        if (v != LVRendGetFontEmbolden()) {
-            LVRendSetFontEmbolden(v);
-        }
-        bool bytecode = _props->getBoolDef(PROP_FONT_HINTING, 1);
-        int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
-        if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
-            //CRLog::debug("Setting hinting mode to %d", mode);
-            fontMan->SetHintingMode((hinting_mode_t)hintingMode);
-            _docview->clearImageCache();
-            invalidate();
-        }
+//        lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
+//        int fontSize = _props->getIntDef(PROP_FONT_SIZE);
+//        lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
+//        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
+//        int oldGammaIndex = fontMan->GetGammaIndex();
+//        if (oldGammaIndex != gammaIndex) {
+//            fontMan->SetGammaIndex(gammaIndex);
+//            _docview->clearImageCache();
+//            invalidate();
+//        }
+//        int antialiasingMode = _props->getIntDef(PROP_FONT_ANTIALIASING, 2);
+//        if (antialiasingMode == 1) {
+//            antialiasingMode = 2;
+//        }
+//        if (fontMan->GetAntialiasMode() != antialiasingMode) {
+//            fontMan->SetAntialiasMode(antialiasingMode);
+//            _docview->clearImageCache();
+//            invalidate();
+//        }
+//        bool bold = _props->getBoolDef(PROP_FONT_WEIGHT_EMBOLDEN, false);
+//        int v = bold ? STYLE_FONT_EMBOLD_MODE_EMBOLD
+//                : STYLE_FONT_EMBOLD_MODE_NORMAL;
+//        if (v != LVRendGetFontEmbolden()) {
+//            LVRendSetFontEmbolden(v);
+//        }
+//        bool bytecode = _props->getBoolDef(PROP_FONT_HINTING, 1);
+//        int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
+//        if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
+//            //CRLog::debug("Setting hinting mode to %d", mode);
+//            fontMan->SetHintingMode((hinting_mode_t)hintingMode);
+//            _docview->clearImageCache();
+//            invalidate();
+//        }
 
-        CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
-        //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
-        _docview->setTextColor(textColor);
-        _docview->setBackground(bgImage);
-        _docview->setFontSize(fontSize);
-        _docview->setDefaultFontFace(face);
+//        CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
+//        //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
+//        _docview->setTextColor(textColor);
+//        _docview->setBackground(bgImage);
+//        _docview->setFontSize(fontSize);
+//        _docview->setDefaultFontFace(face);
+        _docview->propsApply(propsForDocview);
         _docview->Render(0, 0, &_pageList);
     }
 }

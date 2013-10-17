@@ -391,11 +391,12 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@paper1");
     _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@paper1");
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
+    _currentSettings->setStringDef(PROP_FONT_HINTING, "0");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
     _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");
-    _currentSettings->setStringDef(PROP_FONT_GAMMA, "1.0");
-    _currentSettings->setStringDef(PROP_FONT_GAMMA_DAY, "1.0");
-    _currentSettings->setStringDef(PROP_FONT_GAMMA_NIGHT, "1.0");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX, "15");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_DAY, "15");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_NIGHT, "15");
     if (_currentSettings->getCount() != oldPropCount) {
         saveSettings();
     }

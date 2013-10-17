@@ -737,17 +737,78 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     return false;
 }
 
+/// applies properties, returns list of not recognized properties
+CRPropRef CRUIDocView::propsApply(CRPropRef props) {
+    //CRPropRef oldSettings = propsGetCurrent();
+    CRPropRef newSettings = propsGetCurrent() | props;
+    CRPropRef forDocview = LVCreatePropsContainer();
+    bool backgroundChanged = false;
+    bool needClearCache = false;
+    for (int i = 0; i < props->getCount(); i++) {
+        lString8 key(props->getName(i));
+        //lString8 value(UnicodeToUtf8(props->getValue(i)));
+        if (key == PROP_FONT_ANTIALIASING) {
+            int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
+            if (antialiasingMode == 1) {
+                antialiasingMode = 2;
+            }
+            if (fontMan->GetAntialiasMode() != antialiasingMode) {
+                fontMan->SetAntialiasMode(antialiasingMode);
+            }
+            requestRender();
+        } else if (key == PROP_FONT_HINTING) {
+            bool bytecode = props->getBoolDef(PROP_FONT_HINTING, 1);
+            int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
+            if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
+                //CRLog::debug("Setting hinting mode to %d", mode);
+                fontMan->SetHintingMode((hinting_mode_t)hintingMode);
+            }
+            requestRender();
+        } else if (key == PROP_FONT_GAMMA_INDEX) {
+            int gammaIndex = props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
+            int oldGammaIndex = fontMan->GetGammaIndex();
+            if (oldGammaIndex != gammaIndex) {
+                fontMan->SetGammaIndex(gammaIndex);
+            }
+        } else {
+            forDocview->setString(key.c_str(), props->getValue(i));
+        }
+        if (key == PROP_BACKGROUND_COLOR
+                || key == PROP_BACKGROUND_IMAGE
+                || key == PROP_BACKGROUND_IMAGE_ENABLED
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
+            backgroundChanged = true;
+            needClearCache = true;
+        }
+    }
+    if (backgroundChanged) {
+        setBackground(resourceResolver->getBackgroundImage(newSettings));
+    }
+    return LVDocView::propsApply(forDocview);
+}
+
 // apply changed settings
 void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) {
     CR_UNUSED(oldSettings);
     CRPropRef docviewprops = LVCreatePropsContainer();
-    bool backgroundChanged = false;
+    //bool backgroundChanged = false;
     bool needClearCache = false;
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
         if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
-                || key == PROP_FONT_SIZE || key == PROP_FONT_FACE) {
+                || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
+                || key == PROP_BACKGROUND_COLOR
+                || key == PROP_BACKGROUND_IMAGE
+                || key == PROP_BACKGROUND_IMAGE_ENABLED
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST
+                || key == PROP_FONT_GAMMA_INDEX
+                || key == PROP_FONT_ANTIALIASING
+                || key == PROP_FONT_WEIGHT_EMBOLDEN
+                || key == PROP_FONT_HINTING
+                ) {
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {
                 _docview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
@@ -759,18 +820,19 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 || key == PROP_BACKGROUND_IMAGE_ENABLED
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
-            backgroundChanged = true;
+            //backgroundChanged = true;
             needClearCache = true;
         }
         if (key == PROP_HYPHENATION_DICT) {
             setHyph(lastBookLang, value);
             _docview->requestRender();
+            needClearCache = true;
             invalidate();
         }
     }
-    if (backgroundChanged) {
-        _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));
-    }
+//    if (backgroundChanged) {
+//        _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));
+//    }
     if (needClearCache) {
         _scrollCache.clear();
     }

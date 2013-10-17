@@ -57,6 +57,8 @@ public:
     virtual void setBackground(CRUIImageRef img) {
         background = img;
     }
+    /// applies properties, returns list of not recognized properties
+    virtual CRPropRef propsApply( CRPropRef props );
 };
 
 class CRUIReadWidget;
