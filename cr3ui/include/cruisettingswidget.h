@@ -177,6 +177,16 @@ public:
     virtual CRUIImageRef getValueIcon(CRPropRef props) const;
 };
 
+class CRUIFontRenderingSetting : public CRUISettingsItem {
+public:
+    CRUIFontRenderingSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+    virtual lString16 getDescription(CRPropRef props) const;
+};
+
 class CRUISettingsEditorCallback {
 public:
     virtual void onSettingChange(CRUISettingsItem * newSubitem, bool done) = 0;
@@ -294,6 +304,23 @@ public:
     virtual bool onClick(CRUIWidget * widget);
     void updateMode();
 
+};
+
+class CRUIFontRenderingOptionsEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback, public CRUIOnClickListener {
+    CRUISettingsListItemWidget * _cbBold;
+    CRUISettingsListItemWidget * _cbAntialiasing;
+    CRUISettingsListItemWidget * _cbBytecodeInterpretor;
+    CRUISettingsCheckbox * _settingBold;
+    CRUISettingsCheckbox * _settingAntialiasing;
+    CRUISettingsCheckbox * _settingBytecodeInterpretor;
+    CRUISliderWidget * _sliderGamma;
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIFontRenderingOptionsEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual ~CRUIFontRenderingOptionsEditorWidget();
+
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onClick(CRUIWidget * widget);
 };
 
 class CRUISettingsListItemWidget;

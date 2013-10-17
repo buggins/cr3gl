@@ -303,9 +303,11 @@ void CRUIMainWidget::createReaderSettings() {
     }
     fontsAndColors->addChild(fontFaces);
     fontsAndColors->addChild(new CRUIFontSizeSetting(STR_SETTINGS_FONT_SIZE, NULL, PROP_FONT_SIZE));
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF));
+    CRUIFontRenderingSetting * fontRendering = new CRUIFontRenderingSetting(STR_SETTINGS_FONT_RENDERING, NULL, SETTINGS_PATH_READER_FONTRENDERING);
+    fontsAndColors->addChild(fontRendering);
+
+    //fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF));
     fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED, STR_SETTINGS_FONT_KERNING_VALUE_ON, STR_SETTINGS_FONT_KERNING_VALUE_OFF));
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN, STR_SETTINGS_FONT_EMBOLDEN_VALUE_ON, STR_SETTINGS_FONT_EMBOLDEN_VALUE_OFF));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_FONT_COLOR, NULL, PROP_FONT_COLOR));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_BACKGROUND_COLOR, NULL, PROP_BACKGROUND_COLOR));
     CRUIBackgroundTextureSetting * textures = new CRUIBackgroundTextureSetting(STR_SETTINGS_BACKGROUND_TEXTURE, NULL, PROP_BACKGROUND_IMAGE);
@@ -313,7 +315,10 @@ void CRUIMainWidget::createReaderSettings() {
         textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
     }
     fontsAndColors->addChild(textures);
+
+
     _readerSettings.addChild(fontsAndColors);
+
 
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
@@ -388,6 +393,9 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
     _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA, "1.0");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA_DAY, "1.0");
+    _currentSettings->setStringDef(PROP_FONT_GAMMA_NIGHT, "1.0");
     if (_currentSettings->getCount() != oldPropCount) {
         saveSettings();
     }

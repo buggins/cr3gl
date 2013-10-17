@@ -3,6 +3,7 @@
 #include "cruimain.h"
 #include "stringresource.h"
 #include "cruiconfig.h"
+#include "lvrend.h"
 
 using namespace CRUI;
 
@@ -197,6 +198,34 @@ void CRUIFontSampleWidget::format() {
         lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
         int fontSize = _props->getIntDef(PROP_FONT_SIZE);
         lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
+        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA, 15);
+        int oldGammaIndex = fontMan->GetGammaIndex();
+        if (oldGammaIndex != gammaIndex) {
+            fontMan->SetGammaIndex(gammaIndex);
+            _docview->clearImageCache();
+        }
+        int antialiasingMode = _props->getIntDef(PROP_FONT_ANTIALIASING, 2);
+        if (antialiasingMode == 1) {
+            antialiasingMode = 2;
+        }
+        if (fontMan->GetAntialiasMode() != antialiasingMode) {
+            fontMan->SetAntialiasMode(antialiasingMode);
+            _docview->clearImageCache();
+        }
+        bool bold = _props->getBoolDef(PROP_FONT_WEIGHT_EMBOLDEN, false);
+        int v = bold ? STYLE_FONT_EMBOLD_MODE_EMBOLD
+                : STYLE_FONT_EMBOLD_MODE_NORMAL;
+        if (v != LVRendGetFontEmbolden()) {
+            LVRendSetFontEmbolden(v);
+        }
+        bool bytecode = _props->getBoolDef(PROP_FONT_HINTING, 1);
+        int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
+        if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
+            //CRLog::debug("Setting hinting mode to %d", mode);
+            fontMan->SetHintingMode((hinting_mode_t)hintingMode);
+            _docview->clearImageCache();
+        }
+
         CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
         //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
         _docview->setTextColor(textColor);
@@ -482,6 +511,84 @@ lString16 CRUIColorSetting::getDescription(CRPropRef props) const {
 //    return Utf8ToUnicode(str);
 }
 
+
+CRUIFontRenderingOptionsEditorWidget::~CRUIFontRenderingOptionsEditorWidget() {
+    delete _settingBold;
+    delete _settingAntialiasing;
+    delete _settingBytecodeInterpretor;
+}
+
+CRUIFontRenderingOptionsEditorWidget::CRUIFontRenderingOptionsEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    _settingBold = new CRUISettingsCheckbox(STR_SETTINGS_FONT_EMBOLDEN, NULL, PROP_FONT_WEIGHT_EMBOLDEN, STR_SETTINGS_FONT_EMBOLDEN_VALUE_ON, STR_SETTINGS_FONT_EMBOLDEN_VALUE_OFF);
+    _settingAntialiasing = new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF);
+    _settingBytecodeInterpretor = new CRUISettingsCheckbox(STR_SETTINGS_FONT_BYTECODE_INTERPRETOR, NULL, PROP_FONT_HINTING, STR_SETTINGS_FONT_BYTECODE_INTERPRETOR_VALUE_ON, STR_SETTINGS_FONT_BYTECODE_INTERPRETOR_VALUE_OFF);
+    _cbBold = new CRUISettingsListItemWidget();
+    _cbBold->setId("ENABLE_BOLD");
+    _cbBold->setSetting(_settingBold, _props);
+    _cbBold->setOnClickListener(this);
+    _cbAntialiasing = new CRUISettingsListItemWidget();
+    _cbAntialiasing->setId("ENABLE_ANTIALIASING");
+    _cbAntialiasing->setSetting(_settingAntialiasing, _props);
+    _cbAntialiasing->setOnClickListener(this);
+    _cbBytecodeInterpretor = new CRUISettingsListItemWidget();
+    _cbBytecodeInterpretor->setId("ENABLE_BYTECODE_INTERPRETOR");
+    _cbBytecodeInterpretor->setSetting(_settingBytecodeInterpretor, _props);
+    _cbBytecodeInterpretor->setOnClickListener(this);
+    addChild(_cbBold);
+    addChild(_cbAntialiasing);
+    addChild(_cbBytecodeInterpretor);
+    addChild(new CRUITextWidget(STR_SETTINGS_FONT_GAMMA));
+    int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
+    _sliderGamma = new CRUISliderWidget(0, 30, gammaIndex);
+    _sliderGamma->setId("GAMMA");
+    _sliderGamma->setPadding(PT_TO_PX(4));
+    _sliderGamma->setScrollPosCallback(this);
+    addChild(_sliderGamma);
+
+
+    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xC0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xC0808080);
+    _sample->setPadding(PT_TO_PX(4));
+    addChild(_sample);
+}
+
+bool CRUIFontRenderingOptionsEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    if (widget->getId() == "GAMMA") {
+        _props->setInt(PROP_FONT_GAMMA_INDEX, pos);
+    }
+    return true;
+}
+
+bool CRUIFontRenderingOptionsEditorWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "ENABLE_BOLD") {
+        _settingBold->toggle(_props);
+        _cbBold->setSetting(_settingBold, _props);
+    } else if (widget->getId() == "ENABLE_ANTIALIASING") {
+        _settingAntialiasing->toggle(_props);
+        _cbAntialiasing->setSetting(_settingAntialiasing, _props);
+    } else if (widget->getId() == "ENABLE_BYTECODE_INTERPRETOR") {
+        _settingBytecodeInterpretor->toggle(_props);
+        _cbBytecodeInterpretor->setSetting(_settingBytecodeInterpretor, _props);
+    }
+    return true;
+}
+
+CRUISettingsEditor * CRUIFontRenderingSetting::createEditor(CRPropRef props) {
+    return new CRUIFontRenderingOptionsEditorWidget(props, this);
+}
+
+lString16 CRUIFontRenderingSetting::getDescription(CRPropRef props) const {
+    CR_UNUSED(props);
+    return _16(STR_SETTINGS_FONT_RENDERING_DESCRIPTION);
+}
 
 lString16 CRUIFontSizeSetting::getDescription(CRPropRef props) const {
     int sz = props->getIntDef(PROP_FONT_SIZE, 24);
