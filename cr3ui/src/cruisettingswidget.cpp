@@ -198,11 +198,12 @@ void CRUIFontSampleWidget::format() {
         lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
         int fontSize = _props->getIntDef(PROP_FONT_SIZE);
         lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
-        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA, 15);
+        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
         int oldGammaIndex = fontMan->GetGammaIndex();
         if (oldGammaIndex != gammaIndex) {
             fontMan->SetGammaIndex(gammaIndex);
             _docview->clearImageCache();
+            invalidate();
         }
         int antialiasingMode = _props->getIntDef(PROP_FONT_ANTIALIASING, 2);
         if (antialiasingMode == 1) {
@@ -211,6 +212,7 @@ void CRUIFontSampleWidget::format() {
         if (fontMan->GetAntialiasMode() != antialiasingMode) {
             fontMan->SetAntialiasMode(antialiasingMode);
             _docview->clearImageCache();
+            invalidate();
         }
         bool bold = _props->getBoolDef(PROP_FONT_WEIGHT_EMBOLDEN, false);
         int v = bold ? STYLE_FONT_EMBOLD_MODE_EMBOLD
@@ -224,6 +226,7 @@ void CRUIFontSampleWidget::format() {
             //CRLog::debug("Setting hinting mode to %d", mode);
             fontMan->SetHintingMode((hinting_mode_t)hintingMode);
             _docview->clearImageCache();
+            invalidate();
         }
 
         CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
@@ -416,9 +419,16 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
         _sliderGC = createColorSlider("GC", contrastSettingToSlider(_props, 8), this, 0x80000000, 0x8000FF00);
         _sliderBC = createColorSlider("BC", contrastSettingToSlider(_props, 0), this, 0x80000000, 0x800000FF);
 
-        _colorCorrectionPane->addChild(new CRUITextWidget(lString16("Color correction")));
+        CRUITextWidget * colorCorrectionTitle = new CRUITextWidget(STR_SETTINGS_COLOR_CORRECTION);
+        colorCorrectionTitle->setStyle("SLIDER_TITLE");
+        _colorCorrectionPane->addChild(colorCorrectionTitle);
         CRUITableLayout * table = new CRUITableLayout(2);
-        table->addChild(new CRUITextWidget(lString16("Brightness"))); table->addChild(new CRUITextWidget(lString16("Contrast")));
+        //
+        CRUITextWidget * brightnessTitle = new CRUITextWidget(STR_SETTINGS_BRIGHTNESS);
+        brightnessTitle->setStyle("SLIDER_TITLE");
+        CRUITextWidget * contrastTitle = new CRUITextWidget(STR_SETTINGS_CONTRAST);
+        contrastTitle->setStyle("SLIDER_TITLE");
+        table->addChild(brightnessTitle); table->addChild(contrastTitle);
         table->addChild(_sliderRB); table->addChild(_sliderRC);
         table->addChild(_sliderGB); table->addChild(_sliderGC);
         table->addChild(_sliderBB); table->addChild(_sliderBC);
@@ -537,7 +547,10 @@ CRUIFontRenderingOptionsEditorWidget::CRUIFontRenderingOptionsEditorWidget(CRPro
     addChild(_cbBold);
     addChild(_cbAntialiasing);
     addChild(_cbBytecodeInterpretor);
-    addChild(new CRUITextWidget(STR_SETTINGS_FONT_GAMMA));
+    CRUITextWidget * gammaTitle = new CRUITextWidget(STR_SETTINGS_FONT_GAMMA);
+    gammaTitle->setStyle("SLIDER_TITLE");
+    gammaTitle->setAlign(ALIGN_BOTTOM | ALIGN_HCENTER);
+    addChild(gammaTitle);
     int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
     _sliderGamma = new CRUISliderWidget(0, 30, gammaIndex);
     _sliderGamma->setId("GAMMA");
@@ -561,8 +574,10 @@ CRUIFontRenderingOptionsEditorWidget::CRUIFontRenderingOptionsEditorWidget(CRPro
 }
 
 bool CRUIFontRenderingOptionsEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    CR_UNUSED(manual);
     if (widget->getId() == "GAMMA") {
         _props->setInt(PROP_FONT_GAMMA_INDEX, pos);
+        _sample->format();
     }
     return true;
 }
@@ -571,12 +586,15 @@ bool CRUIFontRenderingOptionsEditorWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "ENABLE_BOLD") {
         _settingBold->toggle(_props);
         _cbBold->setSetting(_settingBold, _props);
+        _sample->format();
     } else if (widget->getId() == "ENABLE_ANTIALIASING") {
         _settingAntialiasing->toggle(_props);
         _cbAntialiasing->setSetting(_settingAntialiasing, _props);
+        _sample->format();
     } else if (widget->getId() == "ENABLE_BYTECODE_INTERPRETOR") {
         _settingBytecodeInterpretor->toggle(_props);
         _cbBytecodeInterpretor->setSetting(_settingBytecodeInterpretor, _props);
+        _sample->format();
     }
     return true;
 }

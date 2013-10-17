@@ -80,6 +80,13 @@
         minHeight="100%mi"
     />
     <style
+        id = "SLIDER_TITLE"
+        padding="3pt,4pt,3pt,0pt"
+        margin="0pt"
+        fontSize="large"
+        align="hcenter|bottom"
+    />
+    <style
         id = "SETTINGS_ITEM_TITLE"
         padding="3pt,0pt,3pt,0pt"
         margin="0pt"

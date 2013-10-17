@@ -239,7 +239,6 @@ protected:
     lUInt32 _lastPropsHash;
     lvPoint _lastSize;
     LVRendPageList _pageList;
-    void format();
 public:
     CRUIFontSampleWidget(CRPropRef props);
     virtual ~CRUIFontSampleWidget();
@@ -247,6 +246,7 @@ public:
     virtual void measure(int baseWidth, int baseHeight);
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
+    void format();
 };
 
 class CRUIFontFaceEditorWidget : public CRUISettingsOptionsListEditorWidget {

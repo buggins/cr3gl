@@ -32,6 +32,11 @@ public:
 
 void LVGLAddSceneItem(GLSceneItem * item);
 
+typedef void (*last_scene_callback_t)();
+
+/// sets callback to call on last scene end of drawing
+void LVGLSetLastSceneCallback(last_scene_callback_t callback);
+
 /// pushes new scene to scene stack, makes it current, returns passed value
 GLScene * LVGLPushScene(GLScene * scene);
 /// pops last scene from scene stack, makes previous scene current, returns popped scene

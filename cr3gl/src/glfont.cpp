@@ -44,6 +44,8 @@ class GLGlyphCachePage;
 class GLGlyphCache;
 class GLFont;
 
+static GLGlyphCache * _glGlyphCache = NULL;
+
 #define GL_GLYPH_CACHE_PAGE_SIZE 1024
 class GLGlyphCachePage {
 	GLGlyphCache * cache;
@@ -207,7 +209,17 @@ void GLGlyphCacheItem::draw(int x, int y, lUInt32 color, lvRect * clip) {
 // GLGlyphCache implementation
 #define LVGLMakeGlyphKey(ch, font) ((((lUInt64)ch) << 32) ^ ((lUInt64)font))
 
+static void onLastSceneFinishGlyphCacheClear() {
+    if (_glGlyphCache)
+        _glGlyphCache->clear();
+}
+
 void GLGlyphCache::clear() {
+    if (LVGLPeekScene()) {
+        CRLog::info("Postpone clearing GL glyph cache until end drawing of scene");
+        LVGLSetLastSceneCallback(onLastSceneFinishGlyphCacheClear);
+        return;
+    }
 	CRLog::info("GLGlyphCache::clear() map size = %d, pages size = %d", _map.length(), _pages.length());
 	LVHashTable<lUInt64, GLGlyphCacheItem*>::iterator iter = _map.forwardIterator();
 	for (;;) {
@@ -332,6 +344,12 @@ public:
 
     GLGlyphCache * getCache() {
     	return _cache;
+    }
+
+    /// sets current gamma level index
+    virtual void SetGammaIndex( int gammaIndex ) {
+        _base->SetGammaIndex(gammaIndex);
+        _cache->clear();
     }
 
 };
@@ -735,6 +753,7 @@ int GLFontManager::GetAntialiasMode()
 void GLFontManager::SetAntialiasMode( int mode )
 {
 	_base->SetAntialiasMode(mode);
+    _cache->clear();
 }
 
 /// get kerning mode: true==ON, false=OFF
@@ -752,12 +771,14 @@ void GLFontManager::setKerning( bool kerningEnabled )
 GLFontManager::GLFontManager(LVFontManager * base) : LVFontManager(), _base(base), _mapByBase(1000), _mapByGl(1000)
 {
 	_cache = new GLGlyphCache();
+    _glGlyphCache = _cache;
 	CRLog::debug("Created GL Font Manager");
 }
 
 /// destructor
 GLFontManager::~GLFontManager()
 {
+    _glGlyphCache = NULL;
 	delete _cache;
 	delete _base;
 }
@@ -773,6 +794,7 @@ void GLFontManager::getFaceList( lString16Collection & result)
 void GLFontManager::SetHintingMode(hinting_mode_t mode)
 {
 	_base->SetHintingMode(mode);
+    _cache->clear();
 }
 /// returns current hinting mode
 hinting_mode_t GLFontManager::GetHintingMode() {
