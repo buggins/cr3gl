@@ -10,6 +10,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 import android.view.KeyEvent;
@@ -221,6 +222,13 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	
 	private final void exitApp() {
 		activity.finish();
+	}
+
+	private final void minimizeApp() {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.addCategory(Intent.CATEGORY_HOME);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		activity.startActivity(intent);
 	}
 
 	private final InputStream openResourceStream(String path) {

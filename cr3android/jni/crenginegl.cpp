@@ -305,6 +305,12 @@ public:
         method.callVoid();
     }
 
+	/// minimize app or show Home Screen
+	virtual void minimizeApp() {
+        CRMethodAccessor method(_obj, "minimizeApp", "()V");
+        method.callVoid();
+	}
+
 	~DocViewNative() {
     	delete _widget;
     	LVSetAssetContainerFactory(NULL);
@@ -774,6 +780,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.iniFile = CRStringField(cfg,"iniFile").get8();
     crconfig.hyphDir = CRStringField(cfg,"hyphDir").get8();
     crconfig.resourceDir = CRStringField(cfg,"resourceDir").get8();
+    crconfig.themesDir = CRStringField(cfg,"themesDir").get8();
+    crconfig.manualsDir = CRStringField(cfg,"manualsDir").get8();
     crconfig.uiFontFace = CRStringField(cfg,"uiFontFace").get8();
     crconfig.fallbackFontFace = CRStringField(cfg,"fallbackFontFace").get8();
     crconfig.docCacheDir = CRStringField(cfg,"docCacheDir").get8();

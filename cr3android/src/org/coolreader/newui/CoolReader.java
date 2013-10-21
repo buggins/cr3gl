@@ -68,6 +68,8 @@ public class CoolReader extends Activity {
 		cfg.hyphDir = "@hyph";
 		cfg.i18nDir = "@i18n";
 		cfg.resourceDir = "@"; // TODO
+		cfg.themesDir = "@themes";
+		cfg.manualsDir = "@manuals";
 		
 		cfg.systemLanguage = "en"; // TODO
 		cfg.uiFontFace = getSDKLevel() >= ICE_CREAM_SANDWICH ? "Roboto" : "Droid Sans";
@@ -112,6 +114,7 @@ public class CoolReader extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		log.i("CoolReader.onCreate() is called");
 		super.onCreate(savedInstanceState);
 		crview = new CRView(this);
 		crview.init(createConfig());
@@ -120,18 +123,21 @@ public class CoolReader extends Activity {
 
     @Override
     protected void onPause() {
+		log.i("CoolReader.onPause() is called");
         super.onPause();
         crview.onPause();
     }
 
     @Override
     protected void onResume() {
+		log.i("CoolReader.onResume() is called");
         super.onResume();
         crview.onResume();
     }
     
 	@Override
 	protected void onDestroy() {
+		log.i("CoolReader.onDestroy() is called");
 		crview.uninit();
 		super.onDestroy();
 	}

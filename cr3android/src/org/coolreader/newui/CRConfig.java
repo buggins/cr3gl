@@ -15,6 +15,8 @@ public class CRConfig {
     public String coverCacheDir;
     public String docCacheDir;
     public String i18nDir;
+    public String themesDir;
+    public String manualsDir;
     public String uiFontFace;
     public String fallbackFontFace;
     public String cssDir;
