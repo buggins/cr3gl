@@ -809,7 +809,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     //env.fromJavaStringArray()
 
     CRLog::info("Calling initEngine");
-    crconfig.initEngine();
+    crconfig.initEngine(false);
+    crconfig.setupResources(crconfig.resourceDir);
     CRLog::info("Done initEngine");
 
     //obj->create(); // will be called on first draw

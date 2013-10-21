@@ -8,6 +8,7 @@
 // uncomment to simulate slow render
 //#define SLOW_RENDER_SIMULATION
 
+#include "stringresource.h"
 #include "cruireadwidget.h"
 #include "crui.h"
 #include "cruimain.h"
@@ -16,7 +17,6 @@
 #include "cruiconfig.h"
 #include "lvstsheet.h"
 #include "hyphman.h"
-#include "stringresource.h"
 
 using namespace CRUI;
 
@@ -172,7 +172,7 @@ public:
     virtual void run() {
         CRLog::info("Loading book in background thread");
         bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
-        CRLog::info("Loading is finished");
+        CRLog::info("Loading is finished %s", success ? "successfully" : "with error");
 #ifdef SLOW_RENDER_SIMULATION
         concurrencyProvider->sleepMs(3000);
 #endif
