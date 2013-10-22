@@ -213,9 +213,12 @@ public:
     }
 };
 
+class CRUIEventManager;
 class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIScreenUpdateManagerCallback,
         public CRDocumentLoadCallback, public CRDocumentRenderCallback
 {
+	friend class CRUIEventManager;
+	CRUIEventManager * _eventManager;
     CRUIHomeWidget * _home;
     //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
@@ -268,6 +271,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void runStartupTasksIfNeeded();
 
     void saveSettings();
+
+    void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
     CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors

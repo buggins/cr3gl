@@ -79,6 +79,21 @@ int CRUIMotionEvent::getAvgY() const {
 	return s / _data.length();
 }
 
+/// returns average delta X for multitouch event
+int CRUIMotionEvent::getAvgDeltaX() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getDeltaX();
+	return s / _data.length();
+}
+/// returns average delta Y for multitouch event
+int CRUIMotionEvent::getAvgDeltaY() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getDeltaY();
+	return s / _data.length();
+}
+
 void CRUIMotionEvent::setWidget(CRUIWidget * widget) {
 	for (int i = 0; i < _data.length(); i++) {
 		_data[i]->setWidget(widget);
@@ -163,7 +178,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent *
 	if (!pointInside && !event->getWidget())
 		return false;
     int action = event->getAction();
-    if (widget->getVisibility() == VISIBLE && widget->onTouchEventPreProcess(event)) {
+    if (widget->getVisibility() == VISIBLE && _rootWidget->onTouchEventPreProcess(event)) {
         if (action == ACTION_DOWN) {
             //CRLog::trace("setting widget on DOWN");
             if (!event->getWidget())
@@ -231,6 +246,39 @@ void CRUIEventManager::updateScreen() {
     _rootWidget->update(false);
 }
 
+bool CRUIEventManager::interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget) {
+    //(const_cast<CRUIMotionEvent *>(event))->setWidget(widget);
+	if (!_rootWidget || !_rootWidget->isChild(widget))
+		return false;
+	// send fake cancel event to all widgets already tracking this event
+	LVPtrVector<CRUIMotionEventItem> itemsToCancel;
+	for (int i = 0; i < event->count(); i++) {
+		if (event->getWidget(i) && event->getWidget(i) != widget && !event->get(i)->isCancelled() && !event->get(i)->isCancelled()) {
+			const CRUIMotionEventItem * olditem = event->get(i);
+			itemsToCancel.add(new CRUIMotionEventItem(olditem, olditem->getPointerId(), ACTION_CANCEL, olditem->getX(), olditem->getY(), olditem->getEventTimestamp()));
+		}
+	}
+	if (itemsToCancel.length()) {
+		CRLog::trace("Event items to cancel on intercept: %d", itemsToCancel.length());
+		CRUIMotionEvent * cancelEvent = new CRUIMotionEvent();
+		for (int i = 0; i < itemsToCancel.length(); i++) {
+			cancelEvent->addEvent(itemsToCancel[i]);
+		}
+		dispatchTouchEvent(cancelEvent);
+		delete cancelEvent;
+	}
+	// override widget in event
+	for (int i = 0; i < event->count(); i++) {
+	    (const_cast<CRUIMotionEventItem *>(event->get(i)))->setWidget(widget);
+	}
+	return true;
+}
+
+void CRUIEventManager::setRootWidget(CRUIMainWidget * rootWidget) {
+	_rootWidget = rootWidget;
+	_rootWidget->setEventManager(this);
+}
+
 bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 	if (_rootWidget == NULL) {
 		CRLog::error("Cannot dispatch touch event: no root widget");
@@ -249,7 +297,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 			res = dispatchTouchEvent(widget, event);
 		}
 	} else if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
-		CRLog::trace("Skipping non-down event without widget");
+		CRLog::trace("Skipping non-down event %d without widget", event->getAction());
 		res = false;
 	} else {
 		//CRLog::trace("No widget: dispatching using tree");

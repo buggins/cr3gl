@@ -528,8 +528,6 @@ bool CRUIReadWidget::onTapZone(int zone, bool additionalAction) {
     return false;
 }
 
-inline bool myAbs(int x) { return x >= 0 ? x : -x; }
-
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)

@@ -407,6 +407,7 @@ class CRTouchEventWrapper {
 	CRMethodAccessor getToolTypeMethod;
 	CRMethodAccessor getButtonStateMethod;
 	CRMethodAccessor getActionMethod;
+	CRMethodAccessor getActionMaskedMethod;
 	CRMethodAccessor getActionIndexMethod;
 	CRMethodAccessor getEventTimeMethod;
 public:
@@ -419,6 +420,7 @@ public:
 	, getToolTypeMethod(event, "getToolType", "(I)I")
 	, getButtonStateMethod(event, "getButtonState", "()I")
 	, getActionMethod(event, "getAction", "()I")
+	, getActionMaskedMethod(event, "getActionMasked", "()I")
 	, getActionIndexMethod(event, "getActionIndex", "()I")
 	, getEventTimeMethod(event, "getEventTime", "()J")
 	{
@@ -441,6 +443,9 @@ public:
 	}
 	int getAction() {
 		return getActionMethod.callInt();
+	}
+	int getActionMasked() {
+		return getActionMaskedMethod.callInt();
 	}
 	int getActionIndex() {
 		return getActionIndexMethod.callInt();

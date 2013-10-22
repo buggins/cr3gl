@@ -344,7 +344,7 @@ void CRUIMainWidget::createReaderSettings() {
 }
 
 CRUIMainWidget::CRUIMainWidget()
-: _home(NULL), _read(NULL)
+: _eventManager(NULL), _home(NULL), _read(NULL)
 , _popup(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
 , _platform(NULL), _lastAnimationTs(0), _initialized(false)
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
@@ -549,6 +549,7 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     int oldpos = _history.pos();
     if (newpos == oldpos)
         return;
+
     beforeNavigation(_history[oldpos], _history[newpos]);
     CRUIWidget * newWidget = _history[newpos]->getWidget();
     CRUIWidget * oldWidget = _history[oldpos]->getWidget();
@@ -561,6 +562,15 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     else
         direction = +1;
     CRLog::trace("starting animation %d -> %d", oldpos, newpos);
+
+    if (event) {
+        // manual
+    	CRLog::trace("Intercepting touch event for navigation dragging");
+    	_eventManager->interceptTouchEvent(event, this);
+        _animation.startPoint.x = event->getAvgStartX();
+        _animation.startPoint.y = event->getAvgStartY();
+    }
+
     CRReinitTimer();
     _animation.active = true;
     _animation.oldpos = oldpos;
@@ -569,12 +579,6 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     _animation.direction = direction;
     _animation.progress = 0;
     _animation.manual = manual;
-    if (event) {
-        // manual
-        (const_cast<CRUIMotionEvent *>(event))->setWidget(this);
-        _animation.startPoint.x = event->getAvgStartX();
-        _animation.startPoint.y = event->getAvgStartY();
-    }
 
     oldWidget->measure(_pos.width(), _pos.height());
     oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
@@ -791,8 +795,9 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
                 if (_animation.direction > 0)
                     p = -p;
                 _animation.progress = p > 0 ? p : 0;
+            	CRLog::trace("Tracking navigation touch event: dx=%d pointers=%d, progress=%d", dx, event->count(), p);
                 invalidate();
-                CRLog::trace("manual animation progress %d", p);
+                //CRLog::trace("manual animation progress %d", p);
             }
             break;
         case ACTION_CANCEL:
@@ -806,6 +811,29 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
         }
 
         return true;
+    } else {
+		CRLog::trace("onTouchEventPreProcess action=%d pointers=%d", event->getAction(), event->count());
+    	if (event->count() == 2 && event->getAction() == ACTION_MOVE && event->getWidget() != this) {
+    		bool startDrag = false;
+    		int dx1 = event->getDeltaX(0);
+    		int dx2 = event->getDeltaX(1);
+    		int adx1 = event->getDistanceX(0);
+    		int adx2 = event->getDistanceX(1);
+    		int ady1 = event->getDistanceY(0);
+    		int ady2 = event->getDistanceY(1);
+    		CRLog::trace("checking if need to intercept navigation dx1=%d, dx2=%d, adx1=%d, adx2=%d, ady1=%d, ady2=%d", dx1, dx2, adx1, adx2, ady1, ady2);
+    		if ((adx1 > DRAG_THRESHOLD_X || adx2 > DRAG_THRESHOLD_X) && (adx1 + adx2 > ady1 + ady2)) {
+    			if (dx1 < 0 && dx2 < 0 && adx1 > DRAG_THRESHOLD_X / 2 && adx2 > DRAG_THRESHOLD_X / 2) {
+    				startDrag = true;
+    			} else if (dx1 > 0 && dx2 > 0 && adx1 > DRAG_THRESHOLD_X / 2 && adx2 > DRAG_THRESHOLD_X / 2) {
+    				startDrag = true;
+    			}
+    		}
+    		if (startDrag) {
+    			CRLog::trace("Intercepting double finger horizontal drag");
+    			return startDragging(event, false);
+    		}
+    	}
     }
     return _animation.active;
 }
@@ -814,17 +842,19 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
 bool CRUIMainWidget::startDragging(const CRUIMotionEvent * event, bool vertical) {
     if (vertical)
         return false;
-    int dx = event->getX() - event->getStartX();
+    int dx = event->getAvgDeltaX();
     if (dx > 0 && !_history.hasBack())
         return false;
     if (dx < 0 && !_history.hasForward())
         return false;
     if (dx < 0) {
         // FORWARD dragging
+    	CRLog::trace("Initiating manual FORWARD dragging");
         startAnimation(_history.pos() + 1, WINDOW_ANIMATION_DELAY, event);
         return true;
     } else {
         // BACK dragging
+    	CRLog::trace("Initiating manual BACK dragging");
         startAnimation(_history.pos() - 1, WINDOW_ANIMATION_DELAY, event);
         return true;
     }

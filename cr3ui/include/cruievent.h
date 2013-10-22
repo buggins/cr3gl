@@ -24,6 +24,8 @@ namespace CRUI {
 	};
 };
 
+inline int myAbs(int x) { return x >= 0 ? x : -x; }
+
 class CRUIMotionEventItem {
 	friend class CRUIEventManager;
 	friend class CRUIEventAdapter;
@@ -60,6 +62,10 @@ public:
 	int getY() const { return _y; }
 	int getStartX() const { return _startX; }
 	int getStartY() const { return _startY; }
+	int getDeltaX() const { return _x - _startX; }
+	int getDeltaY() const { return _y - _startY; }
+	int getDistanceX() const { return myAbs(_x - _startX); }
+	int getDistanceY() const { return myAbs(_y - _startY); }
 	lUInt64 getEventTimestamp() const { return _ts; }
 	lUInt64 getDownEventTimestamp() const { return _downTs; }
 	lUInt64 getDownDuration() const { return _ts - _downTs; }
@@ -88,6 +94,10 @@ public:
 	int getY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
 	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
 	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }
+	int getDeltaX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDeltaX() : 0; }
+	int getDeltaY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDeltaY() : 0; }
+	int getDistanceX(int index = 0) const { return index >= 0 && index < _data.length() ? _data[index]->getDistanceX() : 0; }
+	int getDistanceY(int index = 0) const { return index >= 0 && index < _data.length() ? _data[index]->getDistanceY() : 0; }
 	/// returns average start X for multitouch event
 	int getAvgStartX() const;
 	/// returns average start Y for multitouch event
@@ -96,6 +106,10 @@ public:
 	int getAvgX() const;
 	/// returns average Y for multitouch event
 	int getAvgY() const;
+	/// returns average delta X for multitouch event
+	int getAvgDeltaX() const;
+	/// returns average delta Y for multitouch event
+	int getAvgDeltaY() const;
 	int getAction(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
     lvPoint getSpeed(int maxtime = 500, int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getSpeed(maxtime) : lvPoint(0,0); }
     lUInt64 getEventTimestamp(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getEventTimestamp() : 0; }
@@ -236,9 +250,10 @@ protected:
     void updateScreen();
 public:
 	CRUIEventManager();
-	void setRootWidget(CRUIMainWidget * rootWidget) { _rootWidget = rootWidget; }
+	void setRootWidget(CRUIMainWidget * rootWidget);
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);
+    bool interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget);
 };
 
 class CRUIOnTouchEventListener {

@@ -65,13 +65,13 @@ public:
     // touch event listener
     bool dispatchTouchEvent(CRTouchEventWrapper * event, int x0, int y0) {
     	int pointerCount = event->getPointerCount();
-    	int action = translateTouchAction(event->getAction());
+    	int action = translateTouchAction(event->getActionMasked());
     	if (action < 0) {
     		CRLog::trace("ignoring unknown touch event %d", event->getAction());
     		return false; // ignore unknown actions
     	}
     	int actionIndex = event->getActionIndex();
-    	int actionPointerId = event->getPointerId(0);
+    	int actionPointerId = event->getPointerId(actionIndex);
     	lUInt64 ts = event->getEventTime();
 		CRUIMotionEventItem * actionItem = NULL;
 		//CRLog::trace("pointerCount = %d action = %d actionIndex = %d actionPointerId = %d", pointerCount, action, actionIndex, actionPointerId);
