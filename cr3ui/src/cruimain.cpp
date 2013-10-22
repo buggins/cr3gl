@@ -10,7 +10,7 @@ using namespace CRUI;
 #define WINDOW_ANIMATION_DELAY 250
 //#define WINDOW_ANIMATION_DELAY 750
 #define SLOW_OPERATION_POPUP_DELAY 100
-#define SLOW_OPERATION_POPUP_DIMMING_DURATION 3000
+#define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000
 #define SLOW_OPERATION_DIM_COLOR 0xA0000000
 
 void applyThemeChange(CRUIWidget * widget) {
@@ -397,6 +397,10 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX, "15");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_DAY, "15");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_NIGHT, "15");
+    _currentSettings->setIntDef(PROP_INTERLINE_SPACE, 100);
+    _currentSettings->setIntDef(PROP_PAGE_MARGINS, 500);
+
+
     if (_currentSettings->getCount() != oldPropCount) {
         saveSettings();
     }

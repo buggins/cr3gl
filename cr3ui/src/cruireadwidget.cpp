@@ -35,6 +35,7 @@ static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
             || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
             || key == PROP_BACKGROUND_COLOR
+            || key == PROP_INTERLINE_SPACE
             || key == PROP_BACKGROUND_IMAGE
             || key == PROP_BACKGROUND_IMAGE_ENABLED
             || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
@@ -42,6 +43,7 @@ static bool isDocViewProp(const lString8 & key) {
             || key == PROP_FONT_GAMMA_INDEX
             || key == PROP_FONT_ANTIALIASING
             || key == PROP_FONT_WEIGHT_EMBOLDEN
+            || key == PROP_PAGE_MARGINS
             || key == PROP_FONT_HINTING;
 }
 
@@ -598,6 +600,7 @@ void CRUIReadWidget::startPinchOp(int op, int dx, int dy) {
     	break;
     }
     lString16 sampleText = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
+    sampleText = sampleText + " " + sampleText;
     _pinchSettingPreview->createDefaultDocument(title, sampleText + "\n"
     		+ sampleText + "\n" + sampleText + "\n" + sampleText
     		+ "\n" + sampleText + "\n" + sampleText + "\n" + sampleText + "\n" + sampleText);
@@ -616,10 +619,38 @@ void CRUIReadWidget::updatePinchOp(int dx, int dy) {
     int newSettingValue = 0;
     switch(_pinchOp) {
     case PINCH_OP_HORIZONTAL:
-    	delta = (dx) - (_pinchOpStartDx);
+		{
+			startSettingValue = _main->getSettings()->getIntDef(PROP_PAGE_MARGINS, 100);
+			delta = (dx) - (_pinchOpStartDx);
+			int maxdiff = 2000 - 100;
+			newSettingValue = startSettingValue + maxdiff * (-delta) * 120 / 100 / deviceInfo.shortSide;
+			if (newSettingValue < 100)
+				newSettingValue = 100;
+			if (newSettingValue > 2000)
+				newSettingValue = 2000;
+			CRPropRef props = LVCreatePropsContainer();
+			props->setInt(PROP_PAGE_MARGINS, newSettingValue);
+			_pinchOpSettingValue = newSettingValue;
+			_pinchSettingPreview->propsApply(props);
+			invalidate();
+		}
     	break;
     case PINCH_OP_VERTICAL:
-    	delta = (dy) - (_pinchOpStartDy);
+		{
+			startSettingValue = _main->getSettings()->getIntDef(PROP_INTERLINE_SPACE, 100);
+			delta = (dy) - (_pinchOpStartDy);
+			int maxdiff = 200 - 80;
+			newSettingValue = startSettingValue + maxdiff * delta * 120 / 100 / deviceInfo.shortSide;
+			if (newSettingValue < 80)
+				newSettingValue = 80;
+			if (newSettingValue > 200)
+				newSettingValue = 200;
+			CRPropRef props = LVCreatePropsContainer();
+			props->setInt(PROP_INTERLINE_SPACE, newSettingValue);
+			_pinchOpSettingValue = newSettingValue;
+			_pinchSettingPreview->propsApply(props);
+			invalidate();
+		}
     	break;
     case PINCH_OP_DIAGONAL:
 		{
@@ -628,10 +659,10 @@ void CRUIReadWidget::updatePinchOp(int dx, int dy) {
 			startSettingValue = _docview->getFontSize();
 
 			if (delta > 0) {
-				newSettingValue = startSettingValue + maxdiff * delta / deviceInfo.shortSide;
+				newSettingValue = startSettingValue + maxdiff * delta * 120 / 100 / deviceInfo.shortSide;
 				CRLog::trace("Zoom in %d -> %d", startSettingValue, newSettingValue);
 			} else {
-				newSettingValue = startSettingValue + maxdiff * delta / deviceInfo.shortSide;
+				newSettingValue = startSettingValue + maxdiff * delta * 120 / 100  / deviceInfo.shortSide;
 				//newSettingValue = startSettingValue - startSettingValue * ((-delta) * 2 / deviceInfo.shortSide);
 				CRLog::trace("Zoom out %d -> %d", startSettingValue, newSettingValue);
 			}
@@ -650,7 +681,7 @@ void CRUIReadWidget::updatePinchOp(int dx, int dy) {
     CRLog::trace("updatePinchOp %d   %d %d", _pinchOp, dx, dy);
 }
 
-void CRUIReadWidget::endPinchOp(int dx, int dy) {
+void CRUIReadWidget::endPinchOp(int dx, int dy, bool cancel) {
 	if (!_pinchOp)
 		return;
     CRLog::trace("endPinchOp %d   %d %d", _pinchOp, dx, dy);
@@ -658,16 +689,22 @@ void CRUIReadWidget::endPinchOp(int dx, int dy) {
 		delete _pinchSettingPreview;
 		_pinchSettingPreview = NULL;
 	}
-    switch(_pinchOp) {
-    case PINCH_OP_HORIZONTAL:
-    	break;
-    case PINCH_OP_VERTICAL:
-    	break;
-    case PINCH_OP_DIAGONAL:
-    	_main->initNewSettings()->setInt(PROP_FONT_SIZE, _pinchOpSettingValue);
-    	_main->applySettings();
-    	break;
-    }
+	if (!cancel) {
+		switch(_pinchOp) {
+		case PINCH_OP_HORIZONTAL:
+			_main->initNewSettings()->setInt(PROP_PAGE_MARGINS, _pinchOpSettingValue);
+			_main->applySettings();
+			break;
+		case PINCH_OP_VERTICAL:
+			_main->initNewSettings()->setInt(PROP_INTERLINE_SPACE, _pinchOpSettingValue);
+			_main->applySettings();
+			break;
+		case PINCH_OP_DIAGONAL:
+			_main->initNewSettings()->setInt(PROP_FONT_SIZE, _pinchOpSettingValue);
+			_main->applySettings();
+			break;
+		}
+	}
 	_pinchOp = PINCH_OP_NONE;
     invalidate();
 }
@@ -709,7 +746,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         {
             invalidate();
             if (_pinchOp) {
-            	endPinchOp(pinchDx, pinchDy);
+            	endPinchOp(pinchDx, pinchDy, false);
             	event->cancelAllPointers();
             } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
@@ -772,7 +809,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         break;
     case ACTION_CANCEL:
         if (_pinchOp) {
-        	endPinchOp(pinchDx, pinchDy);
+        	endPinchOp(pinchDx, pinchDy, true);
         }
         _isDragging = false;
         //setScrollOffset(_scrollOffset);
@@ -973,7 +1010,13 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
     for (int i = 0; i < props->getCount(); i++) {
         lString8 key(props->getName(i));
         //lString8 value(UnicodeToUtf8(props->getValue(i)));
-        if (key == PROP_FONT_ANTIALIASING) {
+        if (key == PROP_PAGE_MARGINS) {
+        	int marginPercent = props->getIntDef(key.c_str(), 5000);
+        	int hmargin = deviceInfo.shortSide * marginPercent / 10000;
+        	lvRect margins(hmargin, hmargin / 2, hmargin, hmargin / 2);
+        	setPageMargins(margins);
+        	requestRender();
+        } else if (key == PROP_FONT_ANTIALIASING) {
             int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
             if (antialiasingMode == 1) {
                 antialiasingMode = 2;

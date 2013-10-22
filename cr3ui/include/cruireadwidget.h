@@ -168,7 +168,7 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     void startPinchOp(int op, int dx, int dy);
     void updatePinchOp(int dx, int dy);
-    void endPinchOp(int dx, int dy);
+    void endPinchOp(int dx, int dy, bool cancel);
 public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();

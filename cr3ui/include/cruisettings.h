@@ -38,6 +38,7 @@
 #define PROP_BACKGROUND_COLOR_NIGHT "background.color.night"
 #define PROP_BACKGROUND_IMAGE_DAY "background.image.filename.day"
 #define PROP_BACKGROUND_IMAGE_NIGHT "background.image.filename.night"
+#define PROP_PAGE_MARGINS "page.margins"
 
 //#define PROP_FONT_ANTIALIASING       "font.antialiasing.mode"
 //#define PROP_FONT_FACE               "font.face.default"
