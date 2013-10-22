@@ -572,8 +572,8 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     if (event) {
         // manual
         (const_cast<CRUIMotionEvent *>(event))->setWidget(this);
-        _animation.startPoint.x = event->getStartX();
-        _animation.startPoint.y = event->getStartY();
+        _animation.startPoint.x = event->getAvgStartX();
+        _animation.startPoint.y = event->getAvgStartY();
     }
 
     oldWidget->measure(_pos.width(), _pos.height());
@@ -786,7 +786,7 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
         switch(event->getAction()) {
         case ACTION_MOVE:
             {
-                int dx = _animation.startPoint.x - event->getX();
+                int dx = _animation.startPoint.x - event->getAvgX();
                 int p = dx * _animation.duration / _pos.width();
                 if (_animation.direction > 0)
                     p = -p;
@@ -799,6 +799,7 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
         case ACTION_DOWN:
         case ACTION_UP:
             _animation.manual = false;
+            event->cancelAllPointers();
             break;
         default:
             break;

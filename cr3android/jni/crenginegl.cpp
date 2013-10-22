@@ -123,9 +123,15 @@ public:
 		//CRLog::trace("Posting touch event ptr=%d action=%d (%d,%d)", (int)crevent->getPointerId(), crevent->getAction(), crevent->getX(), crevent->getY());
 		bool res = _eventManager->dispatchTouchEvent(crevent);
 		delete crevent;
-		if (activeActionItemIndex >= 0 && actionItem && (actionItem->getAction() == CRUI::ACTION_UP || actionItem->getAction() == CRUI::ACTION_CANCEL)) {
-			delete _activePointers.remove(activeActionItemIndex);
+		if (activeActionItemIndex >= 0) {
+			for (int i = _activePointers.length() - 1; i >= 0; i--) {
+				if (_activePointers[i]->getAction() == CRUI::ACTION_UP || _activePointers[i]->getAction() == CRUI::ACTION_CANCEL || _activePointers[i]->isCancelled())
+					delete _activePointers.remove(i);
+			}
 		}
+//		if (activeActionItemIndex >= 0 && actionItem && (actionItem->getAction() == CRUI::ACTION_UP || actionItem->getAction() == CRUI::ACTION_CANCEL)) {
+//			delete _activePointers.remove(activeActionItemIndex);
+//		}
 		return res;
     }
 

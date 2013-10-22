@@ -38,6 +38,8 @@ class CRUIMotionEventItem {
 	lUInt64 _downTs;
 	bool _isOutside;
 	CRUIWidget * _widget;
+	bool _cancelRequested;
+	bool _cancelled;
 
     struct TrackItem {
         lInt16 x;
@@ -65,6 +67,9 @@ public:
 	lUInt64 getPointerId() const { return _pointerId; }
 	CRUIWidget * getWidget() const { return _widget; }
 	bool isOutside() const { return _isOutside; }
+	bool isCancelled() const { return _cancelled; }
+	bool isCancelRequested() const { return _cancelRequested; }
+	void cancel() { if (!_cancelRequested && !_cancelled) _cancelRequested = true; }
 };
 
 class CRUIMotionEvent {
@@ -75,7 +80,7 @@ class CRUIMotionEvent {
 	void changeAction(int newAction) { _data[0]->_action = newAction; }
 public:
     // use with caution
-    void setWidget(CRUIWidget * widget) { _data[0]->setWidget(widget); }
+    void setWidget(CRUIWidget * widget);
     int count() const { return _data.length(); }
 	const CRUIMotionEventItem * operator[] (int index) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
 	const CRUIMotionEventItem * get(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
@@ -83,6 +88,14 @@ public:
 	int getY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
 	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
 	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }
+	/// returns average start X for multitouch event
+	int getAvgStartX() const;
+	/// returns average start Y for multitouch event
+	int getAvgStartY() const;
+	/// returns average X for multitouch event
+	int getAvgX() const;
+	/// returns average Y for multitouch event
+	int getAvgY() const;
 	int getAction(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getAction() : 0; }
     lvPoint getSpeed(int maxtime = 500, int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getSpeed(maxtime) : lvPoint(0,0); }
     lUInt64 getEventTimestamp(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getEventTimestamp() : 0; }
@@ -92,6 +105,12 @@ public:
 	CRUIWidget * getWidget(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getWidget() : 0; }
 	/// find pointer index by pointer id, returns -1 if not found
 	int findPointerId(lUInt64 pointerId);
+	/// set cancelled event flag to all pointers
+	void cancelAllPointers() const;
+	/// returns true if cancel is requested for any of pointers
+	bool isCancelRequested() const;
+	/// create cancel processing event for cancelled pointers
+	CRUIMotionEvent * createCancelEvent() const;
 };
 
 enum KEY_EVENT_TYPE {

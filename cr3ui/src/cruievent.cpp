@@ -19,6 +19,72 @@ int CRUIMotionEvent::findPointerId(lUInt64 pointerId) {
 	return -1;
 }
 
+/// set cancelled event flag to all pointers
+void CRUIMotionEvent::cancelAllPointers() const {
+	for (int i = 0; i < _data.length(); i++) {
+		_data[i]->cancel();
+	}
+}
+
+/// returns true if cancel is requested for any of pointers
+bool CRUIMotionEvent::isCancelRequested() const {
+	for (int i = 0; i < _data.length(); i++) {
+		if (_data[i]->isCancelRequested())
+			return true;
+	}
+	return false;
+}
+
+/// create cancel processing event for cancelled pointers
+CRUIMotionEvent * CRUIMotionEvent::createCancelEvent() const {
+	if (!isCancelRequested())
+		return NULL;
+	CRUIMotionEvent * res = new CRUIMotionEvent();
+	for (int i = 0; i <_data.length(); i++) {
+		if (_data[i]->isCancelRequested()) {
+			_data[i]->_cancelled = true;
+			_data[i]->_cancelRequested = false;
+			_data[i]->_action = ACTION_CANCEL;
+			res->_data.add(_data[i]);
+		}
+	}
+	return res;
+}
+
+int CRUIMotionEvent::getAvgStartX() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getStartX();
+	return s / _data.length();
+}
+
+int CRUIMotionEvent::getAvgStartY() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getStartY();
+	return s / _data.length();
+}
+
+int CRUIMotionEvent::getAvgX() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getX();
+	return s / _data.length();
+}
+
+int CRUIMotionEvent::getAvgY() const {
+	int s = 0;
+	for (int i = 0; i < _data.length(); i++)
+		s += _data[i]->getY();
+	return s / _data.length();
+}
+
+void CRUIMotionEvent::setWidget(CRUIWidget * widget) {
+	for (int i = 0; i < _data.length(); i++) {
+		_data[i]->setWidget(widget);
+	}
+}
+
 #define MAX_TRACK_MILLIS 2000
 
 CRUIMotionEventItem::CRUIMotionEventItem(const CRUIMotionEventItem * previous, lUInt64 pointerId, int action, int x, int y, lUInt64 ts)
@@ -31,7 +97,9 @@ CRUIMotionEventItem::CRUIMotionEventItem(const CRUIMotionEventItem * previous, l
   _ts(ts),
   _downTs(action == ACTION_DOWN ? ts : (previous ? previous->getDownEventTimestamp() : ts)),
   _isOutside(previous ? previous->isOutside() : false),
-  _widget(previous ? previous->getWidget() : NULL)
+  _widget(previous ? previous->getWidget() : NULL),
+  _cancelRequested(previous ? previous->isCancelRequested() : false),
+  _cancelled(previous ? previous->isCancelled() : false)
 {
 	//
     //CRLog::trace("created event ts=%lld downts=%lld", _ts, _downTs);
@@ -169,22 +237,31 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 		return false;
 	}
 	//CRLog::trace("Touch event %d (%d,%d) %s", event->getAction(), event->getX(), event->getY(), (event->getWidget() ? "[widget]" : ""));
+	bool res = false;
 	CRUIWidget * widget = event->getWidget();
 	if (widget) {
 		// event is tracked by widget
 		if (!_rootWidget->isChild(widget)) {
 			CRLog::trace("Widget is not a child of root - skipping event");
-			return false;
+			res = false;
+		} else {
+			//CRLog::trace("Dispatching event directly to widget");
+			res = dispatchTouchEvent(widget, event);
 		}
-		//CRLog::trace("Dispatching event directly to widget");
-		return dispatchTouchEvent(widget, event);
-	}
-	if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
+	} else if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
 		CRLog::trace("Skipping non-down event without widget");
-		return false;
+		res = false;
+	} else {
+		//CRLog::trace("No widget: dispatching using tree");
+		res = dispatchTouchEvent(_rootWidget, event);
 	}
-	//CRLog::trace("No widget: dispatching using tree");
-	return dispatchTouchEvent(_rootWidget, event);
+	if (event->isCancelRequested()) {
+		CRLog::trace("Sending CANCEL event");
+		CRUIMotionEvent * cancelEvent = event->createCancelEvent();
+		dispatchTouchEvent(cancelEvent);
+		delete cancelEvent;
+	}
+	return res;
 }
 
 bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event) {

@@ -535,6 +535,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
         return false;
     int action = event->getAction();
+    if (action != ACTION_MOVE && event->count() > 0)
+    	CRLog::trace("CRUIReadWidget::onTouchEvent multitouch %d pointers action = %d", event->count(), action);
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
     int dx = event->getX() - event->getStartX();
     int dy = event->getY() - event->getStartY();
@@ -578,6 +580,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 	}
                 }
                 int zone = pointToTapZone(event->getX(), event->getY());
+                event->cancelAllPointers();
                 //bool twoFingersTap = (event->count() == 2) && event->get
                 onTapZone(zone, twoFinigersTap);
             }
