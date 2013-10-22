@@ -150,7 +150,23 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     bool _startPositionIsUpdated;
 
+    enum {
+    	PINCH_OP_NONE,
+    	PINCH_OP_HORIZONTAL,
+    	PINCH_OP_VERTICAL,
+    	PINCH_OP_DIAGONAL
+    };
 
+
+    int _pinchOp;
+    int _pinchOpStartDx;
+    int _pinchOpStartDy;
+    int _pinchOpCurrentDx;
+    int _pinchOpCurrentDy;
+
+    void startPinchOp(int op, int dx, int dy);
+    void updatePinchOp(int dx, int dy);
+    void endPinchOp(int dx, int dy);
 public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
@@ -191,9 +207,11 @@ public:
 
     virtual void clearImageCaches();
 
+	/// returns true to allow parent intercept this widget which is currently handled by this widget
+	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event);
     /// motion event handler, returns true if it handled event
-    bool onTouchEvent(const CRUIMotionEvent * event);
-    bool onKeyEvent(const CRUIKeyEvent * event);
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
     bool doCommand(int cmd, int param = 0);
     int pointToTapZone(int x, int y);
     /// override to handle menu or other action

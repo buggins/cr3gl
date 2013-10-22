@@ -42,17 +42,22 @@ void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 color
 //	}
 }
 
-CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main) : CRUIWindowWidget(main),
-    _isDragging(false), _dragStartOffset(0), _locked(false),
-    _fileItem(NULL), _lastPosition(NULL)
-  , _startPositionIsUpdated(false)
+CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
+    : CRUIWindowWidget(main)
+    , _isDragging(false)
+	, _dragStartOffset(0)
+	, _locked(false)
+	, _fileItem(NULL)
+	, _lastPosition(NULL)
+	, _startPositionIsUpdated(false)
+	, _pinchOp(PINCH_OP_NONE)
 {
     setId("READ");
     _docview = new CRUIDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
-	LVArray<int> sizes;
-	for (int i = deviceInfo.shortSide / 40; i < deviceInfo.shortSide / 10 && i < 200; i++)
-		sizes.add(i);
+    LVArray<int> sizes;
+    for (int i = deviceInfo.shortSide / 40; i < deviceInfo.shortSide / 10 && i < 200; i++)
+    	sizes.add(i);
 	_docview->setFontSizes(sizes, false);
 	_docview->setFontSize(deviceInfo.shortSide / 20);
 	lvRect margins(deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20);
@@ -528,6 +533,39 @@ bool CRUIReadWidget::onTapZone(int zone, bool additionalAction) {
     return false;
 }
 
+void CRUIReadWidget::startPinchOp(int op, int dx, int dy) {
+	if (_pinchOp)
+		return;
+	_pinchOp = op;
+	_pinchOpStartDx = dx;
+	_pinchOpStartDy = dy;
+    _pinchOpCurrentDx = dx;
+    _pinchOpCurrentDy = dy;
+    CRLog::trace("startPinchOp %d   %d %d", _pinchOp, dx, dy);
+}
+
+void CRUIReadWidget::updatePinchOp(int dx, int dy) {
+	if (!_pinchOp)
+		return;
+    _pinchOpCurrentDx = dx;
+    _pinchOpCurrentDy = dy;
+    CRLog::trace("updatePinchOp %d   %d %d", _pinchOp, dx, dy);
+}
+
+void CRUIReadWidget::endPinchOp(int dx, int dy) {
+	if (!_pinchOp)
+		return;
+    CRLog::trace("endPinchOp %d   %d %d", _pinchOp, dx, dy);
+	_pinchOp = PINCH_OP_NONE;
+}
+
+/// returns true to allow parent intercept this widget which is currently handled by this widget
+bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
+	if (_isDragging || _pinchOp)
+		return false;
+	return true;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -538,6 +576,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
     int dx = event->getX() - event->getStartX();
     int dy = event->getY() - event->getStartY();
+    int pinchDx = event->getPinchDx();
+    int pinchDy = event->getPinchDy();
     int delta = dy; //isVertical() ? dy : dx;
     int delta2 = dx; //isVertical() ? dy : dx;
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
@@ -555,12 +595,16 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     case ACTION_UP:
         {
             invalidate();
-            if (_isDragging) {
+            if (_pinchOp) {
+            	endPinchOp(pinchDx, pinchDy);
+            	event->cancelAllPointers();
+            } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 if (speed.y < -SCROLL_MIN_SPEED || speed.y > SCROLL_MIN_SPEED) {
                     _scroll.start(_docview->GetPos(), -speed.y, SCROLL_FRICTION);
                     CRLog::trace("Starting scroll with speed %d", _scroll.speed());
                 }
+            	event->cancelAllPointers();
             } else {
             	int x = event->getX();
             	int y = event->getY();
@@ -614,12 +658,39 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         //CRLog::trace("list FOCUS OUT");
         break;
     case ACTION_CANCEL:
+        if (_pinchOp) {
+        	endPinchOp(pinchDx, pinchDy);
+        }
         _isDragging = false;
         //setScrollOffset(_scrollOffset);
         //CRLog::trace("list CANCEL");
         break;
     case ACTION_MOVE:
-        if (!_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
+    	if (_pinchOp) {
+    		updatePinchOp(pinchDx, pinchDy);
+    	} else if (!_isDragging && event->count() == 2) {
+			int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
+			int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
+			int ddx1 = myAbs(event->getX(0) - event->getX(1));
+			int ddy1 = myAbs(event->getY(0) - event->getY(1));
+			int op0, op1;
+			if (ddx0 > ddy0 * 3)
+				op0 = PINCH_OP_HORIZONTAL;
+			else if (ddy0 > ddx0 * 3)
+				op0 = PINCH_OP_VERTICAL;
+			else
+				op0 = PINCH_OP_DIAGONAL;
+			if (ddx1 > ddy1 * 3)
+				op1 = PINCH_OP_HORIZONTAL;
+			else if (ddy1 > ddx1 * 3)
+				op1 = PINCH_OP_VERTICAL;
+			else
+				op1 = PINCH_OP_DIAGONAL;
+			int ddd = myAbs(pinchDx) + myAbs(pinchDy);
+			if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
+				startPinchOp(op0, pinchDx, pinchDy);
+			}
+    	} else if (!_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             _isDragging = true;
             _docview->SetPos(_dragStartOffset - delta, false);
             prepareScroll(-delta);
@@ -630,8 +701,32 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             invalidate();
             _main->update(true);
         } else if (!_isDragging) {
-            if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
-                _main->startDragging(event, false);
+        	if (event->count() == 2) {
+        		int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
+        		int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
+        		int ddx1 = myAbs(event->getX(0) - event->getX(1));
+        		int ddy1 = myAbs(event->getY(0) - event->getY(1));
+        		int op0, op1;
+        		if (ddx0 > ddy0 / 2)
+        			op0 = PINCH_OP_HORIZONTAL;
+        		else if (ddy0 > ddx0 / 2)
+        			op0 = PINCH_OP_VERTICAL;
+        		else
+        			op0 = PINCH_OP_DIAGONAL;
+        		if (ddx1 > ddy1 / 2)
+        			op1 = PINCH_OP_HORIZONTAL;
+        		else if (ddy1 > ddx1 / 2)
+        			op1 = PINCH_OP_VERTICAL;
+        		else
+        			op0 = PINCH_OP_DIAGONAL;
+        		int ddd = myAbs(pinchDx) + myAbs(pinchDy);
+        		if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
+        			startPinchOp(op0, pinchDx, pinchDy);
+        		}
+        	} else {
+        		if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
+        			_main->startDragging(event, false);
+        		}
             }
         }
         // ignore

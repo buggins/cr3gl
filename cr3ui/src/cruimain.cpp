@@ -812,8 +812,10 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
 
         return true;
     } else {
-		CRLog::trace("onTouchEventPreProcess action=%d pointers=%d", event->getAction(), event->count());
+		//CRLog::trace("onTouchEventPreProcess action=%d pointers=%d", event->getAction(), event->count());
     	if (event->count() == 2 && event->getAction() == ACTION_MOVE && event->getWidget() != this) {
+    		if (event->getWidget() && isChild(event->getWidget()) && !event->getWidget()->allowInterceptTouchEvent(event))
+    			return false;
     		bool startDrag = false;
     		int dx1 = event->getDeltaX(0);
     		int dx2 = event->getDeltaX(1);
@@ -821,7 +823,7 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     		int adx2 = event->getDistanceX(1);
     		int ady1 = event->getDistanceY(0);
     		int ady2 = event->getDistanceY(1);
-    		CRLog::trace("checking if need to intercept navigation dx1=%d, dx2=%d, adx1=%d, adx2=%d, ady1=%d, ady2=%d", dx1, dx2, adx1, adx2, ady1, ady2);
+    		//CRLog::trace("checking if need to intercept navigation dx1=%d, dx2=%d, adx1=%d, adx2=%d, ady1=%d, ady2=%d", dx1, dx2, adx1, adx2, ady1, ady2);
     		if ((adx1 > DRAG_THRESHOLD_X || adx2 > DRAG_THRESHOLD_X) && (adx1 + adx2 > ady1 + ady2)) {
     			if (dx1 < 0 && dx2 < 0 && adx1 > DRAG_THRESHOLD_X / 2 && adx2 > DRAG_THRESHOLD_X / 2) {
     				startDrag = true;

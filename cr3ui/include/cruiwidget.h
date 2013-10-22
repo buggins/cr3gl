@@ -95,6 +95,9 @@ public:
 	/// long click handler, returns true if it handled event
 	virtual bool onLongClickEvent();
 
+	/// returns true to allow parent intercept this widget which is currently handled by this widget
+	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event) { CR_UNUSED(event); return true; }
+
 	virtual CRUIOnTouchEventListener * setOnTouchListener(CRUIOnTouchEventListener * listener);
 	virtual CRUIOnTouchEventListener * getOnTouchListener() { return _onTouchListener; }
     virtual CRUIOnKeyEventListener * setOnKeyListener(CRUIOnKeyEventListener * listener);

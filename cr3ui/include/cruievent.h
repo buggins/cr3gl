@@ -98,6 +98,8 @@ public:
 	int getDeltaY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getDeltaY() : 0; }
 	int getDistanceX(int index = 0) const { return index >= 0 && index < _data.length() ? _data[index]->getDistanceX() : 0; }
 	int getDistanceY(int index = 0) const { return index >= 0 && index < _data.length() ? _data[index]->getDistanceY() : 0; }
+	int getPinchDx() const;
+	int getPinchDy() const;
 	/// returns average start X for multitouch event
 	int getAvgStartX() const;
 	/// returns average start Y for multitouch event

@@ -51,6 +51,22 @@ CRUIMotionEvent * CRUIMotionEvent::createCancelEvent() const {
 	return res;
 }
 
+int CRUIMotionEvent::getPinchDx() const {
+	if (count() != 2)
+		return 0;
+	int dx1 = myAbs(getStartX(0) - getStartX(1));
+	int dx2 = myAbs(getX(0) - getX(1));
+	return dx2 - dx1;
+}
+
+int CRUIMotionEvent::getPinchDy() const {
+	if (count() != 2)
+		return 0;
+	int dy1 = myAbs(getStartY(0) - getStartY(1));
+	int dy2 = myAbs(getY(0) - getY(1));
+	return dy2 - dy1;
+}
+
 int CRUIMotionEvent::getAvgStartX() const {
 	int s = 0;
 	for (int i = 0; i < _data.length(); i++)
