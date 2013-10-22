@@ -528,6 +528,8 @@ bool CRUIReadWidget::onTapZone(int zone, bool additionalAction) {
     return false;
 }
 
+inline bool myAbs(int x) { return x >= 0 ? x : -x; }
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -560,9 +562,24 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     CRLog::trace("Starting scroll with speed %d", _scroll.speed());
                 }
             } else {
-                int zone = pointToTapZone(event->getX(), event->getY());
+            	int x = event->getX();
+            	int y = event->getY();
                 bool longTap = (event->getDownDuration() > 500);
-                onTapZone(zone, longTap);
+                bool twoFinigersTap = false;
+                if (event->count() == 2) {
+                	int dx1 = myAbs(event->getX(0) - event->getStartX(0));
+                	int dy1 = myAbs(event->getY(0) - event->getStartY(0));
+                	int dx2 = myAbs(event->getX(1) - event->getStartX(1));
+                	int dy2 = myAbs(event->getY(1) - event->getStartY(1));
+                	if (dx1 < DRAG_THRESHOLD && dy1 < DRAG_THRESHOLD && dx2 < DRAG_THRESHOLD && dy2 < DRAG_THRESHOLD) {
+                		twoFinigersTap = true;
+                		x = (x + event->getX(1)) / 2;
+                		y = (y + event->getY(1)) / 2;
+                	}
+                }
+                int zone = pointToTapZone(event->getX(), event->getY());
+                //bool twoFingersTap = (event->count() == 2) && event->get
+                onTapZone(zone, twoFinigersTap);
             }
             _dragStartOffset = 0; //NO_DRAG;
             _isDragging = false;
