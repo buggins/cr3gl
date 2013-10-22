@@ -100,6 +100,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         , public CRUIOnScrollPosCallback
 {
     CRUIDocView * _docview;
+    CRUIDocView * _pinchSettingPreview;
     bool _isDragging;
     lvPoint _dragStart;
     int _dragStartOffset;
@@ -163,6 +164,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     int _pinchOpStartDy;
     int _pinchOpCurrentDx;
     int _pinchOpCurrentDy;
+    int _pinchOpSettingValue;
 
     void startPinchOp(int op, int dx, int dy);
     void updatePinchOp(int dx, int dy);

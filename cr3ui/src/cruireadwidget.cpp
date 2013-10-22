@@ -31,6 +31,20 @@ lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
     return n1 | n2;
 }
 
+static bool isDocViewProp(const lString8 & key) {
+    return key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
+            || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
+            || key == PROP_BACKGROUND_COLOR
+            || key == PROP_BACKGROUND_IMAGE
+            || key == PROP_BACKGROUND_IMAGE_ENABLED
+            || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
+            || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST
+            || key == PROP_FONT_GAMMA_INDEX
+            || key == PROP_FONT_ANTIALIASING
+            || key == PROP_FONT_WEIGHT_EMBOLDEN
+            || key == PROP_FONT_HINTING;
+}
+
 void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 colorBottom) {
     buf->GradientRect(rc.left, rc.top, rc.right, rc.bottom, colorTop, colorTop, colorBottom, colorBottom);
 //	lvRect rc2 = rc;
@@ -42,18 +56,8 @@ void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 color
 //	}
 }
 
-CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
-    : CRUIWindowWidget(main)
-    , _isDragging(false)
-	, _dragStartOffset(0)
-	, _locked(false)
-	, _fileItem(NULL)
-	, _lastPosition(NULL)
-	, _startPositionIsUpdated(false)
-	, _pinchOp(PINCH_OP_NONE)
-{
-    setId("READ");
-    _docview = new CRUIDocView();
+static CRUIDocView * createDocView() {
+	CRUIDocView * _docview = new CRUIDocView();
     _docview->setViewMode(DVM_SCROLL, 1);
     LVArray<int> sizes;
     for (int i = deviceInfo.shortSide / 40; i < deviceInfo.shortSide / 10 && i < 200; i++)
@@ -62,6 +66,22 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 	_docview->setFontSize(deviceInfo.shortSide / 20);
 	lvRect margins(deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20, deviceInfo.shortSide / 20);
 	_docview->setPageMargins(margins);
+	return _docview;
+}
+
+CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
+    : CRUIWindowWidget(main)
+    , _pinchSettingPreview(NULL)
+	, _isDragging(false)
+	, _dragStartOffset(0)
+	, _locked(false)
+	, _fileItem(NULL)
+	, _lastPosition(NULL)
+	, _startPositionIsUpdated(false)
+	, _pinchOp(PINCH_OP_NONE)
+{
+    setId("READ");
+    _docview = createDocView();
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -97,6 +117,14 @@ void CRUIReadWidget::prepareScroll(int direction) {
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
     _popupControl.updateLayout(_pos);
+    if (_pinchOp && _pinchSettingPreview) {
+    	_pinchSettingPreview->SetPos(0, false);
+        buf->SetTextColor(_pinchSettingPreview->getTextColor());
+        buf->SetBackgroundColor(_pinchSettingPreview->getBackgroundColor());
+        _pinchSettingPreview->Draw(*buf, false);
+    	_drawRequested = false;
+    	return;
+    }
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1, false);
@@ -541,7 +569,41 @@ void CRUIReadWidget::startPinchOp(int op, int dx, int dy) {
 	_pinchOpStartDy = dy;
     _pinchOpCurrentDx = dx;
     _pinchOpCurrentDy = dy;
+    _pinchSettingPreview = createDocView();
+    CRPropRef changed = _main->getSettings();
+    CRPropRef docviewprops = LVCreatePropsContainer();
+    //bool backgroundChanged = false;
+    for (int i = 0; i < changed->getCount(); i++) {
+        lString8 key(changed->getName(i));
+        lString8 value(UnicodeToUtf8(changed->getValue(i)));
+        if (isDocViewProp(key)) {
+            docviewprops->setString(key.c_str(), value.c_str());
+            if (key == PROP_FONT_COLOR) {
+            	_pinchSettingPreview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
+            }
+        }
+    }
+    _pinchSettingPreview->propsApply(docviewprops);
+    lString16 title;
+    switch(_pinchOp) {
+    case PINCH_OP_HORIZONTAL:
+    	title = _16(STR_PINCH_CHANGING_PAGE_MARGINS);
+    	break;
+    case PINCH_OP_VERTICAL:
+    	title = _16(STR_PINCH_CHANGING_INTERLINE_SPACING);
+    	break;
+    case PINCH_OP_DIAGONAL:
+    	title = _16(STR_PINCH_CHANGING_FONT_SIZE);
+    	_pinchOpSettingValue = _docview->getFontSize();
+    	break;
+    }
+    lString16 sampleText = _16(STR_SETTINGS_FONT_SAMPLE_TEXT);
+    _pinchSettingPreview->createDefaultDocument(title, sampleText + "\n"
+    		+ sampleText + "\n" + sampleText + "\n" + sampleText
+    		+ "\n" + sampleText + "\n" + sampleText + "\n" + sampleText + "\n" + sampleText);
+    _pinchSettingPreview->Resize(_pos.width(), _pos.height());
     CRLog::trace("startPinchOp %d   %d %d", _pinchOp, dx, dy);
+    invalidate();
 }
 
 void CRUIReadWidget::updatePinchOp(int dx, int dy) {
@@ -549,6 +611,42 @@ void CRUIReadWidget::updatePinchOp(int dx, int dy) {
 		return;
     _pinchOpCurrentDx = dx;
     _pinchOpCurrentDy = dy;
+    int delta = 0;
+    int startSettingValue = 0;
+    int newSettingValue = 0;
+    switch(_pinchOp) {
+    case PINCH_OP_HORIZONTAL:
+    	delta = (dx) - (_pinchOpStartDx);
+    	break;
+    case PINCH_OP_VERTICAL:
+    	delta = (dy) - (_pinchOpStartDy);
+    	break;
+    case PINCH_OP_DIAGONAL:
+		{
+			delta = (dx + dy) - (_pinchOpStartDx + _pinchOpStartDy);
+			int maxdiff = crconfig.maxFontSize - crconfig.minFontSize;
+			startSettingValue = _docview->getFontSize();
+
+			if (delta > 0) {
+				newSettingValue = startSettingValue + maxdiff * delta / deviceInfo.shortSide;
+				CRLog::trace("Zoom in %d -> %d", startSettingValue, newSettingValue);
+			} else {
+				newSettingValue = startSettingValue + maxdiff * delta / deviceInfo.shortSide;
+				//newSettingValue = startSettingValue - startSettingValue * ((-delta) * 2 / deviceInfo.shortSide);
+				CRLog::trace("Zoom out %d -> %d", startSettingValue, newSettingValue);
+			}
+			if (newSettingValue < crconfig.minFontSize)
+				newSettingValue = crconfig.minFontSize;
+			if (newSettingValue > crconfig.maxFontSize)
+				newSettingValue = crconfig.maxFontSize;
+			if (_pinchSettingPreview->getFontSize() != newSettingValue) {
+				_pinchOpSettingValue = newSettingValue;
+				_pinchSettingPreview->setFontSize(newSettingValue);
+				invalidate();
+			}
+			break;
+		}
+    }
     CRLog::trace("updatePinchOp %d   %d %d", _pinchOp, dx, dy);
 }
 
@@ -556,7 +654,22 @@ void CRUIReadWidget::endPinchOp(int dx, int dy) {
 	if (!_pinchOp)
 		return;
     CRLog::trace("endPinchOp %d   %d %d", _pinchOp, dx, dy);
+	if (_pinchSettingPreview) {
+		delete _pinchSettingPreview;
+		_pinchSettingPreview = NULL;
+	}
+    switch(_pinchOp) {
+    case PINCH_OP_HORIZONTAL:
+    	break;
+    case PINCH_OP_VERTICAL:
+    	break;
+    case PINCH_OP_DIAGONAL:
+    	_main->initNewSettings()->setInt(PROP_FONT_SIZE, _pinchOpSettingValue);
+    	_main->applySettings();
+    	break;
+    }
 	_pinchOp = PINCH_OP_NONE;
+    invalidate();
 }
 
 /// returns true to allow parent intercept this widget which is currently handled by this widget
@@ -571,7 +684,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
         return false;
     int action = event->getAction();
-    if (action != ACTION_MOVE && event->count() > 0)
+    if (action != ACTION_MOVE && event->count() > 1)
     	CRLog::trace("CRUIReadWidget::onTouchEvent multitouch %d pointers action = %d", event->count(), action);
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
     int dx = event->getX() - event->getStartX();
@@ -910,18 +1023,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
-        if (key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
-                || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
-                || key == PROP_BACKGROUND_COLOR
-                || key == PROP_BACKGROUND_IMAGE
-                || key == PROP_BACKGROUND_IMAGE_ENABLED
-                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
-                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST
-                || key == PROP_FONT_GAMMA_INDEX
-                || key == PROP_FONT_ANTIALIASING
-                || key == PROP_FONT_WEIGHT_EMBOLDEN
-                || key == PROP_FONT_HINTING
-                ) {
+        if (isDocViewProp(key)) {
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {
                 _docview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
