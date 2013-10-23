@@ -430,6 +430,7 @@ public:
     		break;
     	}
     	if (newpos < pos) {
+        	//CRLog::trace("resetMethod(%d, %d)", (int)newpos, (int)pos);
     		_resetMethod.callVoid();
     		pos = 0;
     		eof = (size == 0);
@@ -438,6 +439,7 @@ public:
     		lvoffset_t toSkip = newpos - pos;
         	while (toSkip > 0) {
         		jlong skipped = _skipMethod.callLong(toSkip);
+            	//CRLog::trace("skipMethod(%d, %d)", (int)toSkip, (int)skipped);
         		if (skipped <= 0)
         			break;
         		pos += skipped;
@@ -446,6 +448,7 @@ public:
     	}
     	if (pNewPos)
     		*pNewPos = pos;
+    	//CRLog::trace("Seek(%d, %d, %d)", (int)offset, (int)origin, (int)pos);
 		eof = (pos >= size);
     	return LVERR_OK;
     }
@@ -471,6 +474,7 @@ public:
         \return lverror_t status: LVERR_OK if success
     */
     virtual lverror_t Read( void * buf, lvsize_t count, lvsize_t * nBytesRead ) {
+    	//CRLog::trace("Read(%d)", (int)count);
     	lUInt8 * pbuf = (lUInt8*)buf;
     	lvsize_t bytesRead = 0;
     	if (count <= 0) {
@@ -478,7 +482,7 @@ public:
     			*nBytesRead = 0;
     		return LVERR_OK;
     	}
-    	int bufSize = count > 32768 ? 32768 : count;
+    	int bufSize = count > 16384 ? 16384 : count;
     	jbyteArray array = _obj->NewByteArray(bufSize);
     	while (count > 0 && pos < size) {
     		int read = _readMethod.callInt(array);
@@ -486,10 +490,13 @@ public:
     			CRLog::warn("no bytes read");
     			break;
     		}
+    		//CRLog::trace("readMethod(%d) - %d bytes read", bufSize, read);
     		jboolean isCopy;
     		jbyte* data = _obj->GetByteArrayElements(array, &isCopy);
     		memcpy(pbuf, data, read);
     	    _obj->ReleaseByteArrayElements(array, data, 0);
+    	    //CRLog::trace("bytes: %02x %02x %02x %02x", (lUInt8)data[0], (lUInt8)data[1], (lUInt8)data[2], (lUInt8)data[3]);
+    	    //CRLog::trace("lastbytes: %02x %02x %02x %02x", (lUInt8)pbuf[read-4], (lUInt8)pbuf[read-3], (lUInt8)pbuf[read-2], (lUInt8)pbuf[read-1]);
     		bytesRead += read;
     		count -= read;
     		pbuf += read;
@@ -537,6 +544,17 @@ public:
     		size += skipped;
     	}
     	_resetMethod.callVoid();
+//    	CRLog::trace("stream size is %d", (int)size);
+//    	size = 0;
+//    	// calculating size
+//    	for (;;) {
+//    		jlong skipped = _skipMethod.callLong(65536);
+//    		if (skipped <= 0)
+//    			break;
+//    		size += skipped;
+//    	}
+//    	CRLog::trace("stream size 2 is %d", (int)size);
+//    	_resetMethod.callVoid();
 		eof = (size == 0);
     }
 private:
@@ -554,6 +572,8 @@ LVStreamRef DocViewNative::openAssetStream(lString16 path) {
 	if (!obj)
 		return LVStreamRef();
 	LVStreamRef res = LVStreamRef(new CRInputStream(obj));
+	if (!res.isNull())
+		res = LVCreateMemoryStream(res);
 	return res;
 }
 

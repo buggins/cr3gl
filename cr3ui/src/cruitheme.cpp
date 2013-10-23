@@ -712,8 +712,11 @@ LVImageSourceRef CRResourceResolver::getImageSource(const char * name) {
 	}
 	CRLog::debug("loading image from file %s", LCSTR(path));
 	LVStreamRef stream = LVOpenFileStream(path.c_str(), LVOM_READ);
-	if (!stream.isNull())
+	if (!stream.isNull()) {
 		res = LVCreateStreamImageSource(stream);
+		if (res.isNull())
+			CRLog::error("Error while decoding image from stream of size %d", (int)stream->GetSize());
+	}
 	if (!res.isNull() && res->GetWidth() > 0 && res->GetHeight() > 0) {
         bool isIconResource = path.pos("icons/") >= 0 || path.pos("folder_icons/") >= 0;
         if (isIconResource)

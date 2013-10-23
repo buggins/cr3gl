@@ -918,7 +918,7 @@ bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool 
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
         maxpos = 0;
-    int p = pos * maxpos / 10000;
+    int p = (int)(pos * (lInt64)maxpos / 10000);
     _docview->SetPos(p, false);
     _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
     invalidate();

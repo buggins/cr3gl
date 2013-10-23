@@ -416,6 +416,7 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     setClipRect(buf, rc);
     applyPadding(rc);
 
+    //CRUIImageRef handle = resourceResolver->getIcon("btn_radio_off");
     CRUIImageRef handle = resourceResolver->getIcon("00_slider_handle");
     CRUIImageRef line = resourceResolver->getIcon("home_frame.9");
 
