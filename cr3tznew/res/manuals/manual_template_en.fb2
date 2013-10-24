@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template for CoolReader3/Android help file -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<description>
+		<title-info>
+			<book-title>Cool Reader Manual</book-title>
+		</title-info>
+	</description>
+	<body>
+		<section>
+            <title>
+                <p>Welcome to Cool Reader</p>
+            </title>
+            <p>This is a program to read <b><i>electronic books</i></b> in a number of formats: EPUB, FB2, RTF, TXT, HTML, CHM, PDB, MOBI, TCR</p>
+            <p>Save books to read on your device internal memory or SD card and open them using Cool Reader.</p>
+            <p>This is a port of Android version. Not all features of Android versions are implemented yet.</p>
+			<subtitle>Navigation while reading</subtitle>
+			<p>You can move to next / previous page using several methods:</p>
+			<ul>
+				<li>Touch screen: flick up / down to scroll</li>
+				<li>Touch screen: tap right side of screen for next page, left side for previous page</li>
+			</ul>
+			<p>Accessing menu</p>
+            <p>In reading mode, tap center of screen or press menu button to open reader menu.</p>
+            <p>You can move to previous screen using Menu / Back action or by two finger flick left to right.</p>
+            <p></p>
+    		<section id="tapzones">
+    			<title>
+    				<p>Tap zones</p>
+    			</title>
+    			<p>In reading mode, screen is divided into a grid of 3 x 3 tap zones.</p>
+    			<table><col width="30%"/><col width="30%"/><col width="30%"/>
+    			<tr>
+    				<td><b>Tap zone 1</b></td>
+    				<td><b>Tap zone 2</b></td>
+    				<td><b>Tap zone 3</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>Tap zone 4</b></td>
+    				<td><b>Tap zone 5</b></td>
+    				<td><b>Tap zone 6</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>Tap zone 7</b></td>
+    				<td><b>Tap zone 8</b></td>
+    				<td><b>Tap zone 9</b></td>
+    			</tr>
+    			</table>
+			<subtitle>Actions assigned for single finger tap on tap zones:</subtitle>
+    			<table><col width="30%"/><col width="30%"/><col width="30%"/>
+    			<tr>
+    				<td><b>Previous page</b></td>
+    				<td><b>Previous page</b></td>
+    				<td><b>Previous page</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>Previous page</b></td>
+    				<td><b>Menu</b></td>
+    				<td><b>Next page</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>Next page</b></td>
+    				<td><b>Next page</b></td>
+    				<td><b>Next page</b></td>
+    			</tr>
+    			</table>
+			<subtitle>Actions assigned for two finger tap on tap zones:</subtitle>
+    			<table><col width="30%"/><col width="30%"/><col width="30%"/>
+    			<tr>
+    				<td><b>Close book</b></td>
+    				<td><b>Toggle night mode</b></td>
+    				<td><b>Table of contents</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>None</b></td>
+    				<td><b>Settings</b></td>
+    				<td><b>None</b></td>
+    			</tr>
+    			<tr>
+    				<td><b>None</b></td>
+    				<td><b>None</b></td>
+    				<td><b>None</b></td>
+    			</tr>
+    			</table>
+    		</section>
+    		<section id="menu">
+    			<title>
+    				<p>Reader Menu</p>
+    			</title>
+    			<p>To access menu in reading mode:</p>
+    			<ul>
+    				<li>Keys: short press menu key</li>
+    				<li>Touch screen: tap center of screen</li>
+    			</ul>
+    			<p>Menu items:</p>
+    			<ul>
+    				<li>Back</li>
+    				<li>Settings</li>
+    				<li>Toggle night mode</li>
+    				<li>Table of contents</li>
+    				<li>Show manual</li>
+    				<li>Exit application</li>
+    			</ul>
+    		</section>
+    		<section id="settings">
+    			<title>
+    				<p>Reading Mode Settings</p>
+    			</title>
+                <p>To access <a href="#settings">Settings</a>, use one of following methods:</p>
+    			<ul>
+    				<li>Keys: long press menu key</li>
+    				<li>Touch screen: tap center of screen using two fingers</li>
+    				<li>Reader menu: select Settings item from menu</li>
+    			</ul>
+                <p>Reader Settings have following structure</p>
+                <ul>
+                    <li>Fonts and Colors</li>
+		        <ul>
+		            <li>Fonts face</li>
+		            <li>Font size</li>
+		            <li>Font rendering options</li>
+				<ul>
+				    <li>Embolden font glyphs</li>
+				    <li>Antialiasing</li>
+				    <li>Hinting options</li>
+				    <li>Font rendering Gamma</li>
+				</ul>
+		            <li>Kerning</li>
+		            <li>Font color</li>
+		            <li>Background color</li>
+		            <li>Background texture</li>
+		        </ul>
+                    <li>Interface language</li>
+                    <li>Hyphenation dictionary</li>
+                    <li>Interface theme</li>
+                </ul>
+		<p>You can return from settings to previous screen using Back button (hardware Back button or left arrow button located at top left corner of screen).</p>
+		<p>As well, like in any other screen, you can return to previous screen by left to right two finger flick using touch screen. Right to left two finger flick brings you to next screen in navigation history (if any).</p>
+		<p>Long press on Back button closes all settings screens (useful when you are deep in settings hierarchy.</p>
+	</section>
+    		<section id="mainscreen">
+    			<title>
+    				<p>Main Screen</p>
+    			</title>
+    			<p>On Cool Reader start, Main Screen is shown. It contains following parts:</p>
+    			<ul>
+    				<li>Now Reading: currently opened or last opened book description at upper part of screen. Tap to open current (last) book.</li>
+    				<li>Menu Button: button with Menu icon at top right corner - short press opens menu, long press opens settings.</li>
+    				<li>Recently read books: list of recently read books is located below Now Reading section. Most recent book is at left. You can scroll this list using flick guesture. Tap on book cover to open book.</li>
+    				<li>File System: contains list of icons to browse file system folders containing books. Usually it contains links to internal storage and SD card. If some book is opened, its directory is appended to this list, too. Tap on item to browse files and folders in this directory.</li>
+    				<li>File System: contains list of icons to browse file system folders containing books. Usually it contains links to internal storage and SD card. If some book is opened, its directory is appended to this list, too.</li>
+    				<li>Library: access book database by authors / series / title / filename. Author, series name and book title are being extracted from books when opening directory in Cool Reader file browser. Only certain formats have metadata (EPUB, MOBI, FB2).</li>
+    			</ul>
+    		</section>
+    		<section id="filebrowser">
+    			<title>
+    				<p>File Browser</p>
+    			</title>
+    			<p>By selecting folder from Main Screen / Browse File System section, you can view its contents using internal File Browser</p>
+    			<p>You can see folders and books in folders.</p>
+    			<p>By tapping on folder item, you will open this folder.</p>
+    			<p>By tapping on book item, you will open book for reading.</p>
+    			<p>Short tap on Back button at top left corner (or hardware Back button) brings you on previous screen (previous folder or Main Screen).</p>
+    			<p>Long tap on Back button opens navigation menu with list of folders / screens to go.</p>
+    			<p>Short tap on Menu button at top right corner (or hardware Menu button) opens menu.</p>
+    			<p>Long tap on Menu button opens browser Settings.</p>
+    		</section>
+        <section id="thirdparty">
+            <title>
+                <p>Third party components used</p>
+            </title>
+            <p>Cool Reader is free open source software, distributer under GNU General Public License v2.</p>
+            <p>Following third party components are used:</p>
+	<ul>
+		<li>zlib</li>
+		<li>libpng</li>
+		<li>libjpeg</li>
+		<li>freetype</li>
+		<li>chmlib</li>
+		<li>antiword</li>
+		<li>sqlite</li>
+		<li>Icon set Windows 8 Metro Style by <a href="http://www.visualpharm.com/">http://www.visualpharm.com/</a> is used</li>
+	</ul>
+        </section>
+        <section id="links">
+            <title>
+                <p>Useful links</p>
+            </title>
+            <p>(will be opened in external browser)</p>
+            <p><a href="http://sourceforge.net/projects/crengine/">Project page on SourceForge</a></p>
+            <p><a href="http://sourceforge.net/apps/mediawiki/crengine/index.php?title=Main_Page">Project's Wiki</a> on SourceForge</p>
+            <p><a href="https://sourceforge.net/project/project_donations.php?group_id=191284">Project's Donations page</a> on SourceForge</p>
+            <p>Send your bug reports to support@coolreader.org </p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+            <p></p>
+        </section>
+	</body>
+</FictionBook>

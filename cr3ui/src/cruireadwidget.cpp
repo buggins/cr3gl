@@ -215,6 +215,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 {
     setId("READ");
     _docview = createDocView();
+    _docview->setCallback(this);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -1086,6 +1087,7 @@ void CRUIReadWidget::showReaderMenu() {
     //actions.add(ACTION_GOTO_PERCENT);
     if (hasTOC())
         actions.add(ACTION_TOC);
+    actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);

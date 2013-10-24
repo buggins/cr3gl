@@ -363,11 +363,15 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
     _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "MENU");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "1", "BACK");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "2", "TOGGLE_NIGHT_MODE");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "3", "TOC");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "SETTINGS");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "1", "PAGE_UP");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "2", "PAGE_UP");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "3", "PAGE_UP");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "4", "PAGE_UP");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "MENU");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "6", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "PAGE_DOWN");
@@ -738,7 +742,7 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
 }
 
 CRFileItem * CRUIMainWidget::createManualBook() {
-    lString8 fn = crconfig.manualsDir + "help_template_en.fb2";
+    lString8 fn = crconfig.manualsDir + "manual_template_en.fb2";
     CRFileItem * f = new CRFileItem(fn, false);
     LVPtrVector<BookDBBook> books;
     BookDBBook * book = NULL;
