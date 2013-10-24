@@ -134,16 +134,6 @@ public:
             return false;
         _window->goToPercent(pos);
         _positionText->setText(_window->getCurrentPositionDesc());
-
-//        CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
-//        updateScrollPosMessage(title, pos);
-//        int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
-//        if (maxpos < 0)
-//            maxpos = 0;
-//        int p = (int)(pos * (lInt64)maxpos / 10000);
-//        _docview->SetPos(p, false);
-//        _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
-//        invalidate();
         return true;
     }
 
@@ -1329,10 +1319,12 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
     setSize(_dx, _dy);
     if (_pos >= minpos && _pos + dy <= maxpos && !force)
         return; // already prepared
-    int y0 = direction > 0 ? (_pos - dy / 4) : (_pos - dy * 5 / 4);
-    int y1 = direction > 0 ? (_pos + dy + dy * 5 / 4) : (_pos + dy + dy / 4);
+    int y0 = direction == 0 ? _pos : (direction > 0 ? (_pos - dy / 4) : (_pos - dy * 5 / 4));
+    int y1 = direction == 0 ? _pos + dy : (direction > 0 ? (_pos + dy + dy * 5 / 4) : (_pos + dy + dy / 4));
     if (y0 < 0)
     	y0 = 0;
+    if (y1 > _docview->GetFullHeight())
+        y1 = _docview->GetFullHeight();
     int pos0 = y0 / tdy * tdy;
     int pos1 = (y1 + tdy - 1) / tdy * tdy;
     int pageCount = (pos1 - pos0) / tdy + 1;
