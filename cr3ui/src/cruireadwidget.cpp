@@ -92,11 +92,11 @@ public:
         int cols = baseWidth / _itemSize.x;
         if (cols < 1)
             cols = 1;
-        int rows = count / cols;
-        while (cols > 2 && count / (cols - 1) == rows)
+        int rows = (count + (cols - 1)) / cols;
+        while (cols > 2 && (count + (cols - 1 - 1)) / (cols - 1) == rows)
             cols--;
         _btnCols = cols;
-        _btnRows = rows + 1;
+        _btnRows = rows; // + 1;
         _scrollLayout->measure(baseWidth, baseHeight);
         int width = baseWidth;
         int height = _btnRows * _itemSize.y + PT_TO_PX(3) + _scrollLayout->getMeasuredHeight();
@@ -1116,7 +1116,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         _main->showSettings(lString8("@settings/reader"));
         return true;
     default:
-        _main->onAction(action);
+        return _main->onAction(action);
     }
     return false;
 }
@@ -1216,9 +1216,9 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
 //    if (backgroundChanged) {
 //        _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));
 //    }
-    if (needClearCache) {
-        _scrollCache.clear();
-    }
+    //if (needClearCache) {
+    _scrollCache.clear();
+    //}
     if (docviewprops->getCount())
         _docview->propsApply(docviewprops);
 }

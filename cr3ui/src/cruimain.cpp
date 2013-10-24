@@ -804,6 +804,7 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     case CMD_DAY_MODE:
     case CMD_TOGGLE_NIGHT_MODE:
         {
+        	CRLog::trace("toggling Night Mode");
             CRPropRef props = initNewSettings();
             if (props->getBoolDef(PROP_NIGHT_MODE, false)) {
                 // to day mode
@@ -817,6 +818,7 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
                 props->setBool(PROP_NIGHT_MODE, true);
             }
             applySettings();
+            CRLog::trace("Night mode is now %s", props->getBoolDef(PROP_NIGHT_MODE, false) ? "on" : "off");
             return true;
         }
     case CMD_HELP:

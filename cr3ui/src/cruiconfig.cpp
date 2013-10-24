@@ -60,7 +60,8 @@ void CRUIConfig::setupResources(lString8 baseDir) {
     hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_NONE, PROP_HYPHENATION_DICT_VALUE_NONE, STR_HYPHENATION_DICTIONARY_VALUE_NONE, lString8()));
     hyphenationDictionaries.add(new CRUIHyphenationDictionary(PROP_HYPHENATION_DICT_VALUE_ALGORITHM, PROP_HYPHENATION_DICT_VALUE_ALGORITHM, STR_HYPHENATION_DICTIONARY_VALUE_ALGORITHM, lString8()));
     hyphenationDictionaries.add(new CRUIHyphenationDictionary("en", "en", STR_HYPHENATION_DICTIONARY_VALUE_EN, hyphDir + "en.pattern"));
-    hyphenationDictionaries.add(new CRUIHyphenationDictionary("ru", "ru", STR_HYPHENATION_DICTIONARY_VALUE_RU, hyphDir + "ru.pattern"));
+    //hyphenationDictionaries.add(new CRUIHyphenationDictionary("ru", "ru", STR_HYPHENATION_DICTIONARY_VALUE_RU, hyphDir + "ru.pattern"));
+    hyphenationDictionaries.add(new CRUIHyphenationDictionary("ru", "ru", STR_HYPHENATION_DICTIONARY_VALUE_RU, hyphDir + "russian_enus_hyphen.pdb"));
     CRLog::info("resourceDir=%s", resourceDir.c_str());
     CRLog::info("i18nDir=%s", i18nDir.c_str());
     CRLog::info("hyphDir=%s", hyphDir.c_str());

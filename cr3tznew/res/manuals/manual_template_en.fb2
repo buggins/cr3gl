@@ -137,7 +137,14 @@
 		<p>You can return from settings to previous screen using Back button (hardware Back button or left arrow button located at top left corner of screen).</p>
 		<p>As well, like in any other screen, you can return to previous screen by left to right two finger flick using touch screen. Right to left two finger flick brings you to next screen in navigation history (if any).</p>
 		<p>Long press on Back button closes all settings screens (useful when you are deep in settings hierarchy.</p>
-	</section>
+		<subtitle>Pinch gestures</subtitle>
+		<p>You can adjust some settings using pinch gestures in reading mode:</p>
+    			<ul>
+    				<li>Pinch vertically: adjust interline space.</li>
+    				<li>Pinch horizontally: adjust page margins.</li>
+    				<li>Pinch diagonally: adjust font size.</li>
+			</ul>
+ 	</section>
     		<section id="mainscreen">
     			<title>
     				<p>Main Screen</p>
