@@ -160,8 +160,11 @@ public:
 
 
 static bool isDocViewProp(const lString8 & key) {
-    return key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
-            || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
+    return key == PROP_FONT_FACE
+            || key == PROP_FONT_COLOR
+            || key == PROP_FONT_WEIGHT_EMBOLDEN
+            || key == PROP_FONT_SIZE
+            || key == PROP_FONT_FACE
             || key == PROP_BACKGROUND_COLOR
             || key == PROP_INTERLINE_SPACE
             || key == PROP_BACKGROUND_IMAGE
@@ -1075,8 +1078,10 @@ void CRUIReadWidget::showReaderMenu() {
     CRUIActionList actions;
     actions.add(ACTION_BACK);
     actions.add(ACTION_SETTINGS);
-    actions.add(ACTION_NIGHT_MODE);
-    actions.add(ACTION_DAY_MODE);
+    if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
+        actions.add(ACTION_DAY_MODE);
+    else
+        actions.add(ACTION_NIGHT_MODE);
     //actions.add(ACTION_GOTO_PERCENT);
     if (hasTOC())
         actions.add(ACTION_TOC);
@@ -1158,25 +1163,29 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
                 || key == PROP_BACKGROUND_IMAGE_ENABLED
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
+            propsGetCurrent()->setString(key.c_str(), props->getValue(i));
             backgroundChanged = true;
             needClearCache = true;
         }
     }
+    CRPropRef res = LVDocView::propsApply(forDocview);
     if (backgroundChanged) {
-        setBackground(resourceResolver->getBackgroundImage(newSettings));
+        //setBackground(resourceResolver->getBackgroundImage(newSettings));
+        setBackground(resourceResolver->getBackgroundImage(propsGetCurrent()));
     }
-    return LVDocView::propsApply(forDocview);
+    return res;
 }
 
 // apply changed settings
 void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) {
-    CR_UNUSED(oldSettings);
+    CR_UNUSED2(oldSettings, newSettings);
     CRPropRef docviewprops = LVCreatePropsContainer();
     //bool backgroundChanged = false;
     bool needClearCache = false;
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
+        //CRLog::trace("%s = %s", key.c_str(), value.c_str());
         if (isDocViewProp(key)) {
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {

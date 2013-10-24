@@ -766,6 +766,10 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
         CRUIActionList actions;
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_HELP);
+        if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
+            actions.add(ACTION_DAY_MODE);
+        else
+            actions.add(ACTION_NIGHT_MODE);
         actions.add(ACTION_EXIT);
         //actions.add(ACTION_BACK);
         lvRect margins;

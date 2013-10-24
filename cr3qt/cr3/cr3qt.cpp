@@ -13,6 +13,7 @@
 #include <crcoverpages.h>
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
 
 #ifdef _LINUX
@@ -202,7 +203,15 @@ void InitCREngine(lString16 exePath) {
     crconfig.fallbackFontFace = "Arial Unicode MS";
 #endif
 
-    crconfig.setupUserDir(UnicodeToUtf8(exePath));
+    QString home = QDir::homePath();
+    QByteArray homeutf8 = home.toUtf8();
+    lString8 home8(homeutf8.constData());
+    LVAppendPathDelimiter(home8);
+    lString8 cr3dir = home8 + ".cr3";
+    LVCreateDirectory(Utf8ToUnicode(cr3dir));
+    LVAppendPathDelimiter(cr3dir);
+    //crconfig.setupUserDir(UnicodeToUtf8(exePath));
+    crconfig.setupUserDir(cr3dir);
 
     crconfig.setupResources(UnicodeToUtf8(exePath + L"res"));
     crconfig.coverDirMaxFiles = 2000;

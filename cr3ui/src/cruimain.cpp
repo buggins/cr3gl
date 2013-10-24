@@ -353,6 +353,7 @@ CRUIMainWidget::CRUIMainWidget()
     setId("MAIN");
     _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
+    CRLog::info("Loading settings from %s", crconfig.iniFile.c_str());
     LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_READ);
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
@@ -373,7 +374,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
     _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
     _currentSettings->setColorDef(PROP_FONT_COLOR_DAY, 0x000000);
-    _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0xFFFFFF);
+    _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0xE6D577);
     _currentSettings->setColorDef(PROP_BACKGROUND_COLOR, 0xFFFFFF);
     _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
     _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_NIGHT, 0x000000);
@@ -382,14 +383,14 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_DAY, COLOR_TRANSFORM_BRIGHTNESS_NONE);
-    _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_NIGHT, COLOR_TRANSFORM_BRIGHTNESS_NONE);
+    _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_NIGHT, 0x4E4E48);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_DAY, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_NIGHT, COLOR_TRANSFORM_CONTRAST_NONE);
 
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "@paper1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@paper1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@paper1");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "@sand1");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@sand1");
+    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@sand1_dark");
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_HINTING, "0");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
@@ -397,8 +398,9 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX, "15");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_DAY, "15");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_NIGHT, "15");
-    _currentSettings->setIntDef(PROP_INTERLINE_SPACE, 100);
+    _currentSettings->setIntDef(PROP_INTERLINE_SPACE, 120);
     _currentSettings->setIntDef(PROP_PAGE_MARGINS, 500);
+    _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
 
 
     if (_currentSettings->getCount() != oldPropCount) {
@@ -753,6 +755,26 @@ CRFileItem * CRUIMainWidget::createManualBook() {
     return f;
 }
 
+void copyDayNightSetting(CRPropRef & props, const char * from, const char * to, const char * prop) {
+    lString16 value;
+    lString8 key = lString8(prop);
+    lString8 fromKey = key + from;
+    lString8 toKey = key + to;
+    if (props->getString(fromKey.c_str(), value))
+        props->setString(toKey.c_str(), value);
+}
+
+void copyDayNightSettings(CRPropRef & props, const char * from, const char * to) {
+    copyDayNightSetting(props, from, to, PROP_FONT_COLOR);
+    copyDayNightSetting(props, from, to, PROP_APP_THEME);
+    copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_ENABLED);
+    copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS);
+    copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST);
+    copyDayNightSetting(props, from, to, PROP_BACKGROUND_COLOR);
+    copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE);
+    copyDayNightSetting(props, from, to, PROP_FONT_GAMMA_INDEX);
+}
+
 /// handle menu or other action
 bool CRUIMainWidget::onAction(const CRUIAction * action) {
     if (!action)
@@ -771,6 +793,25 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     case CMD_SHOW_FOLDER:
         showFolder(action->sparam, false);
         return true;
+    case CMD_NIGHT_MODE:
+    case CMD_DAY_MODE:
+    case CMD_TOGGLE_NIGHT_MODE:
+        {
+            CRPropRef props = initNewSettings();
+            if (props->getBoolDef(PROP_NIGHT_MODE, false)) {
+                // to day mode
+                copyDayNightSettings(props, "", ".night");
+                copyDayNightSettings(props, ".day", "");
+                props->setBool(PROP_NIGHT_MODE, false);
+            } else {
+                // to night mode
+                copyDayNightSettings(props, "", ".day");
+                copyDayNightSettings(props, ".night", "");
+                props->setBool(PROP_NIGHT_MODE, true);
+            }
+            applySettings();
+            return true;
+        }
     case CMD_HELP:
         {
             CRFileItem * book = createManualBook();

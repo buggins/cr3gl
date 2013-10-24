@@ -393,6 +393,10 @@ bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
 bool CRUIFolderWidget::onLongClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK") {
         CRUIActionList actions;
+        if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
+            actions.add(ACTION_DAY_MODE);
+        else
+            actions.add(ACTION_NIGHT_MODE);
         lString8 path = _dir->getPathName();
         lString8 lastPath = path;
         for (;;) {

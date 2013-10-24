@@ -378,14 +378,23 @@ void CRUIConfig::initEngine(bool setLogger) {
     CRSetupDirectoryCacheManager();
 
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2_DARK), lString8("tx_paper_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook1"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK1), lString8("tx_old_book.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK1_DARK), lString8("tx_old_book_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook2"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK2), lString8("tx_old_paper.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook2_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK2_DARK), lString8("tx_old_paper_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric1"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC1), lString8("tx_fabric.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC1_DARK), lString8("tx_fabric_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric2"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC2), lString8("tx_fabric_indigo_fibre.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@fabric2_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_FABRIC2_DARK), lString8("tx_fabric_indigo_fibre_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand1"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND1), lString8("tx_sand.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND1_DARK), lString8("tx_sand_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand2"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND2), lString8("tx_gray_sand.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@sand2_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_SAND2_DARK), lString8("tx_gray_sand_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@wall1"), lString8(STR_RESOURCE_BACKGROUND_NAME_WALL1), lString8("tx_green_wall.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@wall1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_WALL1_DARK), lString8("tx_green_wall_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
+    resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1_DARK), lString8("tx_stones_dark.jpg")));
 
     setTheme(lString8("light"));
     setupResourcesForScreenSize();
