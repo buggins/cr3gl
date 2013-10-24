@@ -905,7 +905,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 int zone = pointToTapZone(event->getX(), event->getY());
                 event->cancelAllPointers();
                 //bool twoFingersTap = (event->count() == 2) && event->get
-                onTapZone(zone, twoFinigersTap);
+                //onTapZone(zone, twoFinigersTap);
+                onTapZone(zone, longTap || twoFinigersTap);
             }
             _dragStartOffset = 0; //NO_DRAG;
             _isDragging = false;
@@ -1112,6 +1113,8 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));
         return true;
+    default:
+        _main->onAction(action);
     }
     return false;
 }

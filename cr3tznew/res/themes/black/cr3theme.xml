@@ -121,6 +121,7 @@
     />
     <style
         id = "SETTINGS_ITEM_LIST"
+        background="#000000"
         listDelimiterVertical="0x60A08060,1pt"
     />
     <style

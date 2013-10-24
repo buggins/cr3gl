@@ -124,6 +124,7 @@
     />
     <style
         id = "SETTINGS_ITEM_LIST"
+        background="tx_wood_dark_v3.jpg|tiled"
         listDelimiterVertical="0x60A08060,1pt"
     />
     <style
