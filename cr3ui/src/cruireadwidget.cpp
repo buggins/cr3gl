@@ -57,15 +57,21 @@ public:
         }
         _scrollLayout = new CRUIVerticalLayout();
         _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
         _positionText = new CRUITextWidget();
         _positionText->setText(_window->getCurrentPositionDesc());
-        _positionText->setPadding(lvRect(PT_TO_PX(3), MIN_ITEM_PX / 8, PT_TO_PX(3), 0));
+        _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
         _positionText->setFontSize(FONT_SIZE_MEDIUM);
         _scrollLayout->addChild(_positionText);
         _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
         _scrollSlider->setScrollPosCallback(this);
         _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
         _scrollLayout->addChild(_scrollSlider);
+        _scrollLayout->setBackground("home_frame.9");
         addChild(_scrollLayout);
     }
     /// measure dimensions
@@ -1069,6 +1075,8 @@ void CRUIReadWidget::showReaderMenu() {
     CRUIActionList actions;
     actions.add(ACTION_BACK);
     actions.add(ACTION_SETTINGS);
+    actions.add(ACTION_NIGHT_MODE);
+    actions.add(ACTION_DAY_MODE);
     //actions.add(ACTION_GOTO_PERCENT);
     if (hasTOC())
         actions.add(ACTION_TOC);
