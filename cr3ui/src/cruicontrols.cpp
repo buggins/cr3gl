@@ -299,6 +299,7 @@ void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {
     bool hasImage = imageRes && imageRes[0];
     if (hasImage) {
         _icon = new CRUIImageWidget(imageRes);
+        _icon->setId("BUTTON_ICON");
 		if (text.empty()) {
 			_icon->setAlign(ALIGN_CENTER);
 			//_icon->setLayoutParams(FILL_PARENT, FILL_PARENT);
@@ -310,6 +311,7 @@ void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {
 	}
 	if (!text.empty()) {
 		_label = new CRUITextWidget(text);
+        _label->setId("BUTTON_CAPTION");
         if (!hasImage) {
 			_label->setAlign(ALIGN_CENTER);
 			//_label->setLayoutParams(FILL_PARENT, FILL_PARENT);

@@ -35,32 +35,33 @@ class CRUIPopupFrame : public CRUILinearLayout {
 public:
     CRUIPopupFrame(PopupControl * control, CRUIWidget * body, int drawerLocation) : CRUILinearLayout(drawerLocation == ALIGN_TOP || drawerLocation == ALIGN_BOTTOM), _control(control), _handle(NULL) {
         _body = body;
+        int handleSize = MIN_ITEM_PX / 5;
         if (drawerLocation) {
             _handle = new CRUIWidget();
             if (drawerLocation == ALIGN_TOP) {
-                _handle->setMinHeight(MIN_ITEM_PX / 2);
-                _handle->setMaxHeight(MIN_ITEM_PX / 2);
+                _handle->setMinHeight(handleSize);
+                _handle->setMaxHeight(handleSize);
                 _handle->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
                 addChild(_handle);
                 addChild(_body);
                 setLayoutParams(FILL_PARENT, WRAP_CONTENT);
             } else if (drawerLocation == ALIGN_BOTTOM) {
-                _handle->setMinHeight(MIN_ITEM_PX / 2);
-                _handle->setMaxHeight(MIN_ITEM_PX / 2);
+                _handle->setMinHeight(handleSize);
+                _handle->setMaxHeight(handleSize);
                 _handle->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
                 addChild(_body);
                 addChild(_handle);
                 setLayoutParams(FILL_PARENT, WRAP_CONTENT);
             } else if (drawerLocation == ALIGN_LEFT) {
-                _handle->setMinWidth(MIN_ITEM_PX / 2);
-                _handle->setMaxWidth(MIN_ITEM_PX / 2);
+                _handle->setMinWidth(handleSize);
+                _handle->setMaxWidth(handleSize);
                 _handle->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
                 addChild(_handle);
                 addChild(_body);
                 setLayoutParams(WRAP_CONTENT, FILL_PARENT);
             } else if (drawerLocation == ALIGN_RIGHT) {
-                _handle->setMinWidth(MIN_ITEM_PX / 2);
-                _handle->setMaxWidth(MIN_ITEM_PX / 2);
+                _handle->setMinWidth(handleSize);
+                _handle->setMaxWidth(handleSize);
                 _handle->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
                 addChild(_body);
                 addChild(_handle);

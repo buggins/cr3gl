@@ -31,6 +31,138 @@ lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
     return n1 | n2;
 }
 
+class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPosCallback {
+    CRUIReadWidget * _window;
+    CRUIActionList _actionList;
+    LVPtrVector<CRUIButton, false> _buttons;
+    CRUILinearLayout * _scrollLayout;
+    CRUITextWidget * _positionText;
+    CRUISliderWidget * _scrollSlider;
+    lvPoint _itemSize;
+    int _btnCols;
+    int _btnRows;
+public:
+    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList) : _window(window), _actionList(actionList) {
+        for (int i = 0; i < _actionList.length(); i++) {
+            const CRUIAction * action = _actionList[i];
+            CRUIButton * button = new CRUIButton(action->getName(), action->icon_res.c_str(), true);
+            button->setId(lString8::itoa(action->id));
+            button->setOnClickListener(this);
+            button->setStyle("BUTTON_NOBACKGROUND");
+            button->setPadding(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2)));
+            button->setFontSize(FONT_SIZE_XSMALL);
+            ((CRUITextWidget*)button->childById("BUTTON_CAPTION")->setFontSize(FONT_SIZE_XSMALL))->setMaxLines(2);
+            _buttons.add(button);
+            addChild(button);
+        }
+        _scrollLayout = new CRUIVerticalLayout();
+        _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _positionText = new CRUITextWidget();
+        _positionText->setText(_window->getCurrentPositionDesc());
+        _positionText->setPadding(lvRect(PT_TO_PX(3), MIN_ITEM_PX / 8, PT_TO_PX(3), 0));
+        _positionText->setFontSize(FONT_SIZE_MEDIUM);
+        _scrollLayout->addChild(_positionText);
+        _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
+        _scrollSlider->setScrollPosCallback(this);
+        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _scrollLayout->addChild(_scrollSlider);
+        addChild(_scrollLayout);
+    }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight) {
+        if (getVisibility() == GONE) {
+            _measuredWidth = 0;
+            _measuredHeight = 0;
+            return;
+        }
+        CRUIImageRef icon = resourceResolver->getIcon(_actionList[0]->icon_res.c_str());
+        LVFontRef font = currentTheme->getFontForSize(FONT_SIZE_XSMALL);
+        int iconh = icon->originalHeight();
+        int iconw = icon->originalWidth();
+        int texth = font->getHeight() * 2;
+        _itemSize.y = iconh + texth + PT_TO_PX(4);
+        _itemSize.x = iconw * 120 / 100 + PT_TO_PX(4);
+        int count = _actionList.length();
+        int cols = baseWidth / _itemSize.x;
+        if (cols < 1)
+            cols = 1;
+        int rows = count / cols;
+        while (cols > 2 && count / (cols - 1) == rows)
+            cols--;
+        _btnCols = cols;
+        _btnRows = rows + 1;
+        _scrollLayout->measure(baseWidth, baseHeight);
+        int width = baseWidth;
+        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + _scrollLayout->getMeasuredHeight();
+        defMeasure(baseWidth, baseHeight, width, height);
+
+    }
+
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom) {
+        CRUIWidget::layout(left, top, right, bottom);
+        int count = _actionList.length();
+        lvRect rc = _pos;
+        applyMargin(rc);
+        applyPadding(rc);
+        _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
+        rc.bottom -= _scrollLayout->getMeasuredHeight();
+        int rowh = rc.height() / _btnRows;
+        lvRect rowrc = rc;
+        for (int y = 0; y < _btnRows; y++) {
+            int i0 = _btnCols * y;
+            int rowlen = count - i0;
+            if (rowlen > _btnCols)
+                rowlen = _btnCols;
+            rowrc.bottom = rowrc.top + rowh;
+            lvRect btnrc = rowrc;
+            int itemw = rowrc.width() / rowlen;
+            for (int x = 0; x < rowlen; x++) {
+                btnrc.right = btnrc.left + itemw;
+                CRUIButton * button = _buttons[i0 + x];
+                button->measure(btnrc.width(), btnrc.height());
+                button->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                btnrc.left += itemw;
+            }
+            rowrc.top += rowh;
+        }
+    }
+
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+        CR_UNUSED(widget);
+        if (!manual)
+            return false;
+        _window->goToPercent(pos);
+        _positionText->setText(_window->getCurrentPositionDesc());
+
+//        CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
+//        updateScrollPosMessage(title, pos);
+//        int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
+//        if (maxpos < 0)
+//            maxpos = 0;
+//        int p = (int)(pos * (lInt64)maxpos / 10000);
+//        _docview->SetPos(p, false);
+//        _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
+//        invalidate();
+        return true;
+    }
+
+    virtual bool onClick(CRUIWidget * widget) {
+        int id = widget->getId().atoi();
+        const CRUIAction * action = NULL;
+        for (int i = 0; i < _actionList.length(); i++) {
+            if (id == _actionList[i]->id) {
+                action = _actionList[i];
+            }
+        }
+        if (action) {
+            _window->onMenuItemAction(action);
+        }
+        return true;
+    }
+};
+
+
 static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE || key == PROP_FONT_COLOR || key == PROP_FONT_WEIGHT_EMBOLDEN
             || key == PROP_FONT_SIZE || key == PROP_FONT_FACE
@@ -901,28 +1033,34 @@ static lString16 formatPercent(int percent) {
     return Utf8ToUnicode(s);
 }
 
-static void updateScrollPosMessage(CRUIWidget * title, int pos) {
-    if (title) {
-        lString16 str = _16(STR_ACTION_GOTO_PERCENT);
-        str += ": ";
-        str += formatPercent(pos);
-        title->setText(str);
+lString16 CRUIReadWidget::getCurrentPositionDesc() {
+    int pos = getCurrentPositionPercent();
+    lString16 str;
+    str += formatPercent(pos);
+    str += "  ";
+    ldomXPointer ptr = _docview->getBookmark();
+    if (!ptr.isNull()) {
+        lString16 titleText;
+        lString16 posText;
+        if ( _docview->getBookmarkPosText( ptr, titleText, posText ) ) {
+            str += titleText;
+        }
     }
+    return str;
 }
 
-bool CRUIReadWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
-    if (!manual)
-        return false;
-    CRUIWidget * title = widget->getParent()->childById("POPUP_TITLE");
-    updateScrollPosMessage(title, pos);
+int CRUIReadWidget::getCurrentPositionPercent() {
+    return _docview->getPosPercent();
+}
+
+void CRUIReadWidget::goToPercent(int percent) {
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
         maxpos = 0;
-    int p = (int)(pos * (lInt64)maxpos / 10000);
+    int p = (int)(percent * (lInt64)maxpos / 10000);
     _docview->SetPos(p, false);
-    _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 1, false);
+    _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 0, false);
     invalidate();
-    return true;
 }
 
 bool CRUIReadWidget::hasTOC() {
@@ -937,29 +1075,17 @@ void CRUIReadWidget::showTOC() {
     _main->showTOC(widget);
 }
 
-void CRUIReadWidget::showGoToPercentPopup() {
-    CRUIVerticalLayout * popup = new CRUIVerticalLayout();
-    popup->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    popup->setPadding(MIN_ITEM_PX / 3);
-
-    int percent = _docview->getPosPercent();
-
-    CRUITextWidget * title = new CRUITextWidget(_16(STR_ACTION_GOTO_PERCENT));
-    title->setId("POPUP_TITLE");
-    title->setFontSize(FONT_SIZE_LARGE);
-    updateScrollPosMessage(title, percent);
-    popup->addChild(title);
-
-    CRUISliderWidget * slider = new CRUISliderWidget(0, 10000, percent);
-    slider->setId("POSITION_PERCENT");
-    slider->setScrollPosCallback(this);
-    popup->addChild(slider);
-
+void CRUIReadWidget::showReaderMenu() {
+    CRUIActionList actions;
+    actions.add(ACTION_BACK);
+    actions.add(ACTION_SETTINGS);
+    //actions.add(ACTION_GOTO_PERCENT);
+    if (hasTOC())
+        actions.add(ACTION_TOC);
+    actions.add(ACTION_EXIT);
     lvRect margins;
-    margins.left = 0;
-    margins.right = 0;
-    margins.bottom = MIN_ITEM_PX / 3;
-    preparePopup(popup, ALIGN_BOTTOM, margins);
+    CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
+    preparePopup(menu, ALIGN_BOTTOM, margins);
 }
 
 /// override to handle menu or other action
@@ -974,25 +1100,12 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
-    case CMD_GOTO_PERCENT:
-        showGoToPercentPopup();
-        return true;
     case CMD_TOC:
         showTOC();
         return true;
     case CMD_MENU:
-    {
-        CRUIActionList actions;
-        actions.add(ACTION_EXIT);
-        actions.add(ACTION_SETTINGS);
-        actions.add(ACTION_GOTO_PERCENT);
-        if (hasTOC())
-            actions.add(ACTION_TOC);
-        actions.add(ACTION_BACK);
-        lvRect margins;
-        showMenu(actions, ALIGN_TOP, margins, false);
+        showReaderMenu();
         return true;
-    }
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));
         return true;
