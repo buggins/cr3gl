@@ -376,7 +376,7 @@ CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * bu
     setStyle("TOOL_BAR");
     setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     if (hasMenuButton)
-        _menuButton = new CRUIImageButton("ic_menu_more");
+        _menuButton = new CRUIImageButton("menu_more");
     else
         _menuButton = NULL;
     //_backButton = new CRUIImageButton("ic_menu_back");

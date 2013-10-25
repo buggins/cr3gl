@@ -45,7 +45,7 @@ public:
         _buttonLayout = new CRUILinearLayout(true);
         _captionLayout = new CRUILinearLayout(true);
         addChild(_captionLayout);
-        _menuButton = new CRUIImageButton("ic_menu_more"); //moreicon
+        _menuButton = new CRUIImageButton("menu_more"); //moreicon
         _menuButton->setOnClickListener(home);
         _menuButton->setId("MENU");
         _menuButton->setAlign(ALIGN_TOP | ALIGN_LEFT);
