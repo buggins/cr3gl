@@ -339,6 +339,7 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
             if (!event->getWidget())
                 event->setWidget(widget);
         }
+    	_rootWidget->update(false);
         return true;
     }
     if (!event->getWidget()) { // if not not assigned on widget
@@ -350,6 +351,7 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
                     if (!event->getWidget())
                         event->setWidget(child);
                 }
+            	_rootWidget->update(false);
                 return true;
             }
         }
@@ -361,6 +363,7 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
         if (!event->getWidget())
             event->setWidget(widget);
     }
+	_rootWidget->update(false);
     return res;
 }
 

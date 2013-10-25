@@ -728,6 +728,12 @@ bool CRUIHomeWidget::onKeyEvent(const CRUIKeyEvent * event) {
 	if (event->getType() == KEY_ACTION_PRESS && (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC)) {
 		return true;
 	}
+	if (event->getType() == KEY_ACTION_RELEASE && (event->key() == CR_KEY_MENU)) {
+        return onAction(CRUIActionByCode(CMD_MENU));
+	}
+	if (event->getType() == KEY_ACTION_PRESS && (event->key() == CR_KEY_MENU)) {
+        return true;
+	}
 	return false;
 }
 

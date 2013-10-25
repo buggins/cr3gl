@@ -417,6 +417,10 @@ static int translateKey(Tizen::Ui::KeyCode keyCode) {
 		return CR_KEY_DELETE;
 	case KEY_BACKSPACE:
 		return CR_KEY_BACKSPACE;
+	case KEY_SIDE_UP:
+		return CR_KEY_VOLUME_UP;
+	case KEY_SIDE_DOWN:
+		return CR_KEY_VOLUME_DOWN;
 	case KEY_0:
 	case KEY_1:
 	case KEY_2:
@@ -477,6 +481,7 @@ bool CRUIEventAdapter::dispatchKeyEvent(KEY_EVENT_TYPE action, Tizen::Ui::KeyCod
 		CRUIKeyEvent * event = new CRUIKeyEvent(action, crKey, false, 0, newModifiers);
 		return _eventManager->dispatchKeyEvent(event);
 	}
+	CRLog::warn("Unknown Tizen keycode: %d (0x%04x)", keyCode, keyCode);
 	return false;
 }
 

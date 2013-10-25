@@ -207,6 +207,9 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_BACK 0x130
 #define CR_KEY_MENU 0x131
 
+#define CR_KEY_VOLUME_UP 0x140
+#define CR_KEY_VOLUME_DOWN 0x141
+
 
 class CRUIKeyEvent {
     KEY_EVENT_TYPE _type;

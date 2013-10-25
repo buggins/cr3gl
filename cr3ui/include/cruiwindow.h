@@ -23,6 +23,7 @@ public:
     lvRect dstRect;
     lvRect margins;
     void close() {
+    	CRLog::trace("PopupControl::close()");
         if (popup)
             delete popup;
         popup = NULL;
@@ -86,6 +87,7 @@ public:
 
     /// motion event handler - before children, returns true if it handled event
     virtual bool onTouchEventPreProcess(const CRUIMotionEvent * event);
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
 
     /// opens menu popup with specified list of actions
     virtual void showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar);

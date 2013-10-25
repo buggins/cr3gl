@@ -28,6 +28,37 @@ bool CRUIWindowWidget::onStartDragging(const CRUIMotionEvent * event, bool verti
     return getMain()->startDragging(event, vertical);
 }
 
+bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    int key = event->key();
+	CRLog::trace("CRUIWindowWidget::onKeyEvent(%d  0x%x)", key, key);
+    if (_popupControl.popup && event->getType() == KEY_ACTION_PRESS && key == CR_KEY_MENU) {
+    	return true;
+    }
+    if (_popupControl.popup && event->getType() == KEY_ACTION_RELEASE && key == CR_KEY_MENU) {
+		_popupControl.close();
+		invalidate();
+    	return true;
+    }
+    if (event->getType() == KEY_ACTION_PRESS) {
+        if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
+            return true;
+        }
+    } else if (event->getType() == KEY_ACTION_RELEASE) {
+        if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
+        	if (_popupControl.popup) {
+        		_popupControl.close();
+        		invalidate();
+        	} else {
+        		_main->back();
+        	}
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 class CRUIPopupFrame : public CRUILinearLayout {
     PopupControl * _control;
     CRUIWidget * _body;
@@ -114,7 +145,7 @@ public:
 
     /// key event handler, returns true if it handled event
     virtual bool onKeyEvent(const CRUIKeyEvent * event) {
-        if (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC) {
+        if (event->key() == CR_KEY_BACK || event->key() == CR_KEY_ESC || event->key() == CR_KEY_MENU) {
             if (event->getType() == KEY_ACTION_RELEASE) {
                 _control->animateClose();
                 invalidate();
@@ -239,6 +270,7 @@ void PopupControl::getRect(lvRect & rc) {
 }
 
 void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvRect & margins) {
+    CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
     int handleLocation = 0;
     if (location == ALIGN_TOP)
         handleLocation = ALIGN_BOTTOM;
@@ -261,6 +293,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     _popupControl.progress = 0;
     _popupControl.closing = false;
     _popupControl.outerColor = 0xA0404040;
+    CRLog::trace("prepared popup");
     invalidate();
 }
 

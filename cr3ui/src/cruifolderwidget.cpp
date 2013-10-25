@@ -478,13 +478,16 @@ bool CRUIFolderWidget::requestAllVisibleCoverpages() {
 bool CRUIFolderWidget::onKeyEvent(const CRUIKeyEvent * event) {
     int key = event->key();
     if (event->getType() == KEY_ACTION_PRESS) {
-        if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
+        if (key == CR_KEY_ESC || key == CR_KEY_BACK || key == CR_KEY_MENU) {
             return true;
         }
     } else if (event->getType() == KEY_ACTION_RELEASE) {
         if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
             _main->back();
             return true;
+        } else if (key == CR_KEY_MENU) {
+            return onAction(CRUIActionByCode(CMD_MENU));
+        	return true;
         }
     }
     return false;

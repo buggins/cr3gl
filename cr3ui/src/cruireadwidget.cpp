@@ -180,13 +180,6 @@ static bool isDocViewProp(const lString8 & key) {
 
 void drawVGradient(LVDrawBuf * buf, lvRect & rc, lUInt32 colorTop, lUInt32 colorBottom) {
     buf->GradientRect(rc.left, rc.top, rc.right, rc.bottom, colorTop, colorTop, colorBottom, colorBottom);
-//	lvRect rc2 = rc;
-//	for (int y = 0; y < rc.height(); y++) {
-//		int alpha = (y * 255) / rc.height();
-//		rc2.top = rc.top + y;
-//		rc2.bottom = rc.top + y + 1;
-//		buf->FillRect(rc2, applyAlpha(colorTop, colorBottom, alpha));
-//	}
 }
 
 static CRUIDocView * createDocView() {
@@ -579,7 +572,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
 }
 
 bool CRUIReadWidget::isAnimating() {
-    return _scroll.isActive();
+    return _scroll.isActive() || CRUIWindowWidget::isAnimating();
 }
 
 void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
@@ -630,42 +623,68 @@ void CRUIReadWidget::clearImageCaches() {
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     if (_locked)
         return false;
+    int key = event->key();
+	CRLog::trace("CRUIReadWidget::onKeyEvent(%d  0x%x  popup.closing=%s   popup.progress=%d)", key, key, _popupControl.closing ? "yes" : "no", _popupControl.progress);
+    if (_popupControl.popup) {
+    	CRLog::trace("Popup is active - transferring key to window");
+    	return CRUIWindowWidget::onKeyEvent(event);
+    }
+    if (event->getType() == KEY_ACTION_RELEASE) {
+        if (_scroll.isActive())
+            _scroll.stop();
+        switch(key) {
+        case CR_KEY_MENU:
+        	showReaderMenu();
+            invalidate();
+            return true;
+        default:
+        	break;
+        }
+    }
+
     if (event->getType() == KEY_ACTION_PRESS) {
         if (_scroll.isActive())
             _scroll.stop();
-        int key = event->key();
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
             doCommand(DCMD_PAGEDOWN);
-            break;
+            invalidate();
+            return true;
         case CR_KEY_PGUP:
             doCommand(DCMD_PAGEUP);
-            break;
+            invalidate();
+            return true;
         case CR_KEY_HOME:
             _docview->doCommand(DCMD_BEGIN);
-            break;
+            invalidate();
+            return true;
         case CR_KEY_END:
             _docview->doCommand(DCMD_END);
-            break;
+            invalidate();
+            return true;
         case CR_KEY_UP:
             doCommand(DCMD_LINEUP, 1);
-            break;
+            invalidate();
+            return true;
         case CR_KEY_DOWN:
             doCommand(DCMD_LINEDOWN, 1);
-            break;
-        case CR_KEY_ESC:
-        case CR_KEY_BACK:
-            _main->back();
+            invalidate();
             return true;
+//        case CR_KEY_ESC:
+//        case CR_KEY_BACK:
+//            _main->back();
+//            invalidate();
+//            return true;
+        case CR_KEY_MENU:
+        	return true;
         default:
             break;
         }
     }
     //CRLog::trace("new pos=%d", _docview->GetPos());
-    invalidate();
-    return true;
+    return CRUIWindowWidget::onKeyEvent(event);
 }
 
 int CRUIReadWidget::pointToTapZone(int x, int y) {
