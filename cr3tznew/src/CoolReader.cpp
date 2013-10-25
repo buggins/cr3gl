@@ -83,7 +83,7 @@ CoolReaderApp::OnAppInitialized(void)
 		__player->Start();
 	}
 
-	__renderer = new CR3Renderer(this);
+	__renderer = new CR3Renderer(this, pCoolReaderFrame);
 	__player->SetIGlRenderer(__renderer);
 //	if (pCoolReaderFrame->GetCurrentForm())
 //		pCoolReaderFrame->GetCurrentForm()->AddTouchEventListener(*__renderer->getEventAdapter());

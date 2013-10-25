@@ -243,7 +243,7 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 
 void CRUIReadWidget::prepareScroll(int direction) {
     if (renderIfNecessary()) {
-    	CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+    	//CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
         _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
     }
 }
@@ -261,7 +261,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     }
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
-        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 1, false);
+        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
         _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
     } else {
         // document render in progress; draw just page background
@@ -507,7 +507,7 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
         _startPositionIsUpdated = true;
         updatePosition();
     }
-    //_main->update();
+    _main->update(true);
 }
 
 /// returns true if document is ready, false if background rendering is in progress
@@ -1342,11 +1342,11 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
     if (_pos >= minpos && _pos + dy <= maxpos && !force)
         return; // already prepared
     int y0 = direction == 0 ? _pos : (direction > 0 ? (_pos - dy / 4) : (_pos - dy * 5 / 4));
-    int y1 = direction == 0 ? _pos + dy : (direction > 0 ? (_pos + dy + dy * 5 / 4) : (_pos + dy + dy / 4));
+    int y1 = direction == 0 ? _pos : (direction > 0 ? (_pos + dy + dy * 5 / 4) : (_pos + dy + dy / 4));
     if (y0 < 0)
     	y0 = 0;
-    if (y1 > _docview->GetFullHeight())
-        y1 = _docview->GetFullHeight();
+    if (y1 > _docview->GetFullHeight() + dy)
+        y1 = _docview->GetFullHeight() + dy;
     int pos0 = y0 / tdy * tdy;
     int pos1 = (y1 + tdy - 1) / tdy * tdy;
     int pageCount = (pos1 - pos0) / tdy + 1;
@@ -1398,6 +1398,7 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
 }
 
 void CRUIReadWidget::ScrollModePageCache::draw(LVDrawBuf * dst, int pos, int x, int y) {
+	CRLog::trace("ScrollModePageCache::draw()");
     // workaround for no-rtti builds
 	GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {

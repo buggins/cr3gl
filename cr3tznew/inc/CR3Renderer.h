@@ -18,12 +18,14 @@
 
 class LVDocView;
 class CoolReaderApp;
+class CoolReaderFrame;
 class CR3Renderer :
 	public Tizen::Graphics::Opengl::IGlRenderer,
 	public CRUIScreenUpdateManagerCallback,
 	public CRUIPlatform
 {
 	CoolReaderApp * _app;
+	CoolReaderFrame * _frame;
 	LVDocView * _docview;
 	CRUIMainWidget * _widget;
 	CRUIEventManager * _eventManager;
@@ -32,7 +34,7 @@ class CR3Renderer :
 	//bool _updateRequested;
 public:
 
-	CR3Renderer(CoolReaderApp * app);
+	CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame);
 	~CR3Renderer(void);
 
 	CRUIEventAdapter * getEventAdapter() { return _eventAdapter; }
@@ -70,7 +72,6 @@ private:
 	int __angle;
 	Tizen::Graphics::Opengl::GlPlayer * __player;
 	bool __playerStarted;
-	int __playerDrawOnce;
 };
 
 #endif /* _GLRENDERERTEMPLATE_H_ */

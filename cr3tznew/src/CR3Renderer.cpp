@@ -7,6 +7,7 @@
 #include "cruimain.h"
 #include "cruiwidget.h"
 #include "CoolReader.h"
+#include "CoolReaderFrame.h"
 
 using namespace CRUI;
 
@@ -14,8 +15,9 @@ const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
 const GLfloat ZERO = GLfloat( 0.0f);
 
-CR3Renderer::CR3Renderer(CoolReaderApp * app)
+CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	: _app(app)
+	, _frame(frame)
 	, _backbuffer(NULL)
 	//, _updateRequested(false)
 	, __controlWidth(0)
@@ -23,7 +25,6 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app)
 	, __angle(0)
 	, __player(NULL)
 	, __playerStarted(true)
-	, __playerDrawOnce(0)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
@@ -73,15 +74,6 @@ bool
 CR3Renderer::Draw(void)
 {
 	//CRLog::debug("CR3Renderer::Draw is called");
-//	if (__playerDrawOnce > 0) {
-//		__playerDrawOnce--;
-//		if (__playerDrawOnce == 1 && __playerStarted) {
-//			CRLog::debug("CR3Renderer::Draw stopping player");
-//			__playerStarted = false;
-//			__player->Pause();
-//			return true;
-//		}
-//	}
 
 	//_updateRequested = false;
 
@@ -147,6 +139,7 @@ CR3Renderer::Draw(void)
 
 	buf.afterDrawing();
 
+	glFlush();
 
 	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;
@@ -206,6 +199,17 @@ void CR3Renderer::minimizeApp() {
 
 }
 
+class CRTizenRedrawEvent : public CRRunnable {
+	Tizen::Graphics::Opengl::GlPlayer * __player;
+public:
+	CRTizenRedrawEvent(Tizen::Graphics::Opengl::GlPlayer * player) : __player(player) {}
+	virtual void run() {
+    	result r = __player->Redraw();
+    	if (r != E_SUCCESS) {
+    		CRLog::error("__player->Redraw() failed - delayed");
+    	}
+	}
+};
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
@@ -213,47 +217,26 @@ void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 	if ((animationFps != 0) != __playerStarted) {
 		if (!__playerStarted) {
 			__player->SetFps(30);
-			__player->Resume();
+			result r = __player->Resume();
+	    	if (r != E_SUCCESS) {
+	    		CRLog::error("__player->Resume() failed");
+	    	}
 			__playerStarted = true;
 		} else {
 			__player->SetFps(-30);
-			__player->Pause();
+			result r = __player->Pause();
+	    	if (r != E_SUCCESS) {
+	    		CRLog::error("__player->Pause() failed");
+	    	}
 			__playerStarted = false;
 		}
 	}
 	if (!__playerStarted && updateNow) {
-		__player->Redraw();
+    	result r = __player->Redraw();
+    	if (r != E_SUCCESS) {
+    		CRLog::error("__player->Redraw() failed - immediate");
+    	}
+    	// double drawing, workaround for Tizen screen update issues
+    	concurrencyProvider->executeGui(new CRTizenRedrawEvent(__player));
 	}
-//	if (!animationFps) {
-////		if (__playerDrawOnce < 2)
-////			__playerDrawOnce = 2;
-////		if (__playerStarted) {
-//////			__playerDrawOnce = true;
-////			//CRLog::trace("Pausing player");
-//////			__player->Pause();
-//////			__playerStarted = false;
-////		}
-//		if (updateNow) {
-//			__playerDrawOnce = 3;
-//			if (!__playerStarted) {
-//				__playerStarted = true;
-//				__player->SetFps(30);//);
-//				__player->Resume();
-//				__player->Redraw();
-//			}
-////			//CRLog::trace("Updating player");
-////			if (!_updateRequested) {
-////				_updateRequested = true;
-////				__player->Redraw();
-////			}
-//		}
-//	} else {
-//		__playerDrawOnce = 0;
-//		if (!__playerStarted) {
-//			//CRLog::trace("Resuming player");
-//			__playerStarted = true;
-//			__player->SetFps(30);//);
-//			__player->Resume();
-//		}
-//	}
 }

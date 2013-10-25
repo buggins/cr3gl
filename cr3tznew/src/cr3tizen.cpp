@@ -220,7 +220,7 @@ public:
 	}
 
 	virtual void execute(CRRunnable * runnable) {
-		CRLog::debug("TizenGuiExecutor execute task");
+		//CRLog::debug("TizenGuiExecutor execute task");
 		   // ArrayList parameters put on the String object
 		   ArrayList* pList = new ArrayList();
 		   pList->Construct();
@@ -232,7 +232,7 @@ public:
 		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
 		   if (pFrame)
 			   pFrame->SendUserEvent(UI_UPDATE_REQUEST, pList);
-			CRLog::debug("TizenGuiExecutor execute task - done");
+		   //CRLog::debug("TizenGuiExecutor execute task - done");
 	}
 };
 

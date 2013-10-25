@@ -320,7 +320,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 		res = dispatchTouchEvent(_rootWidget, event);
 	}
 	if (event->isCancelRequested()) {
-		CRLog::trace("Sending CANCEL event");
+		//CRLog::trace("Sending CANCEL event");
 		CRUIMotionEvent * cancelEvent = event->createCancelEvent();
 		dispatchTouchEvent(cancelEvent);
 		delete cancelEvent;

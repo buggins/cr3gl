@@ -27,6 +27,7 @@ public:
 
 #define UI_UPDATE_REQUEST 12345
 
+class CR3Renderer;
 class CoolReaderFrame
 	: public Tizen::Ui::Controls::Frame
 	, public Tizen::Ui::IOrientationEventListener
