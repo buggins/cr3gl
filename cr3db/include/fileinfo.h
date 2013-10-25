@@ -228,6 +228,7 @@ public:
     CROpdsCatalogsItem(const BookDBCatalog * catalog) : CRDirContentItem(lString8(OPDS_CATALOGS_TAG) + lString8::itoa(catalog->id), false), _catalog(catalog->clone()) {}
     CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false), _catalog(((CROpdsCatalogsItem*)dir)->_catalog->clone()) {}
     virtual CRDirEntry * clone() const { CROpdsCatalogsItem * res = new CROpdsCatalogsItem(this); return res; }
+    BookDBCatalog * getCatalog() { return _catalog.get(); }
 };
 
 class CRBookDBLookupItem : public CRDirContentItem {

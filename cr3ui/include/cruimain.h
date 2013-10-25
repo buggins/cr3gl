@@ -5,6 +5,7 @@
 #include "cruifolderwidget.h"
 #include "cruihomewidget.h"
 #include "cruireadwidget.h"
+#include "opdsbrowser.h"
 #include "cruipopup.h"
 #include "cruiwindow.h"
 #include "cruisettingswidget.h"
@@ -14,7 +15,8 @@ enum VIEW_MODE {
     MODE_FOLDER,
     MODE_SETTINGS,
     MODE_READ,
-    MODE_TOC
+    MODE_TOC,
+    MODE_OPDS
 };
 
 class CRUIScreenUpdateManagerCallback {
@@ -118,6 +120,28 @@ public:
     }
     virtual const lString8 & getPathName() { return pathname; }
     virtual ~FolderItem() {
+        if (widget)
+            delete widget;
+    }
+};
+
+class OPDSItem : public NavHistoryItem {
+    lString8 pathname;
+public:
+    virtual CRUIWindowWidget * recreate() {
+        if (widget)
+            delete widget;
+        widget = new CRUIFolderWidget(main);
+        ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+        return widget;
+    }
+    virtual void setDirectory(CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(item); }
+    virtual VIEW_MODE getMode() { return MODE_OPDS; }
+    OPDSItem(CRUIMainWidget * _main, lString8 _pathname) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
+        ((CRUIOpdsBrowserWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+    }
+    virtual const lString8 & getPathName() { return pathname; }
+    virtual ~OPDSItem() {
         if (widget)
             delete widget;
     }
@@ -336,6 +360,7 @@ public:
 
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
+    void showOpds(BookDBCatalog * dir);
     void showHome();
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);

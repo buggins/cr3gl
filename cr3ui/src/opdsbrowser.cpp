@@ -174,14 +174,26 @@ CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindow
 //, _fileList(NULL),
 	, _dir(NULL)
 {
-    _title = new CRUITitleBarWidget(lString16("File list"), this, this, true);
+    _title = new CRUITitleBarWidget(lString16("File list"), this, this, false);
 	_body->addChild(_title);
     //_fileList = new CRUIOpdsItemListWidget(this);
 	//_body->addChild(_fileList);
     //_fileList->setOnItemClickListener(this);
 	CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+	layout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+	CRUIImageWidget * image = new CRUIImageWidget("internet");
+	image->setPadding(PT_TO_PX(8));
+	image->setAlign(ALIGN_CENTER);
+	image->setLayoutParams(FILL_PARENT, FILL_PARENT);
+	layout->addChild(image);
 	CRUITextWidget * text1 = new CRUITextWidget();
-	text1->setText("OPDS access is not yet ported.");
+	text1->setAlign(ALIGN_CENTER);
+	text1->setPadding(PT_TO_PX(8));
+	text1->setMaxLines(2);
+	text1->setText("OPDS catalog access is not yet implemented.");
+	text1->setFontSize(FONT_SIZE_LARGE);
+	text1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+	layout->setStyle("SETTINGS_ITEM_LIST");
 	layout->addChild(text1);
 	_body->addChild(layout);
 }
@@ -196,31 +208,32 @@ bool CRUIOpdsBrowserWidget::onClick(CRUIWidget * widget) {
 }
 
 bool CRUIOpdsBrowserWidget::onLongClick(CRUIWidget * widget) {
-    if (widget->getId() == "BACK") {
-        CRUIActionList actions;
-        lString8 path = _dir->getPathName();
-        lString8 lastPath = path;
-        for (;;) {
-            LVRemovePathDelimiter(path);
-            path = LVExtractPath(path);
-            if (path == lastPath)
-                break;
-            LVRemovePathDelimiter(path);
-            CRUIAction action(CMD_SHOW_FOLDER);
-            action.icon_res = "folder_icon";
-            action.name = Utf8ToUnicode(path);
-            action.sparam = path;
-            actions.add(&action);
-            lastPath = path;
-            if (path=="/" || path.endsWith(":\\") || path.endsWith("\\\\") || path == "@/" || path == "@\\")
-                break;
-        }
-        actions.add(ACTION_CURRENT_BOOK);
-        actions.add(ACTION_READER_HOME);
-        lvRect margins;
-        //margins.right = MIN_ITEM_PX * 120 / 100;
-        showMenu(actions, ALIGN_TOP, margins, false);
-    } else if (widget->getId() == "MENU") {
+//    if (widget->getId() == "BACK") {
+//        CRUIActionList actions;
+//        lString8 path = _dir->getPathName();
+//        lString8 lastPath = path;
+//        for (;;) {
+//            LVRemovePathDelimiter(path);
+//            path = LVExtractPath(path);
+//            if (path == lastPath)
+//                break;
+//            LVRemovePathDelimiter(path);
+//            CRUIAction action(CMD_SHOW_FOLDER);
+//            action.icon_res = "folder_icon";
+//            action.name = Utf8ToUnicode(path);
+//            action.sparam = path;
+//            actions.add(&action);
+//            lastPath = path;
+//            if (path=="/" || path.endsWith(":\\") || path.endsWith("\\\\") || path == "@/" || path == "@\\")
+//                break;
+//        }
+//        actions.add(ACTION_CURRENT_BOOK);
+//        actions.add(ACTION_READER_HOME);
+//        lvRect margins;
+//        //margins.right = MIN_ITEM_PX * 120 / 100;
+//        showMenu(actions, ALIGN_TOP, margins, false);
+//    } else
+    if (widget->getId() == "MENU") {
         onAction(CMD_SETTINGS);
     }
     return true;
@@ -278,6 +291,7 @@ CRUIOpdsBrowserWidget::~CRUIOpdsBrowserWidget()
 /// returns true if all coverpages are available, false if background tasks are submitted
 bool CRUIOpdsBrowserWidget::requestAllVisibleCoverpages() {
     //return _fileList->requestAllVisibleCoverpages();
+	return false;
 }
 
 bool CRUIOpdsBrowserWidget::onKeyEvent(const CRUIKeyEvent * event) {

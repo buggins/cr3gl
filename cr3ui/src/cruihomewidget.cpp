@@ -458,7 +458,7 @@ public:
 };
 
 class CRUIOnlineCatalogsWidget : public CRUIHomeItemListWidget {
-    LVPtrVector<CRDirEntry> _entries;
+    LVPtrVector<CROpdsCatalogsItem> _entries;
 public:
     void init() {
         _entries.clear();
@@ -491,6 +491,14 @@ public:
             return lString16();
         CRDirEntry * item = _entries[index];
         return item->getTitle();
+    }
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        if (itemIndex < 0 || itemIndex >= _entries.length())
+            return false;
+        CROpdsCatalogsItem * item = _entries[itemIndex];
+        _home->getMain()->showOpds(item->getCatalog());
+        return true;
     }
 };
 

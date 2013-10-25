@@ -225,6 +225,35 @@ void CRUIMainWidget::hideSlowOperationPopup()
     }
 }
 
+void CRUIMainWidget::showOpds(BookDBCatalog * dir) {
+   //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
+    //_pendingFolder = folder;
+	lString8 folder(dir->url.c_str());
+    int newpos = _history.findPosByMode(MODE_OPDS, folder);
+    if (newpos < 0) {
+        // create page now, to lock corresponding folder
+        _history.setNext(new OPDSItem(this, folder));
+        newpos = _history.pos() + 1;
+    }
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+//    showSlowOperationPopup();
+//    CRLog::info("Starting background directory scan for %s", folder.c_str());
+//    dirCache->scan(folder);
+
+//    int newpos = _history.findPosByMode(MODE_FOLDER, folder);
+//    if (newpos < 0) {
+//        showSlowOperationPopup();
+//        _history.setNext(new FolderItem(this, folder));
+//        //_popup->setBackground(0xC0000000); // dimming
+//        CRLog::info("Starting background directory scan for %s", folder.c_str());
+//        dirCache->scan(folder);
+//    } else {
+//        // found existing
+//        // do nothing
+//        startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+//    }
+}
+
 void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
     CR_UNUSED(appendHistory);
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
