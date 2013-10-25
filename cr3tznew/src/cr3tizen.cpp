@@ -324,6 +324,8 @@ void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touch
 //	int starty = touchInfo.GetStartPosition().y;
 	int status = touchInfo.GetTouchStatus();
 	int action = 0;
+	CRLog::trace("CRUIEventAdapter::dispatchTouchEvent(pointer=%lld  pos=(%d,%d) status=%d ", pointId, x, y, status);
+
 	switch (status) {
 	case TOUCH_PRESSED: //The touch pressed event type
 		action = ACTION_DOWN; break;
@@ -372,6 +374,10 @@ void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touch
 		}
 		_eventManager->dispatchTouchEvent(event);
 		delete event;
+		for (int i = _activePointers.length() - 1; i >= 0; i--) {
+			if (_activePointers[i]->getAction() == CRUI::ACTION_UP || _activePointers[i]->getAction() == CRUI::ACTION_CANCEL || _activePointers[i]->isCancelled())
+				delete _activePointers.remove(i);
+		}
 	}
 }
 
