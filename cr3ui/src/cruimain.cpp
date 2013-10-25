@@ -705,14 +705,14 @@ class MainWidgetUpdateCallback : public CRRunnable {
 public:
     MainWidgetUpdateCallback(CRUIMainWidget * main) : _main(main) {}
     virtual void run() {
-    	CRLog::trace("Updating from callback");
+    	//CRLog::trace("Updating from callback");
         _main->requestLayout();
         _main->update(true);
     }
 };
 
 CRRunnable * CRUIMainWidget::createUpdateCallback() {
-	CRLog::trace("Creating update callback");
+	//CRLog::trace("Creating update callback");
     return new MainWidgetUpdateCallback(this);
 }
 

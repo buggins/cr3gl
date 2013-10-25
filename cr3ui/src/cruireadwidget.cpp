@@ -1394,11 +1394,11 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
             LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
             buf->beforeDrawing();
             int oldpos = _docview->GetPos();
-            _docview->SetPos(pos, false);
+            _docview->SetPos(pos, false, true);
             buf->SetTextColor(_docview->getTextColor());
             buf->SetBackgroundColor(_docview->getBackgroundColor());
             _docview->Draw(*buf, false);
-            _docview->SetPos(oldpos, false);
+            _docview->SetPos(oldpos, false, true);
             buf->afterDrawing();
             pages.add(page);
             CRLog::trace("new page cache item %d..%d", page->pos, page->pos + page->dy);
