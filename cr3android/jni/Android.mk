@@ -254,6 +254,7 @@ NEWUI_FILES += \
     cr3/cr3ui/src/cruiwindow.cpp \
     cr3/cr3ui/src/cruicoverwidget.cpp \
     cr3/cr3ui/src/cruisettingswidget.cpp \
+    cr3/cr3ui/src/opdsbrowser.cpp \
     cr3/cr3ui/src/stringresource.cpp
 
     
