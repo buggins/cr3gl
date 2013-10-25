@@ -30,7 +30,7 @@ bool CRUIWindowWidget::onStartDragging(const CRUIMotionEvent * event, bool verti
 
 bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
     int key = event->key();
-	CRLog::trace("CRUIWindowWidget::onKeyEvent(%d  0x%x)", key, key);
+	//CRLog::trace("CRUIWindowWidget::onKeyEvent(%d  0x%x)", key, key);
     if (_popupControl.popup && event->getType() == KEY_ACTION_PRESS && key == CR_KEY_MENU) {
     	return true;
     }
@@ -270,7 +270,7 @@ void PopupControl::getRect(lvRect & rc) {
 }
 
 void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvRect & margins) {
-    CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
+    //CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
     int handleLocation = 0;
     if (location == ALIGN_TOP)
         handleLocation = ALIGN_BOTTOM;
@@ -293,7 +293,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     _popupControl.progress = 0;
     _popupControl.closing = false;
     _popupControl.outerColor = 0xA0404040;
-    CRLog::trace("prepared popup");
+    //CRLog::trace("prepared popup");
     invalidate();
 }
 

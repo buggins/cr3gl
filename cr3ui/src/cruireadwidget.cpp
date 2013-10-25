@@ -624,7 +624,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     if (_locked)
         return false;
     int key = event->key();
-	CRLog::trace("CRUIReadWidget::onKeyEvent(%d  0x%x  popup.closing=%s   popup.progress=%d)", key, key, _popupControl.closing ? "yes" : "no", _popupControl.progress);
+	//CRLog::trace("CRUIReadWidget::onKeyEvent(%d  0x%x  popup.closing=%s   popup.progress=%d)", key, key, _popupControl.closing ? "yes" : "no", _popupControl.progress);
     if (_popupControl.popup) {
     	CRLog::trace("Popup is active - transferring key to window");
     	return CRUIWindowWidget::onKeyEvent(event);
