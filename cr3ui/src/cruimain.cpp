@@ -365,6 +365,8 @@ void CRUIMainWidget::createReaderSettings() {
     _readerSettings.addChild(interface);
 
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
+    pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
+    pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));
     _readerSettings.addChild(pageLayout);
 
     CRUISettingsList * formattingOptions = new CRUISettingsList(STR_SETTINGS_TEXT_FORMATTING, STR_SETTINGS_TEXT_FORMATTING_DESCRIPTION, SETTINGS_PATH_READER_TEXTFORMATTING);

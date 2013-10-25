@@ -166,6 +166,26 @@ public:
     virtual lString16 getDescription(CRPropRef props) const;
 };
 
+class CRUIInterlineSpaceSetting : public CRUISettingsItem {
+public:
+	CRUIInterlineSpaceSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+    virtual lString16 getDescription(CRPropRef props) const;
+};
+
+class CRUIPageMarginsSetting : public CRUISettingsItem {
+public:
+	CRUIPageMarginsSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+    virtual lString16 getDescription(CRPropRef props) const;
+};
+
 class CRUIColorSetting : public CRUISettingsItem {
 public:
     CRUIColorSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
@@ -275,6 +295,26 @@ public:
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
     /// updates widget position based on specified rectangle
     virtual void layout(int left, int top, int right, int bottom);
+};
+
+class CRUIInterlineSpaceEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
+protected:
+    CRUISliderWidget * _slider;
+    CRUITextWidget * _sizetext;
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIInterlineSpaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+};
+
+class CRUIPageMarginsEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
+protected:
+    CRUISliderWidget * _slider;
+    CRUITextWidget * _sizetext;
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIPageMarginsEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
 };
 
 class CRUISettingsListItemWidget;

@@ -204,6 +204,8 @@ void CRUIFontSampleWidget::format() {
             PROP_FONT_ANTIALIASING,
             PROP_FONT_WEIGHT_EMBOLDEN,
             PROP_FONT_HINTING,
+            PROP_INTERLINE_SPACE,
+            PROP_PAGE_MARGINS,
             NULL
         };
         for (int i = 0; props_for_copy[i]; i++) {
@@ -273,6 +275,18 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     _docview->drawPageTo(buf, *page, &rc, 1, 0);
 }
 
+static lString16 formatInterlineSpace(int sz) {
+	char s[32];
+	sprintf(s, "%d%%", sz);
+    return lString16(s);
+}
+
+static lString16 formatPageMargins(int sz) {
+	char s[32];
+	sprintf(s, "%d.%02d%%", sz / 100, sz % 100);
+    return lString16(s);
+}
+
 static lString16 formatFontSize(int sz) {
     int pt10 = PX_TO_PT(sz * 10);
     int pt10_prev = PX_TO_PT((sz-1) * 10);
@@ -334,6 +348,86 @@ void CRUIFontSizeEditorWidget::layout(int left, int top, int right, int bottom) 
     }
     CRUISettingsEditor::layout(left, top, right, bottom);
 }
+
+CRUIInterlineSpaceEditorWidget::CRUIInterlineSpaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    int sz = props->getIntDef(PROP_INTERLINE_SPACE, 120);
+    _sizetext = new CRUITextWidget();
+    _sizetext->setAlign(ALIGN_CENTER);
+    _sizetext->setPadding(PT_TO_PX(6));
+    _sizetext->setText(formatInterlineSpace(sz));
+    _sizetext->setFontSize(FONT_SIZE_XLARGE);
+    _sizetext->setMinHeight(MIN_ITEM_PX);
+    _slider = new CRUISliderWidget(80, 200, sz);
+    _slider->setPadding(PT_TO_PX(4));
+    _slider->setScrollPosCallback(this);
+    _slider->setMinHeight(MIN_ITEM_PX);
+    addChild(_sizetext);
+    addChild(_slider);
+    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xE0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xE0808080);
+    _sample->setPadding(PT_TO_PX(4));
+    addChild(_sample);
+}
+
+bool CRUIInterlineSpaceEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
+    if (!manual)
+        return false;
+    int sz = pos;
+    _sizetext->setText(formatInterlineSpace(sz));
+    _props->setInt(PROP_INTERLINE_SPACE, sz);
+    _sample->invalidate();
+    return true;
+}
+
+CRUIPageMarginsEditorWidget::CRUIPageMarginsEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    int sz = props->getIntDef(PROP_PAGE_MARGINS, 500);
+    _sizetext = new CRUITextWidget();
+    _sizetext->setAlign(ALIGN_CENTER);
+    _sizetext->setPadding(PT_TO_PX(6));
+    _sizetext->setText(formatPageMargins(sz));
+    _sizetext->setFontSize(FONT_SIZE_XLARGE);
+    _sizetext->setMinHeight(MIN_ITEM_PX);
+    _slider = new CRUISliderWidget(100, 2000, sz);
+    _slider->setPadding(PT_TO_PX(4));
+    _slider->setScrollPosCallback(this);
+    _slider->setMinHeight(MIN_ITEM_PX);
+    addChild(_sizetext);
+    addChild(_slider);
+    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    separator->setPadding(PT_TO_PX(2));
+    separator->setBackground(0xE0FFFFFF);
+    addChild(separator);
+    _sample = new CRUIFontSampleWidget(props);
+    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _sample->setMaxHeight(deviceInfo.shortSide / 3);
+    _sample->setMinHeight(deviceInfo.shortSide / 5);
+    _sample->setBackground(0xE0808080);
+    _sample->setPadding(PT_TO_PX(4));
+    addChild(_sample);
+}
+
+bool CRUIPageMarginsEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
+    if (!manual)
+        return false;
+    int sz = pos;
+    _sizetext->setText(formatPageMargins(sz));
+    _props->setInt(PROP_PAGE_MARGINS, sz);
+    _sample->invalidate();
+    return true;
+}
+
+
 
 static CRUISliderWidget * createColorSlider(const char * id, int value, CRUIOnScrollPosCallback * callback, lUInt32 color1, lUInt32 color2) {
     CRUISliderWidget * _slider = new CRUISliderWidget(0, 255, value);
@@ -628,6 +722,23 @@ lString16 CRUIFontSizeSetting::getDescription(CRPropRef props) const {
     return formatFontSize(sz);
 }
 
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIInterlineSpaceSetting::createEditor(CRPropRef props) {
+	return new CRUIInterlineSpaceEditorWidget(props, this);
+}
+
+lString16 CRUIInterlineSpaceSetting::getDescription(CRPropRef props) const {
+	return lString16();
+}
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIPageMarginsSetting::createEditor(CRPropRef props) {
+	return new CRUIPageMarginsEditorWidget(props, this);
+}
+
+lString16 CRUIPageMarginsSetting::getDescription(CRPropRef props) const {
+	return lString16();
+}
 
 CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
     CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
