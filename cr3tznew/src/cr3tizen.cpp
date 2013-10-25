@@ -91,7 +91,7 @@ public:
         TizenMonitor() {
         	result r;
         	r = monitor.Construct();
-        	CRLog::trace("TizenMonitor construct result %d", (int)r);
+        	//CRLog::trace("TizenMonitor construct result %d", (int)r);
         }
         virtual void acquire() {
         	result r = monitor.Enter();
@@ -121,7 +121,7 @@ public:
         	}
         }
         virtual void notifyAll() {
-        	CRLog::trace("TizenMonitor notifyAll");
+        	//CRLog::trace("TizenMonitor notifyAll");
         	result r = monitor.NotifyAll();
         	if (r != E_SUCCESS) {
         		CRLog::fatal("Monitor::notifyAll failed");
@@ -324,7 +324,7 @@ void CRUIEventAdapter::dispatchTouchEvent(const Tizen::Ui::TouchEventInfo &touch
 //	int starty = touchInfo.GetStartPosition().y;
 	int status = touchInfo.GetTouchStatus();
 	int action = 0;
-	CRLog::trace("CRUIEventAdapter::dispatchTouchEvent(pointer=%lld  pos=(%d,%d) status=%d ", pointId, x, y, status);
+	//CRLog::trace("CRUIEventAdapter::dispatchTouchEvent(pointer=%d  pos=(%d,%d) status=%d ", pointId, x, y, status);
 
 	switch (status) {
 	case TOUCH_PRESSED: //The touch pressed event type

@@ -72,7 +72,7 @@ CR3Renderer::TerminateGl(void)
 bool
 CR3Renderer::Draw(void)
 {
-	CRLog::debug("CR3Renderer::Draw is called");
+	//CRLog::debug("CR3Renderer::Draw is called");
 //	if (__playerDrawOnce > 0) {
 //		__playerDrawOnce--;
 //		if (__playerDrawOnce == 1 && __playerStarted) {
@@ -209,7 +209,7 @@ void CR3Renderer::minimizeApp() {
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
-	CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
+	//CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if ((animationFps != 0) != __playerStarted) {
 		if (!__playerStarted) {
 			__player->SetFps(30);

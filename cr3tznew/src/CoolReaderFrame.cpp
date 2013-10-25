@@ -19,6 +19,7 @@ void CoolReaderFrame::setRenderer(CR3Renderer * renderer) {
 	_renderer = renderer;
 	AddTouchEventListener(*_renderer->getEventAdapter());
 	AddKeyEventListener(*_renderer->getEventAdapter());
+	SetMultipointTouchEnabled(true);
 }
 
 /**
@@ -46,13 +47,13 @@ void CoolReaderFrame::OnOrientationChanged(const Tizen::Ui::Control& source, Tiz
 }
 
 void CoolReaderFrame::OnUserEventReceivedN (RequestId requestId, Tizen::Base::Collection::IList *pArgs) {
-	CRLog::trace("UserEvent %d received", requestId);
+	//CRLog::trace("UserEvent %d received", requestId);
 	if (requestId == UI_UPDATE_REQUEST) {
 		//
 		if (pArgs != NULL && pArgs->GetCount() == 1) {
 			CRRunnableContainer * param = dynamic_cast<CRRunnableContainer*>(pArgs->GetAt(0));
 			if (param) {
-				CRLog::trace("Executing UI_UPDATE_REQUEST in UI thread");
+				//CRLog::trace("Executing UI_UPDATE_REQUEST in UI thread");
 				param->run();
 			}
 		}
