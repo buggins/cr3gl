@@ -336,7 +336,6 @@ void CRUIMainWidget::createReaderSettings() {
     fontsAndColors->addChild(fontRendering);
 
     //fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF));
-    fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED, STR_SETTINGS_FONT_KERNING_VALUE_ON, STR_SETTINGS_FONT_KERNING_VALUE_OFF));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_FONT_COLOR, NULL, PROP_FONT_COLOR));
     fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_BACKGROUND_COLOR, NULL, PROP_BACKGROUND_COLOR));
     CRUIBackgroundTextureSetting * textures = new CRUIBackgroundTextureSetting(STR_SETTINGS_BACKGROUND_TEXTURE, NULL, PROP_BACKGROUND_IMAGE);
@@ -345,23 +344,16 @@ void CRUIMainWidget::createReaderSettings() {
     }
     fontsAndColors->addChild(textures);
 
-
     _readerSettings.addChild(fontsAndColors);
 
 
+    CRUISettingsList * interface = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
-    _readerSettings.addChild(uilangs);
-
-    CRUISettingsOptionList * hyph = new CRUISettingsOptionList(STR_SETTINGS_HYPHENATION_DICTIONARY, NULL, PROP_HYPHENATION_DICT);
-    for (int i = 0; i < crconfig.hyphenationDictionaries.length(); i++) {
-        CRUIHyphenationDictionary * dict = crconfig.hyphenationDictionaries[i];
-        hyph->addOption(new CRUIOptionItem(dict->id.c_str(), dict->nameRes.c_str()));
-    }
-    _readerSettings.addChild(hyph);
+    interface->addChild(uilangs);
 
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
@@ -369,7 +361,23 @@ void CRUIMainWidget::createReaderSettings() {
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
-    _readerSettings.addChild(themes);
+    interface->addChild(themes);
+    _readerSettings.addChild(interface);
+
+    CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
+    _readerSettings.addChild(pageLayout);
+
+    CRUISettingsList * formattingOptions = new CRUISettingsList(STR_SETTINGS_TEXT_FORMATTING, STR_SETTINGS_TEXT_FORMATTING_DESCRIPTION, SETTINGS_PATH_READER_TEXTFORMATTING);
+    formattingOptions->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FLOATING_PUNCTUATION, NULL, PROP_FLOATING_PUNCTUATION, STR_SETTINGS_FLOATING_PUNCTUATION_VALUE_ON, STR_SETTINGS_FLOATING_PUNCTUATION_VALUE_OFF));
+    formattingOptions->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED, STR_SETTINGS_FONT_KERNING_VALUE_ON, STR_SETTINGS_FONT_KERNING_VALUE_OFF));
+    CRUISettingsOptionList * hyph = new CRUISettingsOptionList(STR_SETTINGS_HYPHENATION_DICTIONARY, NULL, PROP_HYPHENATION_DICT);
+    for (int i = 0; i < crconfig.hyphenationDictionaries.length(); i++) {
+        CRUIHyphenationDictionary * dict = crconfig.hyphenationDictionaries[i];
+        hyph->addOption(new CRUIOptionItem(dict->id.c_str(), dict->nameRes.c_str()));
+    }
+    formattingOptions->addChild(hyph);
+    _readerSettings.addChild(formattingOptions);
+
 }
 
 CRUIMainWidget::CRUIMainWidget()
@@ -430,6 +438,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_HINTING, "0");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
+    _currentSettings->setStringDef(PROP_FLOATING_PUNCTUATION, "1");
     _currentSettings->setStringDef(PROP_FONT_WEIGHT_EMBOLDEN, "0");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX, "15");
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_DAY, "15");

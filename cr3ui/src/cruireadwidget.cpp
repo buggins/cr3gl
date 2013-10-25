@@ -167,6 +167,7 @@ static bool isDocViewProp(const lString8 & key) {
             || key == PROP_FONT_FACE
             || key == PROP_BACKGROUND_COLOR
             || key == PROP_INTERLINE_SPACE
+            || key == PROP_FLOATING_PUNCTUATION
             || key == PROP_BACKGROUND_IMAGE
             || key == PROP_BACKGROUND_IMAGE_ENABLED
             || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS

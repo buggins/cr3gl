@@ -7,7 +7,10 @@
 #define SETTINGS_PATH_READER "reader"
 #define SETTINGS_PATH_BROWSER "browser"
 #define SETTINGS_PATH_READER_FONTSANDCOLORS "reader/fontsandcolors"
-#define SETTINGS_PATH_READER_FONTRENDERING "reader/fontrendering"
+#define SETTINGS_PATH_READER_FONTRENDERING "reader/fontsandcolors/fontrendering"
+#define SETTINGS_PATH_READER_TEXTFORMATTING "reader/fontrendering"
+#define SETTINGS_PATH_READER_PAGELAYOUT "reader/fontrendering"
+#define SETTINGS_PATH_READER_INTERFACE "reader/interface"
 
 // properties
 #define PROP_APP_THEME "app.ui.theme"
