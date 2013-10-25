@@ -295,10 +295,8 @@ public:
     virtual void update(bool force);
 
     /// forward screen update request to external code
-    virtual void setScreenUpdateMode(bool updateNow, int animationFps) {
-        if (_screenUpdater)
-            _screenUpdater->setScreenUpdateMode(updateNow, animationFps);
-    }
+    virtual void setScreenUpdateMode(bool updateNow, int animationFps);
+
     virtual void setScreenUpdater(CRUIScreenUpdateManagerCallback * screenUpdater) { _screenUpdater = screenUpdater; }
 
     virtual void setPlatform(CRUIPlatform * platform) {

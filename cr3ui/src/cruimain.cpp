@@ -423,7 +423,40 @@ CRUIMainWidget::CRUIMainWidget()
     applySettings(_currentSettings, _currentSettings, _currentSettings);
 }
 
+static volatile int LAST_UPDATE_REQUEST_ID = 1;
+static volatile bool LAST_UPDATE_REQUEST_UPDATE_NOW = false;
+static volatile bool LAST_UPDATE_REQUEST_CANCELLED_ALL = false;
+
+class CRUIUpdateEvent : public CRRunnable {
+    CRUIScreenUpdateManagerCallback * _screenUpdater;
+    int _updateRequestId;
+    bool _updateNow;
+    int _animationFps;
+public:
+    CRUIUpdateEvent(CRUIScreenUpdateManagerCallback * screenUpdater, bool updateNow, int animationFps)
+        : _screenUpdater(screenUpdater), _updateNow(updateNow), _animationFps(animationFps) {
+        _updateRequestId = ++LAST_UPDATE_REQUEST_ID;
+        LAST_UPDATE_REQUEST_UPDATE_NOW |= updateNow;
+    }
+
+    virtual void run() {
+        if (_updateRequestId == LAST_UPDATE_REQUEST_ID && !LAST_UPDATE_REQUEST_CANCELLED_ALL) {
+            _screenUpdater->setScreenUpdateMode(LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow, _animationFps);
+            LAST_UPDATE_REQUEST_UPDATE_NOW = false;
+        }
+    }
+};
+
+/// forward screen update request to external code
+void CRUIMainWidget::setScreenUpdateMode(bool updateNow, int animationFps) {
+    if (_screenUpdater) {
+        concurrencyProvider->executeGui(new CRUIUpdateEvent(_screenUpdater, updateNow, animationFps));
+        //_screenUpdater->setScreenUpdateMode(updateNow, animationFps);
+    }
+}
+
 CRUIMainWidget::~CRUIMainWidget() {
+    LAST_UPDATE_REQUEST_CANCELLED_ALL = true;
     if (_home)
         delete _home;
     if (_read)
@@ -489,6 +522,7 @@ void CRUIMainWidget::update(bool force) {
         needDraw = true;
     if (needDraw || animating)
         setScreenUpdateMode(needDraw, animating ? 30 : 0);
+
 }
 
 // apply changed settings
