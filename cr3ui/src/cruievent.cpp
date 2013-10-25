@@ -325,6 +325,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 		dispatchTouchEvent(cancelEvent);
 		delete cancelEvent;
 	}
+	_rootWidget->update(false);
 	return res;
 }
 

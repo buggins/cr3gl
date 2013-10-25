@@ -76,6 +76,7 @@ CR3Renderer::Draw(void)
 	if (__playerDrawOnce > 0) {
 		__playerDrawOnce--;
 		if (__playerDrawOnce == 1 && __playerStarted) {
+			CRLog::debug("CR3Renderer::Draw stopping player");
 			__playerStarted = false;
 			__player->Pause();
 			return true;
@@ -208,10 +209,10 @@ void CR3Renderer::minimizeApp() {
 
 /// set animation fps (0 to disable) and/or update screen instantly
 void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
-	//CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
+	CRLog::trace("setScreenUpdateMode(%s, %d fps)", (updateNow ? "update now" : "no update"), animationFps);
 	if (!animationFps) {
-		if (__playerDrawOnce < 2)
-			__playerDrawOnce = 2;
+//		if (__playerDrawOnce < 2)
+//			__playerDrawOnce = 2;
 //		if (__playerStarted) {
 ////			__playerDrawOnce = true;
 //			//CRLog::trace("Pausing player");
@@ -219,9 +220,12 @@ void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 ////			__playerStarted = false;
 //		}
 		if (updateNow) {
+			__playerDrawOnce = 3;
 			if (!__playerStarted) {
 				__playerStarted = true;
+				__player->SetFps(30);//);
 				__player->Resume();
+				__player->Redraw();
 			}
 //			//CRLog::trace("Updating player");
 //			if (!_updateRequested) {
