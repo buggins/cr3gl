@@ -202,6 +202,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 	, _isDragging(false)
 	, _dragStartOffset(0)
     , _viewMode(DVM_PAGES)
+    , _pageAnimation(PAGE_ANIMATION_SLIDE)
     , _locked(false)
 	, _fileItem(NULL)
 	, _lastPosition(NULL)
@@ -213,6 +214,8 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     _docview->setCallback(this);
     _docview->setViewMode(DVM_PAGES);
     _docview->setVisiblePageCount(2);
+    _docview->setStatusFontSize(deviceInfo.shortSide / 25);
+    _docview->setStatusMode(0, false, true, false, true, false, true, true);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -240,9 +243,9 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 
 void CRUIReadWidget::prepareScroll(int direction) {
     if (renderIfNecessary()) {
-    	//CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+        CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
         if (_viewMode == DVM_PAGES)
-            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, true);
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, true, _pageAnimation);
         else
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
     }
@@ -262,8 +265,21 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
         if (_viewMode == DVM_PAGES) {
-            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false);
-            _pagedCache.draw(buf, _docview->getCurPage(), 0, 0);
+            int direction = 0;
+            int progress = 0;
+            if (_scroll.isActive()) {
+                direction = _scroll.dir() > 0 ? 1 : -1;
+                progress = _scroll.progress();
+                if (progress < 0)
+                    progress = 0;
+                else if (progress > 10000)
+                    progress = 10000;
+            } else if (_isDragging) {
+                direction = _pagedCache.dir() > 0 ? 1 : -1;
+                progress = (- (_dragPos.x - _dragStart.x) * direction) * 10000 / _pos.width();
+            }
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, false, _pageAnimation);
+            _pagedCache.draw(buf, _docview->getCurPage(), direction, progress);
         } else {
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
             _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
@@ -570,17 +586,45 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
     CRUIWidget::animate(millisPassed);
     bool changed = _scroll.animate(millisPassed);
     if (changed) {
-        int oldpos = _docview->GetPos();
-        //CRLog::trace("scroll animation: new position %d", _scroll.pos());
-        _docview->SetPos(_scroll.pos(), false);
-        if (oldpos == _docview->GetPos()) {
-            //CRLog::trace("scroll animation - stopping at %d since set position not changed position", _scroll.pos());
-            // stopping: bounds
-            _scroll.stop();
+        if (_viewMode == DVM_PAGES) {
+            if (_scroll.pos() >= _pos.width() - 1) {
+                _scroll.stop();
+            }
+        } else {
+            int oldpos = _docview->GetPos();
+            //CRLog::trace("scroll animation: new position %d", _scroll.pos());
+            _docview->SetPos(_scroll.pos(), false);
+            if (oldpos == _docview->GetPos()) {
+                //CRLog::trace("scroll animation - stopping at %d since set position not changed position", _scroll.pos());
+                // stopping: bounds
+                _scroll.stop();
+            }
         }
     }
-    if (scrollWasActive && !_scroll.isActive())
-        updatePosition();
+    if (scrollWasActive && !_scroll.isActive()) {
+        if (_viewMode == DVM_PAGES) {
+            CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
+            _docview->goToPage(_pagedCache.getNewPage(), true);
+//            if (_scroll.dir() > 0)
+//                _docview->doCommand(DCMD_PAGEDOWN, 1);
+//            else if (_scroll.dir() < 0)
+//                _docview->doCommand(DCMD_PAGEUP, 1);
+        }
+        postUpdatePosition();
+    }
+}
+
+class UpdatePositionEvent : public CRRunnable {
+    CRUIReadWidget * _widget;
+public:
+    UpdatePositionEvent(CRUIReadWidget * widget) : _widget(widget) { }
+    virtual void run() {
+        _widget->updatePosition();
+    }
+};
+
+void CRUIReadWidget::postUpdatePosition() {
+    concurrencyProvider->executeGui(new UpdatePositionEvent(this));
 }
 
 bool CRUIReadWidget::isAnimating() {
@@ -591,7 +635,23 @@ void CRUIReadWidget::animateScrollTo(int newpos, int speed) {
     if (_locked)
         return;
     CRLog::trace("animateScrollTo( %d -> %d )", _docview->GetPos(), newpos);
+    int delta = newpos - _docview->GetPos();
+    prepareScroll(delta);
     _scroll.start(_docview->GetPos(), newpos, speed, SCROLL_FRICTION);
+    invalidate();
+    _main->update(true);
+}
+
+void CRUIReadWidget::animatePageFlip(int newpage, int speed) {
+    if (_locked)
+        return;
+    int page = _docview->getCurPage();
+    CRLog::trace("animatePageFlip( %d -> %d )", page, newpage);
+    //_pagedCache.prepare(_docview->);
+    int dir = newpage > page ? 1 : -1;
+    prepareScroll(dir);
+    _scroll.setDirection(dir);
+    _scroll.start(0, _pos.width(), speed, SCROLL_FRICTION);
     invalidate();
     _main->update(true);
 }
@@ -602,6 +662,8 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     int pos = _docview->GetPos();
     int newpos = pos;
     int speed = 0;
+    int page = _docview->getCurPage();
+    int newpage = page;
     if (_viewMode == DVM_PAGES) {
         if (cmd == DCMD_LINEUP)
             cmd = DCMD_PAGEUP;
@@ -611,7 +673,12 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     switch (cmd) {
     case DCMD_PAGEUP:
         if (_viewMode == DVM_PAGES) {
-            _docview->doCommand((LVDocCmd)cmd, 1);
+            if (_pageAnimation == PAGE_ANIMATION_NONE) {
+                _docview->doCommand((LVDocCmd)cmd, 1);
+            } else {
+                newpage = page - _docview->getVisiblePageCount();
+                speed = _pos.width() * 2;
+            }
         } else {
             newpos = pos - _pos.height() * 9 / 10;
             speed = _pos.height() * 2;
@@ -619,7 +686,12 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
         break;
     case DCMD_PAGEDOWN:
         if (_viewMode == DVM_PAGES) {
-            _docview->doCommand((LVDocCmd)cmd, 1);
+            if (_pageAnimation == PAGE_ANIMATION_NONE) {
+                _docview->doCommand((LVDocCmd)cmd, 1);
+            } else {
+                newpage = page + _docview->getVisiblePageCount();
+                speed = _pos.width() * 2;
+            }
         } else {
             newpos = pos + _pos.height() * 9 / 10;
             speed = _pos.height() * 2;
@@ -636,8 +708,14 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     default:
         return _docview->doCommand((LVDocCmd)cmd, param);
     }
-    if (pos != newpos) {
-        animateScrollTo(newpos, speed);
+    if (_viewMode == DVM_PAGES) {
+        if (page != newpage && newpage >= 0 && newpage < _docview->getPageCount() + _docview->getVisiblePageCount() - 1) {
+            animatePageFlip(newpage, speed);
+        }
+    } else {
+        if (pos != newpos) {
+            animateScrollTo(newpos, speed);
+        }
     }
     return true;
 }
@@ -915,7 +993,11 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         _isDragging = false;
         _dragStart.x = event->getX();
         _dragStart.y = event->getY();
-        _dragStartOffset = _docview->GetPos();
+        _dragPos = _dragStart;
+        if (_viewMode == DVM_PAGES)
+            _dragStartOffset = _dragStart.x;
+        else
+            _dragStartOffset = _docview->GetPos();
         if (_scroll.isActive())
             _scroll.stop();
         invalidate();
@@ -929,9 +1011,21 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             	event->cancelAllPointers();
             } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
-                if (speed.y < -SCROLL_MIN_SPEED || speed.y > SCROLL_MIN_SPEED) {
-                    _scroll.start(_docview->GetPos(), -speed.y, SCROLL_FRICTION);
-                    CRLog::trace("Starting scroll with speed %d", _scroll.speed());
+                if (_viewMode == DVM_PAGES) {
+                    int progress = myAbs(_dragPos.x - _dragStart.x);
+                    int spd = myAbs(speed.x);
+                    if (spd < _pos.width() / 2)
+                        spd =_pos.width() / 2;
+                    _scroll.setDirection(_pagedCache.dir());
+                    _scroll.start(0, _pos.width(), spd, SCROLL_FRICTION);
+                    _scroll.setPos(progress);
+                    CRLog::trace("Starting page flip with speed %d", _scroll.speed());
+                    _isDragging = false;
+                } else {
+                    if (speed.y < -SCROLL_MIN_SPEED || speed.y > SCROLL_MIN_SPEED) {
+                        _scroll.start(_docview->GetPos(), -speed.y, SCROLL_FRICTION);
+                        CRLog::trace("Starting scroll with speed %d", _scroll.speed());
+                    }
                 }
             	event->cancelAllPointers();
             } else {
@@ -1020,16 +1114,27 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
 				startPinchOp(op0, pinchDx, pinchDy);
 			}
-    	} else if (!_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
+        } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             _isDragging = true;
             _docview->SetPos(_dragStartOffset - delta, false);
             prepareScroll(-delta);
             invalidate();
-            _main->update(true);
-        } else if (_isDragging) {
-            _docview->SetPos(_dragStartOffset - delta, false);
+            //_main->update(true);
+        } else if (_viewMode == DVM_PAGES && !_isDragging && ((delta2 > DRAG_THRESHOLD) || (-delta2 > DRAG_THRESHOLD))) {
+            _isDragging = true;
+            prepareScroll(-delta2);
             invalidate();
-            _main->update(true);
+            //_main->update(true);
+        } else if (_isDragging) {
+            _dragPos.x = event->getX();
+            _dragPos.y = event->getY();
+            if (_viewMode == DVM_PAGES) {
+                // do nothing
+            } else {
+                _docview->SetPos(_dragStartOffset - delta, false);
+            }
+            invalidate();
+            //_main->update(true);
         } else if (!_isDragging) {
         	if (event->count() == 2) {
         		int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
@@ -1108,7 +1213,7 @@ void CRUIReadWidget::goToPercent(int percent) {
     int p = (int)(percent * (lInt64)maxpos / 10000);
     _docview->SetPos(p, false);
     if (_viewMode == DVM_PAGES)
-        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false);
+        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
     else
         _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 0, false);
     invalidate();
@@ -1474,7 +1579,7 @@ void CRUIReadWidget::ScrollModePageCache::clear() {
 //=============================================================================
 //  Paged mode
 
-CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), dx(0), dy(0), tdx(0), tdy(0) {
+CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), pageCount(0), dx(0), dy(0), tdx(0), tdy(0), newPage(0) {
 
 }
 
@@ -1486,10 +1591,11 @@ LVDrawBuf * CRUIReadWidget::PagedModePageCache::createBuf() {
     return new GLDrawBuf(dx, tdy, 32, true);
 }
 
-void CRUIReadWidget::PagedModePageCache::setSize(int _dx, int _dy, int _numPages) {
-    if (dx != _dx || dy != _dy || numPages != _numPages) {
+void CRUIReadWidget::PagedModePageCache::setSize(int _dx, int _dy, int _numPages, int _pageCount) {
+    if (dx != _dx || dy != _dy || numPages != _numPages || pageCount != _pageCount) {
         clear();
         numPages = _numPages;
+        pageCount = _pageCount;
         dx = _dx;
         dy = _dy;
         tdx = nearestPOT(dx);
@@ -1529,28 +1635,35 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     buf->beforeDrawing();
     buf->SetTextColor(_docview->getTextColor());
     buf->SetBackgroundColor(_docview->getBackgroundColor());
+    lvRect rc(0, 0, dx, dy);
     _docview->Draw(*buf, -1, pageNumber, false, false);
+    buf->DrawFrame(rc, 0xC0404040, 1);
     buf->afterDrawing();
     pages.add(page);
 }
 
 /// ensure images are prepared
-void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page, int _dx, int _dy, int direction, bool force) {
+void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page, int _dx, int _dy, int _direction, bool force, int _pageAnimation) {
     CR_UNUSED(force);
-    setSize(_dx, _dy, _docview->getVisiblePageCount());
+    setSize(_dx, _dy, _docview->getVisiblePageCount(), _docview->getPageCount());
+    pageAnimation = _pageAnimation;
+    if (_direction)
+        direction = _direction;
     int thisPage = _page; // current page
     if (numPages == 2)
     	thisPage = thisPage & ~1;
     int nextPage = -1;
-    if (direction == 1) {
+    if (direction > 0) {
     	nextPage = thisPage + numPages;
-    	if (nextPage >= _docview->getPageCount() + numPages - 1)
+        if (nextPage >= pageCount + numPages - 1)
     		nextPage = -1;
-    } else if (direction == -1) {
+    } else if (direction < 0) {
     	nextPage = thisPage - numPages;
     	if (nextPage < 0)
     		nextPage = -1; // no page
     }
+    if (nextPage >= 0)
+        newPage = nextPage;
     if (findPage(thisPage) && (nextPage == -1 || findPage(nextPage)))
     	return; // already prepared
     clearExcept(thisPage, nextPage);
@@ -1561,15 +1674,44 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
 /// draw
 void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress) {
     CR_UNUSED2(direction, progress);
-    CRLog::trace("PagedModePageCache::draw()");
+    CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
     // workaround for no-rtti builds
     GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
         //glbuf->beforeDrawing();
+        int nextPage = pageNumber;
+        if (direction > 0)
+            nextPage += numPages;
+        else if (direction < 0)
+            nextPage -= numPages;
+        if (nextPage >= pageCount + numPages - 1)
+            nextPage = pageNumber;
+        if (nextPage < 0)
+            nextPage = pageNumber;
         CRUIReadWidget::PagedModePage * page = findPage(pageNumber);
-        if (page) {
-            // simple draw current page
-            page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+        CRUIReadWidget::PagedModePage * page2 = nextPage != pageNumber ? findPage(nextPage) : NULL;
+        if (page2 && page) {
+            // animation
+            int ddx = dx * progress / 10000;
+            if (direction > 0) {
+                //
+                if (pageAnimation == PAGE_ANIMATION_SLIDE) {
+                    page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, 0 + dx - ddx, 0, 0, NULL);
+                }
+            } else if (direction < 0) {
+                //
+                if (pageAnimation == PAGE_ANIMATION_SLIDE) {
+                    page->drawbuf->DrawTo(glbuf, 0 + ddx, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
+                }
+            }
+        } else {
+            // no animation
+            if (page) {
+                // simple draw current page
+                page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+            }
         }
         //glbuf->afterDrawing();
     }

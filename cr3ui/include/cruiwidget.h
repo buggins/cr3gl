@@ -231,10 +231,17 @@ private:
     int  speed1000;
     int  startspeed;
     int  friction;
+    lInt64 startpos1000;
     lInt64 pos1000; // position * 1000
     lInt64 dstpos1000; // position * 1000
     bool manual;
+    int direction;
 public:
+    void setDirection(int dir) { direction = dir; }
+    int dir() { return direction; }
+    int progress() { return (int)((pos1000 - startpos1000) * 10000 / (dstpos1000 - startpos1000)); }
+    int startpos() { return (int)(startpos1000 / 1000); }
+    void setPos(int p) { pos1000 = p * 1000; }
     int pos() { return (int)(pos1000 / 1000); }
     int speed() { return (int)(speed1000 / 1000); }
     bool isActive() { return active; }

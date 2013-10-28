@@ -93,6 +93,12 @@ public:
     virtual ~CRUITOCWidget() { delete _itemWidget; }
 };
 
+enum PageFlipAnimation {
+    PAGE_ANIMATION_NONE,
+    PAGE_ANIMATION_SLIDE,
+    PAGE_ANIMATION_FADE
+};
+
 class CRUIReadWidget : public CRUIWindowWidget
         , public CRDocumentLoadCallback
         , public CRDocumentRenderCallback
@@ -102,9 +108,11 @@ class CRUIReadWidget : public CRUIWindowWidget
     CRUIDocView * _pinchSettingPreview;
     bool _isDragging;
     lvPoint _dragStart;
+    lvPoint _dragPos;
     int _dragStartOffset;
     ScrollControl _scroll;
     LVDocViewMode _viewMode;
+    PageFlipAnimation _pageAnimation;
 
     class ScrollModePage {
     public:
@@ -161,18 +169,24 @@ class CRUIReadWidget : public CRUIWindowWidget
         LVPtrVector<PagedModePage> pages;
         LVDrawBuf * createBuf();
         int numPages;
+        int pageCount;
         int dx;
         int dy;
         int tdx;
         int tdy;
+        int direction;
+        int newPage;
+        int pageAnimation;
     public:
+        int dir() { return direction; }
+        int getNewPage() { return newPage; }
         void preparePage(LVDocView * docview, int page);
         void clearExcept(int page1, int page2);
         PagedModePage * findPage(int page);
-        void setSize(int _dx, int _dy, int _numPages);
+        void setSize(int _dx, int _dy, int _numPages, int _pageCount);
         PagedModePageCache();
         /// ensure images are prepared
-        void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force);
+        void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force, int pageAnimation);
         /// draw
         void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress);
         /// remove images from cache
@@ -181,6 +195,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     PagedModePageCache _pagedCache;
 
     void animateScrollTo(int newpos, int speed);
+    void animatePageFlip(int newpage, int speed);
 
     bool _locked;
 
@@ -239,6 +254,7 @@ public:
 
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
+    void postUpdatePosition();
 
     /// overriden to treat popup as first child
     virtual int getChildCount();
