@@ -28,6 +28,8 @@ class CRUIEventAdapter : public Tizen::Ui::ITouchEventListener, public Tizen::Ui
 	bool dispatchKeyEvent(KEY_EVENT_TYPE action, Tizen::Ui::KeyCode keyCode);
 	int findPointer(lUInt64 id);
 public:
+	// checks if system language is changed; updates app language if necessary
+	void updateTizenSystemLang();
 	CRUIEventAdapter(CRUIEventManager * eventManager);
 	// touch event listener
 	virtual void  OnTouchCanceled (const Tizen::Ui::Control &source, const Tizen::Graphics::Point &currentPosition, const Tizen::Ui::TouchEventInfo &touchInfo);

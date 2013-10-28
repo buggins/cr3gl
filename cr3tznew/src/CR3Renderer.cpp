@@ -75,6 +75,8 @@ CR3Renderer::Draw(void)
 {
 	CRLog::debug("CR3Renderer::Draw is called");
 
+	 _eventAdapter->updateTizenSystemLang();
+
 	//_updateRequested = false;
 
 	glShadeModel(GL_SMOOTH);

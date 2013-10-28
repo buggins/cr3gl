@@ -125,6 +125,8 @@ CoolReaderApp::OnForeground(void)
 {
 	// TODO:
 	// Start or resume drawing when the application is moved to the foreground.
+	if (__renderer)
+		__renderer->getEventAdapter()->updateTizenSystemLang();
 }
 
 void

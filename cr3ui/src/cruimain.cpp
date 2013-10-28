@@ -23,6 +23,14 @@ void applyThemeChange(CRUIWidget * widget) {
         applyThemeChange(widget->getChild(i));
 }
 
+void CRUIMainWidget::onSystemLanguageChanged() {
+	if (_currentSettings->getStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM) == PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM) {
+		crconfig.setInterfaceLanguage(lString8(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM));
+		requestLayout();
+		update(true);
+	}
+}
+
 void CRUIMainWidget::onThemeChanged()
 {
     applyThemeChange(_home);

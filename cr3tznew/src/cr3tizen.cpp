@@ -236,6 +236,16 @@ public:
 	}
 };
 
+lString8 getTizenSystemLang() {
+	Tizen::Base::String language;
+	Tizen::System::SettingInfo::GetValue("http://tizen.org/setting/locale.language", language);
+	lString8 lang = UnicodeToUtf8(language.GetPointer());
+	//CRLog::info("System language: %s", lang.c_str());
+	if (lang.length() > 2)
+		lang = lang.substr(0, 2);
+	return lang;
+}
+
 void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
 	CRLog::info("Starting CoolReader");
@@ -266,12 +276,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 //	CRMonitor * monitor = concurrencyProvider->createMonitor();
 //	monitor->acquire();
 //	monitor->wait();
-	Tizen::Base::String language;
-	Tizen::System::SettingInfo::GetValue("http://tizen.org/setting/locale.language", language);
-	crconfig.systemLanguage = UnicodeToUtf8(language.GetPointer());
+	crconfig.systemLanguage = getTizenSystemLang();
 	CRLog::info("System language: %s", crconfig.systemLanguage.c_str());
-	if (crconfig.systemLanguage.length() > 2)
-		crconfig.systemLanguage = crconfig.systemLanguage.substr(0, 2);
 
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansRegular.ttf");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
@@ -295,6 +301,17 @@ CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventMana
 {
 
 }
+
+void CRUIEventAdapter::updateTizenSystemLang() {
+	lString8 newLang = getTizenSystemLang();
+	if (newLang != crconfig.systemLanguage) {
+		// update
+		CRLog::info("System language changed  %s -> %s", crconfig.systemLanguage.c_str(), newLang.c_str());
+		crconfig.systemLanguage = newLang;
+		_eventManager->onSystemLanguageChanged();
+	}
+}
+
 
 using namespace Tizen::Ui;
 

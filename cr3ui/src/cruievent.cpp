@@ -290,6 +290,10 @@ bool CRUIEventManager::interceptTouchEvent(const CRUIMotionEvent * event, CRUIWi
 	return true;
 }
 
+void CRUIEventManager::onSystemLanguageChanged() {
+	_rootWidget->onSystemLanguageChanged();
+}
+
 void CRUIEventManager::setRootWidget(CRUIMainWidget * rootWidget) {
 	_rootWidget = rootWidget;
 	_rootWidget->setEventManager(this);

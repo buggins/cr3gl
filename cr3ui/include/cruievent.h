@@ -255,6 +255,7 @@ protected:
     void updateScreen();
 public:
 	CRUIEventManager();
+    void onSystemLanguageChanged();
 	void setRootWidget(CRUIMainWidget * rootWidget);
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);

@@ -374,6 +374,8 @@ public:
 
     virtual void onThemeChanged();
 
+    virtual void onSystemLanguageChanged();
+
     virtual void clearImageCaches();
 
     CRFileItem * createManualBook();
