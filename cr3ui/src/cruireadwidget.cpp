@@ -1629,7 +1629,7 @@ CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), pageCoun
 }
 
 void CRUIReadWidget::PagedModePageCache::clear() {
-	CRLog::trace("CRUIReadWidget::PagedModePageCache::clear");
+	//CRLog::trace("CRUIReadWidget::PagedModePageCache::clear");
     pages.clear();
 }
 
@@ -1660,7 +1660,7 @@ CRUIReadWidget::PagedModePage * CRUIReadWidget::PagedModePageCache::findPage(int
 void CRUIReadWidget::PagedModePageCache::clearExcept(int page1, int page2) {
 	for (int i = pages.length() - 1; i >= 0; i--) {
 		if (pages[i]->pageNumber != page1 && pages[i]->pageNumber != page2) {
-			CRLog::trace("Clearing page image %d", pages[i]->pageNumber);
+			//CRLog::trace("Clearing page image %d", pages[i]->pageNumber);
 			delete pages.remove(i);
 		}
 	}
@@ -1671,7 +1671,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
 		return;
 	if (findPage(pageNumber))
 		return; // already prepared
-    CRLog::trace("Preparing page image for page %d", pageNumber);
+    //CRLog::trace("Preparing page image for page %d", pageNumber);
     PagedModePage * page = new PagedModePage();
     page->dx = dx;
     page->dy = dy;
@@ -1753,7 +1753,7 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
 /// draw
 void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x) {
     CR_UNUSED2(direction, progress);
-    CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
+    //CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
     // workaround for no-rtti builds
     GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
