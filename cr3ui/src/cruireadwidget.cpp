@@ -1380,6 +1380,21 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             //needClearCache = true;
             invalidate();
         }
+        if (key == PROP_PAGE_VIEW_MODE) {
+            int n = value.atoi();
+            if (n == 0)
+                _docview->setViewMode(DVM_SCROLL);
+            else if (n == 1)
+                _docview->setViewMode(DVM_PAGES, 1);
+            else
+                _docview->setViewMode(DVM_PAGES, 2);
+            _viewMode = _docview->getViewMode();
+        }
+        if (key == PROP_PAGE_VIEW_ANIMATION) {
+            _pageAnimation = (PageFlipAnimation)value.atoi();
+            if (_pageAnimation < PAGE_ANIMATION_NONE || _pageAnimation > PAGE_ANIMATION_3D)
+                _pageAnimation = PAGE_ANIMATION_SLIDE;
+        }
     }
 //    if (backgroundChanged) {
 //        _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));

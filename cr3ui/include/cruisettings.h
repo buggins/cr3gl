@@ -25,6 +25,17 @@
 #define PROP_APP_INTERFACE_LANGUAGE "app.ui.lang"
 #define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
 
+#define PROP_PAGE_VIEW_MODE_VALUE_SCROLL "0"
+#define PROP_PAGE_VIEW_MODE_VALUE_1PAGE "1"
+#define PROP_PAGE_VIEW_MODE_VALUE_2PAGES "2"
+
+#define PROP_PAGE_VIEW_ANIMATION "crengine.page.view.animation"
+#define PROP_PAGE_VIEW_ANIMATION_VALUE_NONE "0"
+#define PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1 "1"
+#define PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE2 "2"
+#define PROP_PAGE_VIEW_ANIMATION_VALUE_FADE "3"
+#define PROP_PAGE_VIEW_ANIMATION_VALUE_3D "4"
+
 //#define PROP_FONT_COLOR "font.color.default"
 #define PROP_FONT_COLOR_DAY        "font.color.default.day"
 #define PROP_FONT_COLOR_NIGHT      "font.color.default.night"

@@ -97,7 +97,8 @@ enum PageFlipAnimation {
     PAGE_ANIMATION_NONE,
     PAGE_ANIMATION_SLIDE,
     PAGE_ANIMATION_SLIDE2,
-    PAGE_ANIMATION_FADE
+    PAGE_ANIMATION_FADE,
+    PAGE_ANIMATION_3D
 };
 
 class CRUIReadWidget : public CRUIWindowWidget

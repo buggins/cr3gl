@@ -368,6 +368,18 @@ void CRUIMainWidget::createReaderSettings() {
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
     pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
     pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));
+    CRUISettingsOptionList * viewmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_MODE, STR_SETTINGS_VIEW_MODE_DESCRIPTION, PROP_PAGE_VIEW_MODE);
+    viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_SCROLL, STR_SETTINGS_VIEW_MODE_VALUE_SCROLL));
+    viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_1PAGE, STR_SETTINGS_VIEW_MODE_VALUE_1PAGE));
+    viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_2PAGES, STR_SETTINGS_VIEW_MODE_VALUE_2PAGES));
+    pageLayout->addChild(viewmode);
+    CRUISettingsOptionList * animationmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_PAGE_ANIMATION, STR_SETTINGS_VIEW_PAGE_ANIMATION_DESCRIPTION, PROP_PAGE_VIEW_ANIMATION);
+    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_NONE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_NONE));
+    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE1));
+    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE2, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE2));
+    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_FADE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_FADE));
+    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_3D, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_3D));
+    pageLayout->addChild(animationmode);
     _readerSettings.addChild(pageLayout);
 
     CRUISettingsList * formattingOptions = new CRUISettingsList(STR_SETTINGS_TEXT_FORMATTING, STR_SETTINGS_TEXT_FORMATTING_DESCRIPTION, SETTINGS_PATH_READER_TEXTFORMATTING);
@@ -416,6 +428,9 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "7", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "8", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
+
+    _currentSettings->setStringDef(PROP_PAGE_VIEW_MODE, PROP_PAGE_VIEW_MODE_VALUE_2PAGES);
+    _currentSettings->setStringDef(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1);
 
     _currentSettings->setStringDef(PROP_FONT_FACE, crconfig.uiFontFace.c_str());
     _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
