@@ -409,7 +409,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "SETTINGS");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "1", "PAGE_UP");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "2", "PAGE_UP");
-    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "3", "PAGE_UP");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "3", "PAGE_DOWN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "4", "PAGE_UP");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "5", "MENU");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "6", "PAGE_DOWN");

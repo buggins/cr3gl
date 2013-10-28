@@ -290,20 +290,22 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
         _docview->drawPageBackground(*buf, 0, 0);
     }
     // scroll bottom and top gradients
-    lvRect top = _pos;
-    top.bottom = top.top + deviceInfo.shortSide / 60;
-    lvRect top2 = _pos;
-    top2.top = top.bottom;
-    top2.bottom = top.top + deviceInfo.shortSide / 30;
-    lvRect bottom = _pos;
-    bottom.top = bottom.bottom - deviceInfo.shortSide / 60;
-    lvRect bottom2 = _pos;
-    bottom2.bottom = bottom.top;
-    bottom2.top = bottom.bottom - deviceInfo.shortSide / 30;
-    drawVGradient(buf, top, 0xA0000000, 0xE0000000);
-    drawVGradient(buf, top2, 0xE0000000, 0xFF000000);
-    drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
-    drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
+    if (_viewMode != DVM_PAGES) {
+        lvRect top = _pos;
+        top.bottom = top.top + deviceInfo.shortSide / 60;
+        lvRect top2 = _pos;
+        top2.top = top.bottom;
+        top2.bottom = top.top + deviceInfo.shortSide / 30;
+        lvRect bottom = _pos;
+        bottom.top = bottom.bottom - deviceInfo.shortSide / 60;
+        lvRect bottom2 = _pos;
+        bottom2.bottom = bottom.top;
+        bottom2.top = bottom.bottom - deviceInfo.shortSide / 30;
+        drawVGradient(buf, top, 0xA0000000, 0xE0000000);
+        drawVGradient(buf, top2, 0xE0000000, 0xFF000000);
+        drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
+        drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
+    }
     // popup support
     if (_popupControl.popupBackground)
         _popupControl.popupBackground->draw(buf);
@@ -988,8 +990,19 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int delta = dy; //isVertical() ? dy : dx;
     int delta2 = dx; //isVertical() ? dy : dx;
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
+//    if (event->isCancelRequested())
+//        return true;
     switch (action) {
     case ACTION_DOWN:
+        if (_scroll.isActive()) {
+            _scroll.stop();
+            if (_viewMode == DVM_PAGES)
+                _docview->goToPage(_pagedCache.getNewPage());
+            event->cancelAllPointers();
+            _isDragging = false;
+            invalidate();
+            return true;
+        }
         _isDragging = false;
         _dragStart.x = event->getX();
         _dragStart.y = event->getY();
@@ -1014,8 +1027,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 if (_viewMode == DVM_PAGES) {
                     int progress = myAbs(_dragPos.x - _dragStart.x);
                     int spd = myAbs(speed.x);
-                    if (spd < _pos.width() / 2)
-                        spd =_pos.width() / 2;
+                    if (spd < _pos.width())
+                        spd =_pos.width();
                     _scroll.setDirection(_pagedCache.dir());
                     _scroll.start(0, _pos.width(), spd, SCROLL_FRICTION);
                     _scroll.setPos(progress);
@@ -1636,8 +1649,38 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     buf->SetTextColor(_docview->getTextColor());
     buf->SetBackgroundColor(_docview->getBackgroundColor());
     lvRect rc(0, 0, dx, dy);
-    _docview->Draw(*buf, -1, pageNumber, false, false);
-    buf->DrawFrame(rc, 0xC0404040, 1);
+    int oldPage = _docview->getCurPage();
+    if (oldPage != pageNumber)
+        _docview->goToPage(pageNumber);
+    //_docview->Draw(*buf, -1, pageNumber, false, false);
+    _docview->Draw(*buf, false);
+    if (oldPage != pageNumber)
+        _docview->goToPage(oldPage);
+    int sdx = dx / 10 / _docview->getVisiblePageCount();
+    lUInt32 cl1 = 0xE0000000;
+    lUInt32 cl2 = 0xFF000000;
+    buf->GradientRect(0, 0, sdx, dy, cl1, cl2, cl2, cl1);
+    buf->GradientRect(dx - sdx, 0, dx, dy, cl2, cl1, cl1, cl2);
+    if (_docview->getVisiblePageCount() == 2) {
+        buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
+        buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
+    }
+    if (_docview->getVisiblePageCount() == 2) {
+        lvRect rc1 = rc;
+        rc1.right = dx / 2;
+        buf->DrawFrame(rc1, 0xC0404040, 1);
+        rc1.shrink(1);
+        buf->DrawFrame(rc1, 0xE0404040, 1);
+        rc1 = rc;
+        rc1.left = dx / 2;
+        buf->DrawFrame(rc1, 0xC0404040, 1);
+        rc1.shrink(1);
+        buf->DrawFrame(rc1, 0xE0404040, 1);
+    } else {
+        buf->DrawFrame(rc, 0xC0404040, 1);
+        rc.shrink(1);
+        buf->DrawFrame(rc, 0xE0404040, 1);
+    }
     buf->afterDrawing();
     pages.add(page);
 }
@@ -1678,6 +1721,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
     // workaround for no-rtti builds
     GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
+        if (progress < 0)
+            progress = 0;
+        if (progress > 10000)
+            progress = 10000;
         //glbuf->beforeDrawing();
         int nextPage = pageNumber;
         if (direction > 0)
@@ -1693,15 +1740,28 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
         if (page2 && page) {
             // animation
             int ddx = dx * progress / 10000;
+            int shadowdx = dx / 20;
+            lUInt32 shadowcl1 = 0xD0000000;
+            lUInt32 shadowcl2 = 0xFF000000;
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
+                    page2->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
                     page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
+                    glbuf->GradientRect(dx - ddx, 0, dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
                     page2->drawbuf->DrawTo(glbuf, 0 + dx - ddx, 0, 0, NULL);
+                    page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
                 }
             } else if (direction < 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
+                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
+                    if (ddx < shadowdx)
+                        shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
+                    glbuf->GradientRect(0 + ddx, 0, 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
                     page->drawbuf->DrawTo(glbuf, 0 + ddx, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
                 }

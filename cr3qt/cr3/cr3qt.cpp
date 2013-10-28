@@ -92,8 +92,11 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
         event->addEvent(item);
         _eventManager->dispatchTouchEvent(event);
         delete event;
-        if (isLast)
+        if (isLast || (item && item->isCancelled())) {
+            if (_activePointer == item)
+                _activePointer = NULL;
             delete item;
+        }
     }
 }
 

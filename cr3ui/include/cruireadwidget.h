@@ -96,6 +96,7 @@ public:
 enum PageFlipAnimation {
     PAGE_ANIMATION_NONE,
     PAGE_ANIMATION_SLIDE,
+    PAGE_ANIMATION_SLIDE2,
     PAGE_ANIMATION_FADE
 };
 
