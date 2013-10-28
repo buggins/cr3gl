@@ -288,7 +288,7 @@ class CRUITheme : public CRUIStyle {
 protected:
 	LVHashTable<lString8, CRUIStyle *> _map;
     LVHashTable<lString8, lUInt32> _colors;
-    LVHashTable<unsigned, LVFontRef> _fonts;
+    LVHashTable<lUInt32, LVFontRef> _fonts;
 public:
     void remove(CRUIStyle * style);
 	virtual CRUIStyle * find(const lString8 &id, bool defaultToTheme = true);

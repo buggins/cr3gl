@@ -6,6 +6,8 @@ using namespace CRUI;
 #include "crcoverpages.h"
 #include "stringresource.h"
 #include "cruiconfig.h"
+#include "cruisettings.h"
+#include "cruisettingswidget.h"
 
 #define WINDOW_ANIMATION_DELAY 250
 //#define WINDOW_ANIMATION_DELAY 750
@@ -346,14 +348,13 @@ void CRUIMainWidget::createReaderSettings() {
 
     _readerSettings.addChild(fontsAndColors);
 
-
-    CRUISettingsList * interface = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
+    CRUISettingsList * interfaceSettings = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
-    interface->addChild(uilangs);
+    interfaceSettings->addChild(uilangs);
 
     CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
@@ -361,8 +362,8 @@ void CRUIMainWidget::createReaderSettings() {
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
     themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
-    interface->addChild(themes);
-    _readerSettings.addChild(interface);
+    interfaceSettings->addChild(themes);
+    _readerSettings.addChild(interfaceSettings);
 
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
     pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
