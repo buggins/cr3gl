@@ -1171,7 +1171,7 @@ void GLDrawBuf::afterDrawing()
 			//CRLog::debug("Finished render to texture");
 			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 			checkError("afterDrawing - glBindFramebuffer");
-			//glFlush();
+			glFlush();
 		}
         //glMatrixMode(GL_MODELVIEW);
         //glPopMatrix();

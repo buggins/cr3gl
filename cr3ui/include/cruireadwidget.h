@@ -190,7 +190,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         /// ensure images are prepared
         void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force, int pageAnimation);
         /// draw
-        void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress);
+        void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x);
         /// remove images from cache
         void clear();
     };

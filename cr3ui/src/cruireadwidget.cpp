@@ -279,7 +279,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
                 progress = (- (_dragPos.x - _dragStart.x) * direction) * 10000 / _pos.width();
             }
             _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, false, _pageAnimation);
-            _pagedCache.draw(buf, _docview->getCurPage(), direction, progress);
+            _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _pos.left);
         } else {
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
             _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
@@ -1751,7 +1751,7 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
 }
 
 /// draw
-void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress) {
+void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x) {
     CR_UNUSED2(direction, progress);
     CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
     // workaround for no-rtti builds
@@ -1787,47 +1787,47 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    page2->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
-                    glbuf->GradientRect(dx - ddx, 0, dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0 - ddx, 0, 0, NULL);
+                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    page2->drawbuf->DrawTo(glbuf, 0 + dx - ddx, 0, 0, NULL);
-                    page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, x + 0 + dx - ddx, 0, 0, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0 - ddx, 0, 0, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    page2->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    glbuf->DrawRescaled(page->drawbuf, 0, 0, dx, dy, 0, 0, dx - ddx, dy, 0);
-                    glbuf->GradientRect(dx - ddx, 0, dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    glbuf->DrawRescaled(page->drawbuf, 0, 0, dx, dy, x + 0, 0, dx - ddx, dy, 0);
+                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             } else if (direction < 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, x + 0 - dx + ddx, 0, 0, NULL);
                     if (ddx < shadowdx)
                         shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
-                    glbuf->GradientRect(0 + ddx, 0, 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    page->drawbuf->DrawTo(glbuf, 0 + ddx, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0 + ddx, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, x + 0 - dx + ddx, 0, 0, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
+                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
-                    glbuf->DrawRescaled(page2->drawbuf, 0, 0, dx, dy, 0, 0, ddx, dy, 0);
+                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+                    glbuf->DrawRescaled(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
                     if (ddx < shadowdx)
                         shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
-                    glbuf->GradientRect(0 + ddx, 0, 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             }
         } else {
             // no animation
             if (page) {
                 // simple draw current page
-                page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                page->drawbuf->DrawTo(glbuf, x, 0, 0, NULL);
             }
         }
         //glbuf->afterDrawing();
