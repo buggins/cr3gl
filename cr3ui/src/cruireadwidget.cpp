@@ -1486,15 +1486,15 @@ void CRUIReadWidget::OnExternalLink(lString16 url, ldomNode * node) {
 
 /// Called when page images should be invalidated (clearImageCache() called in LVDocView)
 void CRUIReadWidget::OnImageCacheClear() {
-    class ClearCache : public CRRunnable {
-        CRUIReadWidget * _widget;
-    public:
-        ClearCache(CRUIReadWidget * widget) : _widget(widget) {}
-        virtual void run() {
-            _widget->clearImageCaches();
-        }
-    };
-    concurrencyProvider->executeGui(new ClearCache(this));
+//    class ClearCache : public CRRunnable {
+//        CRUIReadWidget * _widget;
+//    public:
+//        ClearCache(CRUIReadWidget * widget) : _widget(widget) {}
+//        virtual void run() {
+//            _widget->clearImageCaches();
+//        }
+//    };
+//    concurrencyProvider->executeGui(new ClearCache(this));
 }
 
 /// return true if reload will be processed by external code, false to let internal code process it
@@ -1629,6 +1629,7 @@ CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), pageCoun
 }
 
 void CRUIReadWidget::PagedModePageCache::clear() {
+	CRLog::trace("CRUIReadWidget::PagedModePageCache::clear");
     pages.clear();
 }
 
@@ -1658,8 +1659,10 @@ CRUIReadWidget::PagedModePage * CRUIReadWidget::PagedModePageCache::findPage(int
 
 void CRUIReadWidget::PagedModePageCache::clearExcept(int page1, int page2) {
 	for (int i = pages.length() - 1; i >= 0; i--) {
-		if (pages[i]->pageNumber != page1 && pages[i]->pageNumber != page2)
+		if (pages[i]->pageNumber != page1 && pages[i]->pageNumber != page2) {
+			CRLog::trace("Clearing page image %d", pages[i]->pageNumber);
 			delete pages.remove(i);
+		}
 	}
 }
 
