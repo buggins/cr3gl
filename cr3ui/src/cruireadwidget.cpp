@@ -1794,6 +1794,9 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
+                    page2->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                    glbuf->DrawRescaled(page->drawbuf, 0, 0, dx, dy, 0, 0, dx - ddx, dy, 0);
+                    glbuf->GradientRect(dx - ddx, 0, dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             } else if (direction < 0) {
                 //
@@ -1810,6 +1813,11 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
+                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                    glbuf->DrawRescaled(page2->drawbuf, 0, 0, dx, dy, 0, 0, ddx, dy, 0);
+                    if (ddx < shadowdx)
+                        shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
+                    glbuf->GradientRect(0 + ddx, 0, 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             }
         } else {
