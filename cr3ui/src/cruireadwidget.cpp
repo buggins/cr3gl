@@ -651,11 +651,16 @@ void CRUIReadWidget::animatePageFlip(int newpage, int speed) {
     CRLog::trace("animatePageFlip( %d -> %d )", page, newpage);
     //_pagedCache.prepare(_docview->);
     int dir = newpage > page ? 1 : -1;
+    if (_pageAnimation == PAGE_ANIMATION_NONE) {
+        _docview->goToPage(newpage);
+        invalidate();
+        return;
+    }
     prepareScroll(dir);
     _scroll.setDirection(dir);
     _scroll.start(0, _pos.width(), speed, SCROLL_FRICTION);
     invalidate();
-    _main->update(true);
+    //_main->update(true);
 }
 
 bool CRUIReadWidget::doCommand(int cmd, int param) {
@@ -1134,6 +1139,15 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             invalidate();
             //_main->update(true);
         } else if (_viewMode == DVM_PAGES && !_isDragging && ((delta2 > DRAG_THRESHOLD) || (-delta2 > DRAG_THRESHOLD))) {
+            if (_pageAnimation == PAGE_ANIMATION_NONE) {
+                if (delta2 < 0)
+                    _docview->doCommand(DCMD_PAGEDOWN, 1);
+                else
+                    _docview->doCommand(DCMD_PAGEUP, 1);
+                event->cancelAllPointers();
+                invalidate();
+                return true;
+            }
             _isDragging = true;
             prepareScroll(-delta2);
             invalidate();
@@ -1142,7 +1156,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             _dragPos.x = event->getX();
             _dragPos.y = event->getY();
             if (_viewMode == DVM_PAGES) {
-                // do nothing
+                // will be handled in Draw
             } else {
                 _docview->SetPos(_dragStartOffset - delta, false);
             }
@@ -1651,6 +1665,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
 		return;
 	if (findPage(pageNumber))
 		return; // already prepared
+    CRLog::trace("Preparing page image for page %d", pageNumber);
     PagedModePage * page = new PagedModePage();
     page->dx = dx;
     page->dy = dy;
