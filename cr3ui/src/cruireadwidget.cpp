@@ -1259,6 +1259,7 @@ void CRUIReadWidget::showTOC() {
 }
 
 void CRUIReadWidget::showReaderMenu() {
+    CRLog::trace("showReaderMenu");
     CRUIActionList actions;
     actions.add(ACTION_BACK);
     actions.add(ACTION_SETTINGS);
@@ -1267,12 +1268,14 @@ void CRUIReadWidget::showReaderMenu() {
     else
         actions.add(ACTION_NIGHT_MODE);
     //actions.add(ACTION_GOTO_PERCENT);
-    if (hasTOC())
+    CRLog::trace("checking TOC");
+    //if (hasTOC())
         actions.add(ACTION_TOC);
     actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
+    CRLog::trace("showing popup");
     preparePopup(menu, ALIGN_BOTTOM, margins);
 }
 
@@ -1766,13 +1769,18 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
         if (nextPage < 0)
             nextPage = pageNumber;
         CRUIReadWidget::PagedModePage * page = findPage(pageNumber);
-        CRUIReadWidget::PagedModePage * page2 = nextPage != pageNumber ? findPage(nextPage) : NULL;
+        CRUIReadWidget::PagedModePage * page2 = ((nextPage != pageNumber) && (pageAnimation != PAGE_ANIMATION_NONE)) ? findPage(nextPage) : NULL;
         if (page2 && page) {
             // animation
             int ddx = dx * progress / 10000;
             int shadowdx = dx / 20;
             lUInt32 shadowcl1 = 0xD0000000;
             lUInt32 shadowcl2 = 0xFF000000;
+            int alpha = 255 - 255 * progress / 10000;
+            if (alpha < 0)
+                alpha = 0;
+            else if (alpha > 255)
+                alpha = 255;
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
@@ -1782,6 +1790,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
                     page2->drawbuf->DrawTo(glbuf, 0 + dx - ddx, 0, 0, NULL);
                     page->drawbuf->DrawTo(glbuf, 0 - ddx, 0, 0, NULL);
+                } else if (pageAnimation == PAGE_ANIMATION_FADE) {
+                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
+                } else if (pageAnimation == PAGE_ANIMATION_3D) {
                 }
             } else if (direction < 0) {
                 //
@@ -1794,6 +1806,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
                     page->drawbuf->DrawTo(glbuf, 0 + ddx, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, 0 - dx + ddx, 0, 0, NULL);
+                } else if (pageAnimation == PAGE_ANIMATION_FADE) {
+                    page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+                    page2->drawbuf->DrawTo(glbuf, 0, 0, alpha << 16, NULL);
+                } else if (pageAnimation == PAGE_ANIMATION_3D) {
                 }
             }
         } else {

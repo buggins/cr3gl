@@ -895,7 +895,8 @@ public:
     	glDisable(GL_ALPHA_TEST);
     	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     	//LVGLSetColor(0xFFFFFF);
-    	glColor4f(1,1,1,1);
+        float alpha = 1.0f - ((color >> 24) & 255)/ 255.0f;
+        glColor4f(1,1,1,alpha);
     	glActiveTexture(GL_TEXTURE0);
         checkError("glActiveTexture");
         glBindTexture(GL_TEXTURE_2D, textureId);
@@ -957,8 +958,9 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (_textureBuf && _textureId != 0) {
+            int alpha = ((options >> 16) & 255);
 			if (glbuf->_scene)
-				glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF));
+                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF | (alpha << 24)));
 		} else {
 			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
 		}
