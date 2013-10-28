@@ -104,6 +104,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     lvPoint _dragStart;
     int _dragStartOffset;
     ScrollControl _scroll;
+    LVDocViewMode _viewMode;
 
     class ScrollModePage {
     public:
@@ -140,6 +141,44 @@ class CRUIReadWidget : public CRUIWindowWidget
         void clear();
     };
     ScrollModePageCache _scrollCache;
+
+    class PagedModePage {
+    public:
+    	int pageNumber; // number of left page, 0 based
+    	int numPages; // 1 or 2
+    	int dx;
+    	int dy;
+        int tdx;
+        int tdy;
+        LVDrawBuf * drawbuf;
+        PagedModePage() : pageNumber(0), numPages(1), dx(0), dy(0), tdx(0), tdy(0), drawbuf(NULL) { }
+        ~PagedModePage() {
+            if (drawbuf)
+                delete drawbuf;
+        }
+    };
+    class PagedModePageCache {
+        LVPtrVector<PagedModePage> pages;
+        LVDrawBuf * createBuf();
+        int numPages;
+        int dx;
+        int dy;
+        int tdx;
+        int tdy;
+    public:
+        void preparePage(LVDocView * docview, int page);
+        void clearExcept(int page1, int page2);
+        PagedModePage * findPage(int page);
+        void setSize(int _dx, int _dy, int _numPages);
+        PagedModePageCache();
+        /// ensure images are prepared
+        void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force);
+        /// draw
+        void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress);
+        /// remove images from cache
+        void clear();
+    };
+    PagedModePageCache _pagedCache;
 
     void animateScrollTo(int newpos, int speed);
 

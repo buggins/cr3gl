@@ -201,7 +201,8 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _pinchSettingPreview(NULL)
 	, _isDragging(false)
 	, _dragStartOffset(0)
-	, _locked(false)
+    , _viewMode(DVM_PAGES)
+    , _locked(false)
 	, _fileItem(NULL)
 	, _lastPosition(NULL)
 	, _startPositionIsUpdated(false)
@@ -210,6 +211,8 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     setId("READ");
     _docview = createDocView();
     _docview->setCallback(this);
+    _docview->setViewMode(DVM_PAGES);
+    _docview->setVisiblePageCount(2);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -238,7 +241,10 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 void CRUIReadWidget::prepareScroll(int direction) {
     if (renderIfNecessary()) {
     	//CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
-        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
+        if (_viewMode == DVM_PAGES)
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, true);
+        else
+            _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
     }
 }
 
@@ -255,8 +261,13 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     }
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
-        _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
-        _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+        if (_viewMode == DVM_PAGES) {
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false);
+            _pagedCache.draw(buf, _docview->getCurPage(), 0, 0);
+        } else {
+            _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
+            _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+        }
     } else {
         // document render in progress; draw just page background
         //CRLog::trace("Document is locked, just drawing background");
@@ -375,7 +386,7 @@ public:
 
 void CRUIReadWidget::closeBook() {
     updatePosition();
-    _scrollCache.clear();
+    clearImageCaches();
     if (_fileItem)
         delete _fileItem;
     if (_lastPosition)
@@ -465,7 +476,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
         return false;
     closeBook();
     _locked = true;
-    _scrollCache.clear();
+    clearImageCaches();
     _main->showSlowOperationPopup();
     _fileItem = static_cast<CRFileItem*>(file->clone());
     _lastPosition = bookDB->loadLastPosition(file->getBook());
@@ -495,7 +506,7 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
     CRLog::trace("Render is finished - unlocking document");
     _locked = false;
     invalidate();
-    _scrollCache.clear();
+    clearImageCaches();
     if (!_startPositionIsUpdated) {
         // call update position to refresh last access timestamp
         _startPositionIsUpdated = true;
@@ -518,7 +529,7 @@ bool CRUIReadWidget::renderIfNecessary() {
         return true;
     CRLog::info("Render is required! Starting render task");
     _locked = true;
-    _scrollCache.clear();
+    clearImageCaches();
     _main->showSlowOperationPopup();
     _main->executeBackground(new RenderBookTask(Utf8ToUnicode(getPathName()), _main, this));
     return false;
@@ -591,14 +602,28 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     int pos = _docview->GetPos();
     int newpos = pos;
     int speed = 0;
+    if (_viewMode == DVM_PAGES) {
+        if (cmd == DCMD_LINEUP)
+            cmd = DCMD_PAGEUP;
+        else if (cmd == DCMD_LINEDOWN)
+            cmd = DCMD_PAGEDOWN;
+    }
     switch (cmd) {
     case DCMD_PAGEUP:
-        newpos = pos - _pos.height() * 9 / 10;
-        speed = _pos.height() * 2;
+        if (_viewMode == DVM_PAGES) {
+            _docview->doCommand((LVDocCmd)cmd, 1);
+        } else {
+            newpos = pos - _pos.height() * 9 / 10;
+            speed = _pos.height() * 2;
+        }
         break;
     case DCMD_PAGEDOWN:
-        newpos = pos + _pos.height() * 9 / 10;
-        speed = _pos.height() * 2;
+        if (_viewMode == DVM_PAGES) {
+            _docview->doCommand((LVDocCmd)cmd, 1);
+        } else {
+            newpos = pos + _pos.height() * 9 / 10;
+            speed = _pos.height() * 2;
+        }
         break;
     case DCMD_LINEUP:
         newpos = pos - _docview->getFontSize();
@@ -619,6 +644,7 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
 
 void CRUIReadWidget::clearImageCaches() {
 	_scrollCache.clear();
+    _pagedCache.clear();
 }
 
 bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
@@ -863,6 +889,7 @@ void CRUIReadWidget::endPinchOp(int dx, int dy, bool cancel) {
 
 /// returns true to allow parent intercept this widget which is currently handled by this widget
 bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
+    CR_UNUSED(event);
 	if (_isDragging || _pinchOp)
 		return false;
 	return true;
@@ -1044,7 +1071,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 void CRUIReadWidget::goToPosition(lString16 path) {
     ldomXPointer pt = _docview->getDocument()->createXPointer(path);
     _docview->goToBookmark(pt);
-    _scrollCache.clear();
+    clearImageCaches();
 }
 
 // formats percent value 0..10000  as  XXX.XX%
@@ -1080,7 +1107,10 @@ void CRUIReadWidget::goToPercent(int percent) {
         maxpos = 0;
     int p = (int)(percent * (lInt64)maxpos / 10000);
     _docview->SetPos(p, false);
-    _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 0, false);
+    if (_viewMode == DVM_PAGES)
+        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false);
+    else
+        _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 0, false);
     invalidate();
 }
 
@@ -1147,7 +1177,7 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
     CRPropRef newSettings = propsGetCurrent() | props;
     CRPropRef forDocview = LVCreatePropsContainer();
     bool backgroundChanged = false;
-    bool needClearCache = false;
+    //bool needClearCache = false;
     for (int i = 0; i < props->getCount(); i++) {
         lString8 key(props->getName(i));
         //lString8 value(UnicodeToUtf8(props->getValue(i)));
@@ -1190,7 +1220,7 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
             propsGetCurrent()->setString(key.c_str(), props->getValue(i));
             backgroundChanged = true;
-            needClearCache = true;
+            //needClearCache = true;
         }
     }
     CRPropRef res = LVDocView::propsApply(forDocview);
@@ -1206,7 +1236,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
     CR_UNUSED2(oldSettings, newSettings);
     CRPropRef docviewprops = LVCreatePropsContainer();
     //bool backgroundChanged = false;
-    bool needClearCache = false;
+    //bool needClearCache = false;
     for (int i = 0; i < changed->getCount(); i++) {
         lString8 key(changed->getName(i));
         lString8 value(UnicodeToUtf8(changed->getValue(i)));
@@ -1215,7 +1245,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {
                 _docview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
-                needClearCache = true;
+                //needClearCache = true;
             }
         }
         if (key == PROP_BACKGROUND_COLOR
@@ -1224,12 +1254,12 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
             //backgroundChanged = true;
-            needClearCache = true;
+            //needClearCache = true;
         }
         if (key == PROP_HYPHENATION_DICT) {
             setHyph(lastBookLang, value);
             _docview->requestRender();
-            needClearCache = true;
+            //needClearCache = true;
             invalidate();
         }
     }
@@ -1237,7 +1267,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
 //        _docview->setBackground(resourceResolver->getBackgroundImage(newSettings));
 //    }
     //if (needClearCache) {
-    _scrollCache.clear();
+    clearImageCaches();
     //}
     if (docviewprops->getCount())
         _docview->propsApply(docviewprops);
@@ -1311,7 +1341,7 @@ void CRUIReadWidget::OnImageCacheClear() {
     public:
         ClearCache(CRUIReadWidget * widget) : _widget(widget) {}
         virtual void run() {
-            _widget->_scrollCache.clear();
+            _widget->clearImageCaches();
         }
     };
     concurrencyProvider->executeGui(new ClearCache(this));
@@ -1439,6 +1469,114 @@ void CRUIReadWidget::ScrollModePageCache::clear() {
     minpos = 0;
     maxpos = 0;
 }
+
+
+//=============================================================================
+//  Paged mode
+
+CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), dx(0), dy(0), tdx(0), tdy(0) {
+
+}
+
+void CRUIReadWidget::PagedModePageCache::clear() {
+    pages.clear();
+}
+
+LVDrawBuf * CRUIReadWidget::PagedModePageCache::createBuf() {
+    return new GLDrawBuf(dx, tdy, 32, true);
+}
+
+void CRUIReadWidget::PagedModePageCache::setSize(int _dx, int _dy, int _numPages) {
+    if (dx != _dx || dy != _dy || numPages != _numPages) {
+        clear();
+        numPages = _numPages;
+        dx = _dx;
+        dy = _dy;
+        tdx = nearestPOT(dx);
+        tdy = nearestPOT(dy);
+    }
+}
+
+CRUIReadWidget::PagedModePage * CRUIReadWidget::PagedModePageCache::findPage(int page) {
+	for (int i = 0; i < pages.length(); i++) {
+		if (pages[i]->pageNumber == page)
+			return pages[i];
+	}
+	return NULL;
+}
+
+void CRUIReadWidget::PagedModePageCache::clearExcept(int page1, int page2) {
+	for (int i = pages.length() - 1; i >= 0; i--) {
+		if (pages[i]->pageNumber != page1 && pages[i]->pageNumber != page2)
+			delete pages.remove(i);
+	}
+}
+
+void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int pageNumber) {
+	if (pageNumber < 0)
+		return;
+	if (findPage(pageNumber))
+		return; // already prepared
+    PagedModePage * page = new PagedModePage();
+    page->dx = dx;
+    page->dy = dy;
+    page->tdx = tdx;
+    page->tdy = tdy;
+    page->pageNumber = pageNumber;
+    page->numPages = numPages;
+    page->drawbuf = createBuf();
+    LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
+    buf->beforeDrawing();
+    buf->SetTextColor(_docview->getTextColor());
+    buf->SetBackgroundColor(_docview->getBackgroundColor());
+    _docview->Draw(*buf, -1, pageNumber, false, false);
+    buf->afterDrawing();
+    pages.add(page);
+}
+
+/// ensure images are prepared
+void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page, int _dx, int _dy, int direction, bool force) {
+    CR_UNUSED(force);
+    setSize(_dx, _dy, _docview->getVisiblePageCount());
+    int thisPage = _page; // current page
+    if (numPages == 2)
+    	thisPage = thisPage & ~1;
+    int nextPage = -1;
+    if (direction == 1) {
+    	nextPage = thisPage + numPages;
+    	if (nextPage >= _docview->getPageCount() + numPages - 1)
+    		nextPage = -1;
+    } else if (direction == -1) {
+    	nextPage = thisPage - numPages;
+    	if (nextPage < 0)
+    		nextPage = -1; // no page
+    }
+    if (findPage(thisPage) && (nextPage == -1 || findPage(nextPage)))
+    	return; // already prepared
+    clearExcept(thisPage, nextPage);
+    preparePage(_docview, thisPage);
+    preparePage(_docview, nextPage);
+}
+
+/// draw
+void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress) {
+    CR_UNUSED2(direction, progress);
+    CRLog::trace("PagedModePageCache::draw()");
+    // workaround for no-rtti builds
+    GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
+    if (glbuf) {
+        //glbuf->beforeDrawing();
+        CRUIReadWidget::PagedModePage * page = findPage(pageNumber);
+        if (page) {
+            // simple draw current page
+            page->drawbuf->DrawTo(glbuf, 0, 0, 0, NULL);
+        }
+        //glbuf->afterDrawing();
+    }
+}
+
+
+
 
 
 static void addTocItems(LVPtrVector<LVTocItem, false> & toc, LVTocItem * item) {

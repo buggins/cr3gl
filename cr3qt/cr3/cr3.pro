@@ -382,6 +382,7 @@ SOURCES += \
     ../../cr3ui/src/cruiwindow.cpp \
     ../../cr3ui/src/cruicoverwidget.cpp \
     ../../cr3ui/src/cruisettingswidget.cpp \
+    ../../cr3ui/src/opdsbrowser.cpp \
     ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
