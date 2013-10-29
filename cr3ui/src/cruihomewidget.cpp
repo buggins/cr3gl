@@ -143,7 +143,6 @@ public:
         _cover->setBook(lastBook);
         requestLayout();
         invalidate();
-        _home->getMain()->update(true);
     }
 
     const CRFileItem * getLastBook() {
