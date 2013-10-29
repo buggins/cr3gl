@@ -13,7 +13,7 @@ using namespace CRUI;
 //#define WINDOW_ANIMATION_DELAY 750
 #define SLOW_OPERATION_POPUP_DELAY 100
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000
-#define SLOW_OPERATION_DIM_COLOR 0xA0000000
+#define SLOW_OPERATION_DIM_COLOR 0xE0000000
 
 void applyThemeChange(CRUIWidget * widget) {
     if (!widget)

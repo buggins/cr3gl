@@ -292,7 +292,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     _popupControl.endTs = _popupControl.startTs + POPUP_ANIMATION_DURATION;
     _popupControl.progress = 0;
     _popupControl.closing = false;
-    _popupControl.outerColor = 0xA0404040;
+    _popupControl.outerColor = COLOR_MENU_POPUP_FADE;
     //CRLog::trace("prepared popup");
     invalidate();
 }

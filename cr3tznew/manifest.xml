@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Manifest xmlns="http://schemas.tizen.org/2012/12/manifest">
     <Id>CoolReader</Id>
-    <Version>3.3.4</Version>
+    <Version>3.3.5</Version>
     <Type>C++App</Type>
     <Requirements>
         <Feature Name="http://tizen.org/feature/opengles.version.1_1">true</Feature>
