@@ -1755,7 +1755,8 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     float dangle = (angle2 - angle1);
     if (dangle < 0)
         dangle = -dangle;
-    if (dangle < 0.2f) {
+    int shadowAlpha = 128;
+    if (dangle < 0.01f) {
         buf->DrawFragment(page->drawbuf, srcx1, 0, srcx2 - srcx1, dy, dstx1, 0, dstx2 - dstx1, dy, 0);
     } else {
         // TODO
@@ -1765,11 +1766,16 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
         for (int step = 0; step < steps; step++) {
             float a1 = angle1 + (angle2 - angle1) * step / steps;
             float a2 = angle1 + (angle2 - angle1) * (step + 1) / steps;
+            int alpha1 = 255 - (int)(shadowAlpha * sin(a1));
+            int alpha2 = 255 - (int)(shadowAlpha * sin(a2));
             int sx1 = srcx1 + (srcx2 - srcx1) * step / steps;
             int sx2 = srcx1 + (srcx2 - srcx1) * (step + 1) / steps;
             int dx1 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a1) - sa1) / (sa2 - sa1) + 0.5f);
             int dx2 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a2) - sa1) / (sa2 - sa1) + 0.5f);
             buf->DrawFragment(page->drawbuf, sx1, 0, sx2 - sx1, dy, dx1, 0, dx2 - dx1, dy, 0);
+            lUInt32 shadowcl1 = (alpha1 << 24) | 0x000000;
+            lUInt32 shadowcl2 = (alpha2 << 24) | 0x000000;
+            buf->GradientRect(dx1, 0, dx2, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
         }
     }
 }
@@ -1830,7 +1836,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     int icx = (int)(cx + 0.5f);
     int id = (int)(d + 0.5f);
     if (ic > 0) {
-        drawFolded(buf, page1, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 + cangle, m_pi_2);
+        drawFolded(buf, page1, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
     }
     if (id > 0)
         drawFolded(buf, page1, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
@@ -1903,11 +1909,12 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    glbuf->DrawFragment(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
-                    if (ddx < shadowdx)
-                        shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
-                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    drawFolded(glbuf, page2, page, 10000 - progress, 30, x);
+//                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+//                    glbuf->DrawFragment(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
+//                    if (ddx < shadowdx)
+//                        shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
+//                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             }
         } else {
