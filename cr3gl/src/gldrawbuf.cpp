@@ -971,11 +971,11 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int options) {
-    DrawRescaled(src, 0, 0, src->GetWidth(), src->GetHeight(), x, y, dx, dy, options);
+    DrawFragment(src, 0, 0, src->GetWidth(), src->GetHeight(), x, y, dx, dy, options);
 }
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
-void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int x, int y, int dx, int dy, int options)
+void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int x, int y, int dx, int dy, int options)
 {
     CR_UNUSED(options);
     if (dx <= 0 || dy <= 0 || !src)

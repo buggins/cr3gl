@@ -17,6 +17,7 @@
 #include "cruiconfig.h"
 #include "lvstsheet.h"
 #include "hyphman.h"
+#include <math.h>
 
 using namespace CRUI;
 
@@ -1750,6 +1751,91 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
     preparePage(_docview, nextPage);
 }
 
+void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2) {
+    float dangle = (angle2 - angle1);
+    if (dangle < 0)
+        dangle = -dangle;
+    if (dangle < 0.2f) {
+        buf->DrawFragment(page->drawbuf, srcx1, 0, srcx2 - srcx1, dy, dstx1, 0, dstx2 - dstx1, dy, 0);
+    } else {
+        // TODO
+        int steps = (int)(dangle / 0.15f + 1);
+        float sa1 = (float)sin(angle1);
+        float sa2 = (float)sin(angle2);
+        for (int step = 0; step < steps; step++) {
+            float a1 = angle1 + (angle2 - angle1) * step / steps;
+            float a2 = angle1 + (angle2 - angle1) * (step + 1) / steps;
+            int sx1 = srcx1 + (srcx2 - srcx1) * step / steps;
+            int sx2 = srcx1 + (srcx2 - srcx1) * (step + 1) / steps;
+            int dx1 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a1) - sa1) / (sa2 - sa1) + 0.5f);
+            int dx2 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a2) - sa1) / (sa2 - sa1) + 0.5f);
+            buf->DrawFragment(page->drawbuf, sx1, 0, sx2 - sx1, dy, dx1, 0, dx2 - dx1, dy, 0);
+        }
+    }
+}
+
+void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page2, int progress, int diam, int x) {
+    float m_pi_2 = (float)M_PI / 2;
+    float fdiam = 60 * dx / 100.0f;
+    float fradius = fdiam / 2;
+    float halfc = m_pi_2 * fdiam;
+    float quarterc = halfc / 2;
+    float downx = (progress * (dx + halfc) / 10000);
+    float d = 0; // left flat part of current page other side
+    if (downx > halfc)
+        d = downx - halfc;
+    float a = dx - downx; // left flat part of current page
+    float avisible = d > 0 ? a - d : a;
+    float bangle = downx > quarterc ? m_pi_2 : downx * m_pi_2 / quarterc;
+    float bx = downx > quarterc ? quarterc : downx;
+    float b = downx > quarterc ? fradius : (float)sin(bangle) * fradius;
+    float e = 0; // right flat part of next page
+    //if (downx > fradius)
+    e = downx - b;
+    float c = 0;
+    float cx = 0;
+    float cangle = 0;
+    if (downx > quarterc) {
+        if (downx > halfc) {
+            cangle = m_pi_2;
+            cx = quarterc;
+        } else {
+            cx = downx - quarterc;
+            cangle = cx * m_pi_2 / quarterc;
+        }
+        c = (float)sin(cangle) * fradius;
+    }
+
+    int shadowdx = (int)(fradius);
+    lUInt32 shadowcl1 = 0xD0000000;
+    lUInt32 shadowcl2 = 0xFF000000;
+
+
+    int ia = (int)a;
+    int iavisible = (int)avisible;
+    if (iavisible > 0)
+        drawFolded(buf, page1, 0, iavisible, 0 + x, iavisible + x, 0, 0);
+    int ie = (int)e;
+    if (ie > 0) {
+        drawFolded(buf, page2, dx - ie, dx, dx - ie + x, dx + x, 0, 0);
+        buf->GradientRect(dx - ie + x, 0, dx - ie + x + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+    }
+    int ib = (int)b;
+    int ibx = (int)bx;
+    //int idownx = (int)downx;
+    if (ib > 0) {
+        drawFolded(buf, page1, ia, ia + ibx, ia + x, dx - ie + x, 0, bangle);
+    }
+    int ic = (int)(c + 0.5f);
+    int icx = (int)(cx + 0.5f);
+    int id = (int)(d + 0.5f);
+    if (ic > 0) {
+        drawFolded(buf, page1, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 + cangle, m_pi_2);
+    }
+    if (id > 0)
+        drawFolded(buf, page1, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
+}
+
 /// draw
 void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x) {
     CR_UNUSED2(direction, progress);
@@ -1797,9 +1883,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    glbuf->DrawRescaled(page->drawbuf, 0, 0, dx, dy, x + 0, 0, dx - ddx, dy, 0);
-                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    drawFolded(glbuf, page, page2, progress, 30, x);
+//                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
+//                    glbuf->DrawFragment(page->drawbuf, 0, 0, dx, dy, x + 0, 0, dx - ddx, dy, 0);
+//                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 }
             } else if (direction < 0) {
                 //
@@ -1817,7 +1904,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
                     page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    glbuf->DrawRescaled(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
+                    glbuf->DrawFragment(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
                     if (ddx < shadowdx)
                         shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
                     glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
