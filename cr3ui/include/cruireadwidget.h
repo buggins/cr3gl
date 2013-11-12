@@ -38,11 +38,13 @@ public:
         background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
     }
     /// clears page background
-    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
+    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY, int alpha = 0) {
 //    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
 //        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
 //        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
         lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+        LVDrawStateSaver s(drawbuf);
+        drawbuf.setAlpha(alpha);
         background->draw(&drawbuf, rc, offsetX, offsetY);
 //        drawbuf.FillRect(rc, 0xE0E0C040);
 //        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {

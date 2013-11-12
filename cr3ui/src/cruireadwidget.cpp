@@ -1703,10 +1703,9 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     if (oldPage != pageNumber)
         _docview->goToPage(pageNumber);
     //_docview->Draw(*buf, -1, pageNumber, false, false);
+    _docview->Draw(*buf, false);
     if (back)
-        _docview->drawPageBackground(*buf, 0, 0);
-    else
-        _docview->Draw(*buf, false);
+        _docview->drawPageBackground(*buf, 0, 0, 0x60); // semitransparent background above page image
     if (oldPage != pageNumber)
         _docview->goToPage(oldPage);
     int sdx = dx / 10 / _docview->getVisiblePageCount();
