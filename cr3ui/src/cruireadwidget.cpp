@@ -1809,7 +1809,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             cx = downx - quarterc;
             cangle = cx * m_pi_2 / quarterc;
         }
-        c = (float)sin(cangle) * fradius;
+        c = fradius - (float)cos(cangle) * fradius;
     }
 
     int shadowdx = (int)(fradius);

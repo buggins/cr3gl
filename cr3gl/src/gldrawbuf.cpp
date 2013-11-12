@@ -875,14 +875,16 @@ class GLDrawTextureItem : public GLSceneItem {
 	float srcx1;
 	float srcy1;
 	lUInt32 color;
+    bool linear;
 public:
-	GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color)
+    GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color, bool _linear = false)
 	: textureId(_textureId),
 	  dstx0(_dstx0), dsty0(_dsty0),
 	  dstx1(_dstx1), dsty1(_dsty1),
 	  srcx0(_srcx0), srcy0(_srcy0),
 	  srcx1(_srcx1), srcy1(_srcy1),
-	  color(_color)
+      color(_color),
+      linear(_linear)
 	{
 
 	}
@@ -902,6 +904,14 @@ public:
         glBindTexture(GL_TEXTURE_2D, textureId);
         checkError("glBindTexture");
         glEnable(GL_TEXTURE_2D);
+
+        int flt = linear ? GL_LINEAR : GL_NEAREST;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, flt);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flt);
+        checkError("texParameter");
+
+
         checkError("glEnable(GL_TEXTURE_2D)");
         glEnableClientState(GL_VERTEX_ARRAY);
         checkError("glEnableClientState(GL_VERTEX_ARRAY)");
@@ -991,7 +1001,8 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
                                                   srcy / (float)glbuf->_tdy,
                                                   (srcx + srcdx) / (float)glbuf->_tdx,
                                                   (srcy + srcdy) / (float)glbuf->_tdy,
-                                                  0xFFFFFF));
+                                                  0xFFFFFF,
+                                                  srcdx != dx || srcdy != dy));
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
