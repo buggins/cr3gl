@@ -1806,7 +1806,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     float fradius = fdiam / 2;
     float halfc = m_pi_2 * fdiam;
     float quarterc = halfc / 2;
-    float downx = (progress * (dx + (twoPages ? quarterc : 0)) / 10000);
+    float downx = (progress * (!twoPages ? dx + quarterc : dx / 2 + quarterc) / 10000);
     float d = 0; // left flat part of current page other side
     if (downx > halfc)
         d = downx - halfc;
