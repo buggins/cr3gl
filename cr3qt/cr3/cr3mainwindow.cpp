@@ -58,11 +58,13 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     , m_device(0)
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    resize(QSize(480,800));
+    int dx = 800; // 480;
+    int dy = 500; // 800;
+    resize(QSize(dx, dy));
 
     _qtgl = this;
 
-    deviceInfo.setScreenDimensions(480, 800, 200);
+    deviceInfo.setScreenDimensions(dx, dy, 200);
     crconfig.setupResourcesForScreenSize();
     _widget = new CRUIMainWidget();
     _widget->setScreenUpdater(this);
