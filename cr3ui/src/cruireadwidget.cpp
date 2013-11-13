@@ -17,6 +17,7 @@
 #include "cruiconfig.h"
 #include "lvstsheet.h"
 #include "hyphman.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 using namespace CRUI;
