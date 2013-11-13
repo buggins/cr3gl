@@ -1653,10 +1653,20 @@ void CRUIReadWidget::PagedModePageCache::setSize(int _dx, int _dy, int _numPages
 
 CRUIReadWidget::PagedModePage * CRUIReadWidget::PagedModePageCache::findPage(int page) {
 	for (int i = 0; i < pages.length(); i++) {
-		if (pages[i]->pageNumber == page)
+        if (pages[i]->pageNumber == page && !pages[i]->back)
 			return pages[i];
 	}
 	return NULL;
+}
+
+CRUIReadWidget::PagedModePage * CRUIReadWidget::PagedModePageCache::findPageBack(int page) {
+    for (int i = 0; i < pages.length(); i++) {
+        if (pages[i]->pageNumber == page && pages[i]->back)
+            return pages[i];
+    }
+    // fallback
+    //return findPage(page);
+    return NULL;
 }
 
 void CRUIReadWidget::PagedModePageCache::clearExcept(int page1, int page2) {
@@ -1668,10 +1678,12 @@ void CRUIReadWidget::PagedModePageCache::clearExcept(int page1, int page2) {
 	}
 }
 
-void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int pageNumber) {
+void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int pageNumber, bool back) {
 	if (pageNumber < 0)
 		return;
-	if (findPage(pageNumber))
+    if (back && findPageBack(pageNumber))
+        return; // already prepared
+    if (!back && findPage(pageNumber))
 		return; // already prepared
     //CRLog::trace("Preparing page image for page %d", pageNumber);
     PagedModePage * page = new PagedModePage();
@@ -1682,6 +1694,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     page->pageNumber = pageNumber;
     page->numPages = numPages;
     page->drawbuf = createBuf();
+    page->back = back;
     LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
     buf->beforeDrawing();
     buf->SetTextColor(_docview->getTextColor());
@@ -1692,6 +1705,8 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         _docview->goToPage(pageNumber);
     //_docview->Draw(*buf, -1, pageNumber, false, false);
     _docview->Draw(*buf, false);
+    if (back)
+        _docview->drawPageBackground(*buf, 0, 0, 0x60); // semitransparent background above page image
     if (oldPage != pageNumber)
         _docview->goToPage(oldPage);
     int sdx = dx / 10 / _docview->getVisiblePageCount();
@@ -1750,13 +1765,17 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
     clearExcept(thisPage, nextPage);
     preparePage(_docview, thisPage);
     preparePage(_docview, nextPage);
+    if (pageAnimation == PAGE_ANIMATION_3D && direction > 0 && numPages == 1)
+        preparePage(_docview, thisPage, true);
+    if (pageAnimation == PAGE_ANIMATION_3D && direction < 0 && numPages == 1)
+        preparePage(_docview, nextPage, true);
 }
 
 void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2) {
+    lUInt32 shadowAlpha = 64;
     float dangle = (angle2 - angle1);
     if (dangle < 0)
         dangle = -dangle;
-    int shadowAlpha = 128;
     if (dangle < 0.01f) {
         buf->DrawFragment(page->drawbuf, srcx1, 0, srcx2 - srcx1, dy, dstx1, 0, dstx2 - dstx1, dy, 0);
     } else {
@@ -1781,13 +1800,14 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     }
 }
 
-void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page2, int progress, int diam, int x) {
+void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int progress, int diam, int x) {
+    bool twoPages = numPages > 1;
     float m_pi_2 = (float)M_PI / 2;
-    float fdiam = 60 * dx / 100.0f;
+    float fdiam = diam * dx / 100.0f;
     float fradius = fdiam / 2;
     float halfc = m_pi_2 * fdiam;
     float quarterc = halfc / 2;
-    float downx = (progress * (dx + halfc) / 10000);
+    float downx = (progress * (!twoPages ? dx + quarterc : dx / 2 + quarterc) / 10000);
     float d = 0; // left flat part of current page other side
     if (downx > halfc)
         d = downx - halfc;
@@ -1810,7 +1830,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             cx = downx - quarterc;
             cangle = cx * m_pi_2 / quarterc;
         }
-        c = (float)sin(cangle) * fradius;
+        c = fradius - (float)cos(cangle) * fradius + 1;
     }
 
     int shadowdx = (int)(fradius);
@@ -1830,17 +1850,24 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     int ib = (int)b;
     int ibx = (int)bx;
     //int idownx = (int)downx;
-    if (ib > 0) {
+    if (ib > 0 && cangle < m_pi_2) {
         drawFolded(buf, page1, ia, ia + ibx, ia + x, dx - ie + x, 0, bangle);
     }
     int ic = (int)(c + 0.5f);
     int icx = (int)(cx + 0.5f);
     int id = (int)(d + 0.5f);
     if (ic > 0) {
-        drawFolded(buf, page1, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
+        if (twoPages)
+            drawFolded(buf, page1back, id, id + icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
+        else
+            drawFolded(buf, page1back, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
     }
-    if (id > 0)
-        drawFolded(buf, page1, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
+    if (id > 0) {
+        if (twoPages)
+            drawFolded(buf, page1back, 0, id, dx - downx - id + x, dx - downx + x, 0, 0);
+        else
+            drawFolded(buf, page1back, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
+    }
 }
 
 /// draw
@@ -1877,6 +1904,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                 alpha = 0;
             else if (alpha > 255)
                 alpha = 255;
+            int diam = numPages == 1 ? 50 : 25;
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
@@ -1890,7 +1918,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    drawFolded(glbuf, page, page2, progress, 30, x);
+                    CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(pageNumber) : page2;
+                    if (!page_back)
+                        page_back = page;
+                    drawFolded(glbuf, page, page_back, page2, progress, diam, x);
 //                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
 //                    glbuf->DrawFragment(page->drawbuf, 0, 0, dx, dy, x + 0, 0, dx - ddx, dy, 0);
 //                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
@@ -1910,7 +1941,10 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
                     page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
                     page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
-                    drawFolded(glbuf, page2, page, 10000 - progress, 30, x);
+                    CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(nextPage) : page;
+                    if (!page_back)
+                        page_back = page2;
+                    drawFolded(glbuf, page2, page_back, page, 10000 - progress, diam, x);
 //                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
 //                    glbuf->DrawFragment(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
 //                    if (ddx < shadowdx)

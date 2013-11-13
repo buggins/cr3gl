@@ -38,11 +38,13 @@ public:
         background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
     }
     /// clears page background
-    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY ) {
+    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY, int alpha = 0) {
 //    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
 //        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
 //        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
         lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+        LVDrawStateSaver s(drawbuf);
+        drawbuf.setAlpha(alpha);
         background->draw(&drawbuf, rc, offsetX, offsetY);
 //        drawbuf.FillRect(rc, 0xE0E0C040);
 //        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
@@ -160,8 +162,9 @@ class CRUIReadWidget : public CRUIWindowWidget
     	int dy;
         int tdx;
         int tdy;
+        bool back;
         LVDrawBuf * drawbuf;
-        PagedModePage() : pageNumber(0), numPages(1), dx(0), dy(0), tdx(0), tdy(0), drawbuf(NULL) { }
+        PagedModePage() : pageNumber(0), numPages(1), dx(0), dy(0), tdx(0), tdy(0), back(false), drawbuf(NULL) { }
         ~PagedModePage() {
             if (drawbuf)
                 delete drawbuf;
@@ -182,16 +185,17 @@ class CRUIReadWidget : public CRUIWindowWidget
     public:
         int dir() { return direction; }
         int getNewPage() { return newPage; }
-        void preparePage(LVDocView * docview, int page);
+        void preparePage(LVDocView * docview, int page, bool back = false);
         void clearExcept(int page1, int page2);
         PagedModePage * findPage(int page);
+        PagedModePage * findPageBack(int page);
         void setSize(int _dx, int _dy, int _numPages, int _pageCount);
         PagedModePageCache();
         /// ensure images are prepared
         void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force, int pageAnimation);
         /// draw
         void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x);
-        void drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page2, int progress, int diam, int x);
+        void drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int progress, int diam, int x);
         void drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2);
         /// remove images from cache
         void clear();

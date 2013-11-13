@@ -716,6 +716,7 @@ void GLDrawBuf::GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1, lUI
 /// fills rectangle with specified color
 void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
 {
+    color = applyAlpha(color);
 	if (_scene) {
         lvRect rc(x0, y0, x1, y1);
         lvRect clip;
@@ -843,7 +844,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
 		if (!ninePatch) {
 			lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), 0xFFFFFF, 0, clip, 0));
+            LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
 		} else {
 			lvRect srcitems[9];
 			lvRect dstitems[9];
@@ -858,7 +859,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
                 //CRLog::trace("nine-patch[%d] (%d, %d, %d, %d) -> (%d, %d, %d, %d)", i, srcitems[i].left, srcitems[i].top, srcitems[i].right, srcitems[i].bottom, dstitems[i].left, dstitems[i].top, dstitems[i].right, dstitems[i].bottom);
 				// visible
 				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
-                LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), 0xFFFFFF, 0, clip, 0));
+                LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
 			}
 		}
 	}
@@ -875,14 +876,16 @@ class GLDrawTextureItem : public GLSceneItem {
 	float srcx1;
 	float srcy1;
 	lUInt32 color;
+    bool linear;
 public:
-	GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color)
+    GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color, bool _linear = false)
 	: textureId(_textureId),
 	  dstx0(_dstx0), dsty0(_dsty0),
 	  dstx1(_dstx1), dsty1(_dsty1),
 	  srcx0(_srcx0), srcy0(_srcy0),
 	  srcx1(_srcx1), srcy1(_srcy1),
-	  color(_color)
+      color(_color),
+      linear(_linear)
 	{
 
 	}
@@ -902,6 +905,14 @@ public:
         glBindTexture(GL_TEXTURE_2D, textureId);
         checkError("glBindTexture");
         glEnable(GL_TEXTURE_2D);
+
+        int flt = linear ? GL_LINEAR : GL_NEAREST;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, flt);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flt);
+        checkError("texParameter");
+
+
         checkError("glEnable(GL_TEXTURE_2D)");
         glEnableClientState(GL_VERTEX_ARRAY);
         checkError("glEnableClientState(GL_VERTEX_ARRAY)");
@@ -960,7 +971,7 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 		if (_textureBuf && _textureId != 0) {
             int alpha = ((options >> 16) & 255);
 			if (glbuf->_scene)
-                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, 0xFFFFFF | (alpha << 24)));
+                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
 		} else {
 			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
 		}
@@ -991,7 +1002,8 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
                                                   srcy / (float)glbuf->_tdy,
                                                   (srcx + srcdx) / (float)glbuf->_tdx,
                                                   (srcy + srcdy) / (float)glbuf->_tdy,
-                                                  0xFFFFFF));
+                                                  applyAlpha(0xFFFFFF),
+                                                  srcdx != dx || srcdy != dy));
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
@@ -1010,7 +1022,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
             if (!rc.intersects(cliprect))
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), 0xFFFFFF, 0, clip, 0));
+            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
         }
 	}
 }
@@ -1184,6 +1196,16 @@ void GLDrawBuf::afterDrawing()
     }
 }
 
+lUInt32 GLDrawBuf::applyAlpha(lUInt32 cl) {
+    if (!_alpha)
+        return cl;
+    int clalpha = cl >> 24;
+    if (!clalpha)
+        return (_alpha << 24) | cl;
+    int a = 255 - ((((255 - _alpha) * (255 - clalpha)) >> 8) & 255);
+    return (a << 24) | (cl & 0xFFFFFF);
+}
+
 /// create drawing texture of specified size
 GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 : _dx(width), _dy(height),
@@ -1193,7 +1215,8 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 		_textureBuf(useTexture), _textureId(0), _framebufferId(0),
 		//_renderbufferId(0),
 		_prepareStage(0),
-		_scene(NULL)
+        _scene(NULL),
+        _alpha(0)
 {
     //if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
 }

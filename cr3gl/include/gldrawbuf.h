@@ -35,6 +35,7 @@ protected:
 	//GLuint _renderbufferId;
 	int _prepareStage;
 	GLScene * _scene;
+    int _alpha;
 public:
     virtual GLDrawBuf * asGLDrawBuf() { return this; }
 
@@ -153,6 +154,10 @@ public:
 */
     /// returns scanline pointer
     virtual lUInt8 * GetScanLine( int y );
+
+    virtual int getAlpha() { return _alpha; }
+    virtual void setAlpha(int alpha) { _alpha = alpha; }
+    virtual lUInt32 applyAlpha(lUInt32 cl);
 
     /// create drawing texture of specified size
     GLDrawBuf(int width, int height, int bpp, bool textureBuffer);

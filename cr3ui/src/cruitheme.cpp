@@ -549,7 +549,7 @@ void CRUIBitmapImage::drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) {
 }
 
 void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {
-	if (_tiled) {
+    if (_tiled) {
 		int w = originalWidth();
 		int h = originalHeight();
 		if (w <= 0 || h <= 0)
@@ -582,7 +582,6 @@ CRUIBitmapImage::CRUIBitmapImage(LVImageSourceRef img, bool ninePatch, bool tile
 		img->DetectNinePatch();
 	}
 }
-
 
 void CRUIDrawBufImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {
     CR_UNUSED2(xoffset, yoffset);
