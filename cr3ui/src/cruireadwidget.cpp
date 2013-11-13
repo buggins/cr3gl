@@ -1800,6 +1800,38 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     }
 }
 
+// solve equation a - sin(a) == n
+float solve_a_minus_sina_eq_n(float n) {
+    float a1 = 0;
+    float a2 = (float)M_PI / 2;
+    for (;;) {
+        float a = (a1 + a2) / 2;
+        float err = n - (a - (float)sin(a));
+        if (err < 0.0001f && err > -0.0001f)
+            return a;
+        if (err < 0)
+            a2 = a;
+        else
+            a1 = a;
+    }
+}
+
+// solve equation a - sin(a) == n
+float solve_a_minus_cosa_eq_n(float n) {
+    float a1 = 0;
+    float a2 = (float)M_PI / 2;
+    for (;;) {
+        float a = (a1 + a2) / 2;
+        float err = n - (a - (float)cos(a));
+        if (err < 0.0001f && err > -0.0001f)
+            return a;
+        if (err < 0)
+            a2 = a;
+        else
+            a1 = a;
+    }
+}
+
 void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int progress, int diam, int x) {
     bool twoPages = numPages > 1;
     float m_pi_2 = (float)M_PI / 2;
@@ -1807,66 +1839,147 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
     float fradius = fdiam / 2;
     float halfc = m_pi_2 * fdiam;
     float quarterc = halfc / 2;
-    float downx = (progress * (!twoPages ? dx + quarterc : dx / 2 + quarterc) / 10000);
-    float d = 0; // left flat part of current page other side
-    if (downx > halfc)
-        d = downx - halfc;
-    float a = dx - downx; // left flat part of current page
-    float avisible = d > 0 ? a - d : a;
-    float bangle = downx > quarterc ? m_pi_2 : downx * m_pi_2 / quarterc;
-    float bx = downx > quarterc ? quarterc : downx;
-    float b = downx > quarterc ? fradius : (float)sin(bangle) * fradius;
-    float e = 0; // right flat part of next page
-    //if (downx > fradius)
-    e = downx - b;
-    float c = 0;
-    float cx = 0;
-    float cangle = 0;
-    if (downx > quarterc) {
-        if (downx > halfc) {
-            cangle = m_pi_2;
+    if (twoPages) {
+        int maxdx = dx;
+        if (twoPages)
+            maxdx = dx / 2;
+        float bx = 0;
+        float ba = 0;
+        float b = 0;
+        float cx = 0;
+        float ca = 0;
+        float c = 0;
+        float d = 0;
+        float downx = 0;
+        int xx = progress * dx / 10000;
+        int shadowdx = (int)(fradius);
+        lUInt32 shadowcl1 = 0xD0000000;
+        lUInt32 shadowcl2 = 0xFF000000;
+        if (xx < quarterc - fradius) {
+            ba = solve_a_minus_sina_eq_n(xx / fradius);
+            b = (float)sin(ba) * fradius;
+            bx = ba * fradius;
+            downx = xx + b;
+
+            int aa = (int)(dx - downx);
+            int bb = (int)(dx - xx);
+            drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0);
+            if (xx > 0)
+                drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
+            drawFolded(buf, page1, aa, dx, aa + x, dx - xx + x, 0, ba);
+        } else if (xx < halfc) {
+            b = fradius;
+            ba = m_pi_2;
+            bx = quarterc;
+            ca = solve_a_minus_cosa_eq_n((xx + b - bx) / fradius - 1);
+            cx = fradius * ca;
+            c = fradius - fradius * (float)cos(ca);
+            //c = xx - (quarterc - fradius);
+            downx = xx - c + fradius;
+//            ca = (float)acos((fradius - c) / fradius);
+//            cx = ca * fradius;
+
+            int aa = (int)(dx - downx);
+            int bb = (int)(aa + fradius);
+            int sbb = (int)(aa + bx);
+            int cc = (int)(bb - cx);
+            drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0);
+            drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
+            drawFolded(buf, page1, aa, sbb, aa + x, bb + x, 0, ba);
+            drawFolded(buf, page1back, dx, sbb, cc + x, bb + x, m_pi_2 - ca, m_pi_2);
+        } else if (xx < 2 * maxdx + halfc) {
+            ba = m_pi_2;
+            b = fradius;
+            bx = m_pi_2 * fradius;
+            ca = m_pi_2;
             cx = quarterc;
+            c = fradius;
+            d = xx - cx - bx;
+            downx = xx + d;
         } else {
-            cx = downx - quarterc;
-            cangle = cx * m_pi_2 / quarterc;
+            int exx = 2 * maxdx - xx;
+            if (exx > quarterc - fradius) {
+                //
+                cx = quarterc;
+                c = fradius;
+                ca = m_pi_2;
+                bx = exx - cx;
+                ba = bx / fradius;
+                b = fradius * (1 - (float)cos(ba));
+                d = maxdx - cx - bx;
+                downx = maxdx + b;
+            } else if (exx >= 0) {
+                //
+                ca = solve_a_minus_sina_eq_n(exx / fradius);
+                cx = fradius * ca;
+                c = fradius * (float)sin(ca);
+                d = maxdx - exx - cx;
+            }
         }
-        c = fradius - (float)cos(cangle) * fradius + 1;
-    }
 
-    int shadowdx = (int)(fradius);
-    lUInt32 shadowcl1 = 0xD0000000;
-    lUInt32 shadowcl2 = 0xFF000000;
+        //buf->GradientRect(dx - ie + x, 0, dx - ie + x + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+    } else {
+        float downx = (progress * (!twoPages ? dx + quarterc : dx / 2 + quarterc) / 10000);
+        float d = 0; // left flat part of current page other side
+        if (downx > halfc)
+            d = downx - halfc;
+        float a = dx - downx; // left flat part of current page
+        float avisible = d > 0 ? a - d : a;
+        float bangle = downx > quarterc ? m_pi_2 : downx * m_pi_2 / quarterc;
+        float bx = downx > quarterc ? quarterc : downx;
+        float b = downx > quarterc ? fradius : (float)sin(bangle) * fradius;
+        float e = 0; // right flat part of next page
+        //if (downx > fradius)
+        e = downx - b;
+        float c = 0;
+        float cx = 0;
+        float cangle = 0;
+        if (downx > quarterc) {
+            if (downx > halfc) {
+                cangle = m_pi_2;
+                cx = quarterc;
+            } else {
+                cx = downx - quarterc;
+                cangle = cx * m_pi_2 / quarterc;
+            }
+            c = fradius - (float)cos(cangle) * fradius + 1;
+        }
+
+        int shadowdx = (int)(fradius);
+        lUInt32 shadowcl1 = 0xD0000000;
+        lUInt32 shadowcl2 = 0xFF000000;
 
 
-    int ia = (int)a;
-    int iavisible = (int)avisible;
-    if (iavisible > 0)
-        drawFolded(buf, page1, 0, iavisible, 0 + x, iavisible + x, 0, 0);
-    int ie = (int)e;
-    if (ie > 0) {
-        drawFolded(buf, page2, dx - ie, dx, dx - ie + x, dx + x, 0, 0);
-        buf->GradientRect(dx - ie + x, 0, dx - ie + x + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
-    }
-    int ib = (int)b;
-    int ibx = (int)bx;
-    //int idownx = (int)downx;
-    if (ib > 0 && cangle < m_pi_2) {
-        drawFolded(buf, page1, ia, ia + ibx, ia + x, dx - ie + x, 0, bangle);
-    }
-    int ic = (int)(c + 0.5f);
-    int icx = (int)(cx + 0.5f);
-    int id = (int)(d + 0.5f);
-    if (ic > 0) {
-        if (twoPages)
-            drawFolded(buf, page1back, id, id + icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
-        else
-            drawFolded(buf, page1back, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
-    }
-    if (id > 0) {
-        if (twoPages)
-            drawFolded(buf, page1back, 0, id, dx - downx - id + x, dx - downx + x, 0, 0);
-        else
-            drawFolded(buf, page1back, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
+        int ia = (int)a;
+        int iavisible = (int)avisible;
+        if (iavisible > 0)
+            drawFolded(buf, page1, 0, iavisible, 0 + x, iavisible + x, 0, 0);
+        int ie = (int)e;
+        if (ie > 0) {
+            drawFolded(buf, page2, dx - ie, dx, dx - ie + x, dx + x, 0, 0);
+            buf->GradientRect(dx - ie + x, 0, dx - ie + x + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+        }
+        int ib = (int)b;
+        int ibx = (int)bx;
+        //int idownx = (int)downx;
+        if (ib > 0 && cangle < m_pi_2) {
+            drawFolded(buf, page1, ia, ia + ibx, ia + x, dx - ie + x, 0, bangle);
+        }
+        int ic = (int)(c + 0.5f);
+        int icx = (int)(cx + 0.5f);
+        int id = (int)(d + 0.5f);
+        if (ic > 0) {
+            if (twoPages)
+                drawFolded(buf, page1back, id, id + icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
+            else
+                drawFolded(buf, page1back, dx - id, dx - id - icx, dx - ie - ic + x, dx - ie + x, m_pi_2 - cangle, m_pi_2);
+        }
+        if (id > 0) {
+            if (twoPages)
+                drawFolded(buf, page1back, 0, id, dx - downx - id + x, dx - downx + x, 0, 0);
+            else
+                drawFolded(buf, page1back, dx, dx - id, dx - downx - id + x, dx - downx + x, 0, 0);
+        }
     }
 }
 
