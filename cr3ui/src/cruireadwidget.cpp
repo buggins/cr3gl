@@ -1871,6 +1871,8 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
         int shadowdx = (int)(fradius);
         lUInt32 shadowcl1 = 0xD0000000;
         lUInt32 shadowcl2 = 0xFF000000;
+        int shadowx = -1000;
+        int shadowdarkness = 100;
         if (xx < quarterc - fradius) {
             ba = solve_a_minus_sina_eq_n(xx / fradius);
             b = (float)sin(ba) * fradius;
@@ -1883,6 +1885,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             if (xx > 0)
                 drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
             drawFolded(buf, page1, aa, dx, aa + x, dx - xx + x, 0, ba);
+
+            shadowx = bb;
+            shadowdx = xx;
+            shadowdarkness = (int)(100 * ba / m_pi_2);
         } else if (xx < halfc) {
             b = fradius;
             ba = m_pi_2;
@@ -1907,6 +1913,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                 drawFolded(buf, page1back, 0, icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
             else
                 drawFolded(buf, page1back, dx, dx - icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
+
+            shadowx = bb;
+            //shadowdx = xx;
+            //shadowdarkness = (int)(100 * ba / m_pi_2);
         } else if (xx - (xx - halfc) / 2 < maxdx) { //xx < 2 * maxdx + halfc
             ba = m_pi_2;
             b = fradius;
@@ -1932,6 +1942,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             drawFolded(buf, page2, cc, dx, cc + x, dx + x, 0, 0); // right flat part
             drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
             drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+
+            shadowx = cc;
+            //shadowdx = xx;
+            //shadowdarkness = (int)(100 * ba / m_pi_2);
         } else {
             int exx = 2 * maxdx - xx;
             if (exx > quarterc - fradius) {
@@ -1960,6 +1974,8 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                     drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
                 drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
                 drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+
+                shadowx = cc;
             } else if (exx >= 0) {
                 //
                 ca = solve_a_minus_sina_eq_n(exx / fradius);
@@ -1982,10 +1998,16 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                     drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
                 drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca); // top bent
                 drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+
+                shadowx = dx - maxdx;
+                shadowdarkness = (int)(100 * ca / m_pi_2);
             }
         }
 
-        //buf->GradientRect(dx - ie + x, 0, dx - ie + x + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+        if (shadowdarkness > 1 && shadowdarkness <= 100) {
+            shadowcl1 = (255 - shadowdarkness * 0x50 / 100) << 24;
+            buf->GradientRect(shadowx, 0, shadowx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+        }
     } else {
         float downx = (progress * (!twoPages ? dx + quarterc : dx / 2 + quarterc) / 10000);
         float d = 0; // left flat part of current page other side
