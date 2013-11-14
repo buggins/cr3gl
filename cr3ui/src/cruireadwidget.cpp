@@ -1816,16 +1816,32 @@ float solve_a_minus_sina_eq_n(float n) {
     }
 }
 
-// solve equation a - sin(a) == n
-float solve_a_minus_cosa_eq_n(float n) {
+// solve equation cos(a) - a == n
+float solve_cosa_minus_a_eq_n(float n) {
     float a1 = 0;
     float a2 = (float)M_PI / 2;
     for (;;) {
         float a = (a1 + a2) / 2;
-        float err = n - (a - (float)cos(a));
-        if (err < 0.0001f && err > -0.0001f)
+        float err = n - ((float)cos(a) - a);
+        if (err < 0.00001f && err > -0.00001f)
             return a;
-        if (err < 0)
+        if (err > 0)
+            a2 = a;
+        else
+            a1 = a;
+    }
+}
+
+// solve equation a + cos(a) == n
+float solve_cosa_plus_a_eq_n(float n) {
+    float a1 = 0;
+    float a2 = (float)M_PI / 2;
+    for (;;) {
+        float a = (a1 + a2) / 2;
+        float err = n - ((float)cos(a) - a);
+        if (err < 0.00001f && err > -0.00001f)
+            return a;
+        if (err > 0)
             a2 = a;
         else
             a1 = a;
@@ -1861,8 +1877,8 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             bx = ba * fradius;
             downx = xx + b;
 
-            int aa = (int)(dx - downx);
-            int bb = (int)(dx - xx);
+            int aa = (int)(dx - downx + 0.5f);
+            int bb = (int)(dx - xx + 0.5f);
             drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0);
             if (xx > 0)
                 drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
@@ -1871,7 +1887,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             b = fradius;
             ba = m_pi_2;
             bx = quarterc;
-            ca = solve_a_minus_cosa_eq_n((xx + b - bx) / fradius - 1);
+            ca = solve_cosa_minus_a_eq_n(1 - (xx - (bx - b)) / fradius);
             cx = fradius * ca;
             c = fradius - fradius * (float)cos(ca);
             //c = xx - (quarterc - fradius);
@@ -1879,23 +1895,43 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
 //            ca = (float)acos((fradius - c) / fradius);
 //            cx = ca * fradius;
 
-            int aa = (int)(dx - downx);
-            int bb = (int)(aa + fradius);
-            int sbb = (int)(aa + bx);
-            int cc = (int)(bb - cx);
-            drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0);
-            drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
-            drawFolded(buf, page1, aa, sbb, aa + x, bb + x, 0, ba);
-            drawFolded(buf, page1back, dx, sbb, cc + x, bb + x, m_pi_2 - ca, m_pi_2);
-        } else if (xx < 2 * maxdx + halfc) {
+            int aa = (int)(dx - downx + 0.5f);
+            int bb = (int)(aa + fradius + 0.5f);
+            int sbb = (int)(aa + bx + 0.5f);
+            int cc = (int)(bb - c + 0.5f);
+            int icx = (int)(cx + 0.5f);
+            drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part
+            drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0); // right flat part
+            drawFolded(buf, page1, aa, sbb, aa + x, bb + x, 0, ba); // bottom bent
+            if (twoPages)
+                drawFolded(buf, page1back, 0, icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
+            else
+                drawFolded(buf, page1back, dx, dx - icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
+        } else if (xx - (xx - halfc) / 2 < maxdx) { //xx < 2 * maxdx + halfc
             ba = m_pi_2;
             b = fradius;
-            bx = m_pi_2 * fradius;
+            bx = quarterc;
             ca = m_pi_2;
-            cx = quarterc;
             c = fradius;
-            d = xx - cx - bx;
-            downx = xx + d;
+            cx = quarterc;
+            d = (xx - cx - bx) / 2;
+            downx = xx - d;
+            int bb = (int)(dx - downx + 0.5f);
+            int aa = (int)(dx - (d + downx) + 0.5f);
+            int cc = (int)(bb + c + 0.5f);
+            int sd0 = 0;
+            int sd1 = (int)(d + 0.5f);
+            int sc1 = (int)(d + cx + 0.5f);
+            if (!twoPages) {
+                sd0 = dx - sd0 - 1;
+                sd1 = dx - sd1 - 1;
+                sc1 = dx - sc1 - 1;
+            }
+
+            drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part
+            drawFolded(buf, page2, cc, dx, cc + x, dx + x, 0, 0); // right flat part
+            drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
+            drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
         } else {
             int exx = 2 * maxdx - xx;
             if (exx > quarterc - fradius) {
@@ -1903,17 +1939,49 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                 cx = quarterc;
                 c = fradius;
                 ca = m_pi_2;
-                bx = exx - cx;
-                ba = bx / fradius;
-                b = fradius * (1 - (float)cos(ba));
-                d = maxdx - cx - bx;
-                downx = maxdx + b;
+                ba = solve_cosa_plus_a_eq_n(1 - (exx + c - cx) / fradius);
+                bx = ba * fradius;
+                b = fradius - fradius * (float)cos(ba);
+                d = (maxdx - bx - cx);
+                //downx = maxdx + b;
+                int sd0 = 0;
+                int sd1 = (int)(d + 0.5f);
+                int sc1 = (int)(d + cx + 0.5f);
+                if (!twoPages) {
+                    sd0 = dx - sd0 - 1;
+                    sd1 = dx - sd1 - 1;
+                    sc1 = dx - sc1 - 1;
+                }
+                int aa = (int)exx;
+                int bb = (int)(aa + d + 0.5f);
+                int cc = (int)(bb + c + 0.5f);
+                drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
+                if (exx > 0)
+                    drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
             } else if (exx >= 0) {
                 //
                 ca = solve_a_minus_sina_eq_n(exx / fradius);
                 cx = fradius * ca;
                 c = fradius * (float)sin(ca);
-                d = maxdx - exx - cx;
+                d = maxdx - cx;
+                int aa = (int)exx;
+                int bb = (int)(aa + d + 0.5f);
+                int cc = maxdx;
+                int sd0 = 0;
+                int sd1 = (int)(d + 0.5f);
+                int sc1 = (int)(d + cx + 0.5f);
+                if (!twoPages) {
+                    sd0 = dx - sd0 - 1;
+                    sd1 = dx - sd1 - 1;
+                    sc1 = dx - sc1 - 1;
+                }
+                drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
+                if (exx > 0)
+                    drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca); // top bent
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
             }
         }
 
