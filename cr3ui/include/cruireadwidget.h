@@ -293,6 +293,7 @@ public:
 
     void prepareScroll(int direction);
 
+    void showGoToPercentPopup();
     void showReaderMenu();
     void showTOC();
     bool hasTOC();

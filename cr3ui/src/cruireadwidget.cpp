@@ -161,6 +161,40 @@ public:
 };
 
 
+class CRUIGoToPercentPopup : public CRUIVerticalLayout, CRUIOnScrollPosCallback {
+    CRUIReadWidget * _window;
+    CRUITextWidget * _positionText;
+    CRUISliderWidget * _scrollSlider;
+public:
+    CRUIGoToPercentPopup(CRUIReadWidget * window) : _window(window) {
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
+        _positionText = new CRUITextWidget();
+        _positionText->setText(_window->getCurrentPositionDesc());
+        _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
+        _positionText->setFontSize(FONT_SIZE_SMALL);
+        addChild(_positionText);
+        _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
+        _scrollSlider->setScrollPosCallback(this);
+        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        addChild(_scrollSlider);
+        setBackground("home_frame.9");
+    }
+    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+        CR_UNUSED(widget);
+        if (!manual)
+            return false;
+        _window->goToPercent(pos);
+        _positionText->setText(_window->getCurrentPositionDesc());
+        return true;
+    }
+
+};
+
 static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE
             || key == PROP_FONT_COLOR
@@ -1288,6 +1322,12 @@ void CRUIReadWidget::showTOC() {
     _main->showTOC(widget);
 }
 
+void CRUIReadWidget::showGoToPercentPopup() {
+    lvRect margins;
+    CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
+    preparePopup(popup, ALIGN_BOTTOM, margins, 0x50);
+}
+
 void CRUIReadWidget::showReaderMenu() {
     CRLog::trace("showReaderMenu");
     CRUIActionList actions;
@@ -1301,6 +1341,7 @@ void CRUIReadWidget::showReaderMenu() {
     CRLog::trace("checking TOC");
     //if (hasTOC())
         actions.add(ACTION_TOC);
+    actions.add(ACTION_GOTO_PERCENT);
     actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
@@ -1326,6 +1367,9 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_MENU:
         showReaderMenu();
+        return true;
+    case CMD_GOTO_PERCENT:
+        showGoToPercentPopup();
         return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));
