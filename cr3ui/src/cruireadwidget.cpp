@@ -271,6 +271,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
             int progress = 0;
             int startx = -1;
             int currx = -1;
+            //bool singlePage3dPatch = false;
             if (_scroll.isActive()) {
                 direction = _scroll.dir() > 0 ? 1 : -1;
                 progress = _scroll.progress();
@@ -278,6 +279,16 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
                     progress = 0;
                 else if (progress > 10000)
                     progress = 10000;
+//                if (_pageAnimation == PAGE_ANIMATION_3D && _docview->getVisiblePageCount() == 1) {
+//                    //singlePage3dPatch = true;
+//                    if (direction < 0) {
+//                        startx = 0;
+//                        currx = _pos.width() * 2 * progress / 10000;
+//                    } else if (direction > 0) {
+//                        startx = _pos.width();
+//                        currx = _pos.width() - 2 * _pos.width() * progress / 10000;
+//                    }
+//                }
             } else if (_isDragging) {
                 direction = _pagedCache.dir() > 0 ? 1 : -1;
                 progress = (- (_dragPos.x - _dragStart.x) * direction) * 10000 / _pos.width();
@@ -1036,6 +1047,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 if (_viewMode == DVM_PAGES) {
+                    int w = _pos.width();
                     int xx = 0;
                     int progress = 0; //myAbs(_dragPos.x - _dragStart.x);
                     _pagedCache.calcDragPositionProgress(_dragStart.x, _dragPos.x, _pagedCache.dir(), progress, xx);
@@ -1045,9 +1057,10 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     if ((progress < _pos.width() / 7) && (spd < SCROLL_MIN_SPEED * 3))
                         cancelling = true; // cancel if too small progress and too small speed
                     _scroll.setDirection(_pagedCache.dir());
-                    if (spd < _pos.width())
-                        spd =_pos.width();
-                    _scroll.start(0, _pos.width(), spd, SCROLL_FRICTION);
+                    if (spd < w)
+                        spd = w;
+                    int pmin = 0;
+                    _scroll.start(pmin, w, spd, SCROLL_FRICTION);
                     _scroll.setPos(progress);
                     // cancel if UP event occured during moving in opposite direction
                     if (cancelling) {
@@ -1983,11 +1996,18 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             int aa = (int)exx;
             int bb = (int)(aa + d + 0.5f);
             int cc = (int)(bb + c + 0.5f);
+            if (!twoPages) {
+                aa -= dx;
+                bb -= dx;
+                cc -=dx;
+            }
             drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
-            if (exx > 0)
-                drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
-            drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
-            drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+            if (aa > 0)
+                drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part bottom
+            if (cc > 0)
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
+            if (bb > 0)
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
 
             shadowx = cc;
         } else if (exx >= 0) {
@@ -2008,10 +2028,12 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                 sc1 = dx - sc1 - 1;
             }
             drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
-            if (exx > 0)
-                drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
-            drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca); // top bent
-            drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+            if (twoPages) {
+                if (exx > 0)
+                    drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca); // top bent
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+            }
 
             shadowx = dx - maxdx;
             shadowdarkness = (int)(100 * ca / m_pi_2);
@@ -2096,6 +2118,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
         int diam = (numPages == 1 ? 50 : 25) * dx / 100;
         int xx = 0;
         calcDragPositionProgress(startx, currx, direction, progress, xx);
+        CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d xx=%d)", pageNumber, progress, direction, xx);
         //glbuf->beforeDrawing();
         int nextPage = pageNumber;
         if (direction > 0)
