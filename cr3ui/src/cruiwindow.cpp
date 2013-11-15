@@ -269,7 +269,7 @@ void PopupControl::getRect(lvRect & rc) {
 
 }
 
-void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvRect & margins) {
+void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha) {
     //CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
     int handleLocation = 0;
     if (location == ALIGN_TOP)
@@ -281,6 +281,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
     else if (location == ALIGN_RIGHT)
         handleLocation = ALIGN_LEFT;
     CRUIPopupFrame * frame = new CRUIPopupFrame(&_popupControl, widget, handleLocation);
+    frame->setBackgroundAlpha(backgroundAlpha);
     widget = frame;
     _popupControl.close();
     _popupControl.popup = widget;

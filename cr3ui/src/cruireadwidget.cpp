@@ -67,7 +67,7 @@ public:
         _positionText = new CRUITextWidget();
         _positionText->setText(_window->getCurrentPositionDesc());
         _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
-        _positionText->setFontSize(FONT_SIZE_MEDIUM);
+        _positionText->setFontSize(FONT_SIZE_SMALL);
         _scrollLayout->addChild(_positionText);
         _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
         _scrollSlider->setScrollPosCallback(this);
@@ -1306,7 +1306,7 @@ void CRUIReadWidget::showReaderMenu() {
     lvRect margins;
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
     CRLog::trace("showing popup");
-    preparePopup(menu, ALIGN_BOTTOM, margins);
+    preparePopup(menu, ALIGN_BOTTOM, margins, 0x40);
 }
 
 /// override to handle menu or other action

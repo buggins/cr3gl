@@ -47,6 +47,7 @@ protected:
 	bool _background2Tiled;
 	lUInt32 _backgroundColor;
 	lUInt32 _background2Color;
+    int _backgroundAlpha;
 //	CRUIImageRef _background;
 //    CRUIImageRef _background2;
     bool _layoutRequested;
@@ -171,6 +172,12 @@ public:
     //virtual CRUIWidget * setBackground2(CRUIImageRef background) { _background2 = background; requestLayout(); return this; }
     virtual CRUIWidget * setBackground2(lUInt32 color) { _background2Color = color; _background2.clear(); requestLayout(); return this; }
     virtual CRUIImageRef getBackground2();
+
+    /// returns background alpha 0..255 (0==opaque, 255 fully transparent)
+    virtual int getBackgroundAlpha() { return _backgroundAlpha; }
+    /// set background alpha, 0..255 (0==opaque, 255 fully transparent)
+    virtual void setBackgroundAlpha(int alpha) { _backgroundAlpha = alpha; }
+
     virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();
 	virtual lUInt8 getFontSize() { return _fontSize; }

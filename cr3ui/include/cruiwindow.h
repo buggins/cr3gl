@@ -60,7 +60,7 @@ protected:
 
     PopupControl _popupControl;
 
-    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins);
+    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0);
 
 public:
     /// return true if drag operation is intercepted

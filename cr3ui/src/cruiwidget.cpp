@@ -18,6 +18,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 	_parent(NULL),
 	_backgroundColor(COLOR_NONE),
 	_background2Color(COLOR_NONE),
+    _backgroundAlpha(0),
 	_layoutRequested(true),
 	_drawRequested(true),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
@@ -403,6 +404,7 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
     CRUIImageRef background2 = getBackground2();
     if (!background.isNull() || !background2.isNull()) {
 		LVDrawStateSaver saver(*buf);
+        buf->setAlpha(_backgroundAlpha);
 		lvRect rc = _pos;
 		applyMargin(rc);
 		setClipRect(buf, rc);
