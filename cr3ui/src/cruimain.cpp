@@ -438,7 +438,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
 
     _currentSettings->setStringDef(PROP_PAGE_VIEW_MODE, PROP_PAGE_VIEW_MODE_VALUE_2PAGES);
-    _currentSettings->setStringDef(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1);
+    _currentSettings->setStringDef(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_3D);
 
     _currentSettings->setStringDef(PROP_FONT_FACE, crconfig.uiFontFace.c_str());
     _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
