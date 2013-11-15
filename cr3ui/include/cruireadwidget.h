@@ -33,34 +33,14 @@ class CRUIDocView : public LVDocView {
     //CRUIImageRef backgroundScrollLeft;
     //CRUIImageRef backgroundScrollRight;
 public:
-    CRUIDocView() : LVDocView() {
-        //background = resourceResolver->getIcon("leather.jpg", true);
-        background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
-    }
+    CRUIDocView();
     /// clears page background
-    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY, int alpha = 0) {
-//    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
-//        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
-//        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
-        lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
-        LVDrawStateSaver s(drawbuf);
-        drawbuf.setAlpha(alpha);
-        background->draw(&drawbuf, rc, offsetX, offsetY);
-//        drawbuf.FillRect(rc, 0xE0E0C040);
-//        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
-//			lvRect leftrc = rc;
-//			leftrc.right = leftrc.left + backgroundScrollLeft->originalWidth();
-//			backgroundScrollLeft->draw(&drawbuf, leftrc, 0, offsetY);
-//			lvRect rightrc = rc;
-//			rightrc.left = rightrc.right - backgroundScrollRight->originalWidth();
-//			backgroundScrollRight->draw(&drawbuf, rightrc, 0, offsetY);
-//        }
-    }
-    virtual void setBackground(CRUIImageRef img) {
-        background = img;
-    }
+    virtual void drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY, int alpha = 0);
+    virtual void setBackground(CRUIImageRef img);
     /// applies properties, returns list of not recognized properties
     virtual CRPropRef propsApply( CRPropRef props );
+    lString16 getLink(int x, int y, int r);
+    lString16 getLink(int x, int y);
 };
 
 class CRUIReadWidget;

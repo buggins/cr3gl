@@ -23,6 +23,10 @@
 			<p>Accessing menu</p>
             <p>In reading mode, tap center of screen or press menu button to open reader menu.</p>
             <p>You can move to previous screen using Menu / Back action or by two finger flick left to right.</p>
+            <p>To navigate by link, long tap on link. Links to manual sections: <a href="#tapzones">tap zones</a> | <a href="#menu">reader menu</a> | <a 
+		href="#settings">settings</a> |  <a href="#mainscreen">main screen</a> |  <a href="#filebrowser">file browser</a> |  <a 
+		href="#about">about project</a></p>
+            <p>To return back after navigation by link, select Return action from menu, press Back key or two finger tap left top corner of screen.</p>
             <p></p>
     		<section id="tapzones">
     			<title>
@@ -67,7 +71,7 @@
 			<subtitle>Actions assigned for two finger tap on tap zones:</subtitle>
     			<table><col width="30%"/><col width="30%"/><col width="30%"/>
     			<tr>
-    				<td><b>Close book</b></td>
+    				<td><b>Return / Close book</b></td>
     				<td><b>Toggle night mode</b></td>
     				<td><b>Table of contents</b></td>
     			</tr>
@@ -77,7 +81,7 @@
     				<td><b>None</b></td>
     			</tr>
     			<tr>
-    				<td><b>None</b></td>
+    				<td><b>Go to %</b></td>
     				<td><b>None</b></td>
     				<td><b>None</b></td>
     			</tr>
@@ -172,68 +176,38 @@
     			<p>Short tap on Menu button at top right corner (or hardware Menu button) opens menu.</p>
     			<p>Long tap on Menu button opens browser Settings.</p>
     		</section>
-        <section id="thirdparty">
+        <section id="about">
             <title>
-                <p>Third party components used</p>
+                <p>About Cool Reader</p>
             </title>
-            <p>Cool Reader is free open source software, distributer under GNU General Public License v2.</p>
-            <p>Following third party components are used:</p>
-	<ul>
-		<li>zlib</li>
-		<li>libpng</li>
-		<li>libjpeg</li>
-		<li>freetype</li>
-		<li>chmlib</li>
-		<li>antiword</li>
-		<li>sqlite</li>
-		<li>Icon set Windows 8 Metro Style by <a href="http://www.visualpharm.com/">http://www.visualpharm.com/</a> is used</li>
-	</ul>
-        </section>
-        <section id="links">
-            <title>
-                <p>Useful links</p>
-            </title>
-            <p>(will be opened in external browser)</p>
-            <p><a href="http://sourceforge.net/projects/crengine/">Project page on SourceForge</a></p>
-            <p><a href="http://sourceforge.net/apps/mediawiki/crengine/index.php?title=Main_Page">Project's Wiki</a> on SourceForge</p>
-            <p><a href="https://sourceforge.net/project/project_donations.php?group_id=191284">Project's Donations page</a> on SourceForge</p>
-            <p>Send your bug reports to support@coolreader.org </p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-            <p></p>
-        </section>
+		<section id="thirdparty">
+		    <title>
+		        <p>Third party components used</p>
+		    </title>
+		    <p>Cool Reader is free open source software, distributer under GNU General Public License v2.</p>
+		    <p>Following third party components are used:</p>
+		<ul>
+			<li>zlib</li>
+			<li>libpng</li>
+			<li>libjpeg</li>
+			<li>freetype</li>
+			<li>chmlib</li>
+			<li>antiword</li>
+			<li>sqlite</li>
+			<li>Icon set Windows 8 Metro Style by <a href="http://www.visualpharm.com/">http://www.visualpharm.com/</a> is used</li>
+		</ul>
+		</section>
+		<section id="links">
+		    <title>
+		        <p>Useful links</p>
+		    </title>
+		    <p>(will be opened in external browser)</p>
+		    <p><a href="http://sourceforge.net/projects/crengine/">Project page on SourceForge</a></p>
+		    <p><a href="http://sourceforge.net/apps/mediawiki/crengine/index.php?title=Main_Page">Project's Wiki</a> on SourceForge</p>
+		    <p><a href="https://sourceforge.net/project/project_donations.php?group_id=191284">Project's Donations page</a> on SourceForge</p>
+		    <p>Send your bug reports to support@coolreader.org </p>
+		    <p></p>
+		</section>
+	</section>
 	</body>
 </FictionBook>

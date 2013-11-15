@@ -33,6 +33,135 @@ lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
     return n1 | n2;
 }
 
+CRUIDocView::CRUIDocView() : LVDocView() {
+    //background = resourceResolver->getIcon("leather.jpg", true);
+    background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
+}
+
+/// applies properties, returns list of not recognized properties
+CRPropRef CRUIDocView::propsApply(CRPropRef props) {
+    //CRPropRef oldSettings = propsGetCurrent();
+    CRPropRef newSettings = propsGetCurrent() | props;
+    CRPropRef forDocview = LVCreatePropsContainer();
+    bool backgroundChanged = false;
+    //bool needClearCache = false;
+    for (int i = 0; i < props->getCount(); i++) {
+        lString8 key(props->getName(i));
+        //lString8 value(UnicodeToUtf8(props->getValue(i)));
+        if (key == PROP_PAGE_MARGINS) {
+            int marginPercent = props->getIntDef(key.c_str(), 5000);
+            int hmargin = deviceInfo.shortSide * marginPercent / 10000;
+            lvRect margins(hmargin, hmargin / 2, hmargin, hmargin / 2);
+            setPageMargins(margins);
+            requestRender();
+        } else if (key == PROP_FONT_ANTIALIASING) {
+            int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
+            if (antialiasingMode == 1) {
+                antialiasingMode = 2;
+            }
+            if (fontMan->GetAntialiasMode() != antialiasingMode) {
+                fontMan->SetAntialiasMode(antialiasingMode);
+            }
+            requestRender();
+        } else if (key == PROP_FONT_HINTING) {
+            bool bytecode = props->getBoolDef(PROP_FONT_HINTING, 1);
+            int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
+            if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
+                //CRLog::debug("Setting hinting mode to %d", mode);
+                fontMan->SetHintingMode((hinting_mode_t)hintingMode);
+            }
+            requestRender();
+        } else if (key == PROP_FONT_GAMMA_INDEX) {
+            int gammaIndex = props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
+            int oldGammaIndex = fontMan->GetGammaIndex();
+            if (oldGammaIndex != gammaIndex) {
+                fontMan->SetGammaIndex(gammaIndex);
+            }
+        } else {
+            forDocview->setString(key.c_str(), props->getValue(i));
+        }
+        if (key == PROP_BACKGROUND_COLOR
+                || key == PROP_BACKGROUND_IMAGE
+                || key == PROP_BACKGROUND_IMAGE_ENABLED
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
+                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
+            propsGetCurrent()->setString(key.c_str(), props->getValue(i));
+            backgroundChanged = true;
+            //needClearCache = true;
+        }
+    }
+    CRPropRef res = LVDocView::propsApply(forDocview);
+    if (backgroundChanged) {
+        //setBackground(resourceResolver->getBackgroundImage(newSettings));
+        setBackground(resourceResolver->getBackgroundImage(propsGetCurrent()));
+    }
+    return res;
+}
+
+/// clears page background
+void CRUIDocView::drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offsetY, int alpha) {
+//    	CRUIImageRef background = resourceResolver->getIcon("paper1.jpg", true);
+//        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
+//        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
+    lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+    LVDrawStateSaver s(drawbuf);
+    drawbuf.setAlpha(alpha);
+    background->draw(&drawbuf, rc, offsetX, offsetY);
+//        drawbuf.FillRect(rc, 0xE0E0C040);
+//        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
+//			lvRect leftrc = rc;
+//			leftrc.right = leftrc.left + backgroundScrollLeft->originalWidth();
+//			backgroundScrollLeft->draw(&drawbuf, leftrc, 0, offsetY);
+//			lvRect rightrc = rc;
+//			rightrc.left = rightrc.right - backgroundScrollRight->originalWidth();
+//			backgroundScrollRight->draw(&drawbuf, rightrc, 0, offsetY);
+//        }
+}
+
+void CRUIDocView::setBackground(CRUIImageRef img) {
+    background = img;
+}
+
+lString16 CRUIDocView::getLink( int x, int y, int r )
+{
+    int step = 5;
+    int n = r / step;
+    r = n * step;
+    lString16 lnk = getLink(x, y);
+    if (r==0 || !lnk.empty())
+        return lnk;
+    lString16 link;
+    for ( int xx = -r; xx<=r; xx+=step ) {
+        link = getLink( x+xx, y-r );
+        if ( !link.empty() )
+            return link;
+        link = getLink( x+xx, y+r );
+        if ( !link.empty() )
+            return link;
+    }
+    for ( int yy = -r + step; yy<=r - step; yy+=step ) {
+        link = getLink( x+r, y+yy );
+        if ( !link.empty() )
+            return link;
+        link = getLink( x-r, y+yy );
+        if ( !link.empty() )
+            return link;
+    }
+    return lString16::empty_str;
+}
+
+lString16 CRUIDocView::getLink( int x, int y )
+{
+    lvPoint pt(x, y);
+//    if (!windowToDocPoint(pt))
+//        return lString16();
+    ldomXPointer p = getNodeByPoint(pt);
+    if ( p.isNull() )
+        return lString16::empty_str;
+    lString16 href = p.getHRef();
+    return href;
+}
+
 class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPosCallback {
     CRUIReadWidget * _window;
     CRUIActionList _actionList;
@@ -180,7 +309,7 @@ public:
         addChild(_positionText);
         _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
         _scrollSlider->setScrollPosCallback(this);
-        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 5 / 8);
         addChild(_scrollSlider);
         setBackground("home_frame.9");
     }
@@ -1113,6 +1242,11 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else {
             	int x = event->getX();
             	int y = event->getY();
+                lString16 link = _docview->getLink(x, y, 0);
+                if (link.empty())
+                    link = _docview->getLink(x, y, 6);
+                if (link.empty())
+                    link = _docview->getLink(x, y, MIN_ITEM_PX / 10);
                 bool longTap = (event->getDownDuration() > 500);
                 bool twoFinigersTap = false;
                 if (event->count() == 2) {
@@ -1128,9 +1262,20 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 }
                 int zone = pointToTapZone(event->getX(), event->getY());
                 event->cancelAllPointers();
-                //bool twoFingersTap = (event->count() == 2) && event->get
-                //onTapZone(zone, twoFinigersTap);
-                onTapZone(zone, longTap || twoFinigersTap);
+
+                if (!link.empty()) {
+                    CRLog::info("Link pressed: %s", LCSTR(link));
+                    if (link.startsWith("http://") || link.startsWith("https://")) {
+                        // TODO: support external links
+                    } else {
+                        _docview->goLink(link);
+                        invalidate();
+                    }
+                } else {
+                    //bool twoFingersTap = (event->count() == 2) && event->get
+                    //onTapZone(zone, twoFinigersTap);
+                    onTapZone(zone, longTap || twoFinigersTap);
+                }
             }
             _dragStartOffset = 0; //NO_DRAG;
             _isDragging = false;
@@ -1325,13 +1470,17 @@ void CRUIReadWidget::showTOC() {
 void CRUIReadWidget::showGoToPercentPopup() {
     lvRect margins;
     CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
-    preparePopup(popup, ALIGN_BOTTOM, margins, 0x50);
+    preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false);
 }
 
 void CRUIReadWidget::showReaderMenu() {
     CRLog::trace("showReaderMenu");
     CRUIActionList actions;
     actions.add(ACTION_BACK);
+    if (_docview->canGoBack())
+        actions.add(ACTION_LINK_BACK);
+    if (_docview->canGoForward())
+        actions.add(ACTION_LINK_FORWARD);
     actions.add(ACTION_SETTINGS);
     if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
         actions.add(ACTION_DAY_MODE);
@@ -1347,7 +1496,7 @@ void CRUIReadWidget::showReaderMenu() {
     lvRect margins;
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
     CRLog::trace("showing popup");
-    preparePopup(menu, ALIGN_BOTTOM, margins, 0x40);
+    preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
 }
 
 /// override to handle menu or other action
@@ -1361,6 +1510,15 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     switch (action->id) {
     case CMD_BACK:
         _main->back();
+        return true;
+    case CMD_LINK_BACK:
+        if (_docview->canGoBack())
+            _docview->goBack();
+        else
+            _main->back();
+        return true;
+    case CMD_LINK_FORWARD:
+        _docview->goForward();
         return true;
     case CMD_TOC:
         showTOC();
@@ -1378,66 +1536,6 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return _main->onAction(action);
     }
     return false;
-}
-
-/// applies properties, returns list of not recognized properties
-CRPropRef CRUIDocView::propsApply(CRPropRef props) {
-    //CRPropRef oldSettings = propsGetCurrent();
-    CRPropRef newSettings = propsGetCurrent() | props;
-    CRPropRef forDocview = LVCreatePropsContainer();
-    bool backgroundChanged = false;
-    //bool needClearCache = false;
-    for (int i = 0; i < props->getCount(); i++) {
-        lString8 key(props->getName(i));
-        //lString8 value(UnicodeToUtf8(props->getValue(i)));
-        if (key == PROP_PAGE_MARGINS) {
-        	int marginPercent = props->getIntDef(key.c_str(), 5000);
-        	int hmargin = deviceInfo.shortSide * marginPercent / 10000;
-        	lvRect margins(hmargin, hmargin / 2, hmargin, hmargin / 2);
-        	setPageMargins(margins);
-        	requestRender();
-        } else if (key == PROP_FONT_ANTIALIASING) {
-            int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
-            if (antialiasingMode == 1) {
-                antialiasingMode = 2;
-            }
-            if (fontMan->GetAntialiasMode() != antialiasingMode) {
-                fontMan->SetAntialiasMode(antialiasingMode);
-            }
-            requestRender();
-        } else if (key == PROP_FONT_HINTING) {
-            bool bytecode = props->getBoolDef(PROP_FONT_HINTING, 1);
-            int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
-            if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
-                //CRLog::debug("Setting hinting mode to %d", mode);
-                fontMan->SetHintingMode((hinting_mode_t)hintingMode);
-            }
-            requestRender();
-        } else if (key == PROP_FONT_GAMMA_INDEX) {
-            int gammaIndex = props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
-            int oldGammaIndex = fontMan->GetGammaIndex();
-            if (oldGammaIndex != gammaIndex) {
-                fontMan->SetGammaIndex(gammaIndex);
-            }
-        } else {
-            forDocview->setString(key.c_str(), props->getValue(i));
-        }
-        if (key == PROP_BACKGROUND_COLOR
-                || key == PROP_BACKGROUND_IMAGE
-                || key == PROP_BACKGROUND_IMAGE_ENABLED
-                || key == PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS
-                || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
-            propsGetCurrent()->setString(key.c_str(), props->getValue(i));
-            backgroundChanged = true;
-            //needClearCache = true;
-        }
-    }
-    CRPropRef res = LVDocView::propsApply(forDocview);
-    if (backgroundChanged) {
-        //setBackground(resourceResolver->getBackgroundImage(newSettings));
-        setBackground(resourceResolver->getBackgroundImage(propsGetCurrent()));
-    }
-    return res;
 }
 
 // apply changed settings
@@ -2162,7 +2260,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
         int diam = (numPages == 1 ? 50 : 25) * dx / 100;
         int xx = 0;
         calcDragPositionProgress(startx, currx, direction, progress, xx);
-        CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d xx=%d)", pageNumber, progress, direction, xx);
+        //CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d xx=%d)", pageNumber, progress, direction, xx);
         //glbuf->beforeDrawing();
         int nextPage = pageNumber;
         if (direction > 0)
