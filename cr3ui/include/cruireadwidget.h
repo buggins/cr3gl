@@ -185,6 +185,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     public:
         int dir() { return direction; }
         int getNewPage() { return newPage; }
+        void setNewPage(int page) { newPage = page; }
         void preparePage(LVDocView * docview, int page, bool back = false);
         void clearExcept(int page1, int page2);
         PagedModePage * findPage(int page);

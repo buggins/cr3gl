@@ -610,7 +610,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
         }
     }
     if (scrollWasActive && !_scroll.isActive()) {
-        if (_viewMode == DVM_PAGES) {
+        if (_viewMode == DVM_PAGES && !_scroll.isCancelled()) {
             CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
             _docview->goToPage(_pagedCache.getNewPage(), true);
 //            if (_scroll.dir() > 0)
@@ -1007,7 +1007,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     case ACTION_DOWN:
         if (_scroll.isActive()) {
             _scroll.stop();
-            if (_viewMode == DVM_PAGES)
+            if (_viewMode == DVM_PAGES && !_scroll.isCancelled())
                 _docview->goToPage(_pagedCache.getNewPage());
             event->cancelAllPointers();
             _isDragging = false;
@@ -1041,11 +1041,19 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     _pagedCache.calcDragPositionProgress(_dragStart.x, _dragPos.x, _pagedCache.dir(), progress, xx);
                     progress = _pos.width() * progress / 10000;
                     int spd = myAbs(speed.x);
+                    bool cancelling = ((speed.x > 0 && _pagedCache.dir() > 0) || (speed.x < 0 && _pagedCache.dir() < 0)) && (spd > SCROLL_MIN_SPEED * 2);
+                    if ((progress < _pos.width() / 7) && (spd < SCROLL_MIN_SPEED * 3))
+                        cancelling = true; // cancel if too small progress and too small speed
+                    _scroll.setDirection(_pagedCache.dir());
                     if (spd < _pos.width())
                         spd =_pos.width();
-                    _scroll.setDirection(_pagedCache.dir());
                     _scroll.start(0, _pos.width(), spd, SCROLL_FRICTION);
                     _scroll.setPos(progress);
+                    // cancel if UP event occured during moving in opposite direction
+                    if (cancelling) {
+                        _scroll.cancel();
+                        _pagedCache.setNewPage(_docview->getCurPage());
+                    }
                     CRLog::trace("Starting page flip with speed %d", _scroll.speed());
                     _isDragging = false;
                 } else {

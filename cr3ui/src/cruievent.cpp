@@ -157,9 +157,13 @@ lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
     lInt64 svx = 0;
     lInt64 svy = 0;
     lInt64 sw = 0;
+    lUInt32 currentTs = GetCurrentTimeMillis();
     lUInt32 t0 = _track[0].ts;
+    if (currentTs - t0 > 300)
+        return lvPoint(0,0);
     for (int i = 0; i < _track.length() - 2; i++) {
-        int dt = t0 - _track[i].ts;
+        int dt = currentTs - _track[i].ts;
+        //int dt = t0 - _track[i].ts;
         if (dt > maxtime)
             break;
         int t = _track[i].ts - _track[i + 1].ts;

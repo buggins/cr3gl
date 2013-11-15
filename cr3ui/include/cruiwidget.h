@@ -236,6 +236,7 @@ private:
     lInt64 dstpos1000; // position * 1000
     bool manual;
     int direction;
+    bool cancelling;
 public:
     void setDirection(int dir) { direction = dir; }
     int dir() { return direction; }
@@ -247,6 +248,9 @@ public:
     bool isActive() { return active; }
     ScrollControl() : active(false), speed1000(0), friction(0), pos1000(0), manual(false) {}
     void stop() { active = false; speed1000 = 0; }
+    /// animate cancel: scroll to previous position
+    void cancel() { cancelling = true; }
+    bool isCancelled() { return cancelling; }
     void start(int _pos, int _speed, int _friction);
     void start(int _pos, int _pos2, int _speed, int _friction);
     // returns true if position changed

@@ -500,6 +500,7 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
 void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
     active = true;
     manual = true;
+    cancelling = false;
     if (_pos2 < _pos && _speed > 0)
         _speed = -_speed;
     speed1000 = _speed * 1000;
@@ -512,6 +513,7 @@ void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
 
 void ScrollControl::start(int _pos, int _speed, int _friction) {
     active = true;
+    cancelling = false;
     manual = false;
     speed1000 = _speed * 1000;
     startspeed = speed1000;
@@ -525,16 +527,22 @@ bool ScrollControl::animate(lUInt64 millisPassed) {
         return false;
     lInt64 oldpos = pos1000;
     if (manual) {
-        pos1000 = oldpos + (lInt64)millisPassed * speed1000 / 1000;
-        if (startspeed > 0) {
-            if (myAbs(pos1000 - dstpos1000) < 800) {
-                pos1000 = dstpos1000;
+
+        if (cancelling) {
+            pos1000 = oldpos - (lInt64)millisPassed * speed1000 / 1000;
+            if ((startpos1000 > dstpos1000 && pos1000 > startpos1000 - 800)
+                    || (startpos1000 < dstpos1000 && pos1000 < startpos1000 + 800)) {
+                //if (myAbs(pos1000 - startpos1000) < 800) {
+                pos1000 = startpos1000;
                 //CRLog::trace("stopping manual scroll at %d - %d", (int)(pos1000/1000), (int)(dstpos1000/1000));
                 stop();
                 return true;
             }
         } else {
-            if (myAbs(pos1000 - dstpos1000) < 800) {
+            pos1000 = oldpos + (lInt64)millisPassed * speed1000 / 1000;
+            if ((startpos1000 < dstpos1000 && pos1000 > dstpos1000 - 800)
+                    || (startpos1000 > dstpos1000 && pos1000 < dstpos1000 + 800)) {
+                //if (myAbs(pos1000 - dstpos1000) < 800) {
                 pos1000 = dstpos1000;
                 //CRLog::trace("stopping manual scroll at %d - %d", (int)(pos1000/1000), (int)(dstpos1000/1000));
                 stop();
