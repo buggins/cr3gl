@@ -96,6 +96,9 @@ public:
 	/// long click handler, returns true if it handled event
 	virtual bool onLongClickEvent();
 
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId) { CR_UNUSED(timerId); return false; }
+
 	/// returns true to allow parent intercept this widget which is currently handled by this widget
 	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event) { CR_UNUSED(event); return true; }
 

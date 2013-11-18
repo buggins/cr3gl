@@ -266,6 +266,124 @@ void CRUIEventManager::updateScreen() {
     _rootWidget->update(false);
 }
 
+CRUITimerItem::CRUITimerItem(lUInt32 _id, lUInt32 _intervalMillis, bool _repeat, CRUIWidget * _widget)
+    : id(_id), widget(_widget)
+{
+    if (_repeat) {
+        intervalMillis = _intervalMillis;
+    } else {
+        intervalMillis = 0;
+    }
+    nextTs = GetCurrentTimeMillis() + _intervalMillis;
+}
+
+void CRUITimerItem::update(lUInt32 _intervalMillis, bool _repeat, CRUIWidget * _widget) {
+    widget = _widget;
+    if (_repeat) {
+        intervalMillis = _intervalMillis;
+    } else {
+        intervalMillis = 0;
+    }
+    nextTs = GetCurrentTimeMillis() + _intervalMillis;
+}
+
+bool CRUIEventManager::dispatchTimerEvent() {
+    lUInt32 ts = GetCurrentTimeMillis();
+    LVPtrVector<CRUITimerItem, false> reschedule;
+    for (int i = _timers.length() - 1; i >= 0; i--) {
+        CRUITimerItem * item = _timers[i];
+        if (item->nextTs > ts)
+            continue;
+        _timers.remove(i);
+        if (_rootWidget && _rootWidget->isChild(item->widget)) {
+            if (!item->widget->onTimerEvent(item->id))
+                item->intervalMillis = 0; // disable timer if handler returned false
+            if (item->intervalMillis) {
+                item->nextTs = ts + item->intervalMillis;
+                reschedule.add(item);
+            } else {
+                delete item;
+            }
+        } else {
+            // item with non-existing widget
+            delete item;
+        }
+    }
+    // place rescheduled events into queue, sorted
+    for (int i = 0; i < reschedule.length(); i++) {
+        updateTimerQueue(reschedule[i]);
+    }
+    if (_timers.length()) {
+        // restart
+        startTimer(_timers[0]->nextTs - ts);
+        return true;
+    } else {
+        concurrencyProvider->executeGui(NULL, 0);
+        return false;
+    }
+}
+
+class TimerHandler : public CRRunnable {
+    CRUIEventManager * eventManager;
+public:
+    TimerHandler(CRUIEventManager * _eventManager) : eventManager(_eventManager) {}
+    virtual void run() { eventManager->dispatchTimerEvent(); }
+};
+
+void CRUIEventManager::startTimer(lUInt32 interval) {
+    concurrencyProvider->executeGui(new TimerHandler(this), interval);
+}
+
+void CRUIEventManager::updateTimerQueue(CRUITimerItem * item) {
+    for (int i = 0; i < _timers.length(); i++) {
+        if (_timers[i]->nextTs > item->nextTs) {
+            _timers.insert(i, item);
+            return;
+        }
+    }
+    _timers.add(item);
+}
+
+void CRUIEventManager::updateTimerQueue(int index) {
+    CRUITimerItem * item = _timers.remove(index);
+    updateTimerQueue(item);
+}
+
+int CRUIEventManager::findTimer(lUInt32 timerId) {
+    for (int i = 0; i < _timers.length(); i++) {
+        if (_timers[i]->id == timerId)
+            return i;
+    }
+    return -1;
+}
+
+void CRUIEventManager::setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat) {
+    lUInt32 oldId = _timers.length() ? _timers[0]->id : 0;
+    int index = findTimer(timerId);
+    CRUITimerItem * timer = NULL;
+    if (index >= 0) {
+        // update properties of existing timer
+        timer = _timers.remove(index);
+        timer->update(interval, repeat, widget);
+    } else {
+        // create new timer
+        timer = new CRUITimerItem(timerId, interval, repeat, widget);
+    }
+    updateTimerQueue(timer);
+    if (_timers[0]->id != oldId) // changed
+        startTimer(_timers[0]->nextTs - GetCurrentTimeMillis());
+}
+
+void CRUIEventManager::cancelTimer(lUInt32 timerId) {
+    int index = findTimer(timerId);
+    if (index >= 0)
+        delete _timers.remove(index);
+    if (!_timers.length()) // cancel
+        concurrencyProvider->executeGui(NULL, 0);
+}
+
+
+
 bool CRUIEventManager::interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget) {
     //(const_cast<CRUIMotionEvent *>(event))->setWidget(widget);
 	if (!_rootWidget || !_rootWidget->isChild(widget))

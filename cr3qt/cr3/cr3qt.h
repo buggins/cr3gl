@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QMutex>
 #include <QThread>
+#include <QTimer>
 #include <QWaitCondition>
 #include <QMouseEvent>
 #include <glwrapper.h>
@@ -34,7 +35,16 @@ class QtGuiExecutorObject : public QObject {
         virtual ~QtGuiExecutorEvent() { delete task; }
     };
 
+    QTimer timer;
+    CRRunnable * timerCallback;
+
 public:
+    QtGuiExecutorObject() : timer(this), timerCallback(NULL) {
+        timer.setSingleShot(true);
+        connect(&timer, SIGNAL(timeout()), this, SLOT(onTimerCallback()));
+        //connect(timer, timer.timeout, this, this->onTimerCallback);
+    }
+
     virtual bool event(QEvent * e) {
         QtGuiExecutorEvent * ee = dynamic_cast<QtGuiExecutorEvent*>(e);
         if (ee) {
@@ -46,6 +56,27 @@ public:
     void execute(CRRunnable * _task) {
         QtGuiExecutorEvent * event = new QtGuiExecutorEvent(_task);
         QCoreApplication::postEvent(this, event);
+    }
+    void execute(CRRunnable * _task, int delayMillis) {
+        if (timer.isActive())
+            timer.stop();
+        if (timerCallback) {
+            delete timerCallback;
+            timerCallback = NULL;
+        }
+        timerCallback = _task;
+        if (timerCallback)
+            timer.start(delayMillis);
+    }
+public slots:
+    void onTimerCallback() {
+        if (timerCallback) {
+            CRRunnable * task = timerCallback;
+            timerCallback = NULL;
+            // execute
+            task->run();
+            delete task;
+        }
     }
 };
 
@@ -99,8 +130,13 @@ public:
     virtual CRThread * createThread(CRRunnable * threadTask) {
         return new QtThread(threadTask);
     }
+
     virtual void executeGui(CRRunnable * task) {
         guiExecutor->execute(task);
+    }
+
+    virtual void executeGui(CRRunnable * task, int delayMillis) {
+        guiExecutor->execute(task, delayMillis);
     }
 
     QtConcurrencyProvider() {

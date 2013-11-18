@@ -244,15 +244,31 @@ public:
     ~CRUIKeyEvent() {}
 };
 
+class CRUITimerItem {
+public:
+    lUInt32 id;
+    lUInt32 intervalMillis; // != 0 for recurring event
+    lUInt32 nextTs;
+    CRUIWidget * widget;
+    CRUITimerItem(lUInt32 id, lUInt32 intervalMillis, bool repeat, CRUIWidget * widget);
+    void update(lUInt32 intervalMillis, bool repeat, CRUIWidget * widget);
+    ~CRUITimerItem() {}
+};
+
 class CRUIMainWidget;
 class CRUIEventManager {
 protected:
 	CRUIMainWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
     LVHashTable<lUInt32, CRUIKeyEvent*> _keyDownEvents;
+    LVPtrVector<CRUITimerItem> _timers;
 	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event);
     void updateScreen();
+    void updateTimerQueue(int index);
+    void updateTimerQueue(CRUITimerItem * item);
+    int  findTimer(lUInt32 timerId);
+    void startTimer(lUInt32 interval);
 public:
 	CRUIEventManager();
     void onSystemLanguageChanged();
@@ -260,6 +276,14 @@ public:
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);
     bool interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget);
+
+    // timer support
+    /// runs callbacks for all timers ready to execute, returns true if any unfinished timer tasks left
+    bool dispatchTimerEvent();
+    /// sets new timer or restarts existing
+    void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat);
+    /// cancels existing timer by id
+    void cancelTimer(lUInt32 timerId);
 };
 
 class CRUIOnTouchEventListener {
