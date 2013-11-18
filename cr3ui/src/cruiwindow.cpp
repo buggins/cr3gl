@@ -355,9 +355,11 @@ bool CRUIWindowWidget::onAction(const CRUIAction * action) {
 /// close popup menu, and call onAction
 bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * _action) {
     CRUIAction action(*_action);
-    _popupControl.close();
-    if (onAction(&action))
+    if (onAction(&action)) {
+        _popupControl.close();
         return true;
+    }
+    _popupControl.close();
     return _main->onAction(&action);
 }
 

@@ -188,6 +188,12 @@ void CRUIMainWidget::showTOC(CRUITOCWidget * toc) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
+void CRUIMainWidget::showBookmarks(CRUIBookmarksWidget * bm) {
+    _history.setNext(new BookmarksItem(this, bm));
+    int newpos = _history.pos() + 1;
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+}
+
 void CRUIMainWidget::showSlowOperationPopup()
 {
 	if (_popup) {

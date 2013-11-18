@@ -75,6 +75,36 @@ public:
     virtual ~CRUITOCWidget() { delete _itemWidget; }
 };
 
+class CRUIBookmarksWidget : public CRUIWindowWidget, public CRUIListAdapter
+        , public CRUIOnListItemClickListener
+        , public CRUIOnClickListener
+        , public CRUIOnLongClickListener
+{
+    CRUIReadWidget * _readWidget;
+    CRUITitleBarWidget * _title;
+    CRUIListWidget * _list;
+    LVPtrVector<BookDBBookmark> _bookmarks;
+    CRUIHorizontalLayout * _itemWidget;
+    CRUITextWidget * _chapter;
+    CRUITextWidget * _page;
+public:
+    // list adapter methods
+    virtual int getItemCount(CRUIListWidget * list);
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    // list item click
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+    // on click
+    virtual bool onClick(CRUIWidget * widget);
+    virtual bool onLongClick(CRUIWidget * widget);
+    /// override to handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
+
+    CRUIBookmarksWidget(CRUIMainWidget * main, CRUIReadWidget * read);
+    virtual ~CRUIBookmarksWidget() { delete _itemWidget; }
+};
+
 enum PageFlipAnimation {
     PAGE_ANIMATION_NONE,
     PAGE_ANIMATION_SLIDE,
@@ -210,6 +240,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     /// handle timer event; return true to allow recurring timer event occur more times, false to stop
     virtual bool onTimerEvent(lUInt32 timerId);
 
+
     void animateScrollTo(int newpos, int speed);
     void animatePageFlip(int newpage, int speed);
 
@@ -243,6 +274,7 @@ public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
 
+    LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
 
     /// restore last position from DB
     bool restorePosition();
@@ -303,6 +335,7 @@ public:
     void showGoToPercentPopup();
     void showReaderMenu();
     void showTOC();
+    void showBookmarks();
     bool hasTOC();
     lString16 getCurrentPositionDesc();
     int getCurrentPositionPercent();

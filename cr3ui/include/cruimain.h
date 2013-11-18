@@ -16,6 +16,7 @@ enum VIEW_MODE {
     MODE_SETTINGS,
     MODE_READ,
     MODE_TOC,
+    MODE_BOOKMARKS,
     MODE_OPDS
 };
 
@@ -103,6 +104,19 @@ public:
     }
     virtual VIEW_MODE getMode() { return MODE_TOC; }
     TOCItem(CRUIMainWidget * _main, CRUITOCWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class BookmarksItem : public NavHistoryItem {
+public:
+    // recreate on config change
+    virtual CRUIWindowWidget * recreate() {
+        lvRect pos = ((CRUIWidget*)main)->getPos();
+        widget->measure(pos.width(), pos.height());
+        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_BOOKMARKS; }
+    BookmarksItem(CRUIMainWidget * _main, CRUIBookmarksWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class FolderItem : public NavHistoryItem {
@@ -367,6 +381,7 @@ public:
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);
     void showTOC(CRUITOCWidget * toc);
+    void showBookmarks(CRUIBookmarksWidget * toc);
     void back(bool fast = false);
 
     virtual void onAllCoverpagesReady(int newpos);

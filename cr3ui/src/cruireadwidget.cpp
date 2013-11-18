@@ -1699,6 +1699,11 @@ void CRUIReadWidget::showTOC() {
     _main->showTOC(widget);
 }
 
+void CRUIReadWidget::showBookmarks() {
+    CRUIBookmarksWidget * widget = new CRUIBookmarksWidget(_main, this);
+    _main->showBookmarks(widget);
+}
+
 void CRUIReadWidget::showGoToPercentPopup() {
     lvRect margins;
     CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
@@ -1723,6 +1728,7 @@ void CRUIReadWidget::showReaderMenu() {
     //if (hasTOC())
         actions.add(ACTION_TOC);
     actions.add(ACTION_GOTO_PERCENT);
+    actions.add(ACTION_BOOKMARKS);
     actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
@@ -1762,6 +1768,9 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_TOC:
         showTOC();
+        return true;
+    case CMD_BOOKMARKS:
+        showBookmarks();
         return true;
     case CMD_MENU:
         showReaderMenu();
@@ -2584,6 +2593,79 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
 
 
 
+
+
+CRUIBookmarksWidget::CRUIBookmarksWidget(CRUIMainWidget * main, CRUIReadWidget * read)  : CRUIWindowWidget(main), _readWidget(read) {
+    for (int i = 0; i < _readWidget->getBookmarks().length(); i++) {
+        _bookmarks.add(_readWidget->getBookmarks()[i]->clone());
+    }
+    _title = new CRUITitleBarWidget(lString16(), this, this, false);
+    _title->setTitle(STR_READER_BOOKMARKS);
+    _body->addChild(_title);
+    _list = new CRUIListWidget(true, this);
+    _list->setOnItemClickListener(this);
+    _list->setStyle("SETTINGS_ITEM_LIST");
+    _body->addChild(_list);
+    _itemWidget = new CRUIHorizontalLayout();
+    _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
+    _itemWidget->setPadding(PT_TO_PX(2));
+    _chapter = new CRUITextWidget();
+    _page = new CRUITextWidget();
+    _itemWidget->addChild(_chapter);
+    _itemWidget->addChild(_page);
+    _page->setMargin(lvRect(PT_TO_PX(3), 0, PT_TO_PX(2), 0));
+    _page->setAlign(ALIGN_RIGHT|ALIGN_VCENTER);
+    _chapter->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
+    _chapter->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _itemWidget->setStyle("LIST_ITEM");
+}
+
+// list adapter methods
+int CRUIBookmarksWidget::getItemCount(CRUIListWidget * list) {
+    CR_UNUSED(list);
+    return _bookmarks.length();
+}
+
+CRUIWidget * CRUIBookmarksWidget::getItemWidget(CRUIListWidget * list, int index) {
+    CR_UNUSED(list);
+    BookDBBookmark * item = _bookmarks[index];
+    _chapter->setText(Utf8ToUnicode(item->posText.c_str()));
+    _page->setText(formatPercent(item->percent));
+    return _itemWidget;
+}
+
+// list item click
+bool CRUIBookmarksWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    BookDBBookmark * item = _bookmarks[itemIndex];
+    _readWidget->goToPosition(Utf8ToUnicode(item->startPos.c_str()));
+    return onAction(CMD_BACK);
+}
+
+// on click
+bool CRUIBookmarksWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+bool CRUIBookmarksWidget::onLongClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+/// override to handle menu or other action
+bool CRUIBookmarksWidget::onAction(const CRUIAction * action) {
+    switch (action->id) {
+    case CMD_BACK:
+        _main->back();
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 
 
 static void addTocItems(LVPtrVector<LVTocItem, false> & toc, LVTocItem * item) {
