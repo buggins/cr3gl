@@ -22,6 +22,9 @@
 
 using namespace CRUI;
 
+#define SELECTION_LONG_TAP_DELAY_MILLIS 800
+#define SELECTION_LONG_TAP_TIMER_ID 123001
+
 lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
 	if (alpha <=0)
 		return cl1;
@@ -1160,6 +1163,113 @@ bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
 	return true;
 }
 
+void CRUIReadWidget::selectionDone(int x, int y) {
+    updateSelection(x, y);
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p1 = _docview->getDocument()->createXPointer(_selection.endPos);
+    if (!p1.isNull() && !p0.isNull()) {
+        ldomXRange r(p0, p1);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        r.sort();
+        if ( r.isNull() )
+            return;
+        _selection.startPos = r.getStart().toString();
+        _selection.endPos = r.getEnd().toString();
+        _selection.popupActive = true;
+        CRLog::trace("Show selection toolbar popup");
+    } else {
+        cancelSelection();
+    }
+}
+
+void CRUIReadWidget::updateSelection(int x, int y) {
+    if (!_selection.selecting)
+        return;
+    lvPoint pt(x, y);
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p = _docview->getNodeByPoint(pt);
+    if (!p.isNull() && !p0.isNull()) {
+        _selection.endPos = p.toString();
+        ldomXRange r(p0, p);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        r.sort();
+        if ( r.isNull() )
+            return;
+        r.setFlags(1);
+        _docview->selectRange(r);
+        clearImageCaches();
+        invalidate();
+        _main->update(true);
+    }
+}
+
+void CRUIReadWidget::startSelectionTimer(int x, int y) {
+    cancelSelection();
+    lvPoint pt(x, y);
+    ldomXPointer p = _docview->getNodeByPoint(pt);
+    if (!p.isNull()) {
+        ldomXRange r(p, p);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        if ( r.isNull() )
+            return;
+        _selection.startPos = r.getStart().toString();
+        _selection.endPos = r.getEnd().toString();
+        CRLog::trace("Starting selection timer");
+        _main->setTimer(SELECTION_LONG_TAP_TIMER_ID, this, SELECTION_LONG_TAP_DELAY_MILLIS, false);
+        _selection.timerStarted = true;
+    }
+}
+
+/// handle timer event; return true to allow recurring timer event occur more times, false to stop
+bool CRUIReadWidget::onTimerEvent(lUInt32 timerId) {
+    if (timerId == SELECTION_LONG_TAP_TIMER_ID) {
+        CRLog::trace("onTimerEvent(SELECTION_LONG_TAP_TIMER_ID)");
+        if (_selection.timerStarted) {
+            _selection.timerStarted = false;
+            ldomXPointer pt1 = _docview->getDocument()->createXPointer(_selection.startPos);
+            ldomXPointer pt2 = _docview->getDocument()->createXPointer(_selection.endPos);
+            if (!pt1.isNull() && !pt2.isNull()) {
+                ldomXRange r(pt1, pt2);
+                r.sort();
+                if (!r.isNull()) {
+                    r.setFlags(1);
+                    _docview->selectRange(r);
+                    _selection.selecting = true;
+                    CRLog::trace("Creating selection");
+                    clearImageCaches();
+                    invalidate();
+                    _main->update(true);
+                }
+            }
+        }
+        return false;
+    }
+    return false;
+}
+
+void CRUIReadWidget::cancelSelection() {
+    if (_selection.timerStarted) {
+        _main->cancelTimer(SELECTION_LONG_TAP_TIMER_ID);
+        _selection.timerStarted = false;
+    }
+    if (_selection.selecting) {
+        // TODO
+        _selection.startPos.clear();
+        _selection.endPos.clear();
+        _docview->clearSelection();
+        clearImageCaches();
+    }
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -1198,13 +1308,23 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             _dragStartOffset = _docview->GetPos();
         if (_scroll.isActive())
             _scroll.stop();
+        if (event->count() == 1)
+            startSelectionTimer(event->getX(), event->getY());
+        else
+            cancelSelection();
+
         invalidate();
         //CRLog::trace("list DOWN");
         break;
     case ACTION_UP:
         {
             invalidate();
-            if (_pinchOp) {
+            if (!_selection.selecting)
+                cancelSelection();
+            if (_selection.selecting) {
+                // update selection end
+                selectionDone(event->getX(), event->getY());
+            } else if (_pinchOp) {
             	endPinchOp(pinchDx, pinchDy, false);
             	event->cancelAllPointers();
             } else if (_isDragging) {
@@ -1313,13 +1433,18 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         	endPinchOp(pinchDx, pinchDy, true);
         }
         _isDragging = false;
+        cancelSelection();
         //setScrollOffset(_scrollOffset);
         //CRLog::trace("list CANCEL");
         break;
     case ACTION_MOVE:
-    	if (_pinchOp) {
+        if (_selection.selecting) {
+            // update selection
+            updateSelection(event->getX(), event->getY());
+        } else if (_pinchOp) {
     		updatePinchOp(pinchDx, pinchDy);
     	} else if (!_isDragging && event->count() == 2) {
+            cancelSelection();
 			int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
 			int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
 			int ddx1 = myAbs(event->getX(0) - event->getX(1));
@@ -1342,6 +1467,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 				startPinchOp(op0, pinchDx, pinchDy);
 			}
         } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
+            cancelSelection();
             _isDragging = true;
             _docview->SetPos(_dragStartOffset - delta, false);
             prepareScroll(-delta);
@@ -1354,10 +1480,12 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 else
                     _docview->doCommand(DCMD_PAGEUP, 1);
                 event->cancelAllPointers();
+                cancelSelection();
                 invalidate();
                 return true;
             }
             _isDragging = true;
+            cancelSelection();
             prepareScroll(-delta2);
             invalidate();
             //_main->update(true);
@@ -1369,6 +1497,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else {
                 _docview->SetPos(_dragStartOffset - delta, false);
             }
+            cancelSelection();
             invalidate();
             //_main->update(true);
         } else if (!_isDragging) {
@@ -1392,12 +1521,14 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         			op0 = PINCH_OP_DIAGONAL;
         		int ddd = myAbs(pinchDx) + myAbs(pinchDy);
         		if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
-        			startPinchOp(op0, pinchDx, pinchDy);
-        		}
-        	} else {
+                    cancelSelection();
+                    startPinchOp(op0, pinchDx, pinchDy);
+                }
+            } else {
         		if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
-        			_main->startDragging(event, false);
-        		}
+                    cancelSelection();
+                    _main->startDragging(event, false);
+                }
             }
         }
         // ignore

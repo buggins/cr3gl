@@ -184,6 +184,27 @@ class CRUIReadWidget : public CRUIWindowWidget
     };
     PagedModePageCache _pagedCache;
 
+    struct SelectionControl  {
+        bool timerStarted; // lont tap timer started
+        bool selecting;
+        bool popupActive;
+        lString16 startPos;
+        lString16 endPos;
+
+        SelectionControl() : timerStarted(false), selecting(false) {
+
+        }
+    };
+    SelectionControl _selection;
+
+
+    void cancelSelection();
+    void startSelectionTimer(int x, int y);
+    void updateSelection(int x, int y);
+    void selectionDone(int x, int y);
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId);
+
     void animateScrollTo(int newpos, int speed);
     void animatePageFlip(int newpage, int speed);
 
