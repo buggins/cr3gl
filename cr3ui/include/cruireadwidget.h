@@ -206,6 +206,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     void selectionDone(int x, int y);
     void addSelectionBookmark();
     void updateBookmarks();
+    virtual void onPopupClosing(CRUIWidget * popup);
     /// handle timer event; return true to allow recurring timer event occur more times, false to stop
     virtual bool onTimerEvent(lUInt32 timerId);
 

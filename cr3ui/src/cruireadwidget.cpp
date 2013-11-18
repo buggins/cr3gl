@@ -393,6 +393,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     _docview->setVisiblePageCount(2);
     _docview->setStatusFontSize(deviceInfo.shortSide / 25);
     _docview->setStatusMode(0, false, true, false, true, false, true, true);
+    _popupControl.setOwner(this);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -1218,6 +1219,11 @@ void CRUIReadWidget::updateBookmarks() {
     invalidate();
 }
 
+void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
+    CR_UNUSED(popup);
+    cancelSelection();
+}
+
 void CRUIReadWidget::selectionDone(int x, int y) {
     updateSelection(x, y);
     ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
@@ -1239,13 +1245,18 @@ void CRUIReadWidget::selectionDone(int x, int y) {
         _docview->getCursorRect(r.getEnd(), _selection.endCursorPos, false);
         _selection.selectionText = r.getRangeText();
         _selection.popupActive = true;
-        CRLog::trace("showReaderMenu");
+        r.setFlags(1);
+        _docview->selectRange(r);
+        clearImageCaches();
+        invalidate();
+        CRLog::trace("show selection menu");
         CRUIActionList actions;
         actions.add(ACTION_SELECTION_COPY);
         actions.add(ACTION_SELECTION_ADD_BOOKMARK);
         lvRect margins;
         CRUIReadMenu * menu = new CRUIReadMenu(this, actions, false);
         CRLog::trace("showing popup");
+
         int pos = ALIGN_CENTER;
         if (_selection.startCursorPos.top > _pos.height() / 3) {
             pos = ALIGN_TOP;
@@ -1318,6 +1329,10 @@ bool CRUIReadWidget::onTimerEvent(lUInt32 timerId) {
             ldomXPointer pt2 = _docview->getDocument()->createXPointer(_selection.endPos);
             if (!pt1.isNull() && !pt2.isNull()) {
                 ldomXRange r(pt1, pt2);
+                if ( !r.getStart().isVisibleWordStart() )
+                    r.getStart().prevVisibleWordStart();
+                if ( !r.getEnd().isVisibleWordEnd() )
+                    r.getEnd().nextVisibleWordEnd();
                 r.sort();
                 if (!r.isNull()) {
                     r.setFlags(1);

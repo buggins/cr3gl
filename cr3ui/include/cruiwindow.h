@@ -6,8 +6,10 @@
 #include "cruicontrols.h"
 #include "cruilist.h"
 
+class CRUIWindowWidget;
 class PopupControl {
 public:
+    CRUIWindowWidget * owner;
     lInt64 startTs;
     lInt64 endTs;
     CRUIWidget * popup; // popup widget
@@ -22,15 +24,7 @@ public:
     lvRect srcRect;
     lvRect dstRect;
     lvRect margins;
-    void close() {
-    	CRLog::trace("PopupControl::close()");
-        if (popup)
-            delete popup;
-        popup = NULL;
-        if (popupBackground)
-            delete popupBackground;
-        popupBackground = NULL;
-    }
+    void close();
     /// returns rect for current progress
     void getRect(lvRect & rc);
     /// calculates src and dst rectangles for updated parent position/size
@@ -43,7 +37,11 @@ public:
     /// start animation of popup closing
     void animateClose();
 
-    PopupControl() : popup(NULL), popupBackground(NULL), closing(false) {
+    void setOwner(CRUIWindowWidget * _owner) {
+        owner = _owner;
+    }
+
+    PopupControl() : owner(NULL), popup(NULL), popupBackground(NULL), closing(false) {
 
     }
 
@@ -91,6 +89,8 @@ public:
 
     /// opens menu popup with specified list of actions
     virtual void showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar);
+
+    virtual void onPopupClosing(CRUIWidget * popup) { CR_UNUSED(popup); }
 
     /// close popup menu, and call onAction
     virtual bool onMenuItemAction(const CRUIAction * action);

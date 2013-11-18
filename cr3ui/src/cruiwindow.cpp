@@ -254,6 +254,19 @@ lUInt32 PopupControl::getColor() {
     }
 }
 
+void PopupControl::close() {
+    CRLog::trace("PopupControl::close()");
+    if (popup) {
+        if (owner)
+            owner->onPopupClosing(popup);
+        delete popup;
+    }
+    popup = NULL;
+    if (popupBackground)
+        delete popupBackground;
+    popupBackground = NULL;
+}
+
 void PopupControl::getRect(lvRect & rc) {
     int p = closing ? 1000 - progress : progress;
     if (p <= 0) {
