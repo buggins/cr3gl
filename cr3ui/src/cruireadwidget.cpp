@@ -603,6 +603,7 @@ void CRUIReadWidget::closeBook() {
         delete _lastPosition;
     _fileItem = NULL;
     _lastPosition = NULL;
+    _bookmarks.clear();
     _docview->close();
 }
 
@@ -690,6 +691,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     _main->showSlowOperationPopup();
     _fileItem = static_cast<CRFileItem*>(file->clone());
     _lastPosition = bookDB->loadLastPosition(file->getBook());
+    bookDB->loadBookmarks(file->getBook(), _bookmarks);
     lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");
     lString8 systemLang = crconfig.systemLanguage;
     setHyph(bookLang, systemLang);
@@ -722,6 +724,7 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
         _startPositionIsUpdated = true;
         updatePosition();
     }
+    updateBookmarks();
     _main->update(true);
 }
 
@@ -1170,6 +1173,49 @@ bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
 	if (_isDragging || _pinchOp)
 		return false;
 	return true;
+}
+
+void CRUIReadWidget::addSelectionBookmark() {
+    if (!_fileItem->getBook())
+        return;
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p1 = _docview->getDocument()->createXPointer(_selection.endPos);
+    if (!p1.isNull() && !p0.isNull()) {
+        ldomXRange r(p0, p1);
+        r.sort();
+        if ( r.isNull() )
+            return;
+        BookDBBookmark * bookmark = new BookDBBookmark();
+        bookmark->type = bmkt_comment;
+        bookmark->startPos = DBString(UnicodeToUtf8(_selection.startPos).c_str());
+        bookmark->endPos = DBString(UnicodeToUtf8(_selection.endPos).c_str());
+        bookmark->posText = DBString(UnicodeToUtf8(r.getRangeText()).c_str());
+        lvRect rc;
+        if (r.getStart().getRect(rc)) {
+            bookmark->percent = rc.top * 10000 / _docview->GetFullHeight();
+        }
+        lString16 titleText;
+        lString16 posText;
+        _docview->getBookmarkPosText(p0, titleText, posText);
+        bookmark->titleText = DBString(UnicodeToUtf8(titleText).c_str());
+        _bookmarks.add(bookmark);
+        bookDB->saveBookmark(_fileItem->getBook(), bookmark);
+        updateBookmarks();
+    }
+    cancelSelection();
+}
+
+void CRUIReadWidget::updateBookmarks() {
+    LVPtrVector<CRBookmark> bookmarks;
+    for (int i=0; i<_bookmarks.length(); i++) {
+        BookDBBookmark * bm = _bookmarks[i];
+        CRBookmark * bookmark = new CRBookmark(lString16(bm->startPos.c_str()), lString16(bm->endPos.c_str()));
+        bookmark->setType(bm->type);
+        bookmarks.add(bookmark);
+    }
+    _docview->setBookmarkList(bookmarks);
+    clearImageCaches();
+    invalidate();
 }
 
 void CRUIReadWidget::selectionDone(int x, int y) {
@@ -1687,6 +1733,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         cancelSelection();
         return true;
     case CMD_SELECTION_ADD_BOOKMARK:
+        addSelectionBookmark();
         cancelSelection();
         return true;
     case CMD_LINK_BACK:

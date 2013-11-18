@@ -204,6 +204,8 @@ class CRUIReadWidget : public CRUIWindowWidget
     void startSelectionTimer(int x, int y);
     void updateSelection(int x, int y);
     void selectionDone(int x, int y);
+    void addSelectionBookmark();
+    void updateBookmarks();
     /// handle timer event; return true to allow recurring timer event occur more times, false to stop
     virtual bool onTimerEvent(lUInt32 timerId);
 
@@ -214,6 +216,7 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     CRFileItem * _fileItem; // owned
     BookDBBookmark * _lastPosition; // owned
+    LVPtrVector<BookDBBookmark> _bookmarks;
 
     bool _startPositionIsUpdated;
 
