@@ -176,7 +176,7 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _btnCols;
     int _btnRows;
 public:
-    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList) : _window(window), _actionList(actionList) {
+    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true) : _window(window), _actionList(actionList) {
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
             CRUIButton * button = new CRUIButton(action->getName(), action->icon_res.c_str(), true);
@@ -189,24 +189,30 @@ public:
             _buttons.add(button);
             addChild(button);
         }
-        _scrollLayout = new CRUIVerticalLayout();
-        _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//        CRUIWidget * delimiter = new CRUIWidget();
-//        delimiter->setBackground(0xC0000000);
-//        delimiter->setMinHeight(PT_TO_PX(2));
-//        delimiter->setMaxHeight(PT_TO_PX(2));
-//        _scrollLayout->addChild(delimiter);
-        _positionText = new CRUITextWidget();
-        _positionText->setText(_window->getCurrentPositionDesc());
-        _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
-        _positionText->setFontSize(FONT_SIZE_SMALL);
-        _scrollLayout->addChild(_positionText);
-        _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
-        _scrollSlider->setScrollPosCallback(this);
-        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
-        _scrollLayout->addChild(_scrollSlider);
-        _scrollLayout->setBackground("home_frame.9");
-        addChild(_scrollLayout);
+        if (progressControl) {
+            _scrollLayout = new CRUIVerticalLayout();
+            _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    //        CRUIWidget * delimiter = new CRUIWidget();
+    //        delimiter->setBackground(0xC0000000);
+    //        delimiter->setMinHeight(PT_TO_PX(2));
+    //        delimiter->setMaxHeight(PT_TO_PX(2));
+    //        _scrollLayout->addChild(delimiter);
+            _positionText = new CRUITextWidget();
+            _positionText->setText(_window->getCurrentPositionDesc());
+            _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
+            _positionText->setFontSize(FONT_SIZE_SMALL);
+            _scrollLayout->addChild(_positionText);
+            _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
+            _scrollSlider->setScrollPosCallback(this);
+            _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+            _scrollLayout->addChild(_scrollSlider);
+            _scrollLayout->setBackground("home_frame.9");
+            addChild(_scrollLayout);
+        } else {
+            _scrollLayout = NULL;
+            _scrollSlider = NULL;
+            _positionText = NULL;
+        }
     }
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight) {
@@ -231,9 +237,10 @@ public:
             cols--;
         _btnCols = cols;
         _btnRows = rows; // + 1;
-        _scrollLayout->measure(baseWidth, baseHeight);
+        if (_scrollLayout)
+            _scrollLayout->measure(baseWidth, baseHeight);
         int width = baseWidth;
-        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + _scrollLayout->getMeasuredHeight();
+        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + (_scrollLayout ? _scrollLayout->getMeasuredHeight() : 0);
         defMeasure(baseWidth, baseHeight, width, height);
 
     }
@@ -245,8 +252,10 @@ public:
         lvRect rc = _pos;
         applyMargin(rc);
         applyPadding(rc);
-        _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
-        rc.bottom -= _scrollLayout->getMeasuredHeight();
+        if (_scrollLayout) {
+            _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
+            rc.bottom -= _scrollLayout->getMeasuredHeight();
+        }
         int rowh = rc.height() / _btnRows;
         lvRect rowrc = rc;
         for (int y = 0; y < _btnRows; y++) {
@@ -1178,7 +1187,31 @@ void CRUIReadWidget::selectionDone(int x, int y) {
             return;
         _selection.startPos = r.getStart().toString();
         _selection.endPos = r.getEnd().toString();
+        _selection.startCursorPos.clear();
+        _selection.endCursorPos.clear();
+        _docview->getCursorRect(r.getStart(), _selection.startCursorPos, false);
+        _docview->getCursorRect(r.getEnd(), _selection.endCursorPos, false);
+        _selection.selectionText = r.getRangeText();
         _selection.popupActive = true;
+        CRLog::trace("showReaderMenu");
+        CRUIActionList actions;
+        actions.add(ACTION_SELECTION_COPY);
+        actions.add(ACTION_SELECTION_ADD_BOOKMARK);
+        lvRect margins;
+        CRUIReadMenu * menu = new CRUIReadMenu(this, actions, false);
+        CRLog::trace("showing popup");
+        int pos = ALIGN_CENTER;
+        if (_selection.startCursorPos.top > _pos.height() / 3) {
+            pos = ALIGN_TOP;
+            menu->setAlign(ALIGN_TOP|ALIGN_HCENTER);
+        } else if (_selection.endCursorPos.bottom < 2 * _pos.height() / 3) {
+            pos = ALIGN_BOTTOM;
+            menu->setAlign(ALIGN_BOTTOM|ALIGN_HCENTER);
+        } else {
+            menu->setAlign(ALIGN_CENTER);
+        }
+        menu->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        preparePopup(menu, pos, margins, 0x20);
         CRLog::trace("Show selection toolbar popup");
     } else {
         cancelSelection();
@@ -1262,11 +1295,18 @@ void CRUIReadWidget::cancelSelection() {
         _selection.timerStarted = false;
     }
     if (_selection.selecting) {
-        // TODO
+        _selection.selecting = false;
         _selection.startPos.clear();
         _selection.endPos.clear();
         _docview->clearSelection();
         clearImageCaches();
+    }
+    _selection.startCursorPos.clear();
+    _selection.endCursorPos.clear();
+    _selection.selectionText.clear();
+    if (_selection.popupActive) {
+        // TODO
+        _selection.popupActive = false;
     }
 }
 
@@ -1641,6 +1681,13 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     switch (action->id) {
     case CMD_BACK:
         _main->back();
+        return true;
+    case CMD_SELECTION_COPY:
+        _main->getPlatform()->copyToClipboard(_selection.selectionText);
+        cancelSelection();
+        return true;
+    case CMD_SELECTION_ADD_BOOKMARK:
+        cancelSelection();
         return true;
     case CMD_LINK_BACK:
         if (_docview->canGoBack())

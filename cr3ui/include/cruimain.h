@@ -32,6 +32,8 @@ public:
 	virtual void exitApp() = 0;
 	/// minimize app or show Home Screen
 	virtual void minimizeApp() = 0;
+    // copy text to clipboard
+    virtual void copyToClipboard(lString16 text) = 0;
 	virtual ~CRUIPlatform() {}
 };
 

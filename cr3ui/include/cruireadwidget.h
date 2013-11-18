@@ -190,7 +190,9 @@ class CRUIReadWidget : public CRUIWindowWidget
         bool popupActive;
         lString16 startPos;
         lString16 endPos;
-
+        lvRect startCursorPos;
+        lvRect endCursorPos;
+        lString16 selectionText;
         SelectionControl() : timerStarted(false), selecting(false) {
 
         }
