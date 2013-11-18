@@ -77,11 +77,13 @@ public:
 
 class CRUIBookmarksWidget : public CRUIWindowWidget, public CRUIListAdapter
         , public CRUIOnListItemClickListener
+        , public CRUIOnListItemLongClickListener
         , public CRUIOnClickListener
         , public CRUIOnLongClickListener
 {
     CRUIReadWidget * _readWidget;
     CRUITitleBarWidget * _title;
+    BookDBBookmark * _selectedItem;
     CRUIListWidget * _list;
     LVPtrVector<BookDBBookmark> _bookmarks;
     CRUIHorizontalLayout * _itemWidget;
@@ -93,6 +95,7 @@ public:
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
     // list item click
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+    virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex);
     // on click
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onLongClick(CRUIWidget * widget);
@@ -274,6 +277,7 @@ public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
 
+    void removeBookmark(lInt64 id);
     LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
 
     /// restore last position from DB

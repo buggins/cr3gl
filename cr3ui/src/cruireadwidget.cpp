@@ -1176,6 +1176,19 @@ bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
 	return true;
 }
 
+void CRUIReadWidget::removeBookmark(lInt64 id) {
+    if (!_fileItem->getBook())
+        return;
+    for (int i = 0; i < _bookmarks.length(); i++) {
+        BookDBBookmark * item = _bookmarks[i];
+        if (item->id == id) {
+            bookDB->removeBookmark(_fileItem->getBook(), item);
+            _bookmarks.remove(i);
+            delete item;
+        }
+    }
+}
+
 void CRUIReadWidget::addSelectionBookmark() {
     if (!_fileItem->getBook())
         return;
@@ -2599,11 +2612,13 @@ CRUIBookmarksWidget::CRUIBookmarksWidget(CRUIMainWidget * main, CRUIReadWidget *
     for (int i = 0; i < _readWidget->getBookmarks().length(); i++) {
         _bookmarks.add(_readWidget->getBookmarks()[i]->clone());
     }
+    _selectedItem = NULL;
     _title = new CRUITitleBarWidget(lString16(), this, this, false);
     _title->setTitle(STR_READER_BOOKMARKS);
     _body->addChild(_title);
     _list = new CRUIListWidget(true, this);
     _list->setOnItemClickListener(this);
+    _list->setOnItemLongClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
     _body->addChild(_list);
     _itemWidget = new CRUIHorizontalLayout();
@@ -2642,6 +2657,19 @@ bool CRUIBookmarksWidget::onListItemClick(CRUIListWidget * widget, int itemIndex
     return onAction(CMD_BACK);
 }
 
+// list item click
+bool CRUIBookmarksWidget::onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    _selectedItem = _bookmarks[itemIndex];
+    CRUIActionList actions;
+    actions.add(ACTION_BOOKMARK_GOTO);
+    actions.add(ACTION_BOOKMARK_REMOVE);
+    lvRect margins;
+    //margins.right = MIN_ITEM_PX * 120 / 100;
+    showMenu(actions, ALIGN_TOP, margins, false);
+    return true;
+}
+
 // on click
 bool CRUIBookmarksWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK")
@@ -2661,6 +2689,14 @@ bool CRUIBookmarksWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
+    case CMD_BOOKMARK_GOTO:
+        if (_selectedItem)
+            _readWidget->goToPosition(Utf8ToUnicode(_selectedItem->startPos.c_str()));
+        return onAction(CMD_BACK);
+    case CMD_BOOKMARK_REMOVE:
+        if (_selectedItem)
+            _readWidget->removeBookmark(_selectedItem->id);
+        return onAction(CMD_BACK);
     default:
         break;
     }
