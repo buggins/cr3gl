@@ -22,8 +22,10 @@
 
 using namespace CRUI;
 
-#define SELECTION_LONG_TAP_DELAY_MILLIS 800
 #define SELECTION_LONG_TAP_TIMER_ID 123001
+#define SELECTION_LONG_TAP_DELAY_MILLIS 800
+#define GO_TO_PERCENT_REPEAT_TIMER_ID 123002
+#define GO_TO_PERCENT_REPEAT_TIMER_DELAY 250
 
 lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
 	if (alpha <=0)
@@ -306,6 +308,7 @@ class CRUIGoToPercentPopup : public CRUIVerticalLayout, CRUIOnScrollPosCallback 
     CRUIReadWidget * _window;
     CRUITextWidget * _positionText;
     CRUISliderWidget * _scrollSlider;
+    int _moveByPageDirection;
 public:
     CRUIGoToPercentPopup(CRUIReadWidget * window) : _window(window) {
         setLayoutParams(FILL_PARENT, WRAP_CONTENT);
@@ -314,6 +317,7 @@ public:
 //        delimiter->setMinHeight(PT_TO_PX(2));
 //        delimiter->setMaxHeight(PT_TO_PX(2));
 //        _scrollLayout->addChild(delimiter);
+        setId("GOTOPERCENT");
         _positionText = new CRUITextWidget();
         _positionText->setText(_window->getCurrentPositionDesc());
         _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
@@ -324,7 +328,13 @@ public:
         _scrollSlider->setMaxHeight(MIN_ITEM_PX * 5 / 8);
         addChild(_scrollSlider);
         setBackground("home_frame.9");
+        _moveByPageDirection = 0;
     }
+
+    virtual ~CRUIGoToPercentPopup() {
+        _window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+    }
+
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
         CR_UNUSED(widget);
         if (!manual)
@@ -332,6 +342,46 @@ public:
         _window->goToPercent(pos);
         _positionText->setText(_window->getCurrentPositionDesc());
         return true;
+    }
+
+    void moveByPage(int direction) {
+        _window->moveByPage(direction);
+        _positionText->setText(_window->getCurrentPositionDesc());
+        _scrollSlider->setScrollPos(_window->getCurrentPositionPercent());
+    }
+
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId) {
+        if (_moveByPageDirection) {
+            moveByPage(_moveByPageDirection);
+            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+        }
+        CR_UNUSED(timerId); return false;
+    }
+
+    /// motion event handler, returns true if it handled event
+    bool onTouchEvent(const CRUIMotionEvent * event) {
+        lvPoint pt(event->getX(), event->getY());
+        if (!_pos.isPointInside(pt)) {
+            if (event->getAction() == ACTION_DOWN) {
+                if (event->getX() < _pos.width() / 5) {
+                    _moveByPageDirection = -1;
+                } else if (event->getX() > _pos.width() * 4 / 5) {
+                    _moveByPageDirection = 1;
+                }
+                if (_moveByPageDirection) {
+                    moveByPage(_moveByPageDirection);
+                    _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+                    return true;
+                }
+            } else if (event->getAction() == ACTION_UP || event->getAction() == ACTION_CANCEL) {
+                if (_moveByPageDirection) {
+                    _moveByPageDirection = 0;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 };
@@ -937,12 +987,24 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     	CRLog::trace("Popup is active - transferring key to window");
     	return CRUIWindowWidget::onKeyEvent(event);
     }
+    bool longPress = event->getDownDuration() > 500;
     if (event->getType() == KEY_ACTION_RELEASE) {
         if (_scroll.isActive())
             _scroll.stop();
         switch(key) {
         case CR_KEY_MENU:
-        	showReaderMenu();
+            if (longPress)
+                _main->showSettings(lString8("@settings/reader"));
+            else
+                showReaderMenu();
+            invalidate();
+            return true;
+        case CR_KEY_BACK:
+        case CR_KEY_ESC:
+            if (!longPress && _docview->canGoBack())
+                onAction(CMD_LINK_BACK);
+            else
+                onAction(CMD_BACK);
             invalidate();
             return true;
         default:
@@ -1190,6 +1252,47 @@ void CRUIReadWidget::removeBookmark(lInt64 id) {
 }
 
 void CRUIReadWidget::addSelectionBookmark() {
+    if (_selectionBookmark.isNull())
+        return;
+    bookDB->saveBookmark(_fileItem->getBook(), _selectionBookmark.get());
+    _bookmarks.add(_selectionBookmark->clone());
+    _selectionBookmark.clear();
+    updateBookmarks();
+    cancelSelection();
+}
+
+void CRUIReadWidget::updateBookmarks() {
+    LVPtrVector<CRBookmark> bookmarks;
+    for (int i=0; i<_bookmarks.length(); i++) {
+        BookDBBookmark * bm = _bookmarks[i];
+        CRBookmark * bookmark = new CRBookmark(lString16(bm->startPos.c_str()), lString16(bm->endPos.c_str()));
+        bookmark->setType(bm->type);
+        bookmarks.add(bookmark);
+    }
+    _docview->setBookmarkList(bookmarks);
+    clearImageCaches();
+    invalidate();
+}
+
+void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
+    CR_UNUSED(popup);
+    if (popup->getId() == "MAINMENU" || popup->getId() == "GOTOPERCENT") {
+        // add position to navigation history, if necessary
+        if (_lastPosition == NULL)
+            return;
+        lString16 lastPos(_lastPosition->startPos.c_str());
+        lString16 currPos(_docview->getBookmark().toString());
+        if (lastPos != currPos) {
+            _docview->savePosToNavigationHistory(lastPos);
+            //_docview->savePosToNavigationHistory(currPos);
+            updatePosition();
+        }
+    }
+    cancelSelection();
+}
+
+void CRUIReadWidget::updateSelectionBookmark()
+{
     if (!_fileItem->getBook())
         return;
     ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
@@ -1212,29 +1315,8 @@ void CRUIReadWidget::addSelectionBookmark() {
         lString16 posText;
         _docview->getBookmarkPosText(p0, titleText, posText);
         bookmark->titleText = DBString(UnicodeToUtf8(titleText).c_str());
-        _bookmarks.add(bookmark);
-        bookDB->saveBookmark(_fileItem->getBook(), bookmark);
-        updateBookmarks();
+        _selectionBookmark = bookmark;
     }
-    cancelSelection();
-}
-
-void CRUIReadWidget::updateBookmarks() {
-    LVPtrVector<CRBookmark> bookmarks;
-    for (int i=0; i<_bookmarks.length(); i++) {
-        BookDBBookmark * bm = _bookmarks[i];
-        CRBookmark * bookmark = new CRBookmark(lString16(bm->startPos.c_str()), lString16(bm->endPos.c_str()));
-        bookmark->setType(bm->type);
-        bookmarks.add(bookmark);
-    }
-    _docview->setBookmarkList(bookmarks);
-    clearImageCaches();
-    invalidate();
-}
-
-void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
-    CR_UNUSED(popup);
-    cancelSelection();
 }
 
 void CRUIReadWidget::selectionDone(int x, int y) {
@@ -1257,6 +1339,7 @@ void CRUIReadWidget::selectionDone(int x, int y) {
         _docview->getCursorRect(r.getStart(), _selection.startCursorPos, false);
         _docview->getCursorRect(r.getEnd(), _selection.endCursorPos, false);
         _selection.selectionText = r.getRangeText();
+        updateSelectionBookmark();
         _selection.popupActive = true;
         r.setFlags(1);
         _docview->selectRange(r);
@@ -1687,6 +1770,21 @@ int CRUIReadWidget::getCurrentPositionPercent() {
     return _docview->getPosPercent();
 }
 
+/// move by page w/o animation
+void CRUIReadWidget::moveByPage(int direction) {
+    if (direction > 0)
+        _docview->doCommand(DCMD_PAGEDOWN, 1);
+    else
+        _docview->doCommand(DCMD_PAGEUP, 1);
+    if (_viewMode == DVM_PAGES) {
+        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
+    } else {
+        _scrollCache.prepare(_docview, _docview->GetPos(), _pos.width(), _pos.height(), 0, false);
+    }
+    invalidate();
+    _main->update(true);
+}
+
 void CRUIReadWidget::goToPercent(int percent) {
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
@@ -1720,7 +1818,7 @@ void CRUIReadWidget::showBookmarks() {
 void CRUIReadWidget::showGoToPercentPopup() {
     lvRect margins;
     CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
-    preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false);
+    preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false, true);
 }
 
 void CRUIReadWidget::showReaderMenu() {
@@ -1771,9 +1869,11 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         cancelSelection();
         return true;
     case CMD_LINK_BACK:
-        if (_docview->canGoBack())
+        if (_docview->canGoBack()) {
             _docview->goBack();
-        else
+            updatePosition();
+            _main->update(true);
+        } else
             _main->back();
         return true;
     case CMD_LINK_FORWARD:

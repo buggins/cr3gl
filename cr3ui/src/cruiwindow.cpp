@@ -134,7 +134,11 @@ public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event) {
         if (!_body->isPointInside(event->getX(), event->getY())) {
-            if (event->getAction() == ACTION_UP) {
+            bool handled = false;
+            if (_control->wantsTouchEventsOutside) {
+                handled = _body->onTouchEvent(event);
+            }
+            if (event->getAction() == ACTION_UP && !handled) {
                 _control->animateClose();
                 invalidate();
                 return true;
@@ -258,10 +262,11 @@ void PopupControl::close() {
     CRLog::trace("PopupControl::close()");
     if (popup) {
         if (owner)
-            owner->onPopupClosing(popup);
+            owner->onPopupClosing(body);
         delete popup;
     }
     popup = NULL;
+    body = NULL;
     if (popupBackground)
         delete popupBackground;
     popupBackground = NULL;
@@ -282,7 +287,7 @@ void PopupControl::getRect(lvRect & rc) {
 
 }
 
-void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha, bool showHandle) {
+void CRUIWindowWidget::preparePopup(CRUIWidget * body, int location, const lvRect & margins, int backgroundAlpha, bool showHandle, bool wantsTouchEventsOutside) {
     //CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
     int handleLocation = 0;
     if (location == ALIGN_TOP)
@@ -293,14 +298,16 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * widget, int location, const lvR
         handleLocation = ALIGN_RIGHT;
     else if (location == ALIGN_RIGHT)
         handleLocation = ALIGN_LEFT;
-    CRUIPopupFrame * frame = new CRUIPopupFrame(&_popupControl, widget, showHandle ? handleLocation : 0);
+    CRUIPopupFrame * frame = new CRUIPopupFrame(&_popupControl, body, showHandle ? handleLocation : 0);
     frame->setBackgroundAlpha(backgroundAlpha);
-    widget = frame;
+    CRUIWidget * widget = frame;
     _popupControl.close();
     _popupControl.popup = widget;
+    _popupControl.body = body;
     _popupControl.popupBackground = new CRUIWidget();
     _popupControl.align = location;
     _popupControl.margins = margins;
+    _popupControl.wantsTouchEventsOutside = wantsTouchEventsOutside;
     _popupControl.layout(_pos);
     _popupControl.startTs = GetCurrentTimeMillis();
     _popupControl.endTs = _popupControl.startTs + POPUP_ANIMATION_DURATION;
@@ -355,11 +362,10 @@ bool CRUIWindowWidget::onAction(const CRUIAction * action) {
 /// close popup menu, and call onAction
 bool CRUIWindowWidget::onMenuItemAction(const CRUIAction * _action) {
     CRUIAction action(*_action);
+    _popupControl.close();
     if (onAction(&action)) {
-        _popupControl.close();
         return true;
     }
-    _popupControl.close();
     return _main->onAction(&action);
 }
 

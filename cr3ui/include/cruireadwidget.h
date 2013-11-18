@@ -237,6 +237,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     void startSelectionTimer(int x, int y);
     void updateSelection(int x, int y);
     void selectionDone(int x, int y);
+    void updateSelectionBookmark();
     void addSelectionBookmark();
     void updateBookmarks();
     virtual void onPopupClosing(CRUIWidget * popup);
@@ -252,6 +253,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     CRFileItem * _fileItem; // owned
     BookDBBookmark * _lastPosition; // owned
     LVPtrVector<BookDBBookmark> _bookmarks;
+    LVAutoPtr<BookDBBookmark> _selectionBookmark;
 
     bool _startPositionIsUpdated;
 
@@ -346,6 +348,9 @@ public:
     void goToPercent(int percent);
 
     void goToPosition(lString16 path);
+
+    /// move by page w/o animation
+    void moveByPage(int direction);
 
     virtual void beforeNavigationFrom();
 

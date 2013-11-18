@@ -13,6 +13,7 @@ public:
     lInt64 startTs;
     lInt64 endTs;
     CRUIWidget * popup; // popup widget
+    CRUIWidget * body; // popup widget body
     CRUIWidget * popupBackground; // popup background widget
     lUInt32 outerColor; // to apply on surface outside popup
     int width;
@@ -20,6 +21,7 @@ public:
     int align;       // where is destination rectangle located
     int progress;
     bool closing;
+    bool wantsTouchEventsOutside;
     lvRect parentRect;
     lvRect srcRect;
     lvRect dstRect;
@@ -41,7 +43,7 @@ public:
         owner = _owner;
     }
 
-    PopupControl() : owner(NULL), popup(NULL), popupBackground(NULL), closing(false) {
+    PopupControl() : owner(NULL), popup(NULL), body(NULL), popupBackground(NULL), closing(false) {
 
     }
 
@@ -58,7 +60,7 @@ protected:
 
     PopupControl _popupControl;
 
-    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0, bool showHandle = true);
+    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0, bool showHandle = true, bool wantsTouchEventsOutside = false);
 
 public:
     /// return true if drag operation is intercepted
