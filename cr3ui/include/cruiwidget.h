@@ -52,6 +52,7 @@ protected:
 //    CRUIImageRef _background2;
     bool _layoutRequested;
 	bool _drawRequested;
+    bool _focusable;
 	LVFontRef _font;
 	lUInt8 _fontSize;
 	lUInt32 _textColor;
@@ -99,6 +100,11 @@ public:
     /// handle timer event; return true to allow recurring timer event occur more times, false to stop
     virtual bool onTimerEvent(lUInt32 timerId) { CR_UNUSED(timerId); return false; }
 
+    virtual void setFocusable(bool focusable);
+    virtual bool canFocus();
+    virtual bool isFocused();
+    virtual bool onFocusChange(bool focused);
+
 	/// returns true to allow parent intercept this widget which is currently handled by this widget
 	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event) { CR_UNUSED(event); return true; }
 
@@ -115,8 +121,8 @@ public:
 	const lString8 & getId() { return _id; }
 	CRUIWidget * setId(const lString8 & id) { _id = id; return this; }
     CRUIWidget * setId(const char * id) { _id = id; return this; }
-    lUInt32 getState() { return _state; }
-	lUInt32 getState(lUInt32 mask) { return _state & mask; }
+    virtual lUInt32 getState() { return _state | (isFocused() ? CRUI::STATE_FOCUSED : 0); }
+    lUInt32 getState(lUInt32 mask) { return getState() & mask; }
 	CRUIWidget * setState(lUInt32 state) { if (_state != state) { _state = state; invalidate(); } return this; }
 	CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }
 

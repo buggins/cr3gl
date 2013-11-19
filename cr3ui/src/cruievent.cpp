@@ -11,6 +11,7 @@
 
 using namespace CRUI;
 
+CRUIEventManager * CRUIEventManager::_instance = NULL;
 
 int CRUIMotionEvent::findPointerId(lUInt64 pointerId) {
 	for (int i=0; i<_data.length(); i++)
@@ -185,8 +186,34 @@ lvPoint CRUIMotionEventItem::getSpeed(int maxtime) {
 }
 
 
-CRUIEventManager::CRUIEventManager() : _rootWidget(NULL), _lastTouchEvent(NULL), _keyDownEvents(1024) {
+CRUIWidget * CRUIEventManager::getFocusedWidget() {
+    if (!_instance)
+        return NULL;
+    return _instance->_focusedWidget;
+}
 
+void CRUIEventManager::focusChanged(CRUIWidget * widget) {
+    if (_focusedWidget == widget)
+        return;
+    if (_focusedWidget && _rootWidget && _rootWidget->isChild(_focusedWidget))
+        _focusedWidget->onFocusChange(false);
+    _focusedWidget = NULL;
+    if (widget && _rootWidget && _rootWidget->isChild(widget))
+        _focusedWidget = widget;
+}
+
+void CRUIEventManager::dispatchFocusChange(CRUIWidget * widget) {
+    if (!_instance)
+        return;
+    _instance->focusChanged(widget);
+}
+
+CRUIEventManager::~CRUIEventManager() {
+    _instance = NULL;
+}
+
+CRUIEventManager::CRUIEventManager() : _rootWidget(NULL), _lastTouchEvent(NULL), _keyDownEvents(1024), _focusedWidget(NULL) {
+    _instance = this;
 }
 
 bool CRUIEventManager::dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event) {

@@ -179,6 +179,7 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _btnRows;
 public:
     CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true) : _window(window), _actionList(actionList) {
+        setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
             CRUIButton * button = new CRUIButton(action->getName(), action->icon_res.c_str(), true);

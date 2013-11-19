@@ -413,6 +413,7 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     }
     CRUIWidget::draw(buf);
     LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
     lvRect rc = _pos;
     applyMargin(rc);
     setClipRect(buf, rc);
@@ -519,3 +520,48 @@ bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+
+
+
+CRUIEditWidget::CRUIEditWidget() : _cursorPos(0) {
+    _text = "Editor test sample";
+}
+
+/// measure dimensions
+void CRUIEditWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    LVFontRef font = getFont();
+    int width = font->getTextWidth(_text.c_str(), _text.length());
+    int height = font->getHeight();
+    defMeasure(baseWidth, baseHeight, width, height);
+}
+
+/// updates widget position based on specified rectangle
+void CRUIEditWidget::layout(int left, int top, int right, int bottom) {
+    CRUIWidget::layout(left, top, right, bottom);
+}
+
+/// draws widget with its children to specified surface
+void CRUIEditWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    CRUIWidget::draw(buf);
+    LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    setClipRect(buf, rc);
+    LVFontRef font = getFont();
+    font->DrawTextString(buf, rc.top, rc.bottom, _text.c_str(), _text.length(), '?');
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    return false;
+}

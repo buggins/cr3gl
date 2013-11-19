@@ -131,4 +131,19 @@ public:
     virtual ~CRUISliderWidget() {}
 };
 
+class CRUIEditWidget : public CRUIWidget {
+    lString16 _text;
+    int _cursorPos;
+public:
+    CRUIEditWidget();
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
+};
+
 #endif /* CRUICONTROLS_H_ */

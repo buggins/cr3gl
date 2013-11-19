@@ -258,10 +258,13 @@ public:
 class CRUIMainWidget;
 class CRUIEventManager {
 protected:
+    static CRUIEventManager * _instance;
 	CRUIMainWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
     LVHashTable<lUInt32, CRUIKeyEvent*> _keyDownEvents;
     LVPtrVector<CRUITimerItem> _timers;
+    CRUIWidget * _focusedWidget;
+
 	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event);
     void updateScreen();
@@ -271,6 +274,7 @@ protected:
     void startTimer(lUInt32 interval);
 public:
 	CRUIEventManager();
+    virtual ~CRUIEventManager();
     void onSystemLanguageChanged();
 	void setRootWidget(CRUIMainWidget * rootWidget);
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
@@ -284,6 +288,9 @@ public:
     void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat);
     /// cancels existing timer by id
     void cancelTimer(lUInt32 timerId);
+    void focusChanged(CRUIWidget * widget);
+    static CRUIWidget * getFocusedWidget();
+    static void dispatchFocusChange(CRUIWidget * widget);
 };
 
 class CRUIOnTouchEventListener {
