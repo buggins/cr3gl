@@ -387,6 +387,53 @@ public:
 
 };
 
+class CRUIFindTextPopup : public CRUIHorizontalLayout {
+    CRUIReadWidget * _window;
+    CRUIEditWidget * _editor;
+    CRUIImageButton * _prevButton;
+    CRUIImageButton * _nextButton;
+public:
+    CRUIFindTextPopup(CRUIReadWidget * window) : _window(window) {
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
+        setId("FINDTEXT");
+        _editor = new CRUIEditWidget();
+        _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _editor->setBackgroundAlpha(0x50);
+        addChild(_editor);
+        _prevButton = new CRUIImageButton("left_circular");
+        _prevButton->setId("FIND_PREV");
+        addChild(_prevButton);
+        _nextButton = new CRUIImageButton("right_circular");
+        _nextButton->setId("FIND_NEXT");
+        addChild(_nextButton);
+        setBackground("home_frame.9");
+    }
+
+    virtual ~CRUIFindTextPopup() {
+        //_window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+    }
+
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId) {
+//        if (_moveByPageDirection) {
+//            moveByPage(_moveByPageDirection);
+//            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+//        }
+        CR_UNUSED(timerId); return false;
+    }
+
+    /// motion event handler, returns true if it handled event
+    bool onTouchEvent(const CRUIMotionEvent * event) {
+        return false;
+    }
+
+};
+
 static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE
             || key == PROP_FONT_COLOR
@@ -1816,6 +1863,12 @@ void CRUIReadWidget::showBookmarks() {
     _main->showBookmarks(widget);
 }
 
+void CRUIReadWidget::showFindTextPopup() {
+    lvRect margins;
+    CRUIFindTextPopup * popup = new CRUIFindTextPopup(this);
+    preparePopup(popup, ALIGN_TOP, margins, 0x30, false, false);
+}
+
 void CRUIReadWidget::showGoToPercentPopup() {
     lvRect margins;
     CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
@@ -1841,6 +1894,7 @@ void CRUIReadWidget::showReaderMenu() {
         actions.add(ACTION_TOC);
     actions.add(ACTION_GOTO_PERCENT);
     actions.add(ACTION_BOOKMARKS);
+    actions.add(ACTION_FIND_TEXT);
     actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
@@ -1891,6 +1945,9 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_GOTO_PERCENT:
         showGoToPercentPopup();
+        return true;
+    case CMD_FIND_TEXT:
+        showFindTextPopup();
         return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));

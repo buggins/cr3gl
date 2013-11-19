@@ -13,6 +13,10 @@
         fontSize="large"
     />
     <style
+        id="EDITBOX"
+        fontSize="large"
+    />
+    <style
         id="LIST_ITEM"
         margin="0"
         padding="3pt"

@@ -144,6 +144,8 @@ public:
     virtual void draw(LVDrawBuf * buf);
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    /// key event handler, returns true if it handled event
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
 };
 
 #endif /* CRUICONTROLS_H_ */

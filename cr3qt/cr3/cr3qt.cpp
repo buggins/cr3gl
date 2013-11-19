@@ -149,15 +149,23 @@ static lUInt32 translateModifiers(lUInt32 flags) {
 // key event listener
 void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     KEY_EVENT_TYPE type = event->type() == QEvent::KeyPress ? KEY_ACTION_PRESS : KEY_ACTION_RELEASE;
+    QString s = event->text();
     int key = translateKeyCode(event->key());
-    if (!key) {
-        CRLog::warn("Skipping unknown key %d", event->key());
+    if (!key && !s.length()) {
+        CRLog::warn("Skipping unknown key %d w/o text", event->key());
         return;
+    }
+    if (key == 0) {
+        key = 0x1000 + event->key();
     }
     bool autorepeat = event->isAutoRepeat();
     int count = event->count();
     lUInt32 modifiers = translateModifiers(event->modifiers());
     CRUIKeyEvent * ev = new CRUIKeyEvent(type, key, autorepeat, count, modifiers);
+    if (s.length()) {
+        lString16 txt = Utf8ToUnicode(s.toUtf8().constData());
+        ev->setText(txt);
+    }
     _eventManager->dispatchKeyEvent(ev);
     delete ev;
 }

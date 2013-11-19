@@ -30,7 +30,8 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 }
 
 CRUIWidget::~CRUIWidget() {
-
+    if (CRUIEventManager::getFocusedWidget() == this)
+        CRUIEventManager::dispatchFocusChange(NULL);
 }
 
 void CRUIWidget::applyAlign(lvRect & rc, int contentWidth, int contentHeight)

@@ -338,6 +338,7 @@ public:
 
     void prepareScroll(int direction);
 
+    void showFindTextPopup();
     void showGoToPercentPopup();
     void showReaderMenu();
     void showTOC();

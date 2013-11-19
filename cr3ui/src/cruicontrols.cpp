@@ -525,6 +525,8 @@ bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 CRUIEditWidget::CRUIEditWidget() : _cursorPos(0) {
     _text = "Editor test sample";
+    _cursorPos = 3;
+    setStyle("EDITBOX");
 }
 
 /// measure dimensions
@@ -545,6 +547,41 @@ void CRUIEditWidget::layout(int left, int top, int right, int bottom) {
     CRUIWidget::layout(left, top, right, bottom);
 }
 
+struct MeasuredText {
+    lString16 _text;
+    LVArray<lUInt16> _widths;
+    LVArray<lUInt8> _flags;
+    int _width;
+    MeasuredText(LVFontRef font, lString16 text) : _text(text) {
+        _widths.addSpace(_text.length() + 5);
+        _flags.addSpace(_text.length() + 5);
+        font->measureText(_text.c_str(), _text.length(), _widths.get(), _flags.get(), 10000, '?', 0, false);
+        _width = _widths[_text.length() - 1];
+    }
+    int getWidth() {
+        return _width;
+    }
+
+    int getOffset(int index) {
+        if (index <= 0)
+            return 0;
+        if (index > _text.length())
+            return _widths[_text.length() - 1];
+        return _widths[index - 1];
+    }
+
+    int offsetToIndex(int offset) {
+        int prevx = 0;
+        for (int i = 0; i < _text.length(); i++) {
+            int x = _widths[i];
+            if (offset < (x + prevx) / 2)
+                return i;
+            prevx = x;
+        }
+        return _text.length();
+    }
+};
+
 /// draws widget with its children to specified surface
 void CRUIEditWidget::draw(LVDrawBuf * buf) {
     if (getVisibility() != VISIBLE) {
@@ -556,12 +593,97 @@ void CRUIEditWidget::draw(LVDrawBuf * buf) {
     lvRect rc = _pos;
     applyMargin(rc);
     applyPadding(rc);
+    rc.left--;
     setClipRect(buf, rc);
+    rc.left++;
     LVFontRef font = getFont();
-    font->DrawTextString(buf, rc.top, rc.bottom, _text.c_str(), _text.length(), '?');
+    MeasuredText measured(font, _text);
+    buf->SetTextColor(getStyle()->getTextColor());
+    int yoffset = (rc.height() - font->getHeight()) / 2;
+    if (isFocused()) {
+        int cursorx = measured.getOffset(_cursorPos);
+        buf->FillRect(rc.left + cursorx - 1, rc.top + yoffset - 2, rc.left + cursorx + 1, rc.top + yoffset + font->getHeight() + 2, 0x6060FF);
+    }
+    font->DrawTextString(buf, rc.left, rc.top + yoffset, _text.c_str(), _text.length(), '?');
 }
 
 /// motion event handler, returns true if it handled event
 bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
-    return false;
+    int action = event->getAction();
+    if (!isFocused()) {
+        if (action == ACTION_UP) {
+            CRUIEventManager::dispatchFocusChange(this);
+        }
+        return true;
+    }
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    LVFontRef font = getFont();
+    MeasuredText measured(font, _text);
+    int newcurpos = measured.offsetToIndex(event->getX() - rc.left);
+    lvPoint pt(event->getX(), event->getY());
+    bool inside = rc.isPointInside(pt);
+    switch (action) {
+    case ACTION_DOWN:
+        if (inside)
+            _cursorPos = newcurpos;
+        break;
+    case ACTION_UP:
+        if (inside)
+            _cursorPos = newcurpos;
+        break;
+    case ACTION_MOVE:
+        if (inside)
+            _cursorPos = newcurpos;
+        break;
+    case ACTION_CANCEL:
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
+/// key event handler, returns true if it handled event
+bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    if (event->getType() == KEY_ACTION_PRESS) {
+        switch(event->key()) {
+        case CR_KEY_BACKSPACE:
+            if (_cursorPos > 0) {
+                _text.erase(_cursorPos - 1, 1);
+                _cursorPos--;
+            }
+            return true;
+        case CR_KEY_LEFT:
+            if (_cursorPos > 0) {
+                _cursorPos--;
+            }
+            return true;
+        case CR_KEY_RIGHT:
+            if (_cursorPos < _text.length()) {
+                _cursorPos++;
+            }
+            return true;
+        case CR_KEY_HOME:
+            _cursorPos = 0;
+            return true;
+        case CR_KEY_END:
+            _cursorPos = _text.length();
+            return true;
+        default:
+            break;
+        }
+    }
+    lString16 eventText = event->text();
+    if (eventText.length()) {
+        if (eventText[0] >= 32) {
+            if (event->getType() == KEY_ACTION_PRESS) {
+                _text.insert(_cursorPos, eventText);
+                _cursorPos += eventText.length();
+            }
+            return true;
+        }
+    }
+    return true;
 }

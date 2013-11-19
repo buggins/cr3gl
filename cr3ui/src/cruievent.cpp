@@ -198,8 +198,10 @@ void CRUIEventManager::focusChanged(CRUIWidget * widget) {
     if (_focusedWidget && _rootWidget && _rootWidget->isChild(_focusedWidget))
         _focusedWidget->onFocusChange(false);
     _focusedWidget = NULL;
-    if (widget && _rootWidget && _rootWidget->isChild(widget))
+    if (widget && _rootWidget && _rootWidget->isChild(widget)) {
         _focusedWidget = widget;
+        widget->onFocusChange(true);
+    }
 }
 
 void CRUIEventManager::dispatchFocusChange(CRUIWidget * widget) {
@@ -551,6 +553,11 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIKeyEvent * event) {
 
     //CRLog::trace("Touch event %d (%d,%d) %s", event->getAction(), event->getX(), event->getY(), (event->getWidget() ? "[widget]" : ""));
     CRUIWidget * widget = event->getWidget();
+    // focus support
+    if (!widget && _focusedWidget && _rootWidget->isChild(_focusedWidget)) {
+        if (dispatchKeyEvent(_focusedWidget, event))
+            return true; // successfully dispatched to focused widget
+    }
     if (widget) {
         // event is tracked by widget
         if (!_rootWidget->isChild(widget)) {
