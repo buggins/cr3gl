@@ -134,6 +134,8 @@ public:
 class CRUIEditWidget : public CRUIWidget {
     lString16 _text;
     int _cursorPos;
+    int _scrollx;
+    void updateCursor(int pos, bool scrollIfNearBounds = true);
 public:
     CRUIEditWidget();
     /// measure dimensions
@@ -146,6 +148,7 @@ public:
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
     /// key event handler, returns true if it handled event
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
+    virtual bool onFocusChange(bool focused);
 };
 
 #endif /* CRUICONTROLS_H_ */
