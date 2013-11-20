@@ -204,6 +204,11 @@ void CRUIEventManager::focusChanged(CRUIWidget * widget) {
     }
 }
 
+void CRUIEventManager::requestScreenUpdate(bool force) {
+    if (_instance && _instance->_rootWidget)
+        _instance->_rootWidget->update(force);
+}
+
 void CRUIEventManager::dispatchFocusChange(CRUIWidget * widget) {
     if (!_instance)
         return;
@@ -387,6 +392,12 @@ int CRUIEventManager::findTimer(lUInt32 timerId) {
 }
 
 void CRUIEventManager::setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat) {
+    if (!_instance)
+        return;
+    _instance->setTimerInternal(timerId, widget, interval, repeat);
+}
+
+void CRUIEventManager::setTimerInternal(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat) {
     lUInt32 oldId = _timers.length() ? _timers[0]->id : 0;
     int index = findTimer(timerId);
     CRUITimerItem * timer = NULL;
@@ -404,6 +415,12 @@ void CRUIEventManager::setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 in
 }
 
 void CRUIEventManager::cancelTimer(lUInt32 timerId) {
+    if (!_instance)
+        return;
+    _instance->cancelTimerInternal(timerId);
+}
+
+void CRUIEventManager::cancelTimerInternal(lUInt32 timerId) {
     int index = findTimer(timerId);
     if (index >= 0)
         delete _timers.remove(index);

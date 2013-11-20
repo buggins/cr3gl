@@ -76,7 +76,14 @@ protected:
 	CRUITextWidget * _label;
     void init(lString16 text, const char * imageRes, bool vertical);
 public:
-	/// motion event handler, returns true if it handled event
+    /// set background alpha, 0..255 (0==opaque, 255 fully transparent)
+    virtual void setBackgroundAlpha(int alpha) {
+        CRUIWidget::setBackgroundAlpha(alpha);
+        if (_icon)
+            _icon->setBackgroundAlpha(alpha);
+    }
+
+    /// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
     //CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
 	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
@@ -136,10 +143,14 @@ class CRUIEditWidget : public CRUIWidget {
     int _cursorPos;
     int _scrollx;
     int _lastEnteredCharPos;
+    int _scrollDirection;
     lChar16 _passwordChar;
     /// returns text replaced with password char to display
     lString16 getTextToShow();
-    void updateCursor(int pos, bool scrollIfNearBounds = true);
+    void updateCursor(int pos, bool scrollIfNearBounds = true, bool changeCursorPositionAfterScroll = false);
+    void setScrollTimer(int direction);
+    void cancelScrollTimer();
+    void scrollByTimer();
 public:
 
     CRUIEditWidget();
@@ -161,6 +172,8 @@ public:
     /// key event handler, returns true if it handled event
     virtual bool onKeyEvent(const CRUIKeyEvent * event);
     virtual bool onFocusChange(bool focused);
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId);
 };
 
 #endif /* CRUICONTROLS_H_ */

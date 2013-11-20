@@ -204,7 +204,8 @@ public:
     virtual CRUIWidget * getChild(int index) { CR_UNUSED(index); return NULL; }
     virtual CRUIWidget * addChild(CRUIWidget * child) { CR_UNUSED(child); return NULL; }
     virtual CRUIWidget * removeChild(int index) { CR_UNUSED(index); return NULL; }
-	virtual CRUIWidget * setParent(CRUIWidget * parent) { _parent = parent; return this; }
+    virtual CRUIWidget * removeChild(CRUIWidget * child) { CR_UNUSED(child); return NULL; }
+    virtual CRUIWidget * setParent(CRUIWidget * parent) { _parent = parent; return this; }
 	/// returns parent widget pointer, NULL if it's top level widget
 	virtual CRUIWidget * getParent() { return _parent; }
 

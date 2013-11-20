@@ -397,18 +397,6 @@ public:
 
     CRFileItem * createManualBook();
 
-    /// sets new timer or restarts existing
-    void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat) {
-        if (_eventManager)
-            _eventManager->setTimer(timerId, widget, interval, repeat);
-    }
-
-    /// cancels existing timer by id
-    void cancelTimer(lUInt32 timerId) {
-        if (_eventManager)
-            _eventManager->cancelTimer(timerId);
-    }
-
     CRUIMainWidget();
     virtual ~CRUIMainWidget();
 };

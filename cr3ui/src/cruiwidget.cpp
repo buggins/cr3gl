@@ -30,6 +30,8 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 }
 
 CRUIWidget::~CRUIWidget() {
+    if (_parent)
+        _parent->removeChild(this);
     if (CRUIEventManager::getFocusedWidget() == this)
         CRUIEventManager::dispatchFocusChange(NULL);
 }

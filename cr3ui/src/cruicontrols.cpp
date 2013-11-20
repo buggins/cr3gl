@@ -224,6 +224,8 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
+    if (getBackgroundAlpha())
+        buf->setAlpha(getBackgroundAlpha());
     CRUIImageRef image = getImage();
     int width = !image ? 0 : image->originalWidth();
     int height = !image ? 0 : image->originalHeight();
@@ -526,9 +528,9 @@ CRUIEditWidget::~CRUIEditWidget() {
 
 }
 
-CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _passwordChar(0) {
-    _text = "Editor test sample";
-    _cursorPos = 3;
+CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _passwordChar(0), _scrollDirection(0) {
+    //_text = "Editor test sample";
+    //_cursorPos = 3;
     setStyle("EDITBOX");
 }
 
@@ -544,6 +546,49 @@ lString16 CRUIEditWidget::getTextToShow() {
             res << _passwordChar;
     }
     return res;
+}
+
+#define EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID 123013
+#define EDIT_WIDGET_SCROLL_TIMER_ID 123014
+
+bool CRUIEditWidget::onTimerEvent(lUInt32 timerId) {
+    if (timerId == EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID) {
+        if (_lastEnteredCharPos >=0 ) {
+            _lastEnteredCharPos = -1;
+            updateCursor(_cursorPos, false);
+            invalidate();
+            CRUIEventManager::requestScreenUpdate(false);
+        }
+    } else if (timerId == EDIT_WIDGET_SCROLL_TIMER_ID) {
+        scrollByTimer();
+        return true;
+    }
+    return false;
+}
+
+void CRUIEditWidget::setScrollTimer(int direction) {
+    _scrollDirection = direction;
+    CRUIEventManager::setTimer(EDIT_WIDGET_SCROLL_TIMER_ID, this, 500, true);
+}
+
+void CRUIEditWidget::cancelScrollTimer() {
+    if (!_scrollDirection)
+        return;
+    _scrollDirection = 0;
+    CRUIEventManager::cancelTimer(EDIT_WIDGET_SCROLL_TIMER_ID);
+}
+
+void CRUIEditWidget::scrollByTimer() {
+    if (!_scrollDirection)
+        return;
+    int prevpos = _cursorPos;
+    updateCursor(_cursorPos, true, true);
+    if (_cursorPos != prevpos) {
+        invalidate();
+        CRUIEventManager::requestScreenUpdate();
+    } else {
+        cancelScrollTimer();
+    }
 }
 
 CRUIWidget * CRUIEditWidget::setText(lString16 txt) {
@@ -576,7 +621,7 @@ void CRUIEditWidget::measure(int baseWidth, int baseHeight) {
 /// updates widget position based on specified rectangle
 void CRUIEditWidget::layout(int left, int top, int right, int bottom) {
     CRUIWidget::layout(left, top, right, bottom);
-    updateCursor(_cursorPos);
+    updateCursor(_cursorPos, false);
 }
 
 struct MeasuredText {
@@ -656,30 +701,52 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     LVFontRef font = getFont();
     lString16 text = getTextToShow();
     MeasuredText measured(font, text);
-    int newcurpos = measured.offsetToIndex(event->getX() - rc.left + _scrollx);
+    int x = event->getX();
+    if (x < rc.left)
+        x = rc.left;
+    if (x >= rc.right)
+        x = rc.right - 1;
+    int newcurpos = measured.offsetToIndex(x - rc.left + _scrollx);
     lvPoint pt(event->getX(), event->getY());
-    bool inside = rc.isPointInside(pt);
+    bool inside = _pos.isPointInside(pt);
     switch (action) {
     case ACTION_DOWN:
         if (inside) {
             _lastEnteredCharPos = -1;
             updateCursor(newcurpos, false);
+            if (pt.x >= rc.right - rc.width() / 20)
+                setScrollTimer(1);
+            else if (pt.x < rc.left + rc.width() / 20)
+                setScrollTimer(-1);
+            else
+                cancelScrollTimer();
         }
         break;
     case ACTION_UP:
         if (inside) {
             _lastEnteredCharPos = -1;
-            updateCursor(newcurpos);
+            updateCursor(newcurpos, false);
         }
+        cancelScrollTimer();
         break;
     case ACTION_MOVE:
         if (inside) {
+            if (pt.x >= rc.right - rc.width() / 20) {
+                if (!_scrollDirection)
+                    setScrollTimer(1);
+            } else if (pt.x < rc.left + rc.width() / 20) {
+                //
+                if (!_scrollDirection)
+                    setScrollTimer(-1);
+            } else
+                cancelScrollTimer();
             _lastEnteredCharPos = -1;
             updateCursor(newcurpos, false);
         }
         break;
     case ACTION_CANCEL:
         _lastEnteredCharPos = -1;
+        cancelScrollTimer();
         break;
     default:
         break;
@@ -687,7 +754,7 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
-void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds) {
+void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds, bool changeCursorPositionAfterScroll) {
     _cursorPos = pos;
     lString16 text = getTextToShow();
     if (_cursorPos < 0)
@@ -708,19 +775,32 @@ void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds) {
     if (_scrollx < 0)
         _scrollx = 0;
     int cursoroffset = measured.getOffset(_cursorPos);
+    int oldcursorx = cursoroffset - _scrollx;
     int scrollThreshold = scrollIfNearBounds ? rc.width() / 20 : 0;
+    bool scrolled = false;
     if (cursoroffset < _scrollx + scrollThreshold) {
         _scrollx = cursoroffset - rc.width() / 10;
         if (_scrollx < 0)
             _scrollx = 0;
+        scrolled = true;
     } else if (cursoroffset > _scrollx + rc.width() - scrollThreshold) {
         _scrollx = cursoroffset - rc.width() + rc.width() / 10;
         if (_scrollx > measured.getWidth() - rc.width())
             _scrollx = measured.getWidth() - rc.width();
+        scrolled = true;
+    }
+    if (scrolled && changeCursorPositionAfterScroll && oldcursorx >= 0 && oldcursorx < rc.width()) {
+        // change
+        _cursorPos = measured.offsetToIndex(_scrollx + oldcursorx);
+        if (_cursorPos < 0)
+            _cursorPos = 0;
+        if (_cursorPos > text.length())
+            _cursorPos = text.length();
     }
 }
 
 bool CRUIEditWidget::onFocusChange(bool focused) {
+    cancelScrollTimer();
     if (focused) {
         updateCursor(_text.length());
     } else {
@@ -731,6 +811,7 @@ bool CRUIEditWidget::onFocusChange(bool focused) {
 
 /// key event handler, returns true if it handled event
 bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    cancelScrollTimer();
     if (event->getType() == KEY_ACTION_PRESS) {
         switch(event->key()) {
         case CR_KEY_BACKSPACE:
@@ -771,6 +852,8 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
                 _text.insert(_cursorPos, eventText);
                 _lastEnteredCharPos = _cursorPos + eventText.length();
                 updateCursor(_cursorPos + eventText.length());
+                if (_passwordChar)
+                    CRUIEventManager::setTimer(EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID, this, 500, false);
             }
             return true;
         }

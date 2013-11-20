@@ -275,6 +275,10 @@ protected:
     void updateTimerQueue(CRUITimerItem * item);
     int  findTimer(lUInt32 timerId);
     void startTimer(lUInt32 interval);
+    /// sets new timer or restarts existing
+    void setTimerInternal(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat);
+    /// cancels existing timer by id
+    void cancelTimerInternal(lUInt32 timerId);
 public:
 	CRUIEventManager();
     virtual ~CRUIEventManager();
@@ -284,16 +288,19 @@ public:
     bool dispatchKeyEvent(CRUIKeyEvent * event);
     bool interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget);
 
+
     // timer support
     /// runs callbacks for all timers ready to execute, returns true if any unfinished timer tasks left
     bool dispatchTimerEvent();
     /// sets new timer or restarts existing
-    void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat);
+    static void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat = false);
     /// cancels existing timer by id
-    void cancelTimer(lUInt32 timerId);
+    static void cancelTimer(lUInt32 timerId);
     void focusChanged(CRUIWidget * widget);
     static CRUIWidget * getFocusedWidget();
     static void dispatchFocusChange(CRUIWidget * widget);
+    /// request screen redraw
+    static void requestScreenUpdate(bool force = false);
 };
 
 class CRUIOnTouchEventListener {

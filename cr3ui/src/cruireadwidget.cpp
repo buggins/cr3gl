@@ -333,7 +333,7 @@ public:
     }
 
     virtual ~CRUIGoToPercentPopup() {
-        _window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+        CRUIEventManager::cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
     }
 
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
@@ -355,7 +355,7 @@ public:
     virtual bool onTimerEvent(lUInt32 timerId) {
         if (_moveByPageDirection) {
             moveByPage(_moveByPageDirection);
-            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+            CRUIEventManager::setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
         }
         CR_UNUSED(timerId); return false;
     }
@@ -372,7 +372,7 @@ public:
                 }
                 if (_moveByPageDirection) {
                     moveByPage(_moveByPageDirection);
-                    _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+                    CRUIEventManager::setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
                     return true;
                 }
             } else if (event->getAction() == ACTION_UP || event->getAction() == ACTION_CANCEL) {
@@ -401,17 +401,34 @@ public:
 //        delimiter->setMaxHeight(PT_TO_PX(2));
 //        _scrollLayout->addChild(delimiter);
         setId("FINDTEXT");
+
+        CRUIVerticalLayout * editlayout = new CRUIVerticalLayout();
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
         _editor = new CRUIEditWidget();
         _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-        _editor->setBackgroundAlpha(0x50);
-        _editor->setPasswordChar('*');
-        addChild(_editor);
+        _editor->setBackgroundAlpha(0x80);
+        //_editor->setPasswordChar('*');
+        editlayout->addChild(spacer1);
+        editlayout->addChild(_editor);
+        editlayout->addChild(spacer2);
+        editlayout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        editlayout->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        addChild(editlayout);
+
+        // Buttons
         _prevButton = new CRUIImageButton("left_circular");
         _prevButton->setId("FIND_PREV");
         addChild(_prevButton);
         _nextButton = new CRUIImageButton("right_circular");
         _nextButton->setId("FIND_NEXT");
         addChild(_nextButton);
+        _prevButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _prevButton->setBackgroundAlpha(0x80);
+        _nextButton->setBackgroundAlpha(0x80);
         setBackground("home_frame.9");
     }
 
@@ -419,19 +436,14 @@ public:
         //_window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
     }
 
-    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
-    virtual bool onTimerEvent(lUInt32 timerId) {
-//        if (_moveByPageDirection) {
-//            moveByPage(_moveByPageDirection);
-//            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
-//        }
-        CR_UNUSED(timerId); return false;
-    }
-
-    /// motion event handler, returns true if it handled event
-    bool onTouchEvent(const CRUIMotionEvent * event) {
-        return false;
-    }
+//    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+//    virtual bool onTimerEvent(lUInt32 timerId) {
+////        if (_moveByPageDirection) {
+////            moveByPage(_moveByPageDirection);
+////            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+////        }
+//        CR_UNUSED(timerId); return false;
+//    }
 
 };
 
@@ -1459,7 +1471,7 @@ void CRUIReadWidget::startSelectionTimer(int x, int y) {
         _selection.startPos = r.getStart().toString();
         _selection.endPos = r.getEnd().toString();
         CRLog::trace("Starting selection timer");
-        _main->setTimer(SELECTION_LONG_TAP_TIMER_ID, this, SELECTION_LONG_TAP_DELAY_MILLIS, false);
+        CRUIEventManager::setTimer(SELECTION_LONG_TAP_TIMER_ID, this, SELECTION_LONG_TAP_DELAY_MILLIS, false);
         _selection.timerStarted = true;
     }
 }
@@ -1497,7 +1509,7 @@ bool CRUIReadWidget::onTimerEvent(lUInt32 timerId) {
 
 void CRUIReadWidget::cancelSelection() {
     if (_selection.timerStarted) {
-        _main->cancelTimer(SELECTION_LONG_TAP_TIMER_ID);
+        CRUIEventManager::cancelTimer(SELECTION_LONG_TAP_TIMER_ID);
         _selection.timerStarted = false;
     }
     if (_selection.selecting) {
