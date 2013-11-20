@@ -728,6 +728,7 @@ CRUISettingsEditor * CRUIInterlineSpaceSetting::createEditor(CRPropRef props) {
 }
 
 lString16 CRUIInterlineSpaceSetting::getDescription(CRPropRef props) const {
+    CR_UNUSED(props);
 	return lString16();
 }
 
@@ -737,7 +738,8 @@ CRUISettingsEditor * CRUIPageMarginsSetting::createEditor(CRPropRef props) {
 }
 
 lString16 CRUIPageMarginsSetting::getDescription(CRPropRef props) const {
-	return lString16();
+    CR_UNUSED(props);
+    return lString16();
 }
 
 CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {

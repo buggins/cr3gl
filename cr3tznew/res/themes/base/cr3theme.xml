@@ -13,6 +13,10 @@
         fontSize="large"
     />
     <style
+        id="EDITBOX"
+        fontSize="large"
+    />
+    <style
         id="LIST_ITEM"
         margin="0"
         padding="3pt"
@@ -109,4 +113,33 @@
         fontSize="small"
         align="bottom|left"
     />
+    <style
+        id = "VIRTUAL_KEYBOARD"
+        padding="3pt,3pt,3pt,3pt"
+        margin="0pt"
+        fontSize="large"
+	background="#404040"
+    />
+    <style
+        id = "VIRTUAL_KEYBOARD_KEY_NORMAL"
+        padding="1pt,1pt,1pt,1pt"
+        margin="1pt"
+        background="btn_keyboard_key_light_normal_holo.9"
+    >
+        <style
+            state="pressed" stateMask="pressed"
+            background="btn_keyboard_key_light_pressed_holo.9"
+        />
+    </style>
+    <style
+        id = "VIRTUAL_KEYBOARD_KEY_SPECIAL"
+        padding="1pt,1pt,1pt,1pt"
+        margin="1pt"
+        background="btn_keyboard_key_trans_normal.9"
+    >
+        <style
+            state="pressed" stateMask="pressed"
+            background="btn_keyboard_key_trans_pressed.9"
+        />
+    </style>
 </theme>

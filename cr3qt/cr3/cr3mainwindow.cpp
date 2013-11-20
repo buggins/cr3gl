@@ -46,6 +46,7 @@
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
 #include <QtGui/QMouseEvent>
+#include <QClipboard>
 
 #include "gldrawbuf.h"
 
@@ -285,4 +286,11 @@ void OpenGLWindow::minimizeApp() {
 
 void OpenGLWindow::exitApp() {
     QApplication::exit();
+}
+
+// copy text to clipboard
+void OpenGLWindow::copyToClipboard(lString16 text) {
+    QClipboard *clipboard = QApplication::clipboard();
+    QString txt(UnicodeToUtf8(text).c_str());
+    clipboard->setText(txt);
 }

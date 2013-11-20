@@ -22,6 +22,11 @@
 
 using namespace CRUI;
 
+#define SELECTION_LONG_TAP_TIMER_ID 123001
+#define SELECTION_LONG_TAP_DELAY_MILLIS 800
+#define GO_TO_PERCENT_REPEAT_TIMER_ID 123002
+#define GO_TO_PERCENT_REPEAT_TIMER_DELAY 250
+
 lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
 	if (alpha <=0)
 		return cl1;
@@ -173,7 +178,8 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _btnCols;
     int _btnRows;
 public:
-    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList) : _window(window), _actionList(actionList) {
+    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true) : _window(window), _actionList(actionList) {
+        setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
             CRUIButton * button = new CRUIButton(action->getName(), action->icon_res.c_str(), true);
@@ -186,24 +192,30 @@ public:
             _buttons.add(button);
             addChild(button);
         }
-        _scrollLayout = new CRUIVerticalLayout();
-        _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//        CRUIWidget * delimiter = new CRUIWidget();
-//        delimiter->setBackground(0xC0000000);
-//        delimiter->setMinHeight(PT_TO_PX(2));
-//        delimiter->setMaxHeight(PT_TO_PX(2));
-//        _scrollLayout->addChild(delimiter);
-        _positionText = new CRUITextWidget();
-        _positionText->setText(_window->getCurrentPositionDesc());
-        _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
-        _positionText->setFontSize(FONT_SIZE_SMALL);
-        _scrollLayout->addChild(_positionText);
-        _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
-        _scrollSlider->setScrollPosCallback(this);
-        _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
-        _scrollLayout->addChild(_scrollSlider);
-        _scrollLayout->setBackground("home_frame.9");
-        addChild(_scrollLayout);
+        if (progressControl) {
+            _scrollLayout = new CRUIVerticalLayout();
+            _scrollLayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    //        CRUIWidget * delimiter = new CRUIWidget();
+    //        delimiter->setBackground(0xC0000000);
+    //        delimiter->setMinHeight(PT_TO_PX(2));
+    //        delimiter->setMaxHeight(PT_TO_PX(2));
+    //        _scrollLayout->addChild(delimiter);
+            _positionText = new CRUITextWidget();
+            _positionText->setText(_window->getCurrentPositionDesc());
+            _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
+            _positionText->setFontSize(FONT_SIZE_SMALL);
+            _scrollLayout->addChild(_positionText);
+            _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
+            _scrollSlider->setScrollPosCallback(this);
+            _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+            _scrollLayout->addChild(_scrollSlider);
+            _scrollLayout->setBackground("home_frame.9");
+            addChild(_scrollLayout);
+        } else {
+            _scrollLayout = NULL;
+            _scrollSlider = NULL;
+            _positionText = NULL;
+        }
     }
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight) {
@@ -228,9 +240,10 @@ public:
             cols--;
         _btnCols = cols;
         _btnRows = rows; // + 1;
-        _scrollLayout->measure(baseWidth, baseHeight);
+        if (_scrollLayout)
+            _scrollLayout->measure(baseWidth, baseHeight);
         int width = baseWidth;
-        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + _scrollLayout->getMeasuredHeight();
+        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + (_scrollLayout ? _scrollLayout->getMeasuredHeight() : 0);
         defMeasure(baseWidth, baseHeight, width, height);
 
     }
@@ -242,8 +255,10 @@ public:
         lvRect rc = _pos;
         applyMargin(rc);
         applyPadding(rc);
-        _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
-        rc.bottom -= _scrollLayout->getMeasuredHeight();
+        if (_scrollLayout) {
+            _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
+            rc.bottom -= _scrollLayout->getMeasuredHeight();
+        }
         int rowh = rc.height() / _btnRows;
         lvRect rowrc = rc;
         for (int y = 0; y < _btnRows; y++) {
@@ -294,6 +309,7 @@ class CRUIGoToPercentPopup : public CRUIVerticalLayout, CRUIOnScrollPosCallback 
     CRUIReadWidget * _window;
     CRUITextWidget * _positionText;
     CRUISliderWidget * _scrollSlider;
+    int _moveByPageDirection;
 public:
     CRUIGoToPercentPopup(CRUIReadWidget * window) : _window(window) {
         setLayoutParams(FILL_PARENT, WRAP_CONTENT);
@@ -302,6 +318,7 @@ public:
 //        delimiter->setMinHeight(PT_TO_PX(2));
 //        delimiter->setMaxHeight(PT_TO_PX(2));
 //        _scrollLayout->addChild(delimiter);
+        setId("GOTOPERCENT");
         _positionText = new CRUITextWidget();
         _positionText->setText(_window->getCurrentPositionDesc());
         _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
@@ -312,7 +329,13 @@ public:
         _scrollSlider->setMaxHeight(MIN_ITEM_PX * 5 / 8);
         addChild(_scrollSlider);
         setBackground("home_frame.9");
+        _moveByPageDirection = 0;
     }
+
+    virtual ~CRUIGoToPercentPopup() {
+        CRUIEventManager::cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+    }
+
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
         CR_UNUSED(widget);
         if (!manual)
@@ -322,7 +345,204 @@ public:
         return true;
     }
 
+    void moveByPage(int direction) {
+        _window->moveByPage(direction);
+        _positionText->setText(_window->getCurrentPositionDesc());
+        _scrollSlider->setScrollPos(_window->getCurrentPositionPercent());
+    }
+
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId) {
+        if (_moveByPageDirection) {
+            moveByPage(_moveByPageDirection);
+            CRUIEventManager::setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+        }
+        CR_UNUSED(timerId); return false;
+    }
+
+    /// motion event handler, returns true if it handled event
+    bool onTouchEvent(const CRUIMotionEvent * event) {
+        lvPoint pt(event->getX(), event->getY());
+        if (!_pos.isPointInside(pt)) {
+            if (event->getAction() == ACTION_DOWN) {
+                if (event->getX() < _pos.width() / 5) {
+                    _moveByPageDirection = -1;
+                } else if (event->getX() > _pos.width() * 4 / 5) {
+                    _moveByPageDirection = 1;
+                }
+                if (_moveByPageDirection) {
+                    moveByPage(_moveByPageDirection);
+                    CRUIEventManager::setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+                    return true;
+                }
+            } else if (event->getAction() == ACTION_UP || event->getAction() == ACTION_CANCEL) {
+                if (_moveByPageDirection) {
+                    _moveByPageDirection = 0;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 };
+
+class CRUIFindTextPopup : public CRUIHorizontalLayout, public CRUIOnClickListener, public CRUIOnReturnPressListener {
+    CRUIReadWidget * _window;
+    CRUIEditWidget * _editor;
+    CRUIImageButton * _prevButton;
+    CRUIImageButton * _nextButton;
+public:
+    CRUIFindTextPopup(CRUIReadWidget * window, lString16 pattern) : _window(window) {
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
+        setId("FINDTEXT");
+
+        CRUIVerticalLayout * editlayout = new CRUIVerticalLayout();
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _editor = new CRUIEditWidget();
+        _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _editor->setBackgroundAlpha(0x80);
+        _editor->setText(pattern);
+        _editor->setOnReturnPressedListener(this);
+        //_editor->setPasswordChar('*');
+        editlayout->addChild(spacer1);
+        editlayout->addChild(_editor);
+        editlayout->addChild(spacer2);
+        editlayout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        editlayout->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        addChild(editlayout);
+
+        // Buttons
+        _prevButton = new CRUIImageButton("left_circular");
+        _prevButton->setId("FIND_PREV");
+        addChild(_prevButton);
+        _nextButton = new CRUIImageButton("right_circular");
+        _nextButton->setId("FIND_NEXT");
+        addChild(_nextButton);
+        _prevButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+
+        _prevButton->setBackgroundAlpha(0x80);
+        _nextButton->setBackgroundAlpha(0x80);
+        setBackground("home_frame.9");
+
+        _nextButton->setOnClickListener(this);
+        _prevButton->setOnClickListener(this);
+    }
+
+    virtual bool onReturnPressed(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        if (!_window->findText(text, 1, false, true))
+            _window->findText(text, -1, false, true);
+        return true;
+    }
+
+    virtual bool onClick(CRUIWidget * widget) {
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        if (widget->getId() == "FIND_NEXT") {
+            if (!_window->findText(text, 1, false, true))
+                _window->findText(text, -1, false, true);
+
+        } else if (widget->getId() == "FIND_PREV") {
+            if (!_window->findText(text, 1, true, true))
+                _window->findText(text, -1, true, true);
+        }
+        return true;
+    }
+
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() {
+        CRUIEventManager::dispatchFocusChange(_editor);
+        return true;
+    }
+
+    virtual ~CRUIFindTextPopup() {
+        //CRLog::trace("~CRUIFindTextPopup()");
+        //_window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+    }
+
+//    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+//    virtual bool onTimerEvent(lUInt32 timerId) {
+////        if (_moveByPageDirection) {
+////            moveByPage(_moveByPageDirection);
+////            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+////        }
+//        CR_UNUSED(timerId); return false;
+//    }
+
+};
+
+bool CRUIReadWidget::findText(lString16 pattern, int origin, bool reverse, bool caseInsensitive) {
+    if (pattern.empty())
+        return false;
+    if (pattern != _lastSearchPattern && origin == 1)
+        origin = 0;
+    _lastSearchPattern = pattern;
+    LVArray<ldomWord> words;
+    lvRect rc;
+    _docview->GetPos( rc );
+    int pageHeight = rc.height();
+    int start = -1;
+    int end = -1;
+    if ( reverse ) {
+        // reverse
+        if ( origin == 0 ) {
+            // from end current page to first page
+            end = rc.bottom;
+        } else if ( origin == -1 ) {
+            // from last page to end of current page
+            start = rc.bottom;
+        } else { // origin == 1
+            // from prev page to first page
+            end = rc.top;
+        }
+    } else {
+        // forward
+        if ( origin == 0 ) {
+            // from current page to last page
+            start = rc.top;
+        } else if ( origin == -1 ) {
+            // from first page to current page
+            end = rc.top;
+        } else { // origin == 1
+            // from next page to last
+            start = rc.bottom;
+        }
+    }
+    CRLog::debug("CRViewDialog::findText: Current page: %d .. %d", rc.top, rc.bottom);
+    CRLog::debug("CRViewDialog::findText: searching for text '%s' from %d to %d origin %d", LCSTR(pattern), start, end, origin );
+    if ( _docview->getDocument()->findText( pattern, caseInsensitive, reverse, start, end, words, 200, pageHeight ) ) {
+        CRLog::debug("CRViewDialog::findText: pattern found");
+        _docview->clearSelection();
+        _docview->selectWords( words );
+        ldomMarkedRangeList * ranges = _docview->getMarkedRanges();
+        if ( ranges ) {
+            if ( ranges->length()>0 ) {
+                int pos = ranges->get(0)->start.y;
+                _docview->SetPos(pos);
+            }
+        }
+        clearImageCaches();
+        return true;
+    }
+    CRLog::debug("CRViewDialog::findText: pattern not found");
+    _docview->clearSelection();
+    clearImageCaches();
+    return false;
+}
 
 static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE
@@ -381,6 +601,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     _docview->setVisiblePageCount(2);
     _docview->setStatusFontSize(deviceInfo.shortSide / 25);
     _docview->setStatusMode(0, false, true, false, true, false, true, true);
+    _popupControl.setOwner(this);
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -591,6 +812,7 @@ void CRUIReadWidget::closeBook() {
         delete _lastPosition;
     _fileItem = NULL;
     _lastPosition = NULL;
+    _bookmarks.clear();
     _docview->close();
 }
 
@@ -678,6 +900,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     _main->showSlowOperationPopup();
     _fileItem = static_cast<CRFileItem*>(file->clone());
     _lastPosition = bookDB->loadLastPosition(file->getBook());
+    bookDB->loadBookmarks(file->getBook(), _bookmarks);
     lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");
     lString8 systemLang = crconfig.systemLanguage;
     setHyph(bookLang, systemLang);
@@ -710,6 +933,7 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
         _startPositionIsUpdated = true;
         updatePosition();
     }
+    updateBookmarks();
     _main->update(true);
 }
 
@@ -921,12 +1145,24 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     	CRLog::trace("Popup is active - transferring key to window");
     	return CRUIWindowWidget::onKeyEvent(event);
     }
+    bool longPress = event->getDownDuration() > 500;
     if (event->getType() == KEY_ACTION_RELEASE) {
         if (_scroll.isActive())
             _scroll.stop();
         switch(key) {
         case CR_KEY_MENU:
-        	showReaderMenu();
+            if (longPress)
+                _main->showSettings(lString8("@settings/reader"));
+            else
+                showReaderMenu();
+            invalidate();
+            return true;
+        case CR_KEY_BACK:
+        case CR_KEY_ESC:
+            if (!longPress && _docview->canGoBack())
+                onAction(CMD_LINK_BACK);
+            else
+                onAction(CMD_BACK);
             invalidate();
             return true;
         default:
@@ -1160,6 +1396,239 @@ bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
 	return true;
 }
 
+void CRUIReadWidget::removeBookmark(lInt64 id) {
+    if (!_fileItem->getBook())
+        return;
+    for (int i = 0; i < _bookmarks.length(); i++) {
+        BookDBBookmark * item = _bookmarks[i];
+        if (item->id == id) {
+            bookDB->removeBookmark(_fileItem->getBook(), item);
+            _bookmarks.remove(i);
+            delete item;
+        }
+    }
+}
+
+void CRUIReadWidget::addSelectionBookmark() {
+    if (_selectionBookmark.isNull())
+        return;
+    bookDB->saveBookmark(_fileItem->getBook(), _selectionBookmark.get());
+    _bookmarks.add(_selectionBookmark->clone());
+    _selectionBookmark.clear();
+    updateBookmarks();
+    cancelSelection();
+}
+
+void CRUIReadWidget::updateBookmarks() {
+    LVPtrVector<CRBookmark> bookmarks;
+    for (int i=0; i<_bookmarks.length(); i++) {
+        BookDBBookmark * bm = _bookmarks[i];
+        CRBookmark * bookmark = new CRBookmark(lString16(bm->startPos.c_str()), lString16(bm->endPos.c_str()));
+        bookmark->setType(bm->type);
+        bookmarks.add(bookmark);
+    }
+    _docview->setBookmarkList(bookmarks);
+    clearImageCaches();
+    invalidate();
+}
+
+void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
+    CR_UNUSED(popup);
+    if (popup->getId() == "FINDTEXT") {
+        _docview->clearSelection();
+        clearImageCaches();
+    }
+    if (popup->getId() == "MAINMENU" || popup->getId() == "GOTOPERCENT" || popup->getId() == "FINDTEXT") {
+        // add position to navigation history, if necessary
+        if (_lastPosition == NULL)
+            return;
+        lString16 lastPos(_lastPosition->startPos.c_str());
+        lString16 currPos(_docview->getBookmark().toString());
+        if (lastPos != currPos) {
+            _docview->savePosToNavigationHistory(lastPos);
+            //_docview->savePosToNavigationHistory(currPos);
+            updatePosition();
+        }
+    }
+    cancelSelection();
+}
+
+void CRUIReadWidget::updateSelectionBookmark()
+{
+    if (!_fileItem->getBook())
+        return;
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p1 = _docview->getDocument()->createXPointer(_selection.endPos);
+    if (!p1.isNull() && !p0.isNull()) {
+        ldomXRange r(p0, p1);
+        r.sort();
+        if ( r.isNull() )
+            return;
+        BookDBBookmark * bookmark = new BookDBBookmark();
+        bookmark->type = bmkt_comment;
+        bookmark->startPos = DBString(UnicodeToUtf8(_selection.startPos).c_str());
+        bookmark->endPos = DBString(UnicodeToUtf8(_selection.endPos).c_str());
+        bookmark->posText = DBString(UnicodeToUtf8(r.getRangeText()).c_str());
+        lvRect rc;
+        if (r.getStart().getRect(rc)) {
+            bookmark->percent = rc.top * 10000 / _docview->GetFullHeight();
+        }
+        lString16 titleText;
+        lString16 posText;
+        _docview->getBookmarkPosText(p0, titleText, posText);
+        bookmark->titleText = DBString(UnicodeToUtf8(titleText).c_str());
+        _selectionBookmark = bookmark;
+    }
+}
+
+void CRUIReadWidget::selectionDone(int x, int y) {
+    updateSelection(x, y);
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p1 = _docview->getDocument()->createXPointer(_selection.endPos);
+    if (!p1.isNull() && !p0.isNull()) {
+        ldomXRange r(p0, p1);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        r.sort();
+        if ( r.isNull() )
+            return;
+        _selection.startPos = r.getStart().toString();
+        _selection.endPos = r.getEnd().toString();
+        _selection.startCursorPos.clear();
+        _selection.endCursorPos.clear();
+        _docview->getCursorRect(r.getStart(), _selection.startCursorPos, false);
+        _docview->getCursorRect(r.getEnd(), _selection.endCursorPos, false);
+        _selection.selectionText = r.getRangeText();
+        updateSelectionBookmark();
+        _selection.popupActive = true;
+        r.setFlags(1);
+        _docview->selectRange(r);
+        clearImageCaches();
+        invalidate();
+        CRLog::trace("show selection menu");
+        CRUIActionList actions;
+        actions.add(ACTION_SELECTION_COPY);
+        actions.add(ACTION_SELECTION_ADD_BOOKMARK);
+        lvRect margins;
+        CRUIReadMenu * menu = new CRUIReadMenu(this, actions, false);
+        CRLog::trace("showing popup");
+
+        int pos = ALIGN_CENTER;
+        if (_selection.startCursorPos.top > _pos.height() / 3) {
+            pos = ALIGN_TOP;
+            menu->setAlign(ALIGN_TOP|ALIGN_HCENTER);
+        } else if (_selection.endCursorPos.bottom < 2 * _pos.height() / 3) {
+            pos = ALIGN_BOTTOM;
+            menu->setAlign(ALIGN_BOTTOM|ALIGN_HCENTER);
+        } else {
+            menu->setAlign(ALIGN_CENTER);
+        }
+        menu->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        preparePopup(menu, pos, margins, 0x20);
+        CRLog::trace("Show selection toolbar popup");
+    } else {
+        cancelSelection();
+    }
+}
+
+void CRUIReadWidget::updateSelection(int x, int y) {
+    if (!_selection.selecting)
+        return;
+    lvPoint pt(x, y);
+    ldomXPointer p0 = _docview->getDocument()->createXPointer(_selection.startPos);
+    ldomXPointer p = _docview->getNodeByPoint(pt);
+    if (!p.isNull() && !p0.isNull()) {
+        _selection.endPos = p.toString();
+        ldomXRange r(p0, p);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        r.sort();
+        if ( r.isNull() )
+            return;
+        r.setFlags(1);
+        _docview->selectRange(r);
+        clearImageCaches();
+        invalidate();
+        _main->update(true);
+    }
+}
+
+void CRUIReadWidget::startSelectionTimer(int x, int y) {
+    cancelSelection();
+    lvPoint pt(x, y);
+    ldomXPointer p = _docview->getNodeByPoint(pt);
+    if (!p.isNull()) {
+        ldomXRange r(p, p);
+        if ( !r.getStart().isVisibleWordStart() )
+            r.getStart().prevVisibleWordStart();
+        if ( !r.getEnd().isVisibleWordEnd() )
+            r.getEnd().nextVisibleWordEnd();
+        if ( r.isNull() )
+            return;
+        _selection.startPos = r.getStart().toString();
+        _selection.endPos = r.getEnd().toString();
+        CRLog::trace("Starting selection timer");
+        CRUIEventManager::setTimer(SELECTION_LONG_TAP_TIMER_ID, this, SELECTION_LONG_TAP_DELAY_MILLIS, false);
+        _selection.timerStarted = true;
+    }
+}
+
+/// handle timer event; return true to allow recurring timer event occur more times, false to stop
+bool CRUIReadWidget::onTimerEvent(lUInt32 timerId) {
+    if (timerId == SELECTION_LONG_TAP_TIMER_ID) {
+        CRLog::trace("onTimerEvent(SELECTION_LONG_TAP_TIMER_ID)");
+        if (_selection.timerStarted) {
+            _selection.timerStarted = false;
+            ldomXPointer pt1 = _docview->getDocument()->createXPointer(_selection.startPos);
+            ldomXPointer pt2 = _docview->getDocument()->createXPointer(_selection.endPos);
+            if (!pt1.isNull() && !pt2.isNull()) {
+                ldomXRange r(pt1, pt2);
+                if ( !r.getStart().isVisibleWordStart() )
+                    r.getStart().prevVisibleWordStart();
+                if ( !r.getEnd().isVisibleWordEnd() )
+                    r.getEnd().nextVisibleWordEnd();
+                r.sort();
+                if (!r.isNull()) {
+                    r.setFlags(1);
+                    _docview->selectRange(r);
+                    _selection.selecting = true;
+                    CRLog::trace("Creating selection");
+                    clearImageCaches();
+                    invalidate();
+                    _main->update(true);
+                }
+            }
+        }
+        return false;
+    }
+    return false;
+}
+
+void CRUIReadWidget::cancelSelection() {
+    if (_selection.timerStarted) {
+        CRUIEventManager::cancelTimer(SELECTION_LONG_TAP_TIMER_ID);
+        _selection.timerStarted = false;
+    }
+    if (_selection.selecting) {
+        _selection.selecting = false;
+        _selection.startPos.clear();
+        _selection.endPos.clear();
+        _docview->clearSelection();
+        clearImageCaches();
+    }
+    _selection.startCursorPos.clear();
+    _selection.endCursorPos.clear();
+    _selection.selectionText.clear();
+    if (_selection.popupActive) {
+        // TODO
+        _selection.popupActive = false;
+    }
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -1198,13 +1667,23 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             _dragStartOffset = _docview->GetPos();
         if (_scroll.isActive())
             _scroll.stop();
+        if (event->count() == 1)
+            startSelectionTimer(event->getX(), event->getY());
+        else
+            cancelSelection();
+
         invalidate();
         //CRLog::trace("list DOWN");
         break;
     case ACTION_UP:
         {
             invalidate();
-            if (_pinchOp) {
+            if (!_selection.selecting)
+                cancelSelection();
+            if (_selection.selecting) {
+                // update selection end
+                selectionDone(event->getX(), event->getY());
+            } else if (_pinchOp) {
             	endPinchOp(pinchDx, pinchDy, false);
             	event->cancelAllPointers();
             } else if (_isDragging) {
@@ -1313,13 +1792,18 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         	endPinchOp(pinchDx, pinchDy, true);
         }
         _isDragging = false;
+        cancelSelection();
         //setScrollOffset(_scrollOffset);
         //CRLog::trace("list CANCEL");
         break;
     case ACTION_MOVE:
-    	if (_pinchOp) {
+        if (_selection.selecting) {
+            // update selection
+            updateSelection(event->getX(), event->getY());
+        } else if (_pinchOp) {
     		updatePinchOp(pinchDx, pinchDy);
     	} else if (!_isDragging && event->count() == 2) {
+            cancelSelection();
 			int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
 			int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
 			int ddx1 = myAbs(event->getX(0) - event->getX(1));
@@ -1342,6 +1826,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 				startPinchOp(op0, pinchDx, pinchDy);
 			}
         } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
+            cancelSelection();
             _isDragging = true;
             _docview->SetPos(_dragStartOffset - delta, false);
             prepareScroll(-delta);
@@ -1354,10 +1839,12 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                 else
                     _docview->doCommand(DCMD_PAGEUP, 1);
                 event->cancelAllPointers();
+                cancelSelection();
                 invalidate();
                 return true;
             }
             _isDragging = true;
+            cancelSelection();
             prepareScroll(-delta2);
             invalidate();
             //_main->update(true);
@@ -1369,6 +1856,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else {
                 _docview->SetPos(_dragStartOffset - delta, false);
             }
+            cancelSelection();
             invalidate();
             //_main->update(true);
         } else if (!_isDragging) {
@@ -1392,12 +1880,14 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         			op0 = PINCH_OP_DIAGONAL;
         		int ddd = myAbs(pinchDx) + myAbs(pinchDy);
         		if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
-        			startPinchOp(op0, pinchDx, pinchDy);
-        		}
-        	} else {
+                    cancelSelection();
+                    startPinchOp(op0, pinchDx, pinchDy);
+                }
+            } else {
         		if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
-        			_main->startDragging(event, false);
-        		}
+                    cancelSelection();
+                    _main->startDragging(event, false);
+                }
             }
         }
         // ignore
@@ -1442,6 +1932,21 @@ int CRUIReadWidget::getCurrentPositionPercent() {
     return _docview->getPosPercent();
 }
 
+/// move by page w/o animation
+void CRUIReadWidget::moveByPage(int direction) {
+    if (direction > 0)
+        _docview->doCommand(DCMD_PAGEDOWN, 1);
+    else
+        _docview->doCommand(DCMD_PAGEUP, 1);
+    if (_viewMode == DVM_PAGES) {
+        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
+    } else {
+        _scrollCache.prepare(_docview, _docview->GetPos(), _pos.width(), _pos.height(), 0, false);
+    }
+    invalidate();
+    _main->update(true);
+}
+
 void CRUIReadWidget::goToPercent(int percent) {
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
@@ -1467,10 +1972,21 @@ void CRUIReadWidget::showTOC() {
     _main->showTOC(widget);
 }
 
+void CRUIReadWidget::showBookmarks() {
+    CRUIBookmarksWidget * widget = new CRUIBookmarksWidget(_main, this);
+    _main->showBookmarks(widget);
+}
+
+void CRUIReadWidget::showFindTextPopup() {
+    lvRect margins;
+    CRUIFindTextPopup * popup = new CRUIFindTextPopup(this, _lastSearchPattern);
+    preparePopup(popup, ALIGN_TOP, margins, 0x80, false, false);
+}
+
 void CRUIReadWidget::showGoToPercentPopup() {
     lvRect margins;
     CRUIGoToPercentPopup * popup = new CRUIGoToPercentPopup(this);
-    preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false);
+    preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false, true);
 }
 
 void CRUIReadWidget::showReaderMenu() {
@@ -1491,6 +2007,8 @@ void CRUIReadWidget::showReaderMenu() {
     //if (hasTOC())
         actions.add(ACTION_TOC);
     actions.add(ACTION_GOTO_PERCENT);
+    actions.add(ACTION_BOOKMARKS);
+    actions.add(ACTION_FIND_TEXT);
     actions.add(ACTION_HELP);
     actions.add(ACTION_EXIT);
     lvRect margins;
@@ -1511,10 +2029,20 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
+    case CMD_SELECTION_COPY:
+        _main->getPlatform()->copyToClipboard(_selection.selectionText);
+        cancelSelection();
+        return true;
+    case CMD_SELECTION_ADD_BOOKMARK:
+        addSelectionBookmark();
+        cancelSelection();
+        return true;
     case CMD_LINK_BACK:
-        if (_docview->canGoBack())
+        if (_docview->canGoBack()) {
             _docview->goBack();
-        else
+            updatePosition();
+            _main->update(true);
+        } else
             _main->back();
         return true;
     case CMD_LINK_FORWARD:
@@ -1523,11 +2051,17 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_TOC:
         showTOC();
         return true;
+    case CMD_BOOKMARKS:
+        showBookmarks();
+        return true;
     case CMD_MENU:
         showReaderMenu();
         return true;
     case CMD_GOTO_PERCENT:
         showGoToPercentPopup();
+        return true;
+    case CMD_FIND_TEXT:
+        showFindTextPopup();
         return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));
@@ -2344,6 +2878,102 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
 
 
 
+
+
+CRUIBookmarksWidget::CRUIBookmarksWidget(CRUIMainWidget * main, CRUIReadWidget * read)  : CRUIWindowWidget(main), _readWidget(read) {
+    for (int i = 0; i < _readWidget->getBookmarks().length(); i++) {
+        _bookmarks.add(_readWidget->getBookmarks()[i]->clone());
+    }
+    _selectedItem = NULL;
+    _title = new CRUITitleBarWidget(lString16(), this, this, false);
+    _title->setTitle(STR_READER_BOOKMARKS);
+    _body->addChild(_title);
+    _list = new CRUIListWidget(true, this);
+    _list->setOnItemClickListener(this);
+    _list->setOnItemLongClickListener(this);
+    _list->setStyle("SETTINGS_ITEM_LIST");
+    _body->addChild(_list);
+    _itemWidget = new CRUIHorizontalLayout();
+    _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
+    _itemWidget->setPadding(PT_TO_PX(2));
+    _chapter = new CRUITextWidget();
+    _page = new CRUITextWidget();
+    _itemWidget->addChild(_chapter);
+    _itemWidget->addChild(_page);
+    _page->setMargin(lvRect(PT_TO_PX(3), 0, PT_TO_PX(2), 0));
+    _page->setAlign(ALIGN_RIGHT|ALIGN_VCENTER);
+    _chapter->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
+    _chapter->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _itemWidget->setStyle("LIST_ITEM");
+}
+
+// list adapter methods
+int CRUIBookmarksWidget::getItemCount(CRUIListWidget * list) {
+    CR_UNUSED(list);
+    return _bookmarks.length();
+}
+
+CRUIWidget * CRUIBookmarksWidget::getItemWidget(CRUIListWidget * list, int index) {
+    CR_UNUSED(list);
+    BookDBBookmark * item = _bookmarks[index];
+    _chapter->setText(Utf8ToUnicode(item->posText.c_str()));
+    _page->setText(formatPercent(item->percent));
+    return _itemWidget;
+}
+
+// list item click
+bool CRUIBookmarksWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    BookDBBookmark * item = _bookmarks[itemIndex];
+    _readWidget->goToPosition(Utf8ToUnicode(item->startPos.c_str()));
+    return onAction(CMD_BACK);
+}
+
+// list item click
+bool CRUIBookmarksWidget::onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    _selectedItem = _bookmarks[itemIndex];
+    CRUIActionList actions;
+    actions.add(ACTION_BOOKMARK_GOTO);
+    actions.add(ACTION_BOOKMARK_REMOVE);
+    lvRect margins;
+    //margins.right = MIN_ITEM_PX * 120 / 100;
+    showMenu(actions, ALIGN_TOP, margins, false);
+    return true;
+}
+
+// on click
+bool CRUIBookmarksWidget::onClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+bool CRUIBookmarksWidget::onLongClick(CRUIWidget * widget) {
+    if (widget->getId() == "BACK")
+        onAction(CMD_BACK);
+    return true;
+}
+
+/// override to handle menu or other action
+bool CRUIBookmarksWidget::onAction(const CRUIAction * action) {
+    switch (action->id) {
+    case CMD_BACK:
+        _main->back();
+        return true;
+    case CMD_BOOKMARK_GOTO:
+        if (_selectedItem)
+            _readWidget->goToPosition(Utf8ToUnicode(_selectedItem->startPos.c_str()));
+        return onAction(CMD_BACK);
+    case CMD_BOOKMARK_REMOVE:
+        if (_selectedItem)
+            _readWidget->removeBookmark(_selectedItem->id);
+        return onAction(CMD_BACK);
+    default:
+        break;
+    }
+    return false;
+}
 
 
 static void addTocItems(LVPtrVector<LVTocItem, false> & toc, LVTocItem * item) {

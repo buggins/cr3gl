@@ -224,6 +224,8 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	applyMargin(rc);
 	setClipRect(buf, rc);
 	applyPadding(rc);
+    if (getBackgroundAlpha())
+        buf->setAlpha(getBackgroundAlpha());
     CRUIImageRef image = getImage();
     int width = !image ? 0 : image->originalWidth();
     int height = !image ? 0 : image->originalHeight();
@@ -346,12 +348,13 @@ void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 	int action = event->getAction();
-	CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+    //CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	switch (action) {
 	case ACTION_DOWN:
 		setState(STATE_PRESSED, STATE_PRESSED);
 		//CRLog::trace("button DOWN");
-		break;
+        onClickDownEvent();
+        break;
 	case ACTION_UP:
 		{
 			setState(0, STATE_PRESSED);
@@ -413,6 +416,7 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     }
     CRUIWidget::draw(buf);
     LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
     lvRect rc = _pos;
     applyMargin(rc);
     setClipRect(buf, rc);
@@ -519,3 +523,354 @@ bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+
+
+CRUIEditWidget::~CRUIEditWidget() {
+    //CRLog::trace("~CRUIEditWidget()");
+    if (CRUIEventManager::getFocusedWidget() == this) {
+        CRUIEventManager::dispatchFocusChange(NULL);
+        if (CRUIEventManager::isVirtualKeyboardShown())
+            CRUIEventManager::hideVirtualKeyboard();
+    }
+}
+
+CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _scrollDirection(0), _passwordChar(0), _onReturnPressedListener(NULL) {
+    //_text = "Editor test sample";
+    //_cursorPos = 3;
+    setStyle("EDITBOX");
+}
+
+lString16 CRUIEditWidget::getTextToShow() {
+    if (!_passwordChar)
+        return _text;
+    lString16 res;
+    res.reserve(_text.length());
+    for (int i = 0; i < _text.length(); i++) {
+        if (i + 1 == _lastEnteredCharPos)
+            res << _text[i];
+        else
+            res << _passwordChar;
+    }
+    return res;
+}
+
+#define EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID 123013
+#define EDIT_WIDGET_SCROLL_TIMER_ID 123014
+
+bool CRUIEditWidget::onTimerEvent(lUInt32 timerId) {
+    if (timerId == EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID) {
+        if (_lastEnteredCharPos >=0 ) {
+            _lastEnteredCharPos = -1;
+            updateCursor(_cursorPos, false);
+            invalidate();
+            CRUIEventManager::requestScreenUpdate(false);
+        }
+    } else if (timerId == EDIT_WIDGET_SCROLL_TIMER_ID) {
+        scrollByTimer();
+        return true;
+    }
+    return false;
+}
+
+void CRUIEditWidget::setScrollTimer(int direction) {
+    _scrollDirection = direction;
+    CRUIEventManager::setTimer(EDIT_WIDGET_SCROLL_TIMER_ID, this, 500, true);
+}
+
+void CRUIEditWidget::cancelScrollTimer() {
+    if (!_scrollDirection)
+        return;
+    _scrollDirection = 0;
+    CRUIEventManager::cancelTimer(EDIT_WIDGET_SCROLL_TIMER_ID);
+}
+
+void CRUIEditWidget::scrollByTimer() {
+    if (!_scrollDirection)
+        return;
+    int prevpos = _cursorPos;
+    updateCursor(_cursorPos, true, true);
+    if (_cursorPos != prevpos) {
+        invalidate();
+        CRUIEventManager::requestScreenUpdate();
+    } else {
+        cancelScrollTimer();
+    }
+}
+
+CRUIWidget * CRUIEditWidget::setText(lString16 txt) {
+    _text = txt;
+    _lastEnteredCharPos = -1;
+    updateCursor(_text.length());
+    invalidate();
+    return this;
+}
+
+void CRUIEditWidget::setPasswordChar(lChar16 ch) {
+    _passwordChar = ch;
+    updateCursor(_cursorPos);
+    invalidate();
+}
+
+/// measure dimensions
+void CRUIEditWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    LVFontRef font = getFont();
+    int width = font->getTextWidth(_text.c_str(), _text.length());
+    int height = font->getHeight();
+    defMeasure(baseWidth, baseHeight, width, height);
+}
+
+/// updates widget position based on specified rectangle
+void CRUIEditWidget::layout(int left, int top, int right, int bottom) {
+    CRUIWidget::layout(left, top, right, bottom);
+    updateCursor(_cursorPos, false);
+}
+
+struct MeasuredText {
+    lString16 _text;
+    LVArray<lUInt16> _widths;
+    LVArray<lUInt8> _flags;
+    int _width;
+    MeasuredText(LVFontRef font, lString16 text) : _text(text) {
+        _widths.addSpace(_text.length() + 5);
+        _flags.addSpace(_text.length() + 5);
+        font->measureText(_text.c_str(), _text.length(), _widths.get(), _flags.get(), 10000, '?', 0, false);
+        _width = _widths[_text.length() - 1];
+    }
+    int getWidth() {
+        return _width;
+    }
+
+    int getOffset(int index) {
+        if (index <= 0)
+            return 0;
+        if (index > _text.length())
+            return _widths[_text.length() - 1];
+        return _widths[index - 1];
+    }
+
+    int offsetToIndex(int offset) {
+        int prevx = 0;
+        for (int i = 0; i < _text.length(); i++) {
+            int x = _widths[i];
+            if (offset < (x + prevx) / 2)
+                return i;
+            prevx = x;
+        }
+        return _text.length();
+    }
+};
+
+/// draws widget with its children to specified surface
+void CRUIEditWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    CRUIWidget::draw(buf);
+    LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    rc.left--;
+    setClipRect(buf, rc);
+    rc.left++;
+    LVFontRef font = getFont();
+    lString16 text = getTextToShow();
+    MeasuredText measured(font, text);
+    buf->SetTextColor(getStyle()->getTextColor());
+    int yoffset = (rc.height() - font->getHeight()) / 2;
+    if (isFocused()) {
+        updateCursor(_cursorPos, false);
+        int cursorx = measured.getOffset(_cursorPos) - _scrollx;
+        buf->FillRect(rc.left + cursorx - 1, rc.top + yoffset - 2, rc.left + cursorx + 1, rc.top + yoffset + font->getHeight() + 2, 0x6060FF);
+    }
+    font->DrawTextString(buf, rc.left - _scrollx, rc.top + yoffset, text.c_str(), text.length(), '?');
+}
+
+/// motion event handler, returns true if it handled event
+bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    int action = event->getAction();
+    if (!isFocused()) {
+        if (action == ACTION_UP) {
+            CRUIEventManager::dispatchFocusChange(this);
+        }
+        return true;
+    }
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    LVFontRef font = getFont();
+    lString16 text = getTextToShow();
+    MeasuredText measured(font, text);
+    int x = event->getX();
+    if (x < rc.left)
+        x = rc.left;
+    if (x >= rc.right)
+        x = rc.right - 1;
+    int newcurpos = measured.offsetToIndex(x - rc.left + _scrollx);
+    lvPoint pt(event->getX(), event->getY());
+    bool inside = _pos.isPointInside(pt);
+    switch (action) {
+    case ACTION_DOWN:
+        if (!CRUIEventManager::isVirtualKeyboardShown())
+            CRUIEventManager::showVirtualKeyboard();
+        if (inside) {
+            _lastEnteredCharPos = -1;
+            updateCursor(newcurpos, false);
+            if (pt.x >= rc.right - rc.width() / 20)
+                setScrollTimer(1);
+            else if (pt.x < rc.left + rc.width() / 20)
+                setScrollTimer(-1);
+            else
+                cancelScrollTimer();
+        }
+        break;
+    case ACTION_UP:
+        if (inside) {
+            _lastEnteredCharPos = -1;
+            updateCursor(newcurpos, false);
+        }
+        cancelScrollTimer();
+        break;
+    case ACTION_MOVE:
+        if (inside) {
+            if (pt.x >= rc.right - rc.width() / 20) {
+                if (!_scrollDirection)
+                    setScrollTimer(1);
+            } else if (pt.x < rc.left + rc.width() / 20) {
+                //
+                if (!_scrollDirection)
+                    setScrollTimer(-1);
+            } else
+                cancelScrollTimer();
+            _lastEnteredCharPos = -1;
+            updateCursor(newcurpos, false);
+        }
+        break;
+    case ACTION_CANCEL:
+        _lastEnteredCharPos = -1;
+        cancelScrollTimer();
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
+void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds, bool changeCursorPositionAfterScroll) {
+    _cursorPos = pos;
+    lString16 text = getTextToShow();
+    if (_cursorPos < 0)
+        _cursorPos = 0;
+    if (_cursorPos > text.length())
+        _cursorPos = text.length();
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    LVFontRef font = getFont();
+    MeasuredText measured(font, text);
+    if (measured.getWidth() < rc.width()) {
+        _scrollx = 0;
+        return;
+    }
+    if (_scrollx > measured.getWidth() - rc.width())
+        _scrollx = measured.getWidth() - rc.width();
+    if (_scrollx < 0)
+        _scrollx = 0;
+    int cursoroffset = measured.getOffset(_cursorPos);
+    int oldcursorx = cursoroffset - _scrollx;
+    int scrollThreshold = scrollIfNearBounds ? rc.width() / 20 : 0;
+    bool scrolled = false;
+    if (cursoroffset < _scrollx + scrollThreshold) {
+        _scrollx = cursoroffset - rc.width() / 10;
+        if (_scrollx < 0)
+            _scrollx = 0;
+        scrolled = true;
+    } else if (cursoroffset > _scrollx + rc.width() - scrollThreshold) {
+        _scrollx = cursoroffset - rc.width() + rc.width() / 10;
+        if (_scrollx > measured.getWidth() - rc.width())
+            _scrollx = measured.getWidth() - rc.width();
+        scrolled = true;
+    }
+    if (scrolled && changeCursorPositionAfterScroll && oldcursorx >= 0 && oldcursorx < rc.width()) {
+        // change
+        _cursorPos = measured.offsetToIndex(_scrollx + oldcursorx);
+        if (_cursorPos < 0)
+            _cursorPos = 0;
+        if (_cursorPos > text.length())
+            _cursorPos = text.length();
+    }
+}
+
+bool CRUIEditWidget::onFocusChange(bool focused) {
+    cancelScrollTimer();
+    if (focused) {
+        updateCursor(_text.length());
+        CRUIEventManager::showVirtualKeyboard();
+    } else {
+        _scrollx = 0;
+        CRUIEventManager::hideVirtualKeyboard();
+    }
+    return true;
+}
+
+/// key event handler, returns true if it handled event
+bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    cancelScrollTimer();
+    if (event->getType() == KEY_ACTION_PRESS) {
+        switch(event->key()) {
+        case CR_KEY_BACKSPACE:
+            if (_cursorPos > 0) {
+                _lastEnteredCharPos = -1;
+                _text.erase(_cursorPos - 1, 1);
+                updateCursor(_cursorPos - 1);
+            }
+            return true;
+        case CR_KEY_LEFT:
+            if (_cursorPos > 0) {
+                _lastEnteredCharPos = -1;
+                updateCursor(_cursorPos - 1);
+            }
+            return true;
+        case CR_KEY_RIGHT:
+            if (_cursorPos < _text.length()) {
+                _lastEnteredCharPos = -1;
+                updateCursor(_cursorPos + 1);
+            }
+            return true;
+        case CR_KEY_HOME:
+            _lastEnteredCharPos = -1;
+            updateCursor(0);
+            return true;
+        case CR_KEY_END:
+            _lastEnteredCharPos = -1;
+            updateCursor(_text.length());
+            return true;
+        case CR_KEY_RETURN:
+            if (_onReturnPressedListener)
+                return _onReturnPressedListener->onReturnPressed(this);
+            return true;
+        default:
+            break;
+        }
+    }
+    lString16 eventText = event->text();
+    if (eventText.length()) {
+        if (eventText[0] >= 32) {
+            if (event->getType() == KEY_ACTION_PRESS) {
+                _text.insert(_cursorPos, eventText);
+                _lastEnteredCharPos = _cursorPos + eventText.length();
+                updateCursor(_cursorPos + eventText.length());
+                if (_passwordChar)
+                    CRUIEventManager::setTimer(EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID, this, 500, false);
+            }
+            return true;
+        }
+    }
+    return true;
+}

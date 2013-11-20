@@ -9,6 +9,7 @@
 #include "cruipopup.h"
 #include "cruiwindow.h"
 #include "cruisettingswidget.h"
+#include "vkeyboard.h"
 
 enum VIEW_MODE {
     MODE_HOME,
@@ -16,6 +17,7 @@ enum VIEW_MODE {
     MODE_SETTINGS,
     MODE_READ,
     MODE_TOC,
+    MODE_BOOKMARKS,
     MODE_OPDS
 };
 
@@ -32,6 +34,8 @@ public:
 	virtual void exitApp() = 0;
 	/// minimize app or show Home Screen
 	virtual void minimizeApp() = 0;
+    // copy text to clipboard
+    virtual void copyToClipboard(lString16 text) = 0;
 	virtual ~CRUIPlatform() {}
 };
 
@@ -101,6 +105,19 @@ public:
     }
     virtual VIEW_MODE getMode() { return MODE_TOC; }
     TOCItem(CRUIMainWidget * _main, CRUITOCWidget * _widget) : NavHistoryItem(_main, _widget) {}
+};
+
+class BookmarksItem : public NavHistoryItem {
+public:
+    // recreate on config change
+    virtual CRUIWindowWidget * recreate() {
+        lvRect pos = ((CRUIWidget*)main)->getPos();
+        widget->measure(pos.width(), pos.height());
+        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_BOOKMARKS; }
+    BookmarksItem(CRUIMainWidget * _main, CRUIBookmarksWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class FolderItem : public NavHistoryItem {
@@ -247,6 +264,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
     CRUIPopupWindow * _popup;
+    CRUIVirtualKeyboard * _keyboard;
     LVDrawBuf * _popupBackground;
     //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
@@ -365,6 +383,7 @@ public:
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);
     void showTOC(CRUITOCWidget * toc);
+    void showBookmarks(CRUIBookmarksWidget * toc);
     void back(bool fast = false);
 
     virtual void onAllCoverpagesReady(int newpos);
@@ -379,6 +398,10 @@ public:
     virtual void clearImageCaches();
 
     CRFileItem * createManualBook();
+
+    void showVirtualKeyboard();
+    void hideVirtualKeyboard();
+    bool isVirtualKeyboardShown();
 
     CRUIMainWidget();
     virtual ~CRUIMainWidget();

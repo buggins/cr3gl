@@ -217,11 +217,13 @@ class CRUIKeyEvent {
     bool _autorepeat;
     int _count;
     int _modifiers;
+    lString16 _text;
     lUInt64  _ts;
     lUInt64  _downTs;
     CRUIWidget * _widget;
 public:
     KEY_EVENT_TYPE getType() const { return _type; }
+    lString16 text() const { return _text; } // entered text character code
     int key() const { return _key; }
     int count() const { return _count; }
     bool isAutorepeat() const { return _autorepeat; }
@@ -230,13 +232,14 @@ public:
     lUInt64 getDownEventTimestamp() const { return _downTs; }
     lUInt64 getDownDuration() const { return _ts - _downTs; }
     CRUIWidget * getWidget() { return _widget; }
+    void setText(lString16 txt) { _text = txt; }
     void setWidget(CRUIWidget * widget) { _widget = widget; }
     void setDownEvent(const CRUIKeyEvent * v) {
         _downTs = v->_ts;
         _widget = v->_widget;
     }
 
-    CRUIKeyEvent(const CRUIKeyEvent & v) : _type(v._type), _key(v._key), _autorepeat(v._autorepeat), _count(v._count), _modifiers(v._modifiers), _ts(v._ts), _downTs(v._downTs), _widget(v._widget) {}
+    CRUIKeyEvent(const CRUIKeyEvent & v) : _type(v._type), _key(v._key), _autorepeat(v._autorepeat), _count(v._count), _modifiers(v._modifiers), _text(v._text), _ts(v._ts), _downTs(v._downTs), _widget(v._widget) {}
     CRUIKeyEvent(KEY_EVENT_TYPE type, int key, bool autorepeat, int count, int modifiers) : _type(type), _key(key), _autorepeat(autorepeat), _count(count), _modifiers(modifiers), _widget(NULL) {
         _ts = GetCurrentTimeMillis();
         _downTs = _ts;
@@ -244,22 +247,69 @@ public:
     ~CRUIKeyEvent() {}
 };
 
+class CRUITimerItem {
+public:
+    lUInt32 id;
+    lUInt32 intervalMillis; // != 0 for recurring event
+    lUInt64 nextTs;
+    CRUIWidget * widget;
+    CRUITimerItem(lUInt32 id, lUInt32 intervalMillis, bool repeat, CRUIWidget * widget);
+    void update(lUInt32 intervalMillis, bool repeat, CRUIWidget * widget);
+    ~CRUITimerItem() {}
+};
+
 class CRUIMainWidget;
 class CRUIEventManager {
 protected:
+    static CRUIEventManager * _instance;
 	CRUIMainWidget * _rootWidget;
 	CRUIMotionEventItem * _lastTouchEvent;
     LVHashTable<lUInt32, CRUIKeyEvent*> _keyDownEvents;
+    LVPtrVector<CRUITimerItem> _timers;
+    CRUIWidget * _focusedWidget;
+
 	bool dispatchTouchEvent(CRUIWidget * widget, CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * event);
     void updateScreen();
+    void updateTimerQueue(int index);
+    void updateTimerQueue(CRUITimerItem * item);
+    int  findTimer(lUInt32 timerId);
+    void startTimer(lUInt32 interval);
+    /// sets new timer or restarts existing
+    void setTimerInternal(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat);
+    /// cancels existing timer by id
+    void cancelTimerInternal(lUInt32 timerId);
 public:
 	CRUIEventManager();
+    virtual ~CRUIEventManager();
     void onSystemLanguageChanged();
 	void setRootWidget(CRUIMainWidget * rootWidget);
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);
     bool interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget);
+
+
+    // timer support
+    /// runs callbacks for all timers ready to execute, returns true if any unfinished timer tasks left
+    bool dispatchTimerEvent();
+    /// sets new timer or restarts existing
+    static void setTimer(lUInt32 timerId, CRUIWidget * widget, lUInt32 interval, bool repeat = false);
+    /// cancels existing timer by id
+    static void cancelTimer(lUInt32 timerId);
+    void focusChanged(CRUIWidget * widget);
+    static CRUIWidget * getFocusedWidget();
+    static void dispatchFocusChange(CRUIWidget * widget);
+    /// request screen redraw
+    static void requestScreenUpdate(bool force = false);
+
+    static bool dispatchKey(CRUIKeyEvent * event);
+
+
+    // Virtual Keyboard support
+    static void showVirtualKeyboard();
+    static void hideVirtualKeyboard();
+    static bool isVirtualKeyboardShown();
+
 };
 
 class CRUIOnTouchEventListener {
@@ -284,6 +334,12 @@ class CRUIOnLongClickListener {
 public:
 	virtual bool onLongClick(CRUIWidget * widget) = 0;
 	virtual ~CRUIOnLongClickListener() {}
+};
+
+class CRUIOnReturnPressListener {
+public:
+    virtual bool onReturnPressed(CRUIWidget * widget) = 0;
+    virtual ~CRUIOnReturnPressListener() {}
 };
 
 class CRUIListWidget;

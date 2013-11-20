@@ -76,10 +76,30 @@ protected:
 	CRUITextWidget * _label;
     void init(lString16 text, const char * imageRes, bool vertical);
 public:
-	/// motion event handler, returns true if it handled event
+
+    virtual CRUIWidget * setFontSize(lUInt8 sz) {
+        if (_label)
+            _label->setFontSize(sz);
+        return this; \
+    }
+
+    /// set background alpha, 0..255 (0==opaque, 255 fully transparent)
+    virtual void setBackgroundAlpha(int alpha) {
+        CRUIWidget::setBackgroundAlpha(alpha);
+        if (_icon)
+            _icon->setBackgroundAlpha(alpha);
+    }
+
+    /// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
+
     //CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
-	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
+    CRUIButton(lString16 text, const char * imageRes = NULL, bool vertical = false);
+    virtual CRUIWidget * setText(lString16 text) {
+        if (_label)
+            _label->setText(text);
+        return this;
+    }
 };
 
 class CRUIImageButton : public CRUIButton {
@@ -129,6 +149,47 @@ public:
         setScrollPos(currentValue);
     }
     virtual ~CRUISliderWidget() {}
+};
+
+class CRUIEditWidget : public CRUIWidget {
+    lString16 _text;
+    int _cursorPos;
+    int _scrollx;
+    int _lastEnteredCharPos;
+    int _scrollDirection;
+    lChar16 _passwordChar;
+    CRUIOnReturnPressListener * _onReturnPressedListener;
+    /// returns text replaced with password char to display
+    lString16 getTextToShow();
+    void updateCursor(int pos, bool scrollIfNearBounds = true, bool changeCursorPositionAfterScroll = false);
+    void setScrollTimer(int direction);
+    void cancelScrollTimer();
+    void scrollByTimer();
+public:
+
+    CRUIEditWidget();
+    virtual ~CRUIEditWidget();
+
+    virtual void setOnReturnPressedListener(CRUIOnReturnPressListener * listener) { _onReturnPressedListener = listener; }
+
+    virtual void setPasswordChar(lChar16 ch);
+    virtual lString16 getText() { return _text; }
+    virtual CRUIWidget * setText(lString16 txt);
+
+
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
+    /// key event handler, returns true if it handled event
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
+    virtual bool onFocusChange(bool focused);
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId);
 };
 
 #endif /* CRUICONTROLS_H_ */

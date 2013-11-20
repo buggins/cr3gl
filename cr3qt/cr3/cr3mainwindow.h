@@ -88,6 +88,8 @@ public:
     // CRUI overrides
     virtual void setScreenUpdateMode(bool updateNow, int animationFps);
     virtual void exitApp();
+    // copy text to clipboard
+    virtual void copyToClipboard(lString16 text);
     /// minimize app or show Home Screen
     virtual void minimizeApp();
 

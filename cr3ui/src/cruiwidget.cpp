@@ -21,6 +21,7 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
     _backgroundAlpha(0),
 	_layoutRequested(true),
 	_drawRequested(true),
+    _focusable(false),
 	_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR),
     _align(0), _layoutWeight(1), _visibility(VISIBLE),
     _onTouchListener(NULL), _onKeyListener(NULL), _onClickListener(NULL), _onLongClickListener(NULL)
@@ -29,7 +30,10 @@ CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIF
 }
 
 CRUIWidget::~CRUIWidget() {
-
+    if (_parent)
+        _parent->removeChild(this);
+    if (CRUIEventManager::getFocusedWidget() == this)
+        CRUIEventManager::dispatchFocusChange(NULL);
 }
 
 void CRUIWidget::applyAlign(lvRect & rc, int contentWidth, int contentHeight)
@@ -127,7 +131,6 @@ bool CRUIWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_onClickListener != NULL) {
         /// motion event handler, returns true if it handled event
         int action = event->getAction();
-        CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
         switch (action) {
         case ACTION_DOWN:
             setState(STATE_PRESSED, STATE_PRESSED);
@@ -198,6 +201,23 @@ bool CRUIWidget::onLongClickEvent()
 	return false;
 }
 
+void CRUIWidget::setFocusable(bool focusable) {
+    _focusable = focusable;
+}
+
+bool CRUIWidget::canFocus() {
+    return _focusable;
+}
+
+bool CRUIWidget::isFocused() {
+    return CRUIEventManager::getFocusedWidget() == this;
+}
+
+bool CRUIWidget::onFocusChange(bool focused) {
+    CR_UNUSED(focused);
+    invalidate();
+    return true;
+}
 
 CRUIOnTouchEventListener * CRUIWidget::setOnTouchListener(CRUIOnTouchEventListener * listener)
 {

@@ -46,6 +46,16 @@
         />
     </style>
     <style
+        id="EDITBOX"
+        background="editbox_background_normal.9"
+        textColor="0x00000000"
+    >
+        <style
+            state="focused" stateMask="focused"
+            background="editbox_background_focus_yellow.9"
+        />
+    </style>
+    <style
         id="LIST_ITEM"
     >
         <style

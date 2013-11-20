@@ -6,11 +6,14 @@
 #include "cruicontrols.h"
 #include "cruilist.h"
 
+class CRUIWindowWidget;
 class PopupControl {
 public:
+    CRUIWindowWidget * owner;
     lInt64 startTs;
     lInt64 endTs;
     CRUIWidget * popup; // popup widget
+    CRUIWidget * body; // popup widget body
     CRUIWidget * popupBackground; // popup background widget
     lUInt32 outerColor; // to apply on surface outside popup
     int width;
@@ -18,19 +21,12 @@ public:
     int align;       // where is destination rectangle located
     int progress;
     bool closing;
+    bool wantsTouchEventsOutside;
     lvRect parentRect;
     lvRect srcRect;
     lvRect dstRect;
     lvRect margins;
-    void close() {
-    	CRLog::trace("PopupControl::close()");
-        if (popup)
-            delete popup;
-        popup = NULL;
-        if (popupBackground)
-            delete popupBackground;
-        popupBackground = NULL;
-    }
+    void close();
     /// returns rect for current progress
     void getRect(lvRect & rc);
     /// calculates src and dst rectangles for updated parent position/size
@@ -43,7 +39,11 @@ public:
     /// start animation of popup closing
     void animateClose();
 
-    PopupControl() : popup(NULL), popupBackground(NULL), closing(false) {
+    void setOwner(CRUIWindowWidget * _owner) {
+        owner = _owner;
+    }
+
+    PopupControl() : owner(NULL), popup(NULL), body(NULL), popupBackground(NULL), closing(false) {
 
     }
 
@@ -60,7 +60,7 @@ protected:
 
     PopupControl _popupControl;
 
-    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0, bool showHandle = true);
+    void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0, bool showHandle = true, bool wantsTouchEventsOutside = false);
 
 public:
     /// return true if drag operation is intercepted
@@ -91,6 +91,8 @@ public:
 
     /// opens menu popup with specified list of actions
     virtual void showMenu(const CRUIActionList & actionList, int location, lvRect & margins, bool asToolbar);
+
+    virtual void onPopupClosing(CRUIWidget * popup) { CR_UNUSED(popup); }
 
     /// close popup menu, and call onAction
     virtual bool onMenuItemAction(const CRUIAction * action);

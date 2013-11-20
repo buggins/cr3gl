@@ -75,6 +75,39 @@ public:
     virtual ~CRUITOCWidget() { delete _itemWidget; }
 };
 
+class CRUIBookmarksWidget : public CRUIWindowWidget, public CRUIListAdapter
+        , public CRUIOnListItemClickListener
+        , public CRUIOnListItemLongClickListener
+        , public CRUIOnClickListener
+        , public CRUIOnLongClickListener
+{
+    CRUIReadWidget * _readWidget;
+    CRUITitleBarWidget * _title;
+    BookDBBookmark * _selectedItem;
+    CRUIListWidget * _list;
+    LVPtrVector<BookDBBookmark> _bookmarks;
+    CRUIHorizontalLayout * _itemWidget;
+    CRUITextWidget * _chapter;
+    CRUITextWidget * _page;
+public:
+    // list adapter methods
+    virtual int getItemCount(CRUIListWidget * list);
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    // list item click
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
+    virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex);
+    // on click
+    virtual bool onClick(CRUIWidget * widget);
+    virtual bool onLongClick(CRUIWidget * widget);
+    /// override to handle menu or other action
+    virtual bool onAction(const CRUIAction * action);
+    /// override to handle menu or other action - by id
+    virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
+
+    CRUIBookmarksWidget(CRUIMainWidget * main, CRUIReadWidget * read);
+    virtual ~CRUIBookmarksWidget() { delete _itemWidget; }
+};
+
 enum PageFlipAnimation {
     PAGE_ANIMATION_NONE,
     PAGE_ANIMATION_SLIDE,
@@ -184,6 +217,34 @@ class CRUIReadWidget : public CRUIWindowWidget
     };
     PagedModePageCache _pagedCache;
 
+    struct SelectionControl  {
+        bool timerStarted; // lont tap timer started
+        bool selecting;
+        bool popupActive;
+        lString16 startPos;
+        lString16 endPos;
+        lvRect startCursorPos;
+        lvRect endCursorPos;
+        lString16 selectionText;
+        SelectionControl() : timerStarted(false), selecting(false) {
+
+        }
+    };
+    SelectionControl _selection;
+
+
+    void cancelSelection();
+    void startSelectionTimer(int x, int y);
+    void updateSelection(int x, int y);
+    void selectionDone(int x, int y);
+    void updateSelectionBookmark();
+    void addSelectionBookmark();
+    void updateBookmarks();
+    virtual void onPopupClosing(CRUIWidget * popup);
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId);
+
+
     void animateScrollTo(int newpos, int speed);
     void animatePageFlip(int newpage, int speed);
 
@@ -191,8 +252,12 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     CRFileItem * _fileItem; // owned
     BookDBBookmark * _lastPosition; // owned
+    LVPtrVector<BookDBBookmark> _bookmarks;
+    LVAutoPtr<BookDBBookmark> _selectionBookmark;
 
     bool _startPositionIsUpdated;
+
+    lString16 _lastSearchPattern;
 
     enum {
     	PINCH_OP_NONE,
@@ -216,6 +281,8 @@ public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
 
+    void removeBookmark(lInt64 id);
+    LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
 
     /// restore last position from DB
     bool restorePosition();
@@ -228,6 +295,8 @@ public:
     virtual void onDocumentRenderFinished(lString8 pathname);
 
     CRUIDocView * getDocView() { return _docview; }
+
+    bool findText(lString16 pattern, int origin, bool reverse, bool caseInsensitive);
 
     bool openBook(const CRFileItem * file);
     void closeBook();
@@ -273,15 +342,20 @@ public:
 
     void prepareScroll(int direction);
 
+    void showFindTextPopup();
     void showGoToPercentPopup();
     void showReaderMenu();
     void showTOC();
+    void showBookmarks();
     bool hasTOC();
     lString16 getCurrentPositionDesc();
     int getCurrentPositionPercent();
     void goToPercent(int percent);
 
     void goToPosition(lString16 path);
+
+    /// move by page w/o animation
+    void moveByPage(int direction);
 
     virtual void beforeNavigationFrom();
 

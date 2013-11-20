@@ -481,6 +481,12 @@ public:
 
     /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);
+    /// saves bookmark for book; fills ids for inserted items
+    bool saveBookmark(BookDBBook * book, BookDBBookmark * bookmark);
+    /// removes bookmark for book
+    bool removeBookmark(BookDBBook * book, BookDBBookmark * bookmark);
+    /// loads all non-last-position bookmarks
+    bool loadBookmarks(BookDBBook * book, LVPtrVector<BookDBBookmark> & bookmarks);
     /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
 

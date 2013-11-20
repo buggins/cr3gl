@@ -754,6 +754,91 @@ bool CRBookDB::saveBooks(LVPtrVector<BookDBBook> & books) {
 	return res;
 }
 
+/// saves bookmark for book; fills ids for inserted items
+bool CRBookDB::saveBookmark(BookDBBook * book, BookDBBookmark * bookmark) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    BookDBBook * cached = _bookCache.get(book->pathname);
+    if (book->id == 0 && cached)
+        book->id = cached->id;
+    if (!book->id)
+        return false;
+    bookmark->bookId = book->id;
+    if (bookmark->id) {
+        // update existing bookmark
+        SQLiteStatement stmt(&_db);
+        bool err = false;
+        BookDBBookmark * existing = NULL;
+        err = stmt.prepare("SELECT " BOOKMARK_ALL_FIELDS
+                " FROM bookmark WHERE id = ?;") != DB_OK || err;
+        err = stmt.bindInt64(1, bookmark->id) != DB_OK || err;
+        if (!err) {
+            if (stmt.step() == DB_ROW) {
+                existing = loadBookmark(stmt);
+            }
+        }
+        bool res = updateBookmark(bookmark, existing);
+        return res;
+    } else {
+        // insert new bookmark
+        bool res = insertBookmark(bookmark);
+        return res;
+    }
+}
+
+/// loads all non-last-position bookmarks
+bool CRBookDB::loadBookmarks(BookDBBook * book, LVPtrVector<BookDBBookmark> & bookmarks) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    BookDBBook * cached = _bookCache.get(book->pathname);
+    if (book->id == 0 && cached)
+        book->id = cached->id;
+    if (!book->id)
+        return false;
+    // update existing bookmark
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    err = stmt.prepare("SELECT " BOOKMARK_ALL_FIELDS
+            " FROM bookmark WHERE book_fk = ? AND type != 0;") != DB_OK || err;
+    err = stmt.bindInt64(1, book->id) != DB_OK || err;
+    while (!err && stmt.step() == DB_ROW) {
+        BookDBBookmark * bm = loadBookmark(stmt);
+        if (bm)
+            bookmarks.add(bm);
+        else
+            err = true;
+    }
+    return !err;
+}
+
+/// removes bookmark for book
+bool CRBookDB::removeBookmark(BookDBBook * book, BookDBBookmark * bookmark) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    BookDBBook * cached = _bookCache.get(book->pathname);
+    if (book->id == 0 && cached)
+        book->id = cached->id;
+    if (!book->id)
+        return false;
+    bookmark->bookId = book->id;
+    if (bookmark->id) {
+        // remove existing bookmark
+        SQLiteStatement stmt(&_db);
+        bool err = false;
+        err = stmt.prepare("DELETE FROM bookmark WHERE id = ?;") != DB_OK || err;
+        err = stmt.bindInt64(1, bookmark->id) != DB_OK || err;
+        if (!err) {
+            err = stmt.step() != DB_DONE || err;
+        }
+        return !err;
+    } else {
+        return false;
+    }
+}
+
 /// saves last position for book
 bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));

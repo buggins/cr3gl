@@ -46,6 +46,8 @@ void CRUIMainWidget::onThemeChanged()
 
 /// returns true if widget is child of this
 bool CRUIMainWidget::isChild(CRUIWidget * widget) {
+    if (_keyboard && _keyboard->isChild(widget))
+        return true;
     return widget == this || _history.currentWidget()->isChild(widget);
 }
 
@@ -184,6 +186,12 @@ void CRUIMainWidget::showSettings(CRUISettingsItem * setting) {
 
 void CRUIMainWidget::showTOC(CRUITOCWidget * toc) {
     _history.setNext(new TOCItem(this, toc));
+    int newpos = _history.pos() + 1;
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+}
+
+void CRUIMainWidget::showBookmarks(CRUIBookmarksWidget * bm) {
+    _history.setNext(new BookmarksItem(this, bm));
     int newpos = _history.pos() + 1;
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
@@ -403,9 +411,28 @@ void CRUIMainWidget::createReaderSettings() {
 
 }
 
+void CRUIMainWidget::showVirtualKeyboard() {
+    if (_keyboard)
+        return;
+    _keyboard = new CRUIVirtualKeyboard();
+    requestLayout();
+}
+
+void CRUIMainWidget::hideVirtualKeyboard() {
+    if (!_keyboard)
+        return;
+    delete _keyboard;
+    _keyboard = NULL;
+    requestLayout();
+}
+
+bool CRUIMainWidget::isVirtualKeyboardShown() {
+    return _keyboard != NULL;
+}
+
 CRUIMainWidget::CRUIMainWidget()
 : _eventManager(NULL), _home(NULL), _read(NULL)
-, _popup(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
+, _popup(NULL), _keyboard(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
 , _platform(NULL), _lastAnimationTs(0), _initialized(false)
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
@@ -541,13 +568,21 @@ int CRUIMainWidget::getChildCount() {
         cnt++;
     if (_popup)
         cnt++;
+    if (_keyboard)
+        cnt++;
     return cnt; //_currentWidget->getChildCount();
 }
 
 CRUIWidget * CRUIMainWidget::getChild(int index) {
-    if (_popup && index == 0)
+    if (index == 0)
+        return _history.currentWidget();
+    if (_popup && index == 1)
         return _popup;
-    return _history.currentWidget();
+    if (_keyboard && index == 1)
+        return _keyboard;
+    if (_popup && _keyboard)
+        return _keyboard;
+    return NULL;
     //return _currentWidget->getChild(index);
 }
 
@@ -560,6 +595,8 @@ void CRUIMainWidget::measure(int baseWidth, int baseHeight) {
     _measuredHeight = _history.currentWidget()->getMeasuredHeight();
     if (_popup)
         _popup->measure(baseWidth, baseHeight);
+    if (_keyboard)
+        _keyboard->measure(baseWidth, baseHeight);
 }
 
 /// updates widget position based on specified rectangle
@@ -574,6 +611,8 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
     _pos.bottom = bottom;
     if (_popup)
         _popup->layout(left, top, right, bottom);
+    if (_keyboard)
+        _keyboard->layout(left, bottom - _keyboard->getMeasuredHeight(), right, bottom);
     _layoutRequested = false;
 }
 
@@ -833,12 +872,18 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         //CRLog::trace("Drawing popup");
         _popup->draw(buf);
     }
+    if (_keyboard) {
+        //CRLog::trace("Drawing popup");
+        _keyboard->draw(buf);
+    }
     _drawRequested = false;
     setScreenUpdateMode(false, animating ? 30 : 0);
 }
 
 /// motion event handler, returns true if it handled event
 bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
+    if (_keyboard && _keyboard->onTouchEvent(event))
+        return true;
     return _history.currentWidget()->onTouchEvent(event);
 }
 
