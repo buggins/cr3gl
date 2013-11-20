@@ -106,6 +106,10 @@ public:
         setStyle("POPUP_FRAME");
     }
 
+    virtual ~CRUIPopupFrame() {
+        CRLog::trace("~CRUIPopupFrame()");
+    }
+
     /// call to set focus to appropriate child once widget appears on screen
     virtual bool initFocus() {
         return _body->initFocus();

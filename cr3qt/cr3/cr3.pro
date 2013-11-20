@@ -382,6 +382,7 @@ SOURCES += \
     ../../cr3ui/src/cruiwindow.cpp \
     ../../cr3ui/src/cruicoverwidget.cpp \
     ../../cr3ui/src/cruisettingswidget.cpp \
+    ../../cr3ui/src/vkeyboard.cpp \
     ../../cr3ui/src/opdsbrowser.cpp \
     ../../cr3ui/src/stringresource.cpp
 
@@ -412,5 +413,6 @@ HEADERS += \
     ../../cr3ui/include/cruiwindow.h \
     ../../cr3ui/include/cruisettingswidget.h \
     ../../cr3ui/include/cruicoverwidget.h \
+    ../../cr3ui/include/vkeyboard.h \
     ../../cr3ui/include/cruisettings.h \
     ../../cr3ui/include/stringresource.h

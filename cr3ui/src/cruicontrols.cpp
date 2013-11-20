@@ -525,7 +525,9 @@ bool CRUISliderWidget::onTouchEvent(const CRUIMotionEvent * event) {
 
 
 CRUIEditWidget::~CRUIEditWidget() {
-
+    CRLog::trace("~CRUIEditWidget()");
+    if (CRUIEventManager::getFocusedWidget() == this && CRUIEventManager::isVirtualKeyboardShown())
+        CRUIEventManager::hideVirtualKeyboard();
 }
 
 CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _scrollDirection(0), _passwordChar(0), _onReturnPressedListener(NULL) {

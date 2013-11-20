@@ -19,7 +19,7 @@ public:
 	virtual CRUIWidget * addChild(CRUIWidget * child) { child->setParent(this); _children.add(child); return child; }
 	virtual CRUIWidget * removeChild(int index) { return _children.remove(index); }
     virtual CRUIWidget * removeChild(CRUIWidget * child) { return _children.remove(child); }
-    virtual ~CRUIContainerWidget() { }
+    virtual ~CRUIContainerWidget() { _children.clear(); }
 	/// draws widget with its children to specified surface
 	virtual void draw(LVDrawBuf * buf);
 };
