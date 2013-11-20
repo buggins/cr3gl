@@ -204,6 +204,22 @@ void CRUIEventManager::focusChanged(CRUIWidget * widget) {
     }
 }
 
+void CRUIEventManager::showVirtualKeyboard() {
+    if (_instance && _instance->_rootWidget)
+        _instance->_rootWidget->showVirtualKeyboard();
+}
+
+void CRUIEventManager::hideVirtualKeyboard() {
+    if (_instance && _instance->_rootWidget)
+        _instance->_rootWidget->hideVirtualKeyboard();
+}
+
+bool CRUIEventManager::isVirtualKeyboardShown() {
+    if (_instance && _instance->_rootWidget)
+        return _instance->_rootWidget->isVirtualKeyboardShown();
+    return false;
+}
+
 void CRUIEventManager::requestScreenUpdate(bool force) {
     if (_instance && _instance->_rootWidget)
         _instance->_rootWidget->update(force);

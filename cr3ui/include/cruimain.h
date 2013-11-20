@@ -9,6 +9,7 @@
 #include "cruipopup.h"
 #include "cruiwindow.h"
 #include "cruisettingswidget.h"
+#include "vkeyboard.h"
 
 enum VIEW_MODE {
     MODE_HOME,
@@ -263,6 +264,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     //CRUIFolderWidget * _folder;
     CRUIReadWidget * _read;
     CRUIPopupWindow * _popup;
+    CRUIVirtualKeyboard * _keyboard;
     LVDrawBuf * _popupBackground;
     //VIEW_MODE _mode;
     CRUIScreenUpdateManagerCallback * _screenUpdater;
@@ -396,6 +398,10 @@ public:
     virtual void clearImageCaches();
 
     CRFileItem * createManualBook();
+
+    void showVirtualKeyboard();
+    void hideVirtualKeyboard();
+    bool isVirtualKeyboardShown();
 
     CRUIMainWidget();
     virtual ~CRUIMainWidget();

@@ -1,6 +1,10 @@
 #include "vkeyboard.h"
+#include "cruicontrols.h"
 
-struct VKLayoutKey {
+using namespace CRUI;
+
+class VKLayoutKey {
+public:
     lString16 text;
     int keycode;
     int mode; // special mode switching key code
@@ -11,7 +15,8 @@ struct VKLayoutKey {
     VKLayoutKey(int keyCode, int w) : keycode(keyCode), mode(VK_SWITCH_NONE), weight(w) {}
 };
 
-struct VKLayoutRow {
+class VKLayoutRow {
+public:
     LVPtrVector<VKLayoutKey> items;
     VKLayoutRow * add(const wchar_t * text, int keycode = 0) {
         items.add(new VKLayoutKey(text, keycode));
@@ -34,14 +39,16 @@ struct VKLayoutRow {
     }
 };
 
-struct VKLayout {
+class VKLayout {
+public:
     LVPtrVector<VKLayoutRow> rows;
     int mode;
     VKLayout(int m = VK_SWITCH_NONE) : mode(m) {}
     VKLayoutRow * addRow() { VKLayoutRow * row = new VKLayoutRow(); rows.add(row); return row; }
 };
 
-struct VKLayoutSet {
+class VKLayoutSet {
+public:
     LVPtrVector<VKLayout> layouts;
     VKLayout * addLayout(int mode) { VKLayout * res = new VKLayout(mode); layouts.add(res); return res; }
     VKLayout * findByMode(int mode) {
@@ -52,7 +59,7 @@ struct VKLayoutSet {
     }
 };
 
-VKLayoutSet * createEnglishLayout() {
+static VKLayoutSet * createEnglishLayout() {
     VKLayoutSet * res = new VKLayoutSet();
     VKLayout * l = res->addLayout(VK_SWITCH_NONE);
     l->addRow()->add("q", CR_KEY_Q)->add("w", CR_KEY_W)->add("e", CR_KEY_E)->add("r", CR_KEY_R)->add("t", CR_KEY_T)->add("y", CR_KEY_Y)->add("u", CR_KEY_U)->add("i", CR_KEY_I)->add("o", CR_KEY_O)->add("p", CR_KEY_P);
@@ -81,13 +88,66 @@ CRUIVirtualKeyboard::CRUIVirtualKeyboard() : _layoutSet(NULL), _currentLayout(NU
     //_currentLayout = &_normalLayout;
     _layoutSet = createEnglishLayout();
     _currentLayout = _layoutSet->layouts[0];
+    setAlign(ALIGN_BOTTOM|ALIGN_HCENTER);
     createWidgets();
+    setStyle("VIRTUAL_KEYBOARD");
 }
 
 CRUIVirtualKeyboard::~CRUIVirtualKeyboard() {
     delete _layoutSet;
 }
 
-void CRUIVirtualKeyboard::createWidgets() {
+/// draws widget with its children to specified surface
+void CRUIVirtualKeyboard::draw(LVDrawBuf * buf) {
+    CRUIVerticalLayout::draw(buf);
+}
 
+class VKButton : public CRUIButton {
+    VKLayoutKey * _key;
+public:
+    VKButton(VKLayoutKey * key) : CRUIButton(lString16(" ")), _key(key) {
+        if (key->mode) {
+            if (key->mode == VK_SWITCH_PUNCT)
+                setText(lString16("123"));
+            else if (key->mode == VK_SWITCH_SHIFT)
+                setText(lString16("_"));
+            else if (key->mode == VK_SWITCH_LAYOUT)
+                setText(lString16("AZ"));
+            setStyle("VIRTUAL_KEYBOARD_KEY_SPECIAL");
+        } else if (!key->text.empty()) {
+            setText(key->text);
+            setStyle("VIRTUAL_KEYBOARD_KEY_NORMAL");
+        } else {
+            if (key->keycode == CR_KEY_BACKSPACE)
+                setText(lString16("<<"));
+            else if (key->keycode == CR_KEY_RETURN)
+                setText(lString16("<==|"));
+            else
+                setText(lString16("?"));
+            setStyle("VIRTUAL_KEYBOARD_KEY_SPECIAL");
+        }
+        if (key->weight || true) {
+            setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+            setLayoutWeight(key->weight + 1);
+        } else
+            setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+    }
+};
+
+void CRUIVirtualKeyboard::createWidgets() {
+    _children.clear();
+    CRUIVerticalLayout * vlayout = new CRUIVerticalLayout();
+    vlayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    for (int i = 0; i < _currentLayout->rows.length(); i++) {
+        CRUIHorizontalLayout * hlayout = new CRUIHorizontalLayout();
+        hlayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        VKLayoutRow * row = _currentLayout->rows[i];
+        for (int j = 0; j < row->items.length(); j++) {
+            VKLayoutKey * key = row->items[j];
+            VKButton * btn = new VKButton(key);
+            hlayout->addChild(btn);
+        }
+        vlayout->addChild(hlayout);
+    }
+    addChild(vlayout);
 }

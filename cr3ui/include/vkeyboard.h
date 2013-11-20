@@ -13,7 +13,7 @@ enum {
 class VKLayoutSet;
 class VKLayout;
 class VKLayoutKey;
-class CRUIVirtualKeyboard : public CRUIFrameLayout {
+class CRUIVirtualKeyboard : public CRUIVerticalLayout {
     VKLayoutSet * _layoutSet;
     VKLayout * _currentLayout;
     int _mode;
@@ -21,6 +21,8 @@ class CRUIVirtualKeyboard : public CRUIFrameLayout {
 public:
     CRUIVirtualKeyboard();
     virtual ~CRUIVirtualKeyboard();
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
 };
 
 #endif // VKEYBOARD_H

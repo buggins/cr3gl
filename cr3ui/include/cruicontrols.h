@@ -86,7 +86,12 @@ public:
     /// motion event handler, returns true if it handled event
 	virtual bool onTouchEvent(const CRUIMotionEvent * event);
     //CRUIButton(lString16 text, CRUIImageRef image = CRUIImageRef(), bool vertical = false);
-	CRUIButton(lString16 text, const char * imageRes, bool vertical = false);
+    CRUIButton(lString16 text, const char * imageRes = NULL, bool vertical = false);
+    virtual CRUIWidget * setText(lString16 text) {
+        if (_label)
+            _label->setText(text);
+        return this;
+    }
 };
 
 class CRUIImageButton : public CRUIButton {

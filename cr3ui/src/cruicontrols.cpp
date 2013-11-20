@@ -711,6 +711,8 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     bool inside = _pos.isPointInside(pt);
     switch (action) {
     case ACTION_DOWN:
+        if (!CRUIEventManager::isVirtualKeyboardShown())
+            CRUIEventManager::showVirtualKeyboard();
         if (inside) {
             _lastEnteredCharPos = -1;
             updateCursor(newcurpos, false);
@@ -803,8 +805,10 @@ bool CRUIEditWidget::onFocusChange(bool focused) {
     cancelScrollTimer();
     if (focused) {
         updateCursor(_text.length());
+        CRUIEventManager::showVirtualKeyboard();
     } else {
         _scrollx = 0;
+        CRUIEventManager::hideVirtualKeyboard();
     }
     return true;
 }

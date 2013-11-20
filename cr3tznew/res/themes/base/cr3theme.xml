@@ -113,4 +113,33 @@
         fontSize="small"
         align="bottom|left"
     />
+    <style
+        id = "VIRTUAL_KEYBOARD"
+        padding="3pt,3pt,3pt,3pt"
+        margin="0pt"
+        fontSize="large"
+	background="#404040"
+    />
+    <style
+        id = "VIRTUAL_KEYBOARD_KEY_NORMAL"
+        padding="1pt,1pt,1pt,1pt"
+        margin="1pt"
+	background="#E0E0E0"
+    >
+        <style
+            state="pressed" stateMask="pressed"
+            background="#FFFFFF"
+        />
+    </style>
+    <style
+        id = "VIRTUAL_KEYBOARD_KEY_SPECIAL"
+        padding="1pt,1pt,1pt,1pt"
+        margin="1pt"
+	background="#C0C0C0"
+    >
+        <style
+            state="pressed" stateMask="pressed"
+            background="#FFFFC0"
+        />
+    </style>
 </theme>

@@ -301,6 +301,13 @@ public:
     static void dispatchFocusChange(CRUIWidget * widget);
     /// request screen redraw
     static void requestScreenUpdate(bool force = false);
+
+
+    // Virtual Keyboard support
+    static void showVirtualKeyboard();
+    static void hideVirtualKeyboard();
+    static bool isVirtualKeyboardShown();
+
 };
 
 class CRUIOnTouchEventListener {
