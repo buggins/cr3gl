@@ -327,6 +327,12 @@ public:
 	virtual ~CRUIOnLongClickListener() {}
 };
 
+class CRUIOnReturnPressListener {
+public:
+    virtual bool onReturnPressed(CRUIWidget * widget) = 0;
+    virtual ~CRUIOnReturnPressListener() {}
+};
+
 class CRUIListWidget;
 class CRUIOnListItemClickListener {
 public:

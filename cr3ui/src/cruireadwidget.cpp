@@ -387,13 +387,13 @@ public:
 
 };
 
-class CRUIFindTextPopup : public CRUIHorizontalLayout {
+class CRUIFindTextPopup : public CRUIHorizontalLayout, public CRUIOnClickListener, public CRUIOnReturnPressListener {
     CRUIReadWidget * _window;
     CRUIEditWidget * _editor;
     CRUIImageButton * _prevButton;
     CRUIImageButton * _nextButton;
 public:
-    CRUIFindTextPopup(CRUIReadWidget * window) : _window(window) {
+    CRUIFindTextPopup(CRUIReadWidget * window, lString16 pattern) : _window(window) {
         setLayoutParams(FILL_PARENT, WRAP_CONTENT);
 //        CRUIWidget * delimiter = new CRUIWidget();
 //        delimiter->setBackground(0xC0000000);
@@ -410,6 +410,8 @@ public:
         _editor = new CRUIEditWidget();
         _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _editor->setBackgroundAlpha(0x80);
+        _editor->setText(pattern);
+        _editor->setOnReturnPressedListener(this);
         //_editor->setPasswordChar('*');
         editlayout->addChild(spacer1);
         editlayout->addChild(_editor);
@@ -427,9 +429,44 @@ public:
         addChild(_nextButton);
         _prevButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
         _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+
         _prevButton->setBackgroundAlpha(0x80);
         _nextButton->setBackgroundAlpha(0x80);
         setBackground("home_frame.9");
+
+        _nextButton->setOnClickListener(this);
+        _prevButton->setOnClickListener(this);
+    }
+
+    virtual bool onReturnPressed(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        if (!_window->findText(text, 1, false, true))
+            _window->findText(text, -1, false, true);
+        return true;
+    }
+
+    virtual bool onClick(CRUIWidget * widget) {
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        if (widget->getId() == "FIND_NEXT") {
+            if (!_window->findText(text, 1, false, true))
+                _window->findText(text, -1, false, true);
+
+        } else if (widget->getId() == "FIND_PREV") {
+            if (!_window->findText(text, 1, true, true))
+                _window->findText(text, -1, true, true);
+        }
+        return true;
+    }
+
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() {
+        CRUIEventManager::dispatchFocusChange(_editor);
+        return true;
     }
 
     virtual ~CRUIFindTextPopup() {
@@ -446,6 +483,65 @@ public:
 //    }
 
 };
+
+bool CRUIReadWidget::findText(lString16 pattern, int origin, bool reverse, bool caseInsensitive) {
+    if (pattern.empty())
+        return false;
+    if (pattern != _lastSearchPattern && origin == 1)
+        origin = 0;
+    _lastSearchPattern = pattern;
+    LVArray<ldomWord> words;
+    lvRect rc;
+    _docview->GetPos( rc );
+    int pageHeight = rc.height();
+    int start = -1;
+    int end = -1;
+    if ( reverse ) {
+        // reverse
+        if ( origin == 0 ) {
+            // from end current page to first page
+            end = rc.bottom;
+        } else if ( origin == -1 ) {
+            // from last page to end of current page
+            start = rc.bottom;
+        } else { // origin == 1
+            // from prev page to first page
+            end = rc.top;
+        }
+    } else {
+        // forward
+        if ( origin == 0 ) {
+            // from current page to last page
+            start = rc.top;
+        } else if ( origin == -1 ) {
+            // from first page to current page
+            end = rc.top;
+        } else { // origin == 1
+            // from next page to last
+            start = rc.bottom;
+        }
+    }
+    CRLog::debug("CRViewDialog::findText: Current page: %d .. %d", rc.top, rc.bottom);
+    CRLog::debug("CRViewDialog::findText: searching for text '%s' from %d to %d origin %d", LCSTR(pattern), start, end, origin );
+    if ( _docview->getDocument()->findText( pattern, caseInsensitive, reverse, start, end, words, 200, pageHeight ) ) {
+        CRLog::debug("CRViewDialog::findText: pattern found");
+        _docview->clearSelection();
+        _docview->selectWords( words );
+        ldomMarkedRangeList * ranges = _docview->getMarkedRanges();
+        if ( ranges ) {
+            if ( ranges->length()>0 ) {
+                int pos = ranges->get(0)->start.y;
+                _docview->SetPos(pos);
+            }
+        }
+        clearImageCaches();
+        return true;
+    }
+    CRLog::debug("CRViewDialog::findText: pattern not found");
+    _docview->clearSelection();
+    clearImageCaches();
+    return false;
+}
 
 static bool isDocViewProp(const lString8 & key) {
     return key == PROP_FONT_FACE
@@ -1337,7 +1433,11 @@ void CRUIReadWidget::updateBookmarks() {
 
 void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
     CR_UNUSED(popup);
-    if (popup->getId() == "MAINMENU" || popup->getId() == "GOTOPERCENT") {
+    if (popup->getId() == "FINDTEXT") {
+        _docview->clearSelection();
+        clearImageCaches();
+    }
+    if (popup->getId() == "MAINMENU" || popup->getId() == "GOTOPERCENT" || popup->getId() == "FINDTEXT") {
         // add position to navigation history, if necessary
         if (_lastPosition == NULL)
             return;
@@ -1878,8 +1978,8 @@ void CRUIReadWidget::showBookmarks() {
 
 void CRUIReadWidget::showFindTextPopup() {
     lvRect margins;
-    CRUIFindTextPopup * popup = new CRUIFindTextPopup(this);
-    preparePopup(popup, ALIGN_TOP, margins, 0x30, false, false);
+    CRUIFindTextPopup * popup = new CRUIFindTextPopup(this, _lastSearchPattern);
+    preparePopup(popup, ALIGN_TOP, margins, 0x80, false, false);
 }
 
 void CRUIReadWidget::showGoToPercentPopup() {

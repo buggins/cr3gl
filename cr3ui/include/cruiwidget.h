@@ -104,6 +104,8 @@ public:
     virtual bool canFocus();
     virtual bool isFocused();
     virtual bool onFocusChange(bool focused);
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() { return false; }
 
 	/// returns true to allow parent intercept this widget which is currently handled by this widget
 	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event) { CR_UNUSED(event); return true; }

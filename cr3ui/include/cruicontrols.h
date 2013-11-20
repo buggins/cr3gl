@@ -145,6 +145,7 @@ class CRUIEditWidget : public CRUIWidget {
     int _lastEnteredCharPos;
     int _scrollDirection;
     lChar16 _passwordChar;
+    CRUIOnReturnPressListener * _onReturnPressedListener;
     /// returns text replaced with password char to display
     lString16 getTextToShow();
     void updateCursor(int pos, bool scrollIfNearBounds = true, bool changeCursorPositionAfterScroll = false);
@@ -155,6 +156,8 @@ public:
 
     CRUIEditWidget();
     virtual ~CRUIEditWidget();
+
+    virtual void setOnReturnPressedListener(CRUIOnReturnPressListener * listener) { _onReturnPressedListener = listener; }
 
     virtual void setPasswordChar(lChar16 ch);
     virtual lString16 getText() { return _text; }

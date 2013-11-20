@@ -528,7 +528,7 @@ CRUIEditWidget::~CRUIEditWidget() {
 
 }
 
-CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _passwordChar(0), _scrollDirection(0) {
+CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharPos(-1), _scrollDirection(0), _passwordChar(0), _onReturnPressedListener(NULL) {
     //_text = "Editor test sample";
     //_cursorPos = 3;
     setStyle("EDITBOX");
@@ -840,6 +840,10 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_END:
             _lastEnteredCharPos = -1;
             updateCursor(_text.length());
+            return true;
+        case CR_KEY_RETURN:
+            if (_onReturnPressedListener)
+                return _onReturnPressedListener->onReturnPressed(this);
             return true;
         default:
             break;

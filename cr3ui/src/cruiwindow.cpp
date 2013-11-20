@@ -106,6 +106,11 @@ public:
         setStyle("POPUP_FRAME");
     }
 
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() {
+        return _body->initFocus();
+    }
+
     virtual void animate(lUInt64 millisPassed) {
         CR_UNUSED(millisPassed);
         lInt64 ts = GetCurrentTimeMillis();
@@ -115,6 +120,7 @@ public:
             _control->progress = (int)((ts - _control->startTs) * 1000 / (_control->endTs - _control->startTs));
         } else {
             _control->progress = 1000;
+            initFocus();
         }
         if (_control->closing && _control->progress >= 1000) {
             _control->close();

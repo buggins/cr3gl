@@ -257,6 +257,8 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     bool _startPositionIsUpdated;
 
+    lString16 _lastSearchPattern;
+
     enum {
     	PINCH_OP_NONE,
     	PINCH_OP_HORIZONTAL,
@@ -293,6 +295,8 @@ public:
     virtual void onDocumentRenderFinished(lString8 pathname);
 
     CRUIDocView * getDocView() { return _docview; }
+
+    bool findText(lString16 pattern, int origin, bool reverse, bool caseInsensitive);
 
     bool openBook(const CRFileItem * file);
     void closeBook();
