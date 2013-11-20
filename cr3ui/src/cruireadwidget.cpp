@@ -404,6 +404,7 @@ public:
         _editor = new CRUIEditWidget();
         _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _editor->setBackgroundAlpha(0x50);
+        _editor->setPasswordChar('*');
         addChild(_editor);
         _prevButton = new CRUIImageButton("left_circular");
         _prevButton->setId("FIND_PREV");

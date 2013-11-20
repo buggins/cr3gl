@@ -135,9 +135,21 @@ class CRUIEditWidget : public CRUIWidget {
     lString16 _text;
     int _cursorPos;
     int _scrollx;
+    int _lastEnteredCharPos;
+    lChar16 _passwordChar;
+    /// returns text replaced with password char to display
+    lString16 getTextToShow();
     void updateCursor(int pos, bool scrollIfNearBounds = true);
 public:
+
     CRUIEditWidget();
+    virtual ~CRUIEditWidget();
+
+    virtual void setPasswordChar(lChar16 ch);
+    virtual lString16 getText() { return _text; }
+    virtual CRUIWidget * setText(lString16 txt);
+
+
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
     /// updates widget position based on specified rectangle
