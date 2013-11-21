@@ -140,11 +140,29 @@ public:
     	AKEY_MENU = 82,
     	AKEY_VOLUMEUP = 24,
     	AKEY_VOLUMEDOWN = 25,
+    	AKEY_DEL = 67,
+    	AKEY_DPAD_UP = 19,
+    	AKEY_DPAD_DOWN = 20,
+    	AKEY_DPAD_LEFT = 21,
+    	AKEY_DPAD_RIGHT = 22,
+    	AKEY_DPAD_CENTER = 23,
+    	AKEY_ENTER = 66,
+    	AKEY_ESCAPE = 111,
     };
     static int translateKeyCode(int key) {
     	switch(key) {
     	case AKEY_BACK: return CR_KEY_BACK;
     	case AKEY_MENU: return CR_KEY_MENU;
+    	case AKEY_DEL: return CR_KEY_BACKSPACE;
+    	case AKEY_ENTER: return CR_KEY_RETURN;
+    	case AKEY_DPAD_CENTER: return CR_KEY_RETURN;
+    	case AKEY_DPAD_UP: return CR_KEY_UP;
+    	case AKEY_DPAD_DOWN: return CR_KEY_DOWN;
+    	case AKEY_DPAD_LEFT: return CR_KEY_LEFT;
+    	case AKEY_DPAD_RIGHT: return CR_KEY_RIGHT;
+    	case AKEY_VOLUMEUP: return CR_KEY_VOLUME_UP;
+    	case AKEY_VOLUMEDOWN: return CR_KEY_VOLUME_DOWN;
+    	case AKEY_ESCAPE: return CR_KEY_ESC;
     	default:
     		return -1;
     	}
@@ -183,9 +201,21 @@ public:
 
     // key event listener
     bool dispatchKeyEvent(CRKeyEventWrapper * event) {
-    	KEY_EVENT_TYPE action = translateKeyAction(event->getAction());
+    	int naction = event->getAction();
+    	KEY_EVENT_TYPE action = translateKeyAction(naction);
     	int key = translateKeyCode(event->getKeyCode());
     	int mod = translateModifiers(event->getModifiers());
+    	lString16 text = event->getCharacters();
+    	if (naction == AKEYACTION_MULTIPLE && !text.empty()) {
+    		CRLog::trace("key action MULTIPLE: %s", LCSTR(text));
+    		CRUIKeyEvent * crevent = new CRUIKeyEvent(KEY_ACTION_PRESS, 0, false, 0, mod);
+    		crevent->setText(text);
+    		bool res = _eventManager->dispatchKeyEvent(crevent);
+    		crevent = new CRUIKeyEvent(KEY_ACTION_RELEASE, 0, false, 0, mod);
+    		crevent->setText(text);
+    		res = _eventManager->dispatchKeyEvent(crevent) || res;
+    		return res;
+    	}
     	if (key < 0 || action == KEY_ACTION_UNKNOWN)
     		return false;
 		CRUIKeyEvent * crevent = new CRUIKeyEvent(action, key, false, 0, mod);
@@ -205,10 +235,13 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _getTopMethod;
     CRMethodAccessor _updateScreenMethod;
     CRMethodAccessor _copyToClipboardMethod;
+    CRMethodAccessor _showVirtualKeyboardMethod;
+    CRMethodAccessor _hideVirtualKeyboardMethod;
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
 	bool _surfaceCreated;
+	bool _virtualKeyboardShown;
 	int _dx;
 	int _dy;
 public:
@@ -324,6 +357,33 @@ public:
     	_copyToClipboardMethod.callVoid(s);
     	_env->DeleteLocalRef(s);
     }
+
+
+    /// return true if platform supports native virtual keyboard
+    virtual bool supportsVirtualKeyboard() {
+    	return true;
+    }
+    /// return true if platform native virtual keyboard is shown
+    virtual bool isVirtualKeyboardShown() {
+    	return _virtualKeyboardShown;
+    }
+    /// show platform native virtual keyboard
+    virtual void showVirtualKeyboard() {
+    	if (_virtualKeyboardShown)
+    		return;
+    	_virtualKeyboardShown = true;
+    	_showVirtualKeyboardMethod.callVoid();
+
+    }
+    /// hide platform native virtual keyboard
+    virtual void hideVirtualKeyboard() {
+    	if (!_virtualKeyboardShown)
+    		return;
+    	_virtualKeyboardShown = false;
+    	_hideVirtualKeyboardMethod.callVoid();
+    }
+
+
 
 	~DocViewNative() {
     	delete _widget;
@@ -606,9 +666,12 @@ DocViewNative::DocViewNative(jobject obj)
 	, _getTopMethod(_obj, "getTop", "()I")
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
 	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
+	, _showVirtualKeyboardMethod(_obj, "showVirtualKeyboard", "()V")
+	, _hideVirtualKeyboardMethod(_obj, "hideVirtualKeyboard", "()V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)
+	, _virtualKeyboardShown(false)
 	, _dx(480)
 	, _dy(320)
 {

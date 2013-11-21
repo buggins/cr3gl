@@ -36,6 +36,16 @@ public:
 	virtual void minimizeApp() = 0;
     // copy text to clipboard
     virtual void copyToClipboard(lString16 text) = 0;
+
+    /// return true if platform supports native virtual keyboard
+    virtual bool supportsVirtualKeyboard() { return false; }
+    /// return true if platform native virtual keyboard is shown
+    virtual bool isVirtualKeyboardShown() { return false; }
+    /// show platform native virtual keyboard
+    virtual void showVirtualKeyboard() {}
+    /// hide platform native virtual keyboard
+    virtual void hideVirtualKeyboard() {}
+
 	virtual ~CRUIPlatform() {}
 };
 

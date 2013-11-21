@@ -13,9 +13,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
@@ -33,6 +38,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		setFocusable(true);
 		setFocusableInTouchMode(true);
 		requestFocus();
+		getHolder().addCallback(this);
 	}
 
 	@Override
@@ -139,6 +145,80 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 				return false;
 			}
 		}
+	}
+
+
+	class CRInputConnection extends BaseInputConnection {
+		private final KeyEvent delKeyDownEvent = new KeyEvent(
+				KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+		private final KeyEvent delKeyUpEvent = new KeyEvent(KeyEvent.ACTION_UP,
+				KeyEvent.KEYCODE_DEL);
+
+		public CRInputConnection(View view) {
+			super(view, false);
+			this.setSelection(0, 0);
+		}
+		
+		
+
+		@Override
+		public boolean sendKeyEvent(KeyEvent event) {
+			log.d("sendKeyEvent " + event);
+			return onKeyUp(event.getKeyCode(), event);
+			//return onKeyUp(event.getKeyCode(), event);
+			//return super.sendKeyEvent(event);
+		}
+
+
+
+		@Override
+		public boolean commitText(CharSequence text, int newCursorPosition) {
+			// TODO Auto-generated method stub
+			log.d("commitText " + text);
+			KeyEvent ev = new KeyEvent(System.currentTimeMillis(), text.toString(), 0, 0);
+			return onKeyUp(0, ev);
+			//return super.commitText(text, newCursorPosition);
+		}
+
+
+
+		@Override
+		public boolean deleteSurroundingText(int leftLength, int rightLength) {
+			// Android SDK 16+ doesn't send key events for backspace but calls
+			// this method
+			log.d("deleteSurroundingText " + leftLength + ", " + rightLength);
+			onKeyDown(KeyEvent.KEYCODE_DEL,
+					this.delKeyDownEvent);
+			onKeyUp(KeyEvent.KEYCODE_DEL,
+					this.delKeyUpEvent);
+			return super.deleteSurroundingText(leftLength, rightLength);
+		}
+	}
+
+	@Override
+	public InputConnection onCreateInputConnection(EditorInfo outAttributes) // required for creation of soft keyboard
+	{
+/*		outAttributes.actionId = EditorInfo.IME_ACTION_DONE;
+		outAttributes.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+		outAttributes.inputType = InputType.TYPE_CLASS_TEXT;
+		return new CRInputConnection(this);
+*/	
+		outAttributes.actionLabel = "";
+		outAttributes.hintText = "";
+		outAttributes.initialCapsMode = 0;
+		outAttributes.initialSelEnd = outAttributes.initialSelStart = -1;
+		outAttributes.label = "";
+		outAttributes.imeOptions = EditorInfo.IME_ACTION_NONE; // | IME_ACTION_DONE EditorInfo.IME_FLAG_NO_EXTRACT_UI;        
+		outAttributes.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS ; //NULL; //TEXT;        
+
+		return new CRInputConnection(this);
+	    //return  new BaseInputConnection(this, false);  
+	}
+
+	@Override
+	public boolean onCheckIsTextEditor() // required for creation of soft keyboard
+	{
+		return true;
 	}
 
 	// accessible from Java
@@ -252,6 +332,25 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@SuppressWarnings("deprecation")
 	private final void copyToClipboard(String s) {
 		activity.copyToClipboard(s);
+	}
+	
+	private final void showVirtualKeyboard() {
+		post(new Runnable() {
+			public void run() {
+				setFocusable(true);
+				setFocusableInTouchMode(true);
+				requestFocus();
+				activity.showVirtualKeyboard();
+			}
+		});
+	}
+
+	private final void hideVirtualKeyboard() {
+		post(new Runnable() {
+			public void run() {
+				activity.hideVirtualKeyboard();
+			}
+		});
 	}
 
 	private final InputStream openResourceStream(String path) {

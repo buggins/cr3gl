@@ -19,10 +19,13 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ResultReceiver;
 import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 public class CoolReader extends Activity {
 	
@@ -32,11 +35,32 @@ public class CoolReader extends Activity {
 
 	@SuppressWarnings("deprecation")
 	private ClipboardManager clipboardManager;
+	private InputMethodManager inputMethodManager;
 
 	@SuppressWarnings("deprecation")
 	public final void copyToClipboard(String s) {
 		if (clipboardManager != null)
 			clipboardManager.setText(s);
+	}
+	
+	public final void showVirtualKeyboard() {
+		log.d("showVirtualKeyboard() - java hasFocus = " + crview.hasFocus());
+		//crview.req
+		//getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+		//inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+		//inputMethodManager.showSoftInput(crview, 0, new ResultReceiver(handler));
+		//inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+		inputMethodManager.showSoftInput(crview, 0); //InputMethodManager.SHOW_FORCED);
+	}
+
+	public final void hideVirtualKeyboard() {
+		log.d("hideVirtualKeyboard() - java");
+/*		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getApplicationWindowToken(), 0);
+		inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,0);
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+*/	
+		//inputMethodManager.hideSoftInput(crview, 0); //InputMethodManager.SHOW_FORCED);
+		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getApplicationWindowToken(), 0);
 	}
 	
 	private CRConfig createConfig() {
@@ -130,6 +154,7 @@ public class CoolReader extends Activity {
 		crview.init(createConfig());
 		setContentView(crview);
 		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 	}
 
     @Override

@@ -382,12 +382,14 @@ public:
 /// wrapper for Android KeyEvent
 class CRKeyEventWrapper {
 	CRObjectAccessor event;
+	CRMethodAccessor getCharactersMethod;
 	CRMethodAccessor getActionMethod;
 	CRMethodAccessor getKeyCodeMethod;
 	CRMethodAccessor getModifiersMethod;
 public:
 	CRKeyEventWrapper(JNIEnv * jni, jobject obj)
 	: event(jni, obj)
+	, getCharactersMethod(event, "getCharacters", "()Ljava/lang/String;")
 	, getActionMethod(event, "getAction", "()I")
 	, getKeyCodeMethod(event, "getKeyCode", "()I")
 	, getModifiersMethod(event, "getModifiers", "()I")
@@ -402,6 +404,12 @@ public:
 	}
 	int getModifiers() {
 		return getModifiersMethod.callInt();
+	}
+	lString16 getCharacters() {
+		jstring s = (jstring)getCharactersMethod.callObj();
+		lString16 res = event.fromJavaString(s);
+		event.env()->DeleteLocalRef(s);
+		return res;
 	}
 };
 

@@ -414,20 +414,36 @@ void CRUIMainWidget::createReaderSettings() {
 void CRUIMainWidget::showVirtualKeyboard() {
     if (_keyboard)
         return;
-    _keyboard = new CRUIVirtualKeyboard();
-    requestLayout();
+    if (_platform->supportsVirtualKeyboard()) {
+        if (_platform->isVirtualKeyboardShown())
+            return;
+        _platform->showVirtualKeyboard();
+    }else {
+        _keyboard = new CRUIVirtualKeyboard();
+        requestLayout();
+    }
 }
 
 void CRUIMainWidget::hideVirtualKeyboard() {
-    if (!_keyboard)
-        return;
-    delete _keyboard;
-    _keyboard = NULL;
-    requestLayout();
+    if (_platform->supportsVirtualKeyboard()) {
+        if (_platform->isVirtualKeyboardShown())
+            _platform->hideVirtualKeyboard();
+    } else {
+        if (!_keyboard)
+            return;
+        delete _keyboard;
+        _keyboard = NULL;
+        requestLayout();
+    }
 }
 
 bool CRUIMainWidget::isVirtualKeyboardShown() {
-    return _keyboard != NULL;
+    if (_keyboard != NULL)
+        return true;
+    if (_platform->supportsVirtualKeyboard()) {
+        return _platform->isVirtualKeyboardShown();
+    }
+    return false;
 }
 
 CRUIMainWidget::CRUIMainWidget()
