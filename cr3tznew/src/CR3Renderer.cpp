@@ -9,7 +9,10 @@
 #include "CoolReader.h"
 #include "CoolReaderFrame.h"
 
+
 using namespace CRUI;
+using namespace Tizen::Ui;
+using namespace Tizen::Base;
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -203,7 +206,12 @@ void CR3Renderer::minimizeApp() {
 
 // copy text to clipboard
 void CR3Renderer::copyToClipboard(lString16 text) {
-	// TODO
+	ClipboardItem item;
+
+	String data(text.c_str());
+	item.Construct(CLIPBOARD_DATA_TYPE_TEXT, data);
+	Clipboard* pClipboard = Clipboard::GetInstance();
+	pClipboard->CopyItem(item);
 }
 
 /// return true if platform supports native virtual keyboard
