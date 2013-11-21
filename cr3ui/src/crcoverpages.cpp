@@ -780,10 +780,12 @@ void CRCoverPageManager::stop() {
             CoverTask * p = _queue.popFront();
             delete p;
         }
-        CRLog::trace("CRCoverPageManager::stop() deleting all tasks from queue");
+        CRLog::trace("CRCoverPageManager::stop() all tasks are deleted, calling notifyAll on monitor");
         _monitor->notifyAll();
     }
+    CRLog::trace("CRCoverPageManager::stop() calling Join");
     _thread->join();
+    CRLog::trace("CRCoverPageManager::stop() joined");
 }
 
 void CRCoverPageManager::run() {
@@ -938,7 +940,13 @@ CRCoverPageManager::CRCoverPageManager() : _stopped(false), _allTasksFinishedCal
 }
 
 CRCoverPageManager::~CRCoverPageManager() {
-    stop();
+    //stop();
+	CRLog::trace("CRCoverPageManager::~CRCoverPageManager");
+
+	CRLog::trace("CRCoverPageManager::~CRCoverPageManager deleting monitor");
+	_monitor.clear();
+	CRLog::trace("CRCoverPageManager::~CRCoverPageManager deleting thread");
+	_thread.clear();
 }
 
 CRCoverPageManager * coverPageManager = NULL;
@@ -953,8 +961,9 @@ void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles
 
 void CRStopCoverpageManager() {
     if (coverPageManager) {
-    	CRLog::trace("Calling coverPageManager->stop()");
+    	CRLog::info("Calling coverPageManager->stop()");
         coverPageManager->stop();
+    	CRLog::info("Returned from coverPageManager->stop(), calling delete coverPageManager");
         delete coverPageManager;
         coverPageManager = NULL;
     }

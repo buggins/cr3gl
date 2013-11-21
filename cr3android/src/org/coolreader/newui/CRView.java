@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.text.ClipboardManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -23,6 +24,8 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	public static final Logger log = L.create(TAG);
 	
 	private CoolReader activity; 
+	private volatile boolean surfaceOk = false;
+	
 	public CRView(Context context) {
 		super(context);
 		this.activity = (CoolReader)context;
@@ -49,12 +52,14 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig cfg) {
 		// do nothing
+		surfaceOk = true;
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		super.surfaceDestroyed(holder);
 		log.i("CRView.surfaceDestroyed");
+		surfaceOk = false;
 		surfaceDestroyedInternal();
 	}
 	
@@ -191,6 +196,20 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	}
 
 	/**
+	 * Call from JNI to execute CRRunnable in GUI (GL) thread
+	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
+	 */
+	private final void runInGLThreadDelayed(final long crRunnablePtr, long delayMillis) {
+		log.d("runInGLThreadDelayed - in Java");
+		postDelayed(new Runnable() {
+			public void run() {
+				if (surfaceOk)
+					queueEvent(new CRRunnable(crRunnablePtr));
+			}
+		}, delayMillis);
+	}
+
+	/**
 	 * Call from JNI to create thread with JNI CRRunnable callback.
 	 * @param crRunnablePtr
 	 * @return newly created thread
@@ -229,6 +248,12 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		intent.addCategory(Intent.CATEGORY_HOME);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		activity.startActivity(intent);
+	}
+	
+	@SuppressWarnings("deprecation")
+	private final void copyToClipboard(String s) {
+		ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+		clipboard.setText(s);
 	}
 
 	private final InputStream openResourceStream(String path) {

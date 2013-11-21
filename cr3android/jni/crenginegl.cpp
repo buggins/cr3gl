@@ -204,6 +204,7 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _getLeftMethod;
     CRMethodAccessor _getTopMethod;
     CRMethodAccessor _updateScreenMethod;
+    CRMethodAccessor _copyToClipboardMethod;
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
@@ -316,6 +317,14 @@ public:
         CRMethodAccessor method(_obj, "minimizeApp", "()V");
         method.callVoid();
 	}
+
+    // copy text to clipboard
+    virtual void copyToClipboard(lString16 text) {
+    	CRLog::warn("copyToClipboard is not yet implemented");
+    	jstring s = _env.toJavaString(text);
+    	_copyToClipboardMethod.callVoid(s);
+    	_env->DeleteLocalRef(s);
+    }
 
 	~DocViewNative() {
     	delete _widget;
@@ -597,6 +606,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _getLeftMethod(_obj, "getLeft", "()I")
 	, _getTopMethod(_obj, "getTop", "()I")
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
+	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)
@@ -661,6 +671,7 @@ void cr3androidFatalErrorHandler(int errorCode, const char * errorText )
 class AndroidConcurrencyProvider : public CRConcurrencyProvider {
     CRObjectAccessor crviewObject;
     CRMethodAccessor crviewRunInGLThread;
+    CRMethodAccessor crviewRunInGLThreadDelayed;
     CRMethodAccessor crviewCreateCRThread;
     CRMethodAccessor crviewSleepMs;
     CRClassAccessor lockClass;
@@ -702,6 +713,9 @@ public:
         virtual void wait() { waitMethod.callVoid(); }
         virtual void notify() { notifyMethod.callVoid(); }
         virtual void notifyAll() { notifyAllMethod.callVoid(); }
+        virtual ~AndroidMonitor() {
+        	//CRLog::trace("~AndroidMonitor");
+        }
     };
 
     class AndroidThread : public CRThread {
@@ -715,6 +729,7 @@ public:
         	joinMethod(thread, "join", "()V")
         	{}
         virtual ~AndroidThread() {
+        	CRLog::trace("~AndroidThread");
         }
         virtual void start() {
         	startMethod.callVoid();
@@ -733,8 +748,20 @@ public:
         return new AndroidMonitor(monitorClass.newObject());
     }
 
+    class CRRunnableWrapper : public CRRunnable {
+    	CRRunnable * _task;
+    public:
+    	CRRunnableWrapper(CRRunnable * task) : _task(task) {
+
+    	}
+    	virtual void run() {
+    		_task->run();
+    	}
+    };
+
     virtual CRThread * createThread(CRRunnable * threadTask) {
-        return new AndroidThread(crviewCreateCRThread.callObj((jlong)threadTask));
+    	CRRunnableWrapper * wrappedTask = new CRRunnableWrapper(threadTask);
+        return new AndroidThread(crviewCreateCRThread.callObj((jlong)wrappedTask));
     }
 
     /// task will be deleted after execution
@@ -743,9 +770,15 @@ public:
     	crviewRunInGLThread.callVoid((jlong)task);
     }
 
+    /// execute task delayed; already scheduled but not executed task will be deleted; pass NULL task to cancel active tasks
+    virtual void executeGui(CRRunnable * task, int delayMillis) {
+    	crviewRunInGLThreadDelayed.callVoidLongLong((jlong)task, (jlong)delayMillis);
+    }
+
     AndroidConcurrencyProvider(jobject _crviewObject) :
     		crviewObject(_crviewObject),
     		crviewRunInGLThread(crviewObject, "runInGLThread", "(J)V"),
+    		crviewRunInGLThreadDelayed(crviewObject, "runInGLThreadDelayed", "(JJ)V"),
     		crviewCreateCRThread(crviewObject, "createCRThread", "(J)Lorg/coolreader/newui/CRThread;"),
     		crviewSleepMs(crviewObject, "sleepMs", "(J)V"),
     		lockClass("org/coolreader/newui/CRLock"),

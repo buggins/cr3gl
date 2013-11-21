@@ -459,13 +459,18 @@ void CRUIConfig::setInterfaceLanguage(lString8 id) {
 }
 
 void CRUIConfig::uninitEngine() {
+	CRLog::info("uninitEngine started");
+	CRLog::info("Stopping coverpage manager");
     CRStopCoverpageManager();
+	CRLog::info("Stopping directory cache manager");
     CRStopDirectoryCacheManager();
     if (bookDB) {
+    	CRLog::info("Closing BookDB");
         bookDB->close();
         delete bookDB;
         bookDB = NULL;
     }
+	CRLog::info("uninitEngine finished");
 }
 
 lString16 CRUIInterfaceLanguage::getName() {
