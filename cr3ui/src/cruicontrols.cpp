@@ -701,6 +701,11 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
         }
         return true;
     }
+    if (!CRUIEventManager::isVirtualKeyboardShown()) {
+    	if (action == ACTION_UP)
+    		CRUIEventManager::showVirtualKeyboard();
+    	return true;
+    }
     lvRect rc = _pos;
     applyMargin(rc);
     applyPadding(rc);
@@ -852,6 +857,7 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             updateCursor(_text.length());
             return true;
         case CR_KEY_RETURN:
+        	CRUIEventManager::hideVirtualKeyboard();
             if (_onReturnPressedListener)
                 return _onReturnPressedListener->onReturnPressed(this);
             return true;

@@ -387,7 +387,21 @@ void CRUIWindowWidget::showMenu(const CRUIActionList & actionList, int location,
 
 /// motion event handler - before children, returns true if it handled event
 bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
-    CR_UNUSED(event);
+	// hide virtual keyboard when touching outside focused control
+	CRUIWidget * focused = CRUIEventManager::getFocusedWidget();
+    if (event->getAction() == ACTION_DOWN && focused && isChild(focused)) {
+    	lvPoint pt(event->getX(), event->getY());
+    	lvRect rc(focused->getPos());
+    	rc.extend(PT_TO_PX(3));
+    	if (!rc.isPointInside(pt)) {
+    		if (CRUIEventManager::isVirtualKeyboardShown())
+    			CRUIEventManager::hideVirtualKeyboard();
+    	} else {
+    		if (!CRUIEventManager::isVirtualKeyboardShown() && focused->needKeyboard())
+    			CRUIEventManager::showVirtualKeyboard();
+    	}
+        return false;
+    }
     if (!_popupControl.popup)
         return false;
     return false;

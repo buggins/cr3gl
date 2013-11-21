@@ -1001,6 +1001,12 @@ bool CRUIMainWidget::onAction(int actionId) {
 
 /// motion event handler - before children, returns true if it handled event
 bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
+    lvPoint pt(event->getX(), event->getY());
+    bool insideVirtualKeyboard = false;
+    if (_keyboard && _keyboard->getPos().isPointInside(pt))
+        insideVirtualKeyboard = true;
+    if (insideVirtualKeyboard)
+        return false;
     // by returning of true, just ignore all events while animation is on
     if (_animation.active && _animation.manual) {
         switch(event->getAction()) {
@@ -1053,7 +1059,11 @@ bool CRUIMainWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     		}
     	}
     }
-    return _animation.active;
+    if (_animation.active)
+        return true;
+    if (_history.currentWidget() && event->getAction() == ACTION_DOWN)
+        return _history.currentWidget()->onTouchEventPreProcess(event);
+    return false;
 }
 
 /// return true if drag operation is intercepted

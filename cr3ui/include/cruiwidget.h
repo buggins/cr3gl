@@ -109,6 +109,9 @@ public:
     /// call to set focus to appropriate child once widget appears on screen
     virtual bool initFocus() { return false; }
 
+    /// return true to get virtual keyboard when control gets focused
+    virtual bool needKeyboard() { return false; }
+
 	/// returns true to allow parent intercept this widget which is currently handled by this widget
 	virtual bool allowInterceptTouchEvent(const CRUIMotionEvent * event) { CR_UNUSED(event); return true; }
 

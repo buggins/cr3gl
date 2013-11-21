@@ -190,6 +190,8 @@ public:
     virtual bool onFocusChange(bool focused);
     /// handle timer event; return true to allow recurring timer event occur more times, false to stop
     virtual bool onTimerEvent(lUInt32 timerId);
+    /// return true to get virtual keyboard when control gets focused
+    virtual bool needKeyboard() { return true; }
 };
 
 #endif /* CRUICONTROLS_H_ */
