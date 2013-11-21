@@ -13,11 +13,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -28,7 +30,15 @@ public class CoolReader extends Activity {
 	public static final String TAG = "cr3";
 	public static final Logger log = L.create(TAG);
 
+	@SuppressWarnings("deprecation")
+	private ClipboardManager clipboardManager;
 
+	@SuppressWarnings("deprecation")
+	public final void copyToClipboard(String s) {
+		if (clipboardManager != null)
+			clipboardManager.setText(s);
+	}
+	
 	private CRConfig createConfig() {
 		CRConfig cfg = new CRConfig();
 		DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -119,6 +129,7 @@ public class CoolReader extends Activity {
 		crview = new CRView(this);
 		crview.init(createConfig());
 		setContentView(crview);
+		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 	}
 
     @Override

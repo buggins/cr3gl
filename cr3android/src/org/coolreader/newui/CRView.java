@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
-import android.text.ClipboardManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -252,8 +251,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	
 	@SuppressWarnings("deprecation")
 	private final void copyToClipboard(String s) {
-		ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-		clipboard.setText(s);
+		activity.copyToClipboard(s);
 	}
 
 	private final InputStream openResourceStream(String path) {

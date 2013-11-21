@@ -320,7 +320,6 @@ public:
 
     // copy text to clipboard
     virtual void copyToClipboard(lString16 text) {
-    	CRLog::warn("copyToClipboard is not yet implemented");
     	jstring s = _env.toJavaString(text);
     	_copyToClipboardMethod.callVoid(s);
     	_env->DeleteLocalRef(s);
@@ -772,6 +771,8 @@ public:
 
     /// execute task delayed; already scheduled but not executed task will be deleted; pass NULL task to cancel active tasks
     virtual void executeGui(CRRunnable * task, int delayMillis) {
+    	if (!task)
+    		return; // it was called to cancel timer; ignore under Android
     	crviewRunInGLThreadDelayed.callVoidLongLong((jlong)task, (jlong)delayMillis);
     }
 
@@ -914,6 +915,7 @@ JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
 JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
 	(JNIEnv * env, jclass obj, jlong ptr)
 {
+	//CRLog::trace("Calling CRRunnable %08x", (unsigned)ptr);
 	CRRunnable * runnable = (CRRunnable*)ptr;
 	runnable->run();
 	delete runnable;
