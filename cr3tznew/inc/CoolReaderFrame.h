@@ -15,12 +15,21 @@
 class CRRunnableContainer : public Tizen::Base::Object
 {
 	CRRunnable * _runnable;
+	int _delay;
 public:
-	CRRunnableContainer(CRRunnable * runnable) : _runnable(runnable) {}
+	CRRunnableContainer(CRRunnable * runnable, int delay = 0) : _runnable(runnable), _delay(delay) {}
+	int getDelay() { return _delay; }
+	bool isTimerCancelEvent() { return !_runnable; }
 	void run() {
-		_runnable->run();
+		if (_runnable)
+			_runnable->run();
 	}
-	~CRRunnableContainer() {
+	CRRunnable * getRunnable() {
+		CRRunnable * res = _runnable;
+		_runnable = NULL;
+		return res;
+	}
+	virtual ~CRRunnableContainer() {
 		delete _runnable;
 	}
 };
@@ -31,11 +40,18 @@ class CR3Renderer;
 class CoolReaderFrame
 	: public Tizen::Ui::Controls::Frame
 	, public Tizen::Ui::IOrientationEventListener
+	, public Tizen::Base::Runtime::ITimerEventListener
 {
 		CR3Renderer * _renderer;
+		Tizen::Base::Runtime::Timer _timer;
+		CRRunnable * _timerTask;
+
+		void setTimer(CRRunnable * task, int delay);
 public:
 	CoolReaderFrame(void);
 	virtual ~CoolReaderFrame(void);
+
+	void OnTimerExpired(Tizen::Base::Runtime::Timer& timer);
 
 	void setRenderer(CR3Renderer * renderer);
 //	CoolReaderForm* _pCoolReaderForm;

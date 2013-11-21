@@ -5,14 +5,39 @@
 using namespace Tizen::Base;
 using namespace Tizen::Ui;
 using namespace Tizen::Ui::Controls;
+using namespace Tizen::Base::Runtime;
 
 CoolReaderFrame::CoolReaderFrame(void)// : _pCoolReaderForm(NULL)
-: _renderer(NULL)
+: _renderer(NULL), _timerTask(NULL)
 {
+	 _timer.Construct(*this);
 }
 
 CoolReaderFrame::~CoolReaderFrame(void)
 {
+	_timer.Cancel();
+}
+
+void CoolReaderFrame::OnTimerExpired(Timer& timer) {
+	if (&timer == &_timer) {
+		if (_timerTask) {
+			_timerTask->run();
+			delete _timerTask;
+			_timerTask = NULL;
+		}
+	}
+}
+
+void CoolReaderFrame::setTimer(CRRunnable * task, int delay) {
+	if (_timerTask) {
+		_timer.Cancel();
+		delete _timerTask;
+		_timerTask = NULL;
+	}
+	if (task && delay) {
+		_timerTask = task;
+		_timer.Start(delay);
+	}
 }
 
 void CoolReaderFrame::setRenderer(CR3Renderer * renderer) {
@@ -54,7 +79,11 @@ void CoolReaderFrame::OnUserEventReceivedN (RequestId requestId, Tizen::Base::Co
 			CRRunnableContainer * param = dynamic_cast<CRRunnableContainer*>(pArgs->GetAt(0));
 			if (param) {
 				//CRLog::trace("Executing UI_UPDATE_REQUEST in UI thread");
-				param->run();
+				if (param->getDelay() || param->isTimerCancelEvent()) {
+					setTimer(param->getRunnable(), param->getDelay());
+				} else {
+					param->run();
+				}
 			}
 		}
 	}

@@ -201,6 +201,29 @@ void CR3Renderer::minimizeApp() {
 
 }
 
+// copy text to clipboard
+void CR3Renderer::copyToClipboard(lString16 text) {
+	// TODO
+}
+
+/// return true if platform supports native virtual keyboard
+bool CR3Renderer::supportsVirtualKeyboard() {
+	return false;
+}
+
+/// return true if platform native virtual keyboard is shown
+bool CR3Renderer::isVirtualKeyboardShown() {
+	return false;
+}
+/// show platform native virtual keyboard
+void CR3Renderer::showVirtualKeyboard() {
+
+}
+/// hide platform native virtual keyboard
+void CR3Renderer::hideVirtualKeyboard() {
+
+}
+
 class CRTizenRedrawEvent : public CRRunnable {
 	Tizen::Graphics::Opengl::GlPlayer * __player;
 public:

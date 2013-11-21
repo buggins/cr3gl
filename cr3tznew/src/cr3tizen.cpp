@@ -58,8 +58,32 @@ void LVSetTizenLogger() {
 	CRLog::setLogger(new CRTizenLogger());
 }
 
+using namespace Tizen::Base::Collection;
+
+class TizenGuiExecutor {
+public:
+	TizenGuiExecutor() {
+	}
+
+	virtual void execute(CRRunnable * runnable, int delay = 0) {
+		//CRLog::debug("TizenGuiExecutor execute task");
+		   // ArrayList parameters put on the String object
+		   ArrayList* pList = new ArrayList();
+		   pList->Construct();
+		   //String* pData = new String(L"Inter thread communication");
+		   pList->Add(new CRRunnableContainer(runnable, delay));
+
+		   // Send messages using the SendUserEvent() function
+		   Tizen::Ui::Controls::Frame* pFrame = Tizen::App::UiApp::GetInstance()->GetAppFrame()->GetFrame();
+		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
+		   if (pFrame)
+			   pFrame->SendUserEvent(UI_UPDATE_REQUEST, pList);
+		   //CRLog::debug("TizenGuiExecutor execute task - done");
+	}
+};
+
 class TizenConcurrencyProvider : public CRConcurrencyProvider {
-    CRExecutor * guiExecutor;
+	TizenGuiExecutor * guiExecutor;
 public:
 
     class TizenMutex : public CRMutex {
@@ -184,7 +208,13 @@ public:
         guiExecutor->execute(task);
     }
 
-    TizenConcurrencyProvider(CRExecutor * _guiExecutor) {
+    /// execute task delayed; already scheduled but not executed task will be deleted; pass NULL task to cancel active tasks
+    virtual void executeGui(CRRunnable * task, int delayMillis) {
+    	//
+        guiExecutor->execute(task, delayMillis);
+    }
+
+    TizenConcurrencyProvider(TizenGuiExecutor * _guiExecutor) {
         guiExecutor = _guiExecutor;
     }
     /// sleep current thread
@@ -212,29 +242,6 @@ public:
 //	delete _runnable;
 //}
 
-using namespace Tizen::Base::Collection;
-
-class TizenGuiExecutor : public CRExecutor {
-public:
-	TizenGuiExecutor() {
-	}
-
-	virtual void execute(CRRunnable * runnable) {
-		//CRLog::debug("TizenGuiExecutor execute task");
-		   // ArrayList parameters put on the String object
-		   ArrayList* pList = new ArrayList();
-		   pList->Construct();
-		   //String* pData = new String(L"Inter thread communication");
-		   pList->Add(new CRRunnableContainer(runnable));
-
-		   // Send messages using the SendUserEvent() function
-		   Tizen::Ui::Controls::Frame* pFrame = Tizen::App::UiApp::GetInstance()->GetAppFrame()->GetFrame();
-		   //CoolReaderForm * form = dynamic_cast<CoolReaderForm *>(pFrame->GetCurrentForm());
-		   if (pFrame)
-			   pFrame->SendUserEvent(UI_UPDATE_REQUEST, pList);
-		   //CRLog::debug("TizenGuiExecutor execute task - done");
-	}
-};
 
 lString8 getTizenSystemLang() {
 	Tizen::Base::String language;

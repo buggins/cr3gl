@@ -65,6 +65,17 @@ public:
 	/// minimize app or show Home Screen
 	virtual void minimizeApp();
 
+    // copy text to clipboard
+    virtual void copyToClipboard(lString16 text);
+
+    /// return true if platform supports native virtual keyboard
+    virtual bool supportsVirtualKeyboard();
+    /// return true if platform native virtual keyboard is shown
+    virtual bool isVirtualKeyboardShown();
+    /// show platform native virtual keyboard
+    virtual void showVirtualKeyboard();
+    /// hide platform native virtual keyboard
+    virtual void hideVirtualKeyboard();
 
 private:
 	int __controlWidth;
