@@ -2330,7 +2330,7 @@ void CRUIReadWidget::ScrollModePageCache::clear() {
 //=============================================================================
 //  Paged mode
 
-CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), pageCount(0), dx(0), dy(0), tdx(0), tdy(0), newPage(0) {
+CRUIReadWidget::PagedModePageCache::PagedModePageCache() : numPages(0), pageCount(0), dx(0), dy(0), tdx(0), tdy(0), direction(0), newPage(0) {
 
 }
 

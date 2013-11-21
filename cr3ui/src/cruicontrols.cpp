@@ -635,11 +635,13 @@ struct MeasuredText {
     LVArray<lUInt16> _widths;
     LVArray<lUInt8> _flags;
     int _width;
-    MeasuredText(LVFontRef font, lString16 text) : _text(text) {
-        _widths.addSpace(_text.length() + 5);
-        _flags.addSpace(_text.length() + 5);
-        font->measureText(_text.c_str(), _text.length(), _widths.get(), _flags.get(), 10000, '?', 0, false);
-        _width = _widths[_text.length() - 1];
+    MeasuredText(LVFontRef font, lString16 text) : _text(text), _width(0) {
+        if (_text.length()) {
+            _widths.addSpace(_text.length() + 5);
+            _flags.addSpace(_text.length() + 5);
+            font->measureText(_text.c_str(), _text.length(), _widths.get(), _flags.get(), 10000, '?', 0, false);
+            _width = _widths[_text.length() - 1];
+        }
     }
     int getWidth() {
         return _width;
@@ -857,7 +859,25 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             updateCursor(_text.length());
             return true;
         case CR_KEY_RETURN:
-        	CRUIEventManager::hideVirtualKeyboard();
+            return true;
+        default:
+            break;
+        }
+    }
+    if (event->getType() == KEY_ACTION_RELEASE) {
+        switch(event->key()) {
+        case CR_KEY_BACKSPACE:
+            return true;
+        case CR_KEY_LEFT:
+            return true;
+        case CR_KEY_RIGHT:
+            return true;
+        case CR_KEY_HOME:
+            return true;
+        case CR_KEY_END:
+            return true;
+        case CR_KEY_RETURN:
+            CRUIEventManager::hideVirtualKeyboard();
             if (_onReturnPressedListener)
                 return _onReturnPressedListener->onReturnPressed(this);
             return true;

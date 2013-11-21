@@ -78,6 +78,9 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
 OpenGLWindow::~OpenGLWindow()
 {
+    delete _widget;
+    delete _eventAdapter;
+    delete _eventManager;
     delete m_device;
     _qtgl = NULL;
 }

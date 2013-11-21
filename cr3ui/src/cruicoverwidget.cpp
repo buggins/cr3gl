@@ -68,7 +68,7 @@ void CRCoverWidget::draw(LVDrawBuf * buf) {
     buf->DrawRescaled(cover, rc.left, rc.top, width, height, 0);
 }
 
-CRCoverWidget::CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy) : _main(main), _book(book) {
+CRCoverWidget::CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy) : _main(main), _book(book), _dx(64), _dy(64) {
     setSize(dx, dy);
     setAlign(CRUI::ALIGN_CENTER);
     setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);

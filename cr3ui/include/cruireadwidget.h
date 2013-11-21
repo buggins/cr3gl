@@ -226,7 +226,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         lvRect startCursorPos;
         lvRect endCursorPos;
         lString16 selectionText;
-        SelectionControl() : timerStarted(false), selecting(false) {
+        SelectionControl() : timerStarted(false), selecting(false), popupActive(false) {
 
         }
     };

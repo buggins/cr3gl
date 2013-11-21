@@ -96,6 +96,8 @@ CRUIVirtualKeyboard::CRUIVirtualKeyboard() : _layoutSet(NULL), _currentLayout(NU
 
 CRUIVirtualKeyboard::~CRUIVirtualKeyboard() {
     delete _layoutSet;
+    _layoutSet = NULL;
+    _currentLayout = NULL;
 }
 
 /// draws widget with its children to specified surface
@@ -175,12 +177,12 @@ void CRUIVirtualKeyboard::onVKeyUp(VKLayoutKey * key) {
             requestLayout();
         }
     } else {
-        CRUIKeyEvent * event = new CRUIKeyEvent(KEY_ACTION_PRESS, key->keycode, false, 1, CR_KEY_MODIFIER_NONE);
-        event->setText(key->text);
-        CRUIEventManager::dispatchKey(event);
-        event = new CRUIKeyEvent(KEY_ACTION_RELEASE, key->keycode, false, 1, CR_KEY_MODIFIER_NONE);
-        event->setText(key->text);
-        CRUIEventManager::dispatchKey(event);
+        CRUIKeyEvent * eventpress = new CRUIKeyEvent(KEY_ACTION_PRESS, key->keycode, false, 1, CR_KEY_MODIFIER_NONE);
+        eventpress->setText(key->text);
+        CRUIKeyEvent * eventrelease = new CRUIKeyEvent(KEY_ACTION_RELEASE, key->keycode, false, 1, CR_KEY_MODIFIER_NONE);
+        eventrelease->setText(key->text);
+        CRUIEventManager::dispatchKey(eventpress);
+        CRUIEventManager::dispatchKey(eventrelease);
     }
 }
 
