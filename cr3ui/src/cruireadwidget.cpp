@@ -902,8 +902,9 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     _lastPosition = bookDB->loadLastPosition(file->getBook());
     bookDB->loadBookmarks(file->getBook(), _bookmarks);
     lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");
-    lString8 systemLang = crconfig.systemLanguage;
-    setHyph(bookLang, systemLang);
+    lString8 settingsHyph = UnicodeToUtf8(_main->getSettings()->getStringDef(PROP_HYPHENATION_DICT, crconfig.systemLanguage.c_str()));
+    //lString8 systemLang = crconfig.systemLanguage;
+    setHyph(bookLang, settingsHyph);
     _main->executeBackground(new OpenBookTask(Utf8ToUnicode(getPathName()), _main, this));
     return true;
 }

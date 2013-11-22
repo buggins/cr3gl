@@ -398,7 +398,7 @@ bool CRUIWindowWidget::onTouchEventPreProcess(const CRUIMotionEvent * event) {
     			CRUIEventManager::hideVirtualKeyboard();
     	} else {
     		if (!CRUIEventManager::isVirtualKeyboardShown() && focused->needKeyboard())
-    			CRUIEventManager::showVirtualKeyboard();
+    			CRUIEventManager::showVirtualKeyboard(0, focused->getText(), false);
     	}
         return false;
     }

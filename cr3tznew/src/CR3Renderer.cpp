@@ -23,14 +23,14 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	: _app(app)
 	, _frame(frame)
 	, _backbuffer(NULL)
+	, _keypad(NULL)
+	, _keypadShown(false)
 	//, _updateRequested(false)
 	, __controlWidth(0)
 	, __controlHeight(0)
 	, __angle(0)
 	, __player(NULL)
 	, __playerStarted(true)
-	, _keypad(NULL)
-	, _keypadShown(false)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
@@ -227,7 +227,7 @@ bool CR3Renderer::isVirtualKeyboardShown() {
 	return _keypadShown;
 }
 /// show platform native virtual keyboard
-void CR3Renderer::showVirtualKeyboard() {
+void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
 	if (_keypadShown)
 		return;
 	_keypadShown = true;
@@ -235,15 +235,20 @@ void CR3Renderer::showVirtualKeyboard() {
 	if (!_keypad) {
 		_keypad = new Keypad();
 		_keypad->Construct(KEYPAD_STYLE_NORMAL, KEYPAD_MODE_ALPHA);
+		_keypad->SetTextPredictionEnabled(false);
 		// Adds an instance of ITextEventListener
 		_keypad->AddTextEventListener(*this);
 	}
+	_keypad->SetSingleLineEnabled(!multiline);
+	String txt(text.c_str());
+	_keypad->SetText(txt);
 
     // Changes to desired show state
     _keypad->SetShowState(true);
     _keypad->Show();
 
 }
+
 /// hide platform native virtual keyboard
 void CR3Renderer::hideVirtualKeyboard() {
 	if (!_keypadShown)
@@ -255,11 +260,17 @@ void CR3Renderer::hideVirtualKeyboard() {
 
 // ITextEventListener
 void CR3Renderer::OnTextValueChanged(const Tizen::Ui::Control& source) {
-
+	String str = _keypad->GetText();
+	if (_eventManager->getFocusedWidget()) {
+		_eventManager->getFocusedWidget()->setText(lString16(str.GetPointer()));
+		CRUIKeyEvent * event = new CRUIKeyEvent(KEY_ACTION_RELEASE, CR_KEY_RETURN, false, 1, 0);
+		_eventManager->getFocusedWidget()->onKeyEvent(event);
+		_eventManager->getRootWidget()->update(false);
+	}
 }
 
 void CR3Renderer::OnTextValueChangeCanceled(const Tizen::Ui::Control& source) {
-
+	// do nothing
 }
 
 class CRTizenRedrawEvent : public CRRunnable {

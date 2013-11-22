@@ -19,12 +19,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.ResultReceiver;
 import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 public class CoolReader extends Activity {
@@ -181,7 +179,7 @@ public class CoolReader extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.cool_reader, menu);
+		//getMenuInflater().inflate(R.menu.cool_reader, menu);
 		return true;
 	}
 

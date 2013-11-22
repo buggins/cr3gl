@@ -284,6 +284,7 @@ public:
     virtual ~CRUIEventManager();
     void onSystemLanguageChanged();
 	void setRootWidget(CRUIMainWidget * rootWidget);
+	CRUIMainWidget * getRootWidget() { return _rootWidget; }
 	bool dispatchTouchEvent(CRUIMotionEvent * event);
     bool dispatchKeyEvent(CRUIKeyEvent * event);
     bool interceptTouchEvent(const CRUIMotionEvent * event, CRUIWidget * widget);
@@ -306,7 +307,7 @@ public:
 
 
     // Virtual Keyboard support
-    static void showVirtualKeyboard();
+    static void showVirtualKeyboard(int mode, lString16 text, bool multiline);
     static void hideVirtualKeyboard();
     static bool isVirtualKeyboardShown();
 

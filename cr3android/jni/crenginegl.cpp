@@ -368,7 +368,8 @@ public:
     	return _virtualKeyboardShown;
     }
     /// show platform native virtual keyboard
-    virtual void showVirtualKeyboard() {
+    virtual void showVirtualKeyboard(int mode, lString16 text, bool multiline) {
+    	CR_UNUSED3(mode, text, multiline);
     	if (_virtualKeyboardShown)
     		return;
     	_virtualKeyboardShown = true;

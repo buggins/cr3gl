@@ -705,7 +705,7 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     }
     if (!CRUIEventManager::isVirtualKeyboardShown()) {
     	if (action == ACTION_UP)
-    		CRUIEventManager::showVirtualKeyboard();
+    		CRUIEventManager::showVirtualKeyboard(0, getText(), false);
     	return true;
     }
     lvRect rc = _pos;
@@ -725,7 +725,7 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     switch (action) {
     case ACTION_DOWN:
         if (!CRUIEventManager::isVirtualKeyboardShown())
-            CRUIEventManager::showVirtualKeyboard();
+            CRUIEventManager::showVirtualKeyboard(0, getText(), false);
         if (inside) {
             _lastEnteredCharPos = -1;
             updateCursor(newcurpos, false);
@@ -818,7 +818,7 @@ bool CRUIEditWidget::onFocusChange(bool focused) {
     cancelScrollTimer();
     if (focused) {
         updateCursor(_text.length());
-        CRUIEventManager::showVirtualKeyboard();
+        CRUIEventManager::showVirtualKeyboard(0, getText(), false);
     } else {
         _scrollx = 0;
         CRUIEventManager::hideVirtualKeyboard();

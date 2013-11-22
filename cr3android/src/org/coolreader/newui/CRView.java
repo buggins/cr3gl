@@ -329,7 +329,6 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		activity.startActivity(intent);
 	}
 	
-	@SuppressWarnings("deprecation")
 	private final void copyToClipboard(String s) {
 		activity.copyToClipboard(s);
 	}

@@ -76,7 +76,7 @@ public:
     /// return true if platform native virtual keyboard is shown
     virtual bool isVirtualKeyboardShown();
     /// show platform native virtual keyboard
-    virtual void showVirtualKeyboard();
+    virtual void showVirtualKeyboard(int mode, lString16 text, bool multiline);
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard();
 

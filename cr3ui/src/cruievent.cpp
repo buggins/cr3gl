@@ -204,9 +204,9 @@ void CRUIEventManager::focusChanged(CRUIWidget * widget) {
     }
 }
 
-void CRUIEventManager::showVirtualKeyboard() {
+void CRUIEventManager::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
     if (_instance && _instance->_rootWidget)
-        _instance->_rootWidget->showVirtualKeyboard();
+        _instance->_rootWidget->showVirtualKeyboard(mode, text, multiline);
 }
 
 void CRUIEventManager::hideVirtualKeyboard() {
