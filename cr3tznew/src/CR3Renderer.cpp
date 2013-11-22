@@ -11,8 +11,9 @@
 
 
 using namespace CRUI;
-using namespace Tizen::Ui;
 using namespace Tizen::Base;
+using namespace Tizen::Ui;
+using namespace Tizen::Ui::Controls;
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -28,6 +29,8 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	, __angle(0)
 	, __player(NULL)
 	, __playerStarted(true)
+	, _keypad(NULL)
+	, _keypadShown(false)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
@@ -216,19 +219,46 @@ void CR3Renderer::copyToClipboard(lString16 text) {
 
 /// return true if platform supports native virtual keyboard
 bool CR3Renderer::supportsVirtualKeyboard() {
-	return false;
+	return true;
 }
 
 /// return true if platform native virtual keyboard is shown
 bool CR3Renderer::isVirtualKeyboardShown() {
-	return false;
+	return _keypadShown;
 }
 /// show platform native virtual keyboard
 void CR3Renderer::showVirtualKeyboard() {
+	if (_keypadShown)
+		return;
+	_keypadShown = true;
+    // Creates an instance of Keypad
+	if (!_keypad) {
+		_keypad = new Keypad();
+		_keypad->Construct(KEYPAD_STYLE_NORMAL, KEYPAD_MODE_ALPHA);
+		// Adds an instance of ITextEventListener
+		_keypad->AddTextEventListener(*this);
+	}
+
+    // Changes to desired show state
+    _keypad->SetShowState(true);
+    _keypad->Show();
 
 }
 /// hide platform native virtual keyboard
 void CR3Renderer::hideVirtualKeyboard() {
+	if (!_keypadShown)
+		return;
+	_keypadShown = false;
+    _keypad->SetShowState(false);
+    //Invalidate(true);
+}
+
+// ITextEventListener
+void CR3Renderer::OnTextValueChanged(const Tizen::Ui::Control& source) {
+
+}
+
+void CR3Renderer::OnTextValueChangeCanceled(const Tizen::Ui::Control& source) {
 
 }
 

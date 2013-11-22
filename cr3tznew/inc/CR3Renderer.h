@@ -19,10 +19,11 @@
 class LVDocView;
 class CoolReaderApp;
 class CoolReaderFrame;
-class CR3Renderer :
-	public Tizen::Graphics::Opengl::IGlRenderer,
-	public CRUIScreenUpdateManagerCallback,
-	public CRUIPlatform
+class CR3Renderer
+	: public Tizen::Graphics::Opengl::IGlRenderer
+	, public Tizen::Ui::ITextEventListener
+	, public CRUIScreenUpdateManagerCallback
+	, public CRUIPlatform
 {
 	CoolReaderApp * _app;
 	CoolReaderFrame * _frame;
@@ -31,6 +32,8 @@ class CR3Renderer :
 	CRUIEventManager * _eventManager;
 	CRUIEventAdapter * _eventAdapter;
 	GLDrawBuf * _backbuffer;
+	Tizen::Ui::Controls::Keypad * _keypad;
+	bool _keypadShown;
 	//bool _updateRequested;
 public:
 
@@ -76,6 +79,10 @@ public:
     virtual void showVirtualKeyboard();
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard();
+
+    // ITextEventListener
+    virtual void OnTextValueChanged(const Tizen::Ui::Control& source);
+    virtual void OnTextValueChangeCanceled(const Tizen::Ui::Control& source);
 
 private:
 	int __controlWidth;
