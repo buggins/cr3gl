@@ -189,10 +189,12 @@ bool CRBookDB::fillCaches() {
 	_folderCache.clear();
 	_authorCache.clear();
     _catalogCache.clear();
+    _folderBookmarkCache.clear();
 	int seriesCount = 0;
 	int folderCount = 0;
 	int authorCount = 0;
     int catalogCount = 0;
+    int folderBookmarkCount = 0;
 	CRLog::trace("Filling series cache");
 	SQLiteStatement stmt(&_db);
 	err = stmt.prepare("select id, name from series;") != 0 || err;
@@ -214,7 +216,18 @@ bool CRBookDB::fillCaches() {
 		_folderCache.put(item);
 		folderCount++;
 	}
-	CRLog::trace("Filling author cache");
+    CRLog::trace("Filling folder bookmark cache");
+    err = stmt.prepare("select id, name, type, last_usage from folder_bookmark;") != 0 || err;
+    while (stmt.step() == DB_ROW) {
+        BookDBFolderBookmark * item = new BookDBFolderBookmark();
+        item->id = stmt.getInt(0);
+        item->name = stmt.getText(1);
+        item->type = stmt.getInt(2);
+        item->lastUsage = stmt.getInt64(3);
+        _folderBookmarkCache.put(item);
+        folderCount++;
+    }
+    CRLog::trace("Filling author cache");
 	err = stmt.prepare("select id, name, file_as, aliased_author_fk from author;") != 0 || err;
 	while (stmt.step() == DB_ROW) {
 		BookDBAuthor * item = new BookDBAuthor();
@@ -238,7 +251,7 @@ bool CRBookDB::fillCaches() {
         _catalogCache.put(item);
         catalogCount++;
     }
-    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders, %d opds catalogs", authorCount, seriesCount, folderCount, catalogCount);
+    CRLog::info("DB::fillCaches - %d authors, %d series, %d folders, %d folder bookmarks, %d opds catalogs", authorCount, seriesCount, folderCount, folderBookmarkCount, catalogCount);
 	return !err;
 }
 

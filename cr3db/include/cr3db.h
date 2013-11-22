@@ -466,6 +466,7 @@ class CRBookDB {
 	BookDBSeriesCache _seriesCache;
 	BookDBAuthorCache _authorCache;
 	BookDBFolderCache _folderCache;
+    BookDBFolderBookmarkCache _folderBookmarkCache;
     BookDBCatalogCache _catalogCache;
 	BookDBBookCache _bookCache;
     CRBookLastPositionCache _lastPositionCache;
