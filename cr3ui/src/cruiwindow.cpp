@@ -347,12 +347,12 @@ public:
         _itemLayout->setStyle("MENU_ITEM");
         setAdapter(this);
     }
-    int getItemCount(CRUIListWidget * list) {
+    virtual int getItemCount(CRUIListWidget * list) {
         CR_UNUSED(list);
         return _actionList.length();
     }
 
-    CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
         CR_UNUSED(list);
         _itemIcon->setImage(_actionList[index]->icon_res);
         _itemText->setText(_actionList[index]->getName());

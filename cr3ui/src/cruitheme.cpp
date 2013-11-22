@@ -80,7 +80,7 @@ void CRUITheme::remove(CRUIStyle * style) {
 	delete style;
 }
 
-CRUIStyle * CRUITheme::find(const lString8 &id, bool defaultToTheme) {
+CRUIStyle * CRUITheme::findStyle(const lString8 &id, bool defaultToTheme) {
 	if (id.empty())
 		return this;
 	CRUIStyle * res = _map.get(id);
@@ -241,7 +241,7 @@ public:
         }
         if (!lStr_cmp(attrname, "id")) {
         	if (style != theme) {
-        		CRUIStyle * existing = theme->find(value, false);
+        		CRUIStyle * existing = theme->findStyle(value, false);
         		if (existing) {
         			theme->remove(style);
         			style = existing;

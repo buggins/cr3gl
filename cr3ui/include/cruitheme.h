@@ -295,7 +295,7 @@ protected:
     LVHashTable<lUInt32, LVFontRef> _fonts;
 public:
     void remove(CRUIStyle * style);
-	virtual CRUIStyle * find(const lString8 &id, bool defaultToTheme = true);
+	virtual CRUIStyle * findStyle(const lString8 &id, bool defaultToTheme = true);
 	void registerStyle(CRUIStyle * style);
 	LVFontRef getFontForSize(lUInt8 size);
 	CRUITheme(lString8 name);
