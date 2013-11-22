@@ -12,7 +12,7 @@
 CRBookDB * bookDB = NULL;
 
 
-#define DB_VERSION 24
+#define DB_VERSION 25
 
 /// creates/upgrades DB schema
 bool CRBookDB::updateSchema()
@@ -140,6 +140,16 @@ bool CRBookDB::updateSchema()
     };
     if (currentVersion < 24)
         addOpdsCatalogs(CATALOGS1);
+    if (currentVersion < 25) {
+        err = _db.executeUpdate("CREATE TABLE IF NOT EXISTS folder_bookmark ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                "name VARCHAR NOT NULL,"
+                "type INTEGER DEFAULT 0,"
+                "last_usage INTEGER DEFAULT 0"
+                ");") < 0 || err;
+//        err = _db.executeUpdate("CREATE INDEX IF NOT EXISTS "
+//                "folder_name_index ON folder (name);") < 0 || err;
+    }
 
 
 	//==============================================================
@@ -1655,6 +1665,41 @@ void BookDBFolderCache::clear() {
 	}
 }
 
+
+
+
+BookDBFolderBookmark * BookDBFolderBookmarkCache::get(lInt64 key) {
+    return _byId.get(key);
+}
+
+BookDBFolderBookmark * BookDBFolderBookmarkCache::get(const DBString & name) {
+    return _byName.get(name);
+}
+
+void BookDBFolderBookmarkCache::put(BookDBFolderBookmark * item) {
+    BookDBFolderBookmark * oldById = _byId.get(item->id);
+    if (oldById == item) { // already the same item
+        return;
+    }
+    if (oldById) {
+        _byId.remove(item->id);
+        _byName.remove(oldById->name);
+        delete oldById;
+    }
+    _byId.set(item->id, item);
+    _byName.set(item->name, item);
+}
+
+void BookDBFolderBookmarkCache::clear() {
+    LVPtrVector<BookDBFolderBookmark> items;
+    LVHashTable<lUInt64, BookDBFolderBookmark *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBFolderBookmark *>::pair * item = iter.next();
+        if (!item)
+            break;
+        items.add(item->value);
+    }
+}
 
 
 

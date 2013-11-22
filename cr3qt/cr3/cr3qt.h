@@ -108,13 +108,15 @@ public:
     public:
         QtThread(CRRunnable * _runnable) : thread(_runnable) {}
         virtual ~QtThread() {
-            thread.wait();
+            if (thread.isRunning())
+                thread.wait();
         }
         virtual void start() {
             thread.start();
         }
         virtual void join() {
-            thread.wait();
+            if (thread.isRunning())
+                thread.wait();
         }
     };
 

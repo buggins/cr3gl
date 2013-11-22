@@ -108,6 +108,38 @@ public:
 	BookDBFolder * clone() const { return new BookDBFolder(*this); }
 };
 
+class BookDBFolderBookmark : public BookDBEntity {
+public:
+    DBString name;
+    int type;
+    lInt64 lastUsage;
+    BookDBFolderBookmark() : type(0), lastUsage(0) {}
+    BookDBFolderBookmark(const char * _name, int _type, lInt64 _lastUsage) : name(_name), type(_type), lastUsage(_lastUsage) { }
+    BookDBFolderBookmark(const BookDBFolderBookmark & v)  : BookDBEntity(v.id) {
+        name = v.name;
+        type = v.type;
+        lastUsage = v.lastUsage;
+    }
+    BookDBFolderBookmark & operator = (const BookDBFolderBookmark & v) {
+        id = v.id;
+        name = v.name;
+        type = v.type;
+        lastUsage = v.lastUsage;
+        return *this;
+    }
+    bool operator == (const BookDBFolderBookmark & v) const {
+        if (this == NULL && &v == NULL)
+            return true;
+        if (this == NULL || &v == NULL)
+            return false;
+        return id == v.id &&
+                name == v.name &&
+                type == v.type &&
+                lastUsage == v.lastUsage;
+    }
+    BookDBFolderBookmark * clone() const { return new BookDBFolderBookmark(*this); }
+};
+
 class BookDBCatalog : public BookDBEntity {
 public:
     DBString name;
@@ -353,6 +385,19 @@ public:
 	void put(BookDBFolder * item);
 	void clear();
 	~BookDBFolderCache() { clear(); }
+};
+
+class BookDBFolderBookmarkCache {
+    LVHashTable<lUInt64, BookDBFolderBookmark *> _byId;
+    LVHashTable<DBString, BookDBFolderBookmark *> _byName;
+public:
+    BookDBFolderBookmarkCache() : _byId(1000), _byName(1000) {}
+    BookDBFolderBookmark * getClone(lInt64 key) { BookDBFolderBookmark * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
+    BookDBFolderBookmark * get(lInt64 key);
+    BookDBFolderBookmark * get(const DBString & name);
+    void put(BookDBFolderBookmark * item);
+    void clear();
+    ~BookDBFolderBookmarkCache() { clear(); }
 };
 
 class BookDBCatalogCache {
