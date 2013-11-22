@@ -503,7 +503,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_DAY, COLOR_TRANSFORM_BRIGHTNESS_NONE);
-    _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_NIGHT, 0x4E4E48);
+    _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_NIGHT, 0x454543);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_DAY, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_NIGHT, COLOR_TRANSFORM_CONTRAST_NONE);
@@ -523,6 +523,16 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setIntDef(PROP_PAGE_MARGINS, 500);
     _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
 
+    _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT, 0xA08000);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION, 0xA00000);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR_DAY, 0xD0D0D0);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_DAY, 0xA08000);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_DAY, 0xA00000);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR_NIGHT, 0x606050);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_NIGHT, 0x808020);
+    _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_NIGHT, 0x800000);
 
     if (_currentSettings->getCount() != oldPropCount) {
         saveSettings();
@@ -948,6 +958,9 @@ void copyDayNightSettings(CRPropRef & props, const char * from, const char * to)
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_COLOR);
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE);
     copyDayNightSetting(props, from, to, PROP_FONT_GAMMA_INDEX);
+    copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_SELECTION_COLOR);
+    copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT);
+    copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION);
 }
 
 /// handle menu or other action

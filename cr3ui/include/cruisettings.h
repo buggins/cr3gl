@@ -65,4 +65,12 @@
 #define PROP_APP_TAP_ZONE_ACTION_LONG "app.tapzone.long."
 #define PROP_APP_TAP_ZONE_ACTION_DOUBLE "app.tapzone.dbl."
 
+#define PROP_HIGHLIGHT_SELECTION_COLOR_DAY "crengine.highlight.selection.color.day"
+#define PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_DAY "crengine.highlight.bookmarks.color.comment.day"
+#define PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_DAY "crengine.highlight.bookmarks.color.correction.day"
+#define PROP_HIGHLIGHT_SELECTION_COLOR_NIGHT "crengine.highlight.selection.color.night"
+#define PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_NIGHT "crengine.highlight.bookmarks.color.comment.night"
+#define PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_NIGHT "crengine.highlight.bookmarks.color.correction.night"
+
+
 #endif // CRUISETTINGS_H
