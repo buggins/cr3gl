@@ -418,6 +418,13 @@ CRTopDirItem * CRTopDirList::itemByType(DIR_TYPE t) {
     return NULL;
 }
 
+CRTopDirItem * CRTopDirList::find(lString8 path) {
+    for (int i = 0; i<_entries.length(); i++)
+        if (_entries[i]->getPathName() == path)
+            return _entries[i];
+    return NULL;
+}
+
 void CRDirCache::addItem(CRDirContentItem * dir) {
 	Item * item = new Item(dir);
 	item->next = _head;

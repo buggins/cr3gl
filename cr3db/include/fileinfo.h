@@ -137,6 +137,15 @@ public:
     CRTopDirItem * getItem(int index) const { return _entries[index]; }
     CRTopDirItem * addItem(DIR_TYPE t, lString8 path, lUInt64 ts = 0);
     CRTopDirItem * itemByType(DIR_TYPE t);
+    CRTopDirItem * find(lString8 path);
+    void clear() { _entries.clear(); }
+    void addAll(CRTopDirList & v) {
+        for (int i = 0; i < v.itemCount(); i++) {
+            CRTopDirItem * item = v.getItem(i);
+            addItem(item->getDirType(), item->getPathName(), item->getLastAccessTime());
+        }
+    }
+
     CRTopDirList() :  CRDirItem(lString8(), false) {}
     void sort(int sortOrder);
 };

@@ -32,6 +32,7 @@ struct CRUIDeviceInfo {
 	int ptToPixels(int mm);
     bool isSizeChanged(int newDx, int newDy);
     CRTopDirList topDirs;
+    bool isTopDir(lString8 path) { return topDirs.find(path) != NULL; }
 	CRUIDeviceInfo();
 	void setScreenDimensions(int dx, int dy, int dpi);
 };

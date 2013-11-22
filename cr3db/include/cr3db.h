@@ -395,7 +395,9 @@ public:
     BookDBFolderBookmark * getClone(lInt64 key) { BookDBFolderBookmark * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
     BookDBFolderBookmark * get(lInt64 key);
     BookDBFolderBookmark * get(const DBString & name);
+    void getAll(LVPtrVector<BookDBFolderBookmark> & folderBookmarks);
     void put(BookDBFolderBookmark * item);
+    void remove(lInt64 id);
     void clear();
     ~BookDBFolderBookmarkCache() { clear(); }
 };
@@ -510,6 +512,13 @@ public:
 	/// read DB content to caches
 	bool fillCaches();
 
+    bool saveFolderBookmark(BookDBFolderBookmark * folderBookmark);
+
+    void updateFolderBookmarkUsage(lString8 path);
+    void addFolderBookmark(lString8 path);
+    bool removeFolderBookmark(BookDBFolderBookmark * folderBookmark);
+    bool removeFolderBookmark(lString8 path);
+    bool isFolderBookmarked(lString8 path);
 
     /// protected by mutex
 	bool saveBooks(LVPtrVector<BookDBBook> & books);
@@ -524,6 +533,8 @@ public:
     bool loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<BookDBBookmark> & lastPositions);
 
     bool loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs);
+
+    bool loadFolderBookmarks(LVPtrVector<BookDBFolderBookmark> & folderBookmarks);
 
     /// saves last position for book; fills ids for inserted items
     bool saveLastPosition(BookDBBook * book, BookDBBookmark * pos);

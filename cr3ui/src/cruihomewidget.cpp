@@ -297,13 +297,26 @@ public:
 };
 
 class CRUIFileSystemDirsWidget : public CRUIHomeItemListWidget {
+    CRTopDirList _items;
 public:
+    void updateItems() {
+
+        _items.clear();
+        _items.addAll(deviceInfo.topDirs);
+        LVPtrVector<BookDBFolderBookmark> folderBookmarks;
+        bookDB->loadFolderBookmarks(folderBookmarks);
+        for (int i = 0; i < folderBookmarks.length(); i++) {
+            BookDBFolderBookmark * bmk = folderBookmarks[i];
+            _items.addItem(DIR_TYPE_NORMAL, lString8(bmk->name.c_str()), bmk->lastUsage);
+        }
+    }
+
     virtual int getItemCount(CRUIListWidget * list) {
         CR_UNUSED(list);
-        return deviceInfo.topDirs.itemCount();
+        return _items.itemCount();
     }
     virtual lString16 getItemText(int index) {
-        CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
+        CRTopDirItem * item = _items.getItem(index);
         switch(item->getDirType()) {
         case DIR_TYPE_INTERNAL_STORAGE:
             return _16(STR_INTERNAL_STORAGE_DIR);
@@ -326,7 +339,7 @@ public:
         }
     }
 	virtual lString8 getItemIcon(int index) {
-        CRTopDirItem * item = deviceInfo.topDirs.getItem(index);
+        CRTopDirItem * item = _items.getItem(index);
         switch(item->getDirType()) {
         case DIR_TYPE_INTERNAL_STORAGE:
             return lString8("integrated_circuit");
@@ -349,12 +362,17 @@ public:
         }
     }
     CRUIFileSystemDirsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_BROWSE_FILESYSTEM) {
-        deviceInfo.topDirs.sort(0);
+        updateItems();
     }
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
-        CRTopDirItem * item = deviceInfo.topDirs.getItem(itemIndex);
-        _home->getMain()->showFolder(item->getPathName(), true);
+        CRTopDirItem * item = _items.getItem(itemIndex);
+        lString8 path = item->getPathName();
+        if (!deviceInfo.isTopDir(path)) {
+            bookDB->updateFolderBookmarkUsage(path);
+            updateItems();
+        }
+        _home->getMain()->showFolder(path, true);
         return true;
     }
 };
@@ -769,6 +787,11 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
         return CRUIWidget::onTouchEvent(event);
     }
     return true;
+}
+
+void CRUIHomeWidget::updateFolderBookmarks() {
+    _fileSystem->updateItems();
+    invalidate();
 }
 
 /// override to handle menu or other action

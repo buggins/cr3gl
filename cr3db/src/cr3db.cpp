@@ -353,6 +353,136 @@ bool CRBookDB::saveFolder(BookDBFolder * item) {
 	return !err;
 }
 
+bool CRBookDB::removeFolderBookmark(lString8 path) {
+    DBString s(path.c_str());
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.get(s);
+    if (!bookmark)
+        return false;
+    return removeFolderBookmark(bookmark);
+}
+
+bool CRBookDB::isFolderBookmarked(lString8 path) {
+    DBString s(path.c_str());
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.get(s);
+    return (bookmark != NULL);
+}
+
+void CRBookDB::updateFolderBookmarkUsage(lString8 path) {
+    DBString s(path.c_str());
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.get(s);
+    if (bookmark) {
+        bookmark->lastUsage = GetCurrentTimeMillis();
+        saveFolderBookmark(bookmark);
+    }
+}
+
+void CRBookDB::addFolderBookmark(lString8 path) {
+    DBString s(path.c_str());
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.get(s);
+    if (bookmark)
+        return;
+    bookmark = new BookDBFolderBookmark();
+    bookmark->name = s;
+    bookmark->lastUsage = GetCurrentTimeMillis();
+    saveFolderBookmark(bookmark);
+    delete bookmark;
+}
+
+bool CRBookDB::removeFolderBookmark(BookDBFolderBookmark * folderBookmark) {
+    if (!folderBookmark)
+        return true;
+    //CRLog::trace("saveFolder(%s)", item->name.get());
+    BookDBFolderBookmark * byId = NULL;
+    BookDBFolderBookmark * byName = NULL;
+    if (folderBookmark->id)
+        byId = _folderBookmarkCache.get(folderBookmark->id);
+    byName = _folderBookmarkCache.get(folderBookmark->name);
+    //CRLog::trace("existing item %s by name", byName ? "found" : "not found");
+    if (!byId && !byName)
+        return true; // not exist - treat as removed
+
+    // guarded update of DB
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    if (!byId)
+        byId = byName;
+    err = stmt.prepare("DELETE FROM folder_bookmark WHERE id = ?;") != 0 || err;
+    if (!err) {
+        //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+        stmt.bindInt64(1, folderBookmark->id);
+        err = (stmt.step() != DB_DONE) || err;
+        if (!err) {
+            _folderBookmarkCache.remove(folderBookmark->id);
+        }
+    }
+    return !err;
+}
+
+bool CRBookDB::saveFolderBookmark(BookDBFolderBookmark * item) {
+    if (!item)
+        return true;
+    //CRLog::trace("saveFolder(%s)", item->name.get());
+    BookDBFolderBookmark * byId = NULL;
+    BookDBFolderBookmark * byName = NULL;
+    if (item->id)
+        byId = _folderBookmarkCache.get(item->id);
+    byName = _folderBookmarkCache.get(item->name);
+    //CRLog::trace("existing item %s by name", byName ? "found" : "not found");
+    if (byId && *byId == *item)
+        return true;
+    if (byName) {
+        item->id = byName->id;
+        if (*byName == *item)
+            return true;
+        byId = byName; // allow update
+    }
+    // guarded update of DB
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    if (byId) {
+        // something is changed
+        err = stmt.prepare("UPDATE folder_bookmark SET name = ?, type = ?, last_usage = ? WHERE id = ?;") != 0 || err;
+        if (!err) {
+            //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+            stmt.bindText(1, item->name);
+            stmt.bindInt(2, item->type);
+            stmt.bindInt64(3, item->lastUsage);
+            stmt.bindInt64(4, item->id);
+            err = (stmt.step() != DB_DONE) || err;
+            if (!err) {
+                item->id = stmt.lastInsertId();
+                BookDBFolderBookmark * cacheItem = item->clone();
+                _folderBookmarkCache.put(cacheItem);
+            }
+            // update cache item
+            *byId = *item;
+        }
+    } else {
+        //CRLog::trace("before prepare INSERT (%s, %d)", item->name.get(), item->name.length());
+        err = stmt.prepare("INSERT INTO folder_bookmark (name, type, last_usage) VALUES (?, ?, ?);") != 0 || err;
+        if (!err) {
+            //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+            stmt.bindText(1, item->name);
+            stmt.bindInt(2, item->type);
+            stmt.bindInt64(3, item->lastUsage);
+            err = (stmt.step() != DB_DONE) || err;
+            if (!err) {
+                item->id = stmt.lastInsertId();
+                BookDBFolderBookmark * cacheItem = item->clone();
+                _folderBookmarkCache.put(cacheItem);
+            }
+        }
+    }
+    return !err;
+}
+
 bool CRBookDB::saveAuthor(BookDBAuthor * item) {
 	//CRLog::trace("saveAuthor()");
 	if (!item)
@@ -1395,6 +1525,14 @@ void BookDBCatalogCache::getAll(LVPtrVector<BookDBCatalog> & catalogs) {
     catalogs.sort(compare_last_usage_time);
 }
 
+bool CRBookDB::loadFolderBookmarks(LVPtrVector<BookDBFolderBookmark> & folderBookmarks) {
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    _folderBookmarkCache.getAll(folderBookmarks);
+    return true;
+}
+
 bool CRBookDB::loadOpdsCatalogs(LVPtrVector<BookDBCatalog> & catalogs) {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
     SQLiteTransactionGuard dbGuard(_db);
@@ -1689,6 +1827,28 @@ BookDBFolderBookmark * BookDBFolderBookmarkCache::get(const DBString & name) {
     return _byName.get(name);
 }
 
+static int folder_bookmarks_compare_last_usage_time(const BookDBFolderBookmark ** p1, const BookDBFolderBookmark ** p2) {
+    lInt64 t1 = (*p1)->lastUsage;
+    lInt64 t2 = (*p2)->lastUsage;
+    if (t1 > t2)
+        return -1;
+    if (t1 < t2)
+        return 1;
+    return 0;
+}
+
+void BookDBFolderBookmarkCache::getAll(LVPtrVector<BookDBFolderBookmark> & folderBookmarks) {
+    folderBookmarks.clear();
+    LVHashTable<lUInt64, BookDBFolderBookmark *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBFolderBookmark *>::pair * item = iter.next();
+        if (!item)
+            break;
+        folderBookmarks.add(item->value->clone());
+    }
+    folderBookmarks.sort(folder_bookmarks_compare_last_usage_time);
+}
+
 void BookDBFolderBookmarkCache::put(BookDBFolderBookmark * item) {
     BookDBFolderBookmark * oldById = _byId.get(item->id);
     if (oldById == item) { // already the same item
@@ -1701,6 +1861,15 @@ void BookDBFolderBookmarkCache::put(BookDBFolderBookmark * item) {
     }
     _byId.set(item->id, item);
     _byName.set(item->name, item);
+}
+
+void BookDBFolderBookmarkCache::remove(lInt64 id) {
+    BookDBFolderBookmark * byId = _byId.get(id);
+    if (!byId)
+        return;
+    _byId.remove(id);
+    _byName.remove(byId->name);
+    delete byId;
 }
 
 void BookDBFolderBookmarkCache::clear() {

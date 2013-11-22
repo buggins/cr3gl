@@ -446,6 +446,12 @@ bool CRUIMainWidget::isVirtualKeyboardShown() {
     return false;
 }
 
+void CRUIMainWidget::updateFolderBookmarks() {
+    if (_home)
+        _home->updateFolderBookmarks();
+}
+
+
 CRUIMainWidget::CRUIMainWidget()
 : _eventManager(NULL), _home(NULL), _read(NULL)
 , _popup(NULL), _keyboard(NULL), _popupBackground(NULL),    _screenUpdater(NULL)

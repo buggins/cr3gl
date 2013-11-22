@@ -413,6 +413,8 @@ public:
     void hideVirtualKeyboard();
     bool isVirtualKeyboardShown();
 
+    void updateFolderBookmarks();
+
     CRUIMainWidget();
     virtual ~CRUIMainWidget();
 };

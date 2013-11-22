@@ -27,6 +27,9 @@ class CRUIHomeWidget : public CRUIWindowWidget, public CRUIOnClickListener {
 	CRUILibraryWidget * _library;
 	CRUIOnlineCatalogsWidget * _onlineCatalogsList;
 public:
+
+    void updateFolderBookmarks();
+
     CRUIHomeWidget(CRUIMainWidget * main);
     virtual ~CRUIHomeWidget() {}
 	/// measure dimensions

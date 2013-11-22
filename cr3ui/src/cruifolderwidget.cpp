@@ -427,10 +427,29 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
+    case CMD_FOLDER_BOOKMARK_ADD:
+    {
+        lString8 path = _dir->getPathName();
+        bookDB->addFolderBookmark(path);
+        _main->updateFolderBookmarks();
+        return true;
+    }
+    case CMD_FOLDER_BOOKMARK_REMOVE:
+    {
+        lString8 path = _dir->getPathName();
+        bookDB->removeFolderBookmark(path);
+        _main->updateFolderBookmarks();
+        return true;
+    }
     case CMD_MENU:
     {
         CRUIActionList actions;
         actions.add(ACTION_BACK);
+        lString8 path = _dir->getPathName();
+        if (bookDB->isFolderBookmarked(path))
+            actions.add(ACTION_FOLDER_BOOKMARK_REMOVE);
+        else if (!deviceInfo.isTopDir(path))
+            actions.add(ACTION_FOLDER_BOOKMARK_ADD);
         if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
             actions.add(ACTION_DAY_MODE);
         else
