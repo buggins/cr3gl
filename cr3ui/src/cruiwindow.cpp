@@ -328,7 +328,7 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * body, int location, const lvRec
     invalidate();
 }
 
-class CRUIListMenu : public CRUIListWidget, public CRUIListAdapter {
+class CRUIListMenu : public CRUIListWidget /*, public CRUIListAdapter*/ {
     CRUIWindowWidget * _window;
     CRUIActionList _actionList;
     CRUIHorizontalLayout * _itemLayout;
@@ -345,15 +345,15 @@ public:
         _itemIcon->setStyle("MENU_ITEM_ICON");
         _itemText->setStyle("MENU_ITEM_TEXT");
         _itemLayout->setStyle("MENU_ITEM");
-        setAdapter(this);
+        //setAdapter(this);
     }
-    virtual int getItemCount(CRUIListWidget * list) {
-        CR_UNUSED(list);
+    virtual int getItemCount() { //CRUIListWidget * list
+        //CR_UNUSED(list);
         return _actionList.length();
     }
 
-    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index) {
-        CR_UNUSED(list);
+    virtual CRUIWidget * getItemWidget(int index) { //CRUIListWidget * list
+        //CR_UNUSED(list);
         _itemIcon->setImage(_actionList[index]->icon_res);
         _itemText->setText(_actionList[index]->getName());
         return _itemLayout;
