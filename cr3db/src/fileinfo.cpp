@@ -834,7 +834,9 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	for (int i = 0; i < dir->GetObjectCount(); i++) {
 		const LVContainerItemInfo * item = dir->GetObjectInfo(i);
 		lString16 pathName = (lString16(dir->GetName()) + item->GetName());
-		lString8 pathName8 = UnicodeToUtf8(pathName);
+        lString16 pathNameLower = pathName;
+        pathNameLower.lowercase();
+        lString8 pathName8 = UnicodeToUtf8(pathName);
 		if (item->IsContainer()) {
 			hash = hash * 31 + getHash(pathName);
 			// usual directory
@@ -845,10 +847,10 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 			hash = hash * 31 + getHash(pathName) + 1826327 * item->GetSize();
 			LVStreamRef stream = dir->OpenStream(item->GetName(), LVOM_READ);
 			if (!stream.isNull()) {
-                // don't try to open epubs
+                // only open zips
                 lString16 name(item->GetName());
                 name.lowercase();
-                LVContainerRef arc = !name.endsWith(L".epub") ? LVOpenArchieve(stream) : LVContainerRef();
+                LVContainerRef arc = name.endsWith(L".zip") ? LVOpenArchieve(stream) : LVContainerRef();
 				if (!arc.isNull()) {
 					//CRLog::trace("archive: %s", pathName8.c_str());
 					int knownFiles = 0;
@@ -887,7 +889,8 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 					continue;
 				}
 			}
-			int fmt = LVDocFormatFromExtension(pathName);
+            // regular file
+            int fmt = LVDocFormatFromExtension(pathNameLower);
 			if (!fmt)
 				continue; // UNKNOWN_FORMAT
 			// try as normal file
