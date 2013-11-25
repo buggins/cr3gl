@@ -86,10 +86,28 @@ void CRUIMainWidget::onAllCoverpagesReady(int newpos) {
     }
 }
 
+static bool first_recent_dir_scan = true;
 void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
     CRLog::trace("CRUIMainWidget::onDirectoryScanFinished");
     if (item->getDirType() == DIR_TYPE_RECENT) {
         // set recent book
+        if (item->itemCount() == 0 && first_recent_dir_scan) {
+            CRLog::trace("Recent books list is empty: creating manual book item");
+            first_recent_dir_scan = false;
+            CRFileItem * book = createManualBook();
+            LVPtrVector<BookDBBook> books;
+            books.add(book->getBook()->clone());
+            bookDB->saveBooks(books);
+            BookDBBookmark * _lastPosition = new BookDBBookmark();
+            _lastPosition->bookId = books[0]->id;
+            _lastPosition->type = bmkt_lastpos;
+            _lastPosition->percent = 0;
+            _lastPosition->timestamp = GetCurrentTimeMillis();
+            _lastPosition->titleText = "Cool Reader Manual";
+            dirCache->saveLastPosition(books[0], _lastPosition);
+            delete _lastPosition;
+            delete book;
+        }
         if (item->itemCount() > 0) {
             _home->requestLayout();
             //_home->setLastBook(item->getItem(0));
@@ -933,7 +951,7 @@ CRFileItem * CRUIMainWidget::createManualBook() {
         book = new BookDBBook();
     book->pathname = DBString(fn.c_str());
     book->filename = DBString(LVExtractFilename(fn).c_str());
-    book->title = DBString(_8(STR_ACTION_HELP).c_str());
+    book->title = DBString("Cool Reader Manual");
     BookDBFolder * folder = new BookDBFolder();
     folder->name = DBString(LVExtractPath(fn).c_str());
     book->folder = folder;
