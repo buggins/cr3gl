@@ -313,7 +313,7 @@ public:
 
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
-    void postUpdatePosition();
+    void postUpdatePosition(int delay = 1000);
 
     /// overriden to treat popup as first child
     virtual int getChildCount();

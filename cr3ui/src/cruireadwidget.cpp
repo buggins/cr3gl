@@ -26,6 +26,8 @@ using namespace CRUI;
 #define SELECTION_LONG_TAP_DELAY_MILLIS 800
 #define GO_TO_PERCENT_REPEAT_TIMER_ID 123002
 #define GO_TO_PERCENT_REPEAT_TIMER_DELAY 250
+#define SAVE_POSITION_TIMER_ID 123003
+#define SAVE_POSITION_DELAY_MILLIS 1000
 
 lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
 	if (alpha <=0)
@@ -841,7 +843,10 @@ void CRUIReadWidget::beforeNavigationFrom() {
     updatePosition();
 }
 
+
 void CRUIReadWidget::updatePosition() {
+    CRUIEventManager::cancelTimer(SAVE_POSITION_TIMER_ID);
+    concurrencyProvider->executeGui(NULL, 0);
     CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
         return;
@@ -941,7 +946,7 @@ void CRUIReadWidget::onDocumentRenderFinished(lString8 pathname) {
     if (!_startPositionIsUpdated) {
         // call update position to refresh last access timestamp
         _startPositionIsUpdated = true;
-        updatePosition();
+        postUpdatePosition();
     }
     updateBookmarks();
     _main->update(true);
@@ -1030,17 +1035,18 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
     }
 }
 
-class UpdatePositionEvent : public CRRunnable {
-    CRUIReadWidget * _widget;
-public:
-    UpdatePositionEvent(CRUIReadWidget * widget) : _widget(widget) { }
-    virtual void run() {
-        _widget->updatePosition();
-    }
-};
+//class UpdatePositionEvent : public CRRunnable {
+//    CRUIReadWidget * _widget;
+//public:
+//    UpdatePositionEvent(CRUIReadWidget * widget) : _widget(widget) { }
+//    virtual void run() {
+//        _widget->updatePosition();
+//    }
+//};
 
-void CRUIReadWidget::postUpdatePosition() {
-    concurrencyProvider->executeGui(new UpdatePositionEvent(this));
+void CRUIReadWidget::postUpdatePosition(int delay) {
+    CRUIEventManager::setTimer(SAVE_POSITION_TIMER_ID, this, delay, false);
+    //concurrencyProvider->executeGui(new UpdatePositionEvent(this), delay);
 }
 
 bool CRUIReadWidget::isAnimating() {
@@ -1457,7 +1463,7 @@ void CRUIReadWidget::onPopupClosing(CRUIWidget * popup) {
         if (lastPos != currPos) {
             _docview->savePosToNavigationHistory(lastPos);
             //_docview->savePosToNavigationHistory(currPos);
-            updatePosition();
+            postUpdatePosition();
         }
     }
     cancelSelection();
@@ -1613,6 +1619,9 @@ bool CRUIReadWidget::onTimerEvent(lUInt32 timerId) {
                 }
             }
         }
+        return false;
+    } else if (timerId == SAVE_POSITION_TIMER_ID) {
+        updatePosition();
         return false;
     }
     return false;
@@ -2050,7 +2059,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
     case CMD_LINK_BACK:
         if (_docview->canGoBack()) {
             _docview->goBack();
-            updatePosition();
+            postUpdatePosition();
             _main->update(true);
         } else
             _main->back();
