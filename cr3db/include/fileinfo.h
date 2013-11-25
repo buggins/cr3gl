@@ -11,6 +11,7 @@
 #include <cr3db.h>
 #include <crconcurrent.h>
 #include <bookformats.h>
+#include <lvstream.h>
 
 namespace CRUI {
 	enum FolderSortOrder {
@@ -330,5 +331,7 @@ extern CRDirCache * dirCache;
 void CRSetupDirectoryCacheManager();
 /// stop dirCache thread, remove dirCache
 void CRStopDirectoryCacheManager();
+
+BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName, LVContainerRef & arcContainer);
 
 #endif /* FILEINFO_H_ */

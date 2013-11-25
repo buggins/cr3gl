@@ -303,6 +303,10 @@ void CRUIMainWidget::openBook(const CRFileItem * file) {
     if (!file) {
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
         file = dir && dir->itemCount() ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+    } else {
+        if (!file->getBook()) {
+            file = dirCache->scanFile(file->getPathName());
+        }
     }
     if (!file)
         return;

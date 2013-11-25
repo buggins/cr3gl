@@ -903,6 +903,11 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     clearImageCaches();
     _main->showSlowOperationPopup();
     _fileItem = static_cast<CRFileItem*>(file->clone());
+    BookDBBook * book = file->getBook();
+    if (!book) {
+        CRLog::error("Book entry is not found in FileInfo %s", _fileItem->getPathName().c_str());
+        return false;
+    }
     _lastPosition = bookDB->loadLastPosition(file->getBook());
     bookDB->loadBookmarks(file->getBook(), _bookmarks);
     lString8 bookLang(_fileItem->getBook() ? _fileItem->getBook()->language.c_str() : "");

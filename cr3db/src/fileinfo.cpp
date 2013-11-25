@@ -156,7 +156,7 @@ void extractFB2Authors( ldomDocument * doc, bool shortMiddleName, BookDBBook * p
 bool LVParseBookProperties(LVStreamRef stream, BookDBBook * props) {
 
 
-    if ( DetectEpubFormat( stream ) ) {
+    if ( props->format == doc_format_epub && DetectEpubFormat( stream ) ) {
         CRLog::trace("GetBookProperties() : epub format detected");
     	return GetEPUBBookProperties(stream, props);
     }
@@ -674,9 +674,6 @@ CRFileItem * CRDirCache::findBook(const lString8 & pathname) {
     return NULL;
 }
 
-// fwd declaration
-BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName);
-
 CRFileItem * CRDirCache::scanFile(const lString8 & pathname) {
     CRFileItem * res = NULL;
     {
@@ -695,7 +692,8 @@ CRFileItem * CRDirCache::scanFile(const lString8 & pathname) {
             } else {
                 path = UnicodeToUtf8(LVExtractPath(Utf8ToUnicode(pathname), false));
             }
-            book = LVParseBook(path, pathname);
+            LVContainerRef container;
+            book = LVParseBook(path, pathname, container);
         }
         if (book) {
             res->setBook(book);
@@ -738,7 +736,7 @@ bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash) 
 	return true;
 }
 
-BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName) {
+BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName, LVContainerRef & arcContainer) {
     lString16 lower = Utf8ToUnicode(pathName);
     lower.lowercase();
     int fmt = LVDocFormatFromExtension(lower);
@@ -755,18 +753,25 @@ BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName) {
         if (!stat(arcname.c_str(), &fs )) {
             createTime = fs.st_mtime * (lInt64)1000;
         }
-        arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
-        if (!arcstream.isNull()) {
-            //CRLog::trace("trying to open archive %s", arcname.c_str());
-            arc = LVOpenArchieve(arcstream);
-            if (!arc.isNull()) {
-                //CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
-                stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
-                //CRLog::error("returned from open stream");
-            } else {
-                CRLog::error("Failed to open archive %s", arcname.c_str());
+        if (!arcContainer.isNull()) {
+            arc = arcContainer;
+        }
+        if (arc.isNull()) {
+            arcstream = LVOpenFileStream(arcname.c_str(), LVOM_READ);
+            if (!arcstream.isNull()) {
+                //CRLog::trace("trying to open archive %s", arcname.c_str());
+                arc = LVOpenArchieve(arcstream);
             }
         }
+        if (!arc.isNull()) {
+            //CRLog::trace("trying to open stream %s from archive %s", fname.c_str(), arcname.c_str());
+            stream = arc->OpenStream(Utf8ToUnicode(fname).c_str(), LVOM_READ);
+            //CRLog::error("returned from open stream");
+        } else {
+            CRLog::error("Failed to open archive %s", arcname.c_str());
+        }
+//        if (path.empty())
+//            path = arcname;
     } else {
         fname = UnicodeToUtf8(LVExtractFilename(Utf8ToUnicode(pathName)));
         stream = LVOpenFileStream(pathName.c_str(), LVOM_READ);
@@ -808,6 +813,9 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	hash = 0;
 	LVContainerRef dir;
 	LVStreamRef arcStream;
+    lString16 lowerpath = Utf8ToUnicode(path);
+    lowerpath.lowercase();
+    isArchive = isArchive || lowerpath.endsWith(".zip");
 
 #ifdef SLOW_SCAN_SIMULATION_FOR_TEST
     // for testing
@@ -833,7 +841,7 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	lString8Collection forParse;
 	for (int i = 0; i < dir->GetObjectCount(); i++) {
 		const LVContainerItemInfo * item = dir->GetObjectInfo(i);
-		lString16 pathName = (lString16(dir->GetName()) + item->GetName());
+        lString16 pathName = (lString16(dir->GetName()) + (isArchive ? "@/" : "") + item->GetName());
         lString16 pathNameLower = pathName;
         pathNameLower.lowercase();
         lString8 pathName8 = UnicodeToUtf8(pathName);
@@ -871,7 +879,8 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 								// TODO: make arc+item path
 								lString16 fn = pathName + L"@/" + arcItem;
 								foundItem = UnicodeToUtf8(fn);
-							}
+                            } else if (knownFiles > 1)
+                                break;
 						}
 					}
 					if (knownFiles == 1) {
@@ -916,7 +925,7 @@ bool LVListDirectory(const lString8 & path, bool isArchive, LVPtrVector<CRDirEnt
 	CRLog::trace("%d entries for parse", forParse.length());
 	for (int i = 0; i<forParse.length(); i++) {
 		lString8 pathName = forParse[i];
-        BookDBBook * book = LVParseBook(path, pathName);
+        BookDBBook * book = LVParseBook(path, pathName, dir);
         if (book) {
             forSave.add(book);
         }
