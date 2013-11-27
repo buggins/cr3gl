@@ -412,6 +412,7 @@ public:
     BookDBCatalog * get(const DBString & name);
     void getAll(LVPtrVector<BookDBCatalog> & catalogs);
     void put(BookDBCatalog * item);
+    void remove(lInt64 id);
     void clear();
     ~BookDBCatalogCache() { clear(); }
 };
@@ -511,6 +512,12 @@ public:
 	bool updateSchema();
 	/// read DB content to caches
 	bool fillCaches();
+
+    bool saveOpdsCatalog(BookDBCatalog * catalog);
+    bool removeOpdsCatalog(BookDBCatalog * catalog);
+    bool removeOpdsCatalog(lInt64 id);
+    bool updateOpdsCatalogLastUsage(lInt64 id);
+
 
     bool saveFolderBookmark(BookDBFolderBookmark * folderBookmark);
 

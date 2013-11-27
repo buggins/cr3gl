@@ -34,34 +34,34 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * 
 
     // add edit boxes
     CRUITextWidget * label = new CRUITextWidget(STR_OPDS_CATALOG_NAME);
-    CRUIEditWidget * edit = new CRUIEditWidget();
+    _edTitle = new CRUIEditWidget();
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
-    edit->setText(Utf8ToUnicode(_catalog->name.c_str()));
-    edit->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _edTitle->setText(Utf8ToUnicode(_catalog->name.c_str()));
+    _edTitle->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     layout->addChild(label);
-    layout->addChild(edit);
+    layout->addChild(_edTitle);
     label = new CRUITextWidget(STR_OPDS_CATALOG_URL);
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
-    edit = new CRUIEditWidget();
-    edit->setText(Utf8ToUnicode(_catalog->url.c_str()));
-    edit->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _edUrl = new CRUIEditWidget();
+    _edUrl->setText(Utf8ToUnicode(_catalog->url.c_str()));
+    _edUrl->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     layout->addChild(label);
-    layout->addChild(edit);
+    layout->addChild(_edUrl);
     label = new CRUITextWidget(STR_OPDS_CATALOG_LOGIN);
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
-    edit = new CRUIEditWidget();
-    edit->setText(Utf8ToUnicode(_catalog->login.c_str()));
-    edit->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _edLogin = new CRUIEditWidget();
+    _edLogin->setText(Utf8ToUnicode(_catalog->login.c_str()));
+    _edLogin->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     layout->addChild(label);
-    layout->addChild(edit);
+    layout->addChild(_edLogin);
     label = new CRUITextWidget(STR_OPDS_CATALOG_PASSWORD);
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
-    edit = new CRUIEditWidget();
-    edit->setText(Utf8ToUnicode(_catalog->password.c_str()));
-    edit->setPasswordChar('*');
-    edit->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    _edPassword = new CRUIEditWidget();
+    _edPassword->setText(Utf8ToUnicode(_catalog->password.c_str()));
+    _edPassword->setPasswordChar('*');
+    _edPassword->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     layout->addChild(label);
-    layout->addChild(edit);
+    layout->addChild(_edPassword);
     layout->setPadding(PT_TO_PX(3));
 
     // add spacers
@@ -169,6 +169,29 @@ bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
         }
     }
     return false;
+}
+
+void CRUIOpdsPropsWidget::beforeNavigationFrom() {
+    // save if possible
+    lString8 title = UnicodeToUtf8(_edTitle->getText());
+    lString8 url = UnicodeToUtf8(_edUrl->getText());
+    lString8 login = UnicodeToUtf8(_edLogin->getText());
+    lString8 password = UnicodeToUtf8(_edPassword->getText());
+    title.trim();
+    url.trim();
+    login.trim();
+    password.trim();
+    if (_catalog->name != title.c_str() || _catalog->url != url.c_str() || _catalog->login != login.c_str() || _catalog->password != password.c_str()) {
+        if (!title.empty()) {
+            if ((url.startsWith("http://") || url.startsWith("https://")) && url.length() >= 12) {
+                _catalog->name = title.c_str();
+                _catalog->url = url.c_str();
+                _catalog->login = login.c_str();
+                _catalog->password = password.c_str();
+                bookDB->saveOpdsCatalog(_catalog);
+            }
+        }
+    }
 }
 
 /// motion event handler, returns true if it handled event

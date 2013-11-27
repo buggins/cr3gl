@@ -422,6 +422,132 @@ bool CRBookDB::removeFolderBookmark(BookDBFolderBookmark * folderBookmark) {
     return !err;
 }
 
+bool CRBookDB::saveOpdsCatalog(BookDBCatalog * catalog) {
+    if (!catalog)
+        return true;
+    //CRLog::trace("saveFolder(%s)", item->name.get());
+    BookDBCatalog * byId = NULL;
+    BookDBCatalog * byName = NULL;
+    if (catalog->id)
+        byId = _catalogCache.get(catalog->id);
+    byName = _catalogCache.get(catalog->name);
+    //CRLog::trace("existing item %s by name", byName ? "found" : "not found");
+    if (byId && *byId == *catalog)
+        return true;
+    if (byName) {
+        catalog->id = byName->id;
+        if (*byName == *catalog)
+            return true;
+        byId = byName; // allow update
+    }
+    // guarded update of DB
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    if (byId) {
+        // something is changed
+        /*
+         *				"id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "name VARCHAR NOT NULL COLLATE NOCASE, "
+                "url VARCHAR NOT NULL COLLATE NOCASE, "
+                "login VARCHAR COLLATE NOCASE, "
+                "password VARCHAR COLLATE NOCASE, "
+                "last_usage INTEGER DEFAULT 0"
+
+         */
+        err = stmt.prepare("UPDATE opds_catalog SET name = ?, url = ?, login = ?, password = ?, last_usage = ? WHERE id = ?;") != 0 || err;
+        if (!err) {
+            //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+            stmt.bindText(1, catalog->name);
+            stmt.bindText(2, catalog->url);
+            stmt.bindText(3, catalog->login);
+            stmt.bindText(4, catalog->password);
+            stmt.bindInt64(5, catalog->lastUsage);
+            stmt.bindInt64(6, catalog->id);
+            err = (stmt.step() != DB_DONE) || err;
+            if (!err) {
+                catalog->id = stmt.lastInsertId();
+                BookDBCatalog * cacheItem = catalog->clone();
+                _catalogCache.put(cacheItem);
+            }
+            // update cache item
+            *byId = *catalog;
+        }
+    } else {
+        //CRLog::trace("before prepare INSERT (%s, %d)", item->name.get(), item->name.length());
+        err = stmt.prepare("INSERT INTO opds_catalog (name, url, login, password, last_usage) VALUES (?, ?, ?, ?, ?);") != 0 || err;
+        if (!err) {
+            //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+            stmt.bindText(1, catalog->name);
+            stmt.bindText(2, catalog->url);
+            stmt.bindText(3, catalog->login);
+            stmt.bindText(4, catalog->password);
+            stmt.bindInt64(5, catalog->lastUsage);
+            err = (stmt.step() != DB_DONE) || err;
+            if (!err) {
+                catalog->id = stmt.lastInsertId();
+                BookDBCatalog * cacheItem = catalog->clone();
+                _catalogCache.put(cacheItem);
+            }
+        }
+    }
+    return !err;
+}
+
+bool CRBookDB::removeOpdsCatalog(BookDBCatalog * catalog) {
+    if (!catalog)
+        return true;
+    //CRLog::trace("saveFolder(%s)", item->name.get());
+    BookDBCatalog * byId = NULL;
+    BookDBCatalog * byName = NULL;
+    if (catalog->id)
+        byId = _catalogCache.get(catalog->id);
+    byName = _catalogCache.get(catalog->name);
+    //CRLog::trace("existing item %s by name", byName ? "found" : "not found");
+    if (!byId && !byName)
+        return true; // not exist - treat as removed
+
+    // guarded update of DB
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+
+    SQLiteStatement stmt(&_db);
+    bool err = false;
+    if (!byId)
+        byId = byName;
+    err = stmt.prepare("DELETE FROM opds_catalog WHERE id = ?;") != 0 || err;
+    if (!err) {
+        //CRLog::trace("calling bindText(1, %s, %d)", item->name.get(), item->name.length());
+        stmt.bindInt64(1, catalog->id);
+        err = (stmt.step() != DB_DONE) || err;
+        if (!err) {
+            _catalogCache.remove(catalog->id);
+        }
+    }
+    return !err;
+}
+
+bool CRBookDB::removeOpdsCatalog(lInt64 id) {
+    BookDBCatalog * catalog = _catalogCache.get(id);
+    if (!catalog)
+        return false;
+    return removeOpdsCatalog(catalog);
+}
+
+bool CRBookDB::updateOpdsCatalogLastUsage(lInt64 id) {
+    if (!id)
+        return false;
+    BookDBCatalog * catalog = _catalogCache.get(id);
+    if (catalog) {
+        catalog->lastUsage = GetCurrentTimeMillis();
+        return saveOpdsCatalog(catalog);
+    }
+    return false;
+}
+
 bool CRBookDB::saveFolderBookmark(BookDBFolderBookmark * item) {
     if (!item)
         return true;
@@ -1885,6 +2011,15 @@ void BookDBFolderBookmarkCache::clear() {
 
 
 
+
+void BookDBCatalogCache::remove(lInt64 id) {
+    BookDBCatalog * byId = _byId.get(id);
+    if (!byId)
+        return;
+    _byId.remove(id);
+    _byName.remove(byId->name);
+    delete byId;
+}
 
 BookDBCatalog * BookDBCatalogCache::get(lInt64 key) {
     return _byId.get(key);
