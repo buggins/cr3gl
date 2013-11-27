@@ -196,7 +196,7 @@ public:
     }
 };
 
-class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
+class CRUIHomeItemListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener, public CRUIOnListItemLongClickListener {
 protected:
 	CRUITextWidget * _caption;
 	CRUIListWidget * _list;
@@ -205,6 +205,12 @@ protected:
 	CRUITextWidget * _textWidget;
     CRUIHomeWidget * _home;
 public:
+    virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        CR_UNUSED(itemIndex);
+        return false;
+    }
+
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
         CR_UNUSED(itemIndex);
@@ -233,6 +239,7 @@ public:
         _list->setBackground("home_frame.9.png");
 		_list->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
         _list->setOnItemClickListener(this);
+        _list->setOnItemLongClickListener(this);
         addChild(_list);
 
 		_itemImage = new CRUIImageWidget(NULL);
@@ -491,24 +498,29 @@ public:
     CRUIOnlineCatalogsWidget(CRUIHomeWidget * home) : CRUIHomeItemListWidget(home, STR_ONLINE_CATALOGS) {
         init();
 	}
+
     virtual lString8 getItemIcon(int index) {
         CR_UNUSED(index);
         return lString8("internet");
     }
+
     virtual void measure(int baseWidth, int baseHeight) {
         init();
         CRUILinearLayout::measure(baseWidth, baseHeight);
     }
+
     virtual int getItemCount(CRUIListWidget * list) {
         CR_UNUSED(list);
         return _entries.length();
     }
+
     virtual lString16 getItemText(int index) {
         if (index < 0 || index >= _entries.length())
             return lString16();
         CRDirEntry * item = _entries[index];
         return item->getTitle();
     }
+
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
         if (itemIndex < 0 || itemIndex >= _entries.length())
@@ -517,6 +529,16 @@ public:
         _home->getMain()->showOpds(item->getCatalog());
         return true;
     }
+
+    virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        if (itemIndex < 0 || itemIndex >= _entries.length())
+            return false;
+        CROpdsCatalogsItem * item = _entries[itemIndex];
+        _home->getMain()->showOpdsProps(item->getCatalog());
+        return true;
+    }
+
 };
 
 class CRUIRecentBooksListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {

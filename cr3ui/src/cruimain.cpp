@@ -261,6 +261,17 @@ void CRUIMainWidget::hideSlowOperationPopup()
     }
 }
 
+void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
+    lString8 folder("OPDS_PROPS");
+    int newpos = _history.findPosByMode(MODE_OPDS_PROPS, folder);
+    if (newpos < 0) {
+        // create page now, to lock corresponding folder
+        _history.setNext(new OPDSPropsItem(this, dir));
+        newpos = _history.pos() + 1;
+    }
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+}
+
 void CRUIMainWidget::showOpds(BookDBCatalog * dir) {
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     //_pendingFolder = folder;
