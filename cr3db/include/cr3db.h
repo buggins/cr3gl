@@ -156,6 +156,7 @@ public:
         password = v.password;
         lastUsage = v.lastUsage;
     }
+
     BookDBCatalog & operator = (const BookDBCatalog & v) {
         id = v.id;
         name = v.name;
@@ -165,6 +166,11 @@ public:
         lastUsage = v.lastUsage;
         return *this;
     }
+
+    bool isValid() {
+        return name.length() > 0 && url.length() > 12;
+    }
+
     bool operator == (const BookDBCatalog & v) const {
         if (this == NULL && &v == NULL)
             return true;

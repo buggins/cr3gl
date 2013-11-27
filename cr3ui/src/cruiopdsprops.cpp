@@ -23,7 +23,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * 
         _catalog->name = "";
         _catalog->url = "http://";
     }
-    _title = new CRUITitleBarWidget(lString16(""), this, this, false);
+    _title = new CRUITitleBarWidget(lString16(""), this, this, true);
     _title->setTitle(STR_OPDS_CATALOG_PROPS_DIALOG_TITLE);
     _body->addChild(_title);
     //_fileList = new CRUIOpdsItemListWidget(this);
@@ -127,21 +127,33 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
     case CMD_MENU:
     {
         CRUIActionList actions;
-        actions.add(ACTION_BACK);
-        if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
-            actions.add(ACTION_DAY_MODE);
-        else
-            actions.add(ACTION_NIGHT_MODE);
-        actions.add(ACTION_SETTINGS);
-        actions.add(ACTION_READER_HOME);
-        actions.add(ACTION_EXIT);
+        actions.add(ACTION_OPDS_CATALOG_OPEN);
+        actions.add(ACTION_OPDS_CATALOG_REMOVE);
+        actions.add(ACTION_OPDS_CATALOG_CANCEL_CHANGES);
         lvRect margins;
         //margins.right = MIN_ITEM_PX * 120 / 100;
         showMenu(actions, ALIGN_TOP, margins, false);
         return true;
     }
-    case CMD_SETTINGS:
-        _main->showSettings(lString8("@settings/browser"));
+    case CMD_OPDS_CATALOG_REMOVE:
+        if (_catalog->id) {
+            bookDB->removeOpdsCatalog(_catalog);
+        }
+        delete _catalog;
+        _catalog = NULL;
+        _main->back();
+        return true;
+    case CMD_OPDS_CATALOG_OPEN:
+        save();
+        if (_catalog->isValid())
+            _main->showOpds(_catalog);
+        else
+            _main->back();
+        return true;
+    case CMD_OPDS_CATALOG_CANCEL_CHANGES:
+        delete _catalog;
+        _catalog = NULL;
+        _main->back();
         return true;
     }
     return false;
@@ -171,7 +183,7 @@ bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
     return false;
 }
 
-void CRUIOpdsPropsWidget::beforeNavigationFrom() {
+void CRUIOpdsPropsWidget::save() {
     // save if possible
     lString8 title = UnicodeToUtf8(_edTitle->getText());
     lString8 url = UnicodeToUtf8(_edUrl->getText());
@@ -188,10 +200,17 @@ void CRUIOpdsPropsWidget::beforeNavigationFrom() {
                 _catalog->url = url.c_str();
                 _catalog->login = login.c_str();
                 _catalog->password = password.c_str();
+                _catalog->lastUsage = GetCurrentTimeMillis();
                 bookDB->saveOpdsCatalog(_catalog);
             }
         }
     }
+}
+
+void CRUIOpdsPropsWidget::beforeNavigationFrom() {
+    if (!_catalog)
+        return;
+    save();
 }
 
 /// motion event handler, returns true if it handled event

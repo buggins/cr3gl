@@ -19,6 +19,7 @@ class CRUIOpdsPropsWidget : public CRUIWindowWidget, public CRUIOnClickListener,
     CRUIEditWidget * _edLogin;
     CRUIEditWidget * _edPassword;
     BookDBCatalog * _catalog;
+    void save();
 public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);

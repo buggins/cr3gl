@@ -275,6 +275,8 @@ void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
 void CRUIMainWidget::showOpds(BookDBCatalog * dir) {
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     //_pendingFolder = folder;
+    dir->lastUsage = GetCurrentTimeMillis();
+    bookDB->updateOpdsCatalogLastUsage(dir->id);
 	lString8 folder(dir->url.c_str());
     int newpos = _history.findPosByMode(MODE_OPDS, folder);
     if (newpos < 0) {
