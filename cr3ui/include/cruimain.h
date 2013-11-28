@@ -462,4 +462,5 @@ public:
     virtual ~CRUIMainWidget();
 };
 
+
 #endif // CRUIMAIN_H

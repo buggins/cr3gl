@@ -10,6 +10,7 @@
 
 #include <crengine.h>
 #include "cruitheme.h"
+#include "crconcurrent.h"
 
 class CRUIWidget;
 
@@ -367,5 +368,76 @@ public:
     virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) = 0;
     virtual ~CRUIOnScrollPosCallback() {}
 };
+
+class CRUIHttpTaskManagerBase;
+class CRUIHttpTaskBase : public CRRunnable {
+public:
+    CRUIHttpTaskManagerBase * _taskManager;
+    int _downloadTaskId;
+    lString8 _url;
+    lString8 _method;
+    lString8 _login;
+    lString8 _password;
+    lString8 _saveAs;
+    int _result;
+    lString8 _resultMessage;
+    lString8 _mimeType;
+    int _size;
+    int _sizeDownloaded;
+    LVStreamRef _stream;
+    volatile bool _cancelled;
+
+    void init(int downloadTaskId, lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+        _downloadTaskId = downloadTaskId;
+        _url = url;
+        _method = method;
+        _login = login;
+        _password = password;
+        _saveAs = saveAs;
+    }
+
+    CRUIHttpTaskBase(CRUIHttpTaskManagerBase * taskManager)
+        : _taskManager(taskManager), _downloadTaskId(0), _result(0), _size(0), _sizeDownloaded(0), _cancelled(false)
+    {
+
+    }
+    virtual ~CRUIHttpTaskBase() {}
+
+    /// will simply call _taskManager->executeTask(this)
+    virtual void run();
+
+    /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
+    virtual void doDownload() { }
+};
+
+class CRUIHttpTaskManagerBase {
+    CRUIEventManager * _eventManager;
+    CRThreadExecutor _executor;
+    LVHashTable<lUInt32, CRUIHttpTaskBase*> _activeTasks;
+    CRMutexRef _lock;
+    int _nextTaskId;
+    int generateTaskId();
+public:
+    //void stopAll();
+    CRUIHttpTaskManagerBase(CRUIEventManager * eventManager, int threadCount);
+    virtual ~CRUIHttpTaskManagerBase() {}
+
+    /// override to create task of custom type
+    virtual CRUIHttpTaskBase * createTask();
+    /// post task to queue
+    virtual void postTask(CRUIHttpTaskBase * task);
+    /// override to do actual download synchronously - will be called in separate thread
+    virtual void executeTask(CRUIHttpTaskBase * task);
+
+    virtual void onTaskProgress(CRUIHttpTaskBase * task);
+    virtual void onTaskFinished(CRUIHttpTaskBase * task);
+
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs);
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId);
+
+};
+
 
 #endif /* CRUIEVENT_H_ */

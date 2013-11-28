@@ -46,6 +46,8 @@
 
 #include <QCoreApplication>
 #include <QThread>
+#include <QNetworkAccessManager>
+#include <QUrl>
 
 #include "cr3qt.h"
 #include "cruimain.h"
@@ -57,6 +59,30 @@ class QOpenGLPaintDevice;
 QT_END_NAMESPACE
 
 
+class CRUIHttpTaskQt : public QObject, public CRUIHttpTaskBase  {
+    Q_OBJECT
+private:
+    QUrl url;
+    QNetworkAccessManager * qnam;
+    QNetworkReply *reply;
+    QFile *file;
+public:
+    CRUIHttpTaskQt(CRUIHttpTaskManagerBase * taskManager, QNetworkAccessManager * _qnam) : CRUIHttpTaskBase(taskManager), qnam(_qnam) {}
+    /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
+    virtual void doDownload();
+};
+
+#define DOWNLOAD_THREADS 5
+class CRUIHttpTaskManagerQt : public QObject, public CRUIHttpTaskManagerBase {
+    Q_OBJECT
+private:
+    QNetworkAccessManager qnam;
+public:
+    CRUIHttpTaskManagerQt(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {}
+    /// override to create task of custom type
+    virtual CRUIHttpTaskBase * createTask() { return new CRUIHttpTaskQt(this, &qnam); }
+};
+
 //! [1]
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions, public CRUIScreenUpdateManagerCallback, public CRUIPlatform
 {
@@ -66,6 +92,7 @@ protected:
     CRUIMainWidget * _widget;
     CRUIEventManager * _eventManager;
     CRUIEventAdapter * _eventAdapter;
+    CRUIHttpTaskManagerQt * _downloadManager;
 public:
     explicit OpenGLWindow(QWindow *parent = 0);
     ~OpenGLWindow();
@@ -92,6 +119,12 @@ public:
     virtual void copyToClipboard(lString16 text);
     /// minimize app or show Home Screen
     virtual void minimizeApp();
+
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs);
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId);
+
 
 public slots:
     void renderLater();

@@ -73,6 +73,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
+    _downloadManager = new CRUIHttpTaskManagerQt(_eventManager);
 }
 //! [1]
 
@@ -82,10 +83,12 @@ OpenGLWindow::~OpenGLWindow()
 
     delete _eventAdapter;
     delete _eventManager;
+    delete _downloadManager;
     delete _widget;
 //    delete m_device;
     _qtgl = NULL;
 }
+
 //! [2]
 void OpenGLWindow::render(QPainter *painter)
 {
@@ -298,4 +301,21 @@ void OpenGLWindow::copyToClipboard(lString16 text) {
     QClipboard *clipboard = QApplication::clipboard();
     QString txt(UnicodeToUtf8(text).c_str());
     clipboard->setText(txt);
+}
+
+
+
+/// returns 0 if not supported, task ID if download task is started
+int OpenGLWindow::openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+    return _downloadManager->openUrl(url, method, login, password, saveAs);
+}
+
+/// cancel specified download task
+void OpenGLWindow::cancelDownload(int downloadTaskId) {
+    _downloadManager->cancelDownload(downloadTaskId);
+}
+
+/// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
+void CRUIHttpTaskQt::doDownload() {
+
 }

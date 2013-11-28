@@ -673,3 +673,71 @@ void CRUIEventManager::dispatchDownloadProgress(int downloadTaskId, lString8 url
     ProgressMessage * msg = new ProgressMessage(_rootWidget, downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
     concurrencyProvider->executeGui(msg);
 }
+
+
+int CRUIHttpTaskManagerBase::generateTaskId() {
+    CRGuard guard(_lock); CR_UNUSED(guard);
+    return ++_nextTaskId;
+}
+
+CRUIHttpTaskManagerBase::CRUIHttpTaskManagerBase(CRUIEventManager * eventManager, int threadCount) : _eventManager(eventManager), _executor(), _activeTasks(100), _nextTaskId(1) {
+    CR_UNUSED(threadCount);
+    _lock = concurrencyProvider->createMutex();
+}
+
+/// override to create task of custom type
+CRUIHttpTaskBase * CRUIHttpTaskManagerBase::createTask() {
+    CRUIHttpTaskBase * task = new CRUIHttpTaskBase(this);
+    return task;
+}
+
+/// returns 0 if not supported, task ID if download task is started
+int CRUIHttpTaskManagerBase::openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+    int taskId = generateTaskId();
+    CRUIHttpTaskBase * task = createTask();
+    task->init(taskId, url, method, login, password, saveAs);
+    CRGuard guard(_lock); CR_UNUSED(guard);
+    _activeTasks.set(taskId, task);
+    executeTask(task);
+    return taskId;
+}
+
+/// cancel specified download task
+void CRUIHttpTaskManagerBase::cancelDownload(int downloadTaskId) {
+    CRGuard guard(_lock); CR_UNUSED(guard);
+    CRUIHttpTaskBase * task = _activeTasks.get(downloadTaskId);
+    if (task) {
+        task->_cancelled = true;
+        _activeTasks.remove(task->_downloadTaskId);
+        //delete task;
+    }
+}
+
+void CRUIHttpTaskBase::run() {
+    _taskManager->executeTask(this);
+}
+
+/// post task to queue
+void CRUIHttpTaskManagerBase::postTask(CRUIHttpTaskBase * task) {
+    _executor.execute(task);
+}
+
+/// override to do actual download synchronously - will be called in separate thread
+void CRUIHttpTaskManagerBase::executeTask(CRUIHttpTaskBase * task) {
+    task->doDownload();
+}
+
+void CRUIHttpTaskManagerBase::onTaskProgress(CRUIHttpTaskBase * task) {
+    if (!task->_cancelled) {
+        _eventManager->dispatchDownloadProgress(task->_downloadTaskId, task->_url, task->_result, task->_resultMessage, task->_mimeType, task->_size, task->_sizeDownloaded);
+    }
+}
+
+void CRUIHttpTaskManagerBase::onTaskFinished(CRUIHttpTaskBase * task) {
+    if (!task->_cancelled) {
+        _eventManager->dispatchDownloadResult(task->_downloadTaskId, task->_url, task->_result, task->_resultMessage, task->_mimeType, task->_size, task->_stream);
+    }
+    CRGuard guard(_lock); CR_UNUSED(guard);
+    // remove task from list
+    _activeTasks.remove(task->_downloadTaskId);
+}
