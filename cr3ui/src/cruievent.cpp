@@ -621,3 +621,55 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIKeyEvent * event) {
     return res;
 }
 
+
+/// pass download result to window
+void CRUIEventManager::dispatchDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+    class DownloadMessage : public CRRunnable {
+    public:
+        CRUIMainWidget * _main;
+        int _downloadTaskId;
+        lString8 _url;
+        int _result;
+        lString8 _resultMessage;
+        lString8 _mimeType;
+        int _size;
+        LVStreamRef _stream;
+        DownloadMessage(CRUIMainWidget * main, int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream)
+            : _main(main), _downloadTaskId(downloadTaskId), _url(url), _result(result), _resultMessage(resultMessage), _mimeType(mimeType), _size(size), _stream(stream)
+        {
+
+        }
+        void run() {
+            _main->onDownloadResult(_downloadTaskId, _url, _result, _resultMessage, _mimeType, _size, _stream);
+        }
+
+    };
+    DownloadMessage * msg = new DownloadMessage(_rootWidget, downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+    concurrencyProvider->executeGui(msg);
+}
+
+/// download progress
+void CRUIEventManager::dispatchDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+    class ProgressMessage : public CRRunnable {
+    public:
+        CRUIMainWidget * _main;
+        int _downloadTaskId;
+        lString8 _url;
+        int _result;
+        lString8 _resultMessage;
+        lString8 _mimeType;
+        int _size;
+        int _sizeDownloaded;
+        ProgressMessage(CRUIMainWidget * main, int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded)
+            : _main(main), _downloadTaskId(downloadTaskId), _url(url), _result(result), _resultMessage(resultMessage), _mimeType(mimeType), _size(size), _sizeDownloaded(sizeDownloaded)
+        {
+
+        }
+        void run() {
+            _main->onDownloadProgress(_downloadTaskId, _url, _result, _resultMessage, _mimeType, _size, _sizeDownloaded);
+        }
+
+    };
+    ProgressMessage * msg = new ProgressMessage(_rootWidget, downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+    concurrencyProvider->executeGui(msg);
+}

@@ -107,6 +107,15 @@ public:
     // apply changed settings
     virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings) { CR_UNUSED3(changed, oldSettings, newSettings); }
 
+    /// download result
+    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+        CR_UNUSED7(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+    }
+    /// download progress
+    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+        CR_UNUSED7(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+    }
+
     virtual void beforeNavigationFrom() {}
     virtual void afterNavigationFrom() {}
     virtual void beforeNavigationTo() {}

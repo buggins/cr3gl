@@ -493,6 +493,7 @@ CRUIMainWidget::CRUIMainWidget()
 , _platform(NULL), _lastAnimationTs(0), _initialized(false)
 , _browserSettings(STR_SETTINGS_BROWSER, STR_SETTINGS_BROWSER_DESC, SETTINGS_PATH_BROWSER)
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
+, _downloadMap(100)
 {
     setId("MAIN");
     _currentSettings = LVCreatePropsContainer(); // currently active settings
@@ -1142,3 +1143,33 @@ bool CRUIMainWidget::startDragging(const CRUIMotionEvent * event, bool vertical)
     }
 }
 
+/// returns 0 if not supported, task ID if download task is started
+int CRUIMainWidget::openUrl(CRUIWindowWidget * callback, lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+    int id = _platform->openUrl(url, method, login, password, saveAs);
+    if (!id)
+        return 0;
+    _downloadMap.set(id, callback);
+    return id;
+}
+
+/// cancel specified download task
+void CRUIMainWidget::cancelDownload(int downloadTaskId) {
+    _platform->cancelDownload(downloadTaskId);
+    _downloadMap.remove(downloadTaskId);
+}
+
+/// pass download result to window
+void CRUIMainWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+    CRUIWindowWidget * callback = _downloadMap.get(downloadTaskId);
+    if (!isChild(callback))
+        return;
+    callback->onDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+}
+
+/// download progress
+void CRUIMainWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+    CRUIWindowWidget * callback = _downloadMap.get(downloadTaskId);
+    if (!isChild(callback))
+        return;
+    callback->onDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+}

@@ -48,6 +48,14 @@ public:
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard() {}
 
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+        CR_UNUSED5(url, method, login, password, saveAs);
+        return 0;
+    }
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId) { CR_UNUSED(downloadTaskId); }
+
 	virtual ~CRUIPlatform() {}
 };
 
@@ -334,6 +342,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     CRPropRef _currentSettings; // curretnly active settings
     CRPropRef _newSettings; // to be edited by Settings editors
 
+    LVHashTable<lUInt32, CRUIWindowWidget *> _downloadMap;
+
     void createBrowserSettings();
     void createReaderSettings();
 
@@ -435,6 +445,16 @@ public:
     void showVirtualKeyboard(int mode, lString16 text, bool multiline);
     void hideVirtualKeyboard();
     bool isVirtualKeyboardShown();
+
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(CRUIWindowWidget * callback, lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs);
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId);
+    /// pass download result to window
+    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream);
+    /// download progress
+    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded);
+
 
     void updateFolderBookmarks();
 

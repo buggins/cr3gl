@@ -305,6 +305,11 @@ public:
 
     static bool dispatchKey(CRUIKeyEvent * event);
 
+    /// pass download result to window
+    virtual void dispatchDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream);
+    /// download progress
+    virtual void dispatchDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded);
+
 
     // Virtual Keyboard support
     static void showVirtualKeyboard(int mode, lString16 text, bool multiline);
