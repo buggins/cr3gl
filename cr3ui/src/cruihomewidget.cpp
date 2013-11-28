@@ -501,6 +501,8 @@ public:
 
     virtual lString8 getItemIcon(int index) {
         CR_UNUSED(index);
+        if (index == 0)
+            return lString8("internet_add");
         return lString8("internet");
     }
 
@@ -511,30 +513,40 @@ public:
 
     virtual int getItemCount(CRUIListWidget * list) {
         CR_UNUSED(list);
-        return _entries.length();
+        return _entries.length() + 1;
     }
 
     virtual lString16 getItemText(int index) {
-        if (index < 0 || index >= _entries.length())
+        if (index == 0)
+            return _16(STR_ACTION_OPDS_CATALOG_ADD);
+        if (index < 1 || index > _entries.length())
             return lString16();
-        CRDirEntry * item = _entries[index];
+        CRDirEntry * item = _entries[index - 1];
         return item->getTitle();
     }
 
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
-        if (itemIndex < 0 || itemIndex >= _entries.length())
+        if (itemIndex == 0) {
+            _home->getMain()->showOpdsProps(NULL);
+            return true;
+        }
+        if (itemIndex < 1 || itemIndex > _entries.length())
             return false;
-        CROpdsCatalogsItem * item = _entries[itemIndex];
+        CROpdsCatalogsItem * item = _entries[itemIndex - 1];
         _home->getMain()->showOpds(item->getCatalog());
         return true;
     }
 
     virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
-        if (itemIndex < 0 || itemIndex >= _entries.length())
+        if (itemIndex == 0) {
+            _home->getMain()->showOpdsProps(NULL);
+            return true;
+        }
+        if (itemIndex < 1 || itemIndex > _entries.length())
             return false;
-        CROpdsCatalogsItem * item = _entries[itemIndex];
+        CROpdsCatalogsItem * item = _entries[itemIndex - 1];
         _home->getMain()->showOpdsProps(item->getCatalog());
         return true;
     }
