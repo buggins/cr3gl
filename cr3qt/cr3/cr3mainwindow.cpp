@@ -368,11 +368,27 @@ void CRUIHttpTaskQt::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes)
     // progress
 }
 
+CRUIHttpTaskManagerQt::CRUIHttpTaskManagerQt(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {
+    connect(&qnam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            this, SLOT(slotAuthenticationRequired(QNetworkReply*,QAuthenticator*)));
+}
+
 //    void enableDownloadButton();
-void CRUIHttpTaskQt::slotAuthenticationRequired(QNetworkReply*,QAuthenticator * authenticator) {
+void CRUIHttpTaskManagerQt::slotAuthenticationRequired(QNetworkReply* reply,QAuthenticator * authenticator) {
     CRLog::trace("slotAuthenticationRequired()");
-    authenticator->setUser(QString::fromUtf8(_login.c_str()));
-    authenticator->setPassword(QString::fromUtf8(_password.c_str()));
+    for (LVHashTable<lUInt32, CRUIHttpTaskBase*>::iterator i = _activeTasks.forwardIterator(); ;) {
+        LVHashTable<lUInt32, CRUIHttpTaskBase*>::pair * item = i.next();
+        if (!item)
+            break;
+        CRUIHttpTaskQt * task = (CRUIHttpTaskQt *)item->value;
+        if (task->reply == reply) {
+            if (!task->_login.empty()) {
+                authenticator->setUser(QString::fromUtf8(task->_login.c_str()));
+                authenticator->setPassword(QString::fromUtf8(task->_password.c_str()));
+            }
+            return;
+        }
+    }
 }
 
 #ifndef QT_NO_OPENSSL

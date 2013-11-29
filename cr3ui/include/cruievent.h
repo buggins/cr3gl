@@ -414,6 +414,7 @@ public:
 };
 
 class CRUIHttpTaskManagerBase {
+protected:
     CRUIEventManager * _eventManager;
     CRThreadExecutor _executor;
     LVHashTable<lUInt32, CRUIHttpTaskBase*> _activeTasks;

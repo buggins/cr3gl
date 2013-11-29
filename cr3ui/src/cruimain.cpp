@@ -228,6 +228,7 @@ bool CRUIMainWidget::onTimerEvent(lUInt32 timerId) {
         update(true);
         return false;
     }
+    return false;
 }
 
 void CRUIMainWidget::showSlowOperationPopup()

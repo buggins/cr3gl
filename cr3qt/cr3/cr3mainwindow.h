@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 
 class CRUIHttpTaskQt : public QObject, public CRUIHttpTaskBase  {
     Q_OBJECT
-private:
+public:
     QUrl url;
     QNetworkAccessManager * qnam;
     QNetworkReply *reply;
@@ -73,7 +73,6 @@ private slots:
     void httpReadyRead();
     void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
 //    void enableDownloadButton();
-    void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
 #endif
@@ -89,8 +88,10 @@ class CRUIHttpTaskManagerQt : public QObject, public CRUIHttpTaskManagerBase {
     Q_OBJECT
 private:
     QNetworkAccessManager qnam;
+private slots:
+    void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
 public:
-    CRUIHttpTaskManagerQt(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {}
+    CRUIHttpTaskManagerQt(CRUIEventManager * eventManager);
     /// override to create task of custom type
     virtual CRUIHttpTaskBase * createTask() { return new CRUIHttpTaskQt(this, &qnam); }
 };

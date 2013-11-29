@@ -782,8 +782,13 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
             }
         } else {
             CRLog::error("Error %d %s", result, resultMessage.c_str());
-            lString16 errorMsg = lString16("ERROR ") + lString16::itoa(result) + L" : " + Utf8ToUnicode(resultMessage);
-            getMain()->showMessage(errorMsg, 4000);
+            if (result == 204) {
+                lString16 errorMsg = lString16("Authentication required. Please specify Login and Password in this catalog settings.");
+                getMain()->showMessage(errorMsg, 4000);
+            } else {
+                lString16 errorMsg = lString16("ERROR ") + lString16::itoa(result) + L" : " + Utf8ToUnicode(resultMessage);
+                getMain()->showMessage(errorMsg, 4000);
+            }
             _nextPartURL.clear();
             _fileList->setProgressItemVisible(false);
         }
