@@ -43,6 +43,8 @@ public:
     /// download progress
     virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded);
 
+    virtual void afterNavigationTo();
+
 
     CRUIOpdsBrowserWidget(CRUIMainWidget * main);
 	virtual ~CRUIOpdsBrowserWidget();

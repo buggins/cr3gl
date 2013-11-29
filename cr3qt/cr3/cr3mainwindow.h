@@ -71,7 +71,7 @@ private slots:
 //    void cancelDownload();
     void httpFinished();
     void httpReadyRead();
-//    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
 //    void enableDownloadButton();
     void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
 #ifndef QT_NO_OPENSSL
@@ -79,6 +79,7 @@ private slots:
 #endif
 public:
     CRUIHttpTaskQt(CRUIHttpTaskManagerBase * taskManager, QNetworkAccessManager * _qnam) : CRUIHttpTaskBase(taskManager), qnam(_qnam) {}
+    virtual ~CRUIHttpTaskQt();
     /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
     virtual void doDownload();
 };

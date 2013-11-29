@@ -173,17 +173,192 @@ void CRUIOpdsBrowserWidget::setDirectory(BookDBCatalog * catalog, CRDirContentIt
     _title->setTitle(Utf8ToUnicode(dir->getPathName()));
 	//_fileList->setDirectory(dir);
 	requestLayout();
-
-    _requestId = getMain()->openUrl(this, dir->getPathName(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
 }
+
+class OPDSParser : public LVXMLParserCallback {
+    lString8 protocol;
+    lString8 host;
+    lString8 url;
+    lString8 serverurl;
+    lString8 margin;
+    int level;
+    bool insideEntry;
+    bool insideTitle;
+    bool insideContent;
+    bool insideLink;
+    lString8 entryTitle;
+    lString8 entryContent;
+    lString8 entryHref;
+    lString8 linkHref;
+    lString8 linkType;
+public:
+    OPDSParser() : level(0), insideEntry(false) {
+
+    }
+
+    /// make absolute URL from relative
+    lString8 makeLink(lString8 relativeLink) {
+        if (relativeLink.startsWith("/")) {
+            return serverurl + relativeLink.substr(1);
+        }
+        if (relativeLink.startsWith("http://") || relativeLink.startsWith("https://"))
+            return relativeLink;
+        if (url.endsWith("/"))
+            return url + relativeLink;
+        else
+            return url + "/" + relativeLink;
+    }
+
+    /// called on parsing end
+    virtual void OnStop() {
+
+    }
+
+    /// called on opening tag <
+    virtual ldomNode * OnTagOpen( const lChar16 * nsname, const lChar16 * tagname) {
+        CR_UNUSED(nsname);
+        CRLog::trace("%s<%s>", margin.c_str(), LCSTR(lString16(tagname)));
+        margin << "    ";
+        level++;
+        lString16 tag(tagname);
+        if (tag == "entry") {
+            entryTitle.clear();
+            entryContent.clear();
+            linkHref.clear();
+            linkType.clear();
+            insideEntry = true;
+        } else if (tag== "title")
+            insideTitle = true;
+        else if (tag == "content")
+            insideContent = true;
+        else if (tag == "link") {
+            insideLink = true;
+            linkHref.clear();
+            linkType.clear();
+        }
+        return NULL;
+    }
+
+    /// called after > of opening tag (when entering tag body)
+    virtual void OnTagBody() {
+        // ignore
+    }
+
+    void addEntry(lString8 title, lString8 content, lString8 href) {
+        CRLog::trace("*** Entry: title=%s content=%s href=%s", title.c_str(), content.c_str(), href.c_str());
+    }
+
+    /// called on tag close
+    virtual void OnTagClose( const lChar16 * nsname, const lChar16 * tagname ) {
+        CR_UNUSED(nsname);
+        if (margin.length() >= 4)
+            margin.erase(margin.length() - 4, 4);
+        CRLog::trace("%s</%s>", margin.c_str(), LCSTR(lString16(tagname)));
+        level--;
+        lString16 tag(tagname);
+        if (tag == "entry") {
+            if (!entryTitle.empty()) {
+                if (!linkHref.empty() && linkType == "application/atom+xml;profile=opds-catalog") {
+                    addEntry(entryTitle, entryContent, linkHref);
+                }
+            }
+            insideEntry = false;
+        } else if (tag == "title")
+            insideTitle = false;
+        else if (tag == "content")
+            insideContent = false;
+        else if (tag == "link")
+            insideLink = false;
+    }
+
+    /// called on element attribute
+    virtual void OnAttribute( const lChar16 * nsname, const lChar16 * attrname, const lChar16 * attrvalue ) {
+        CR_UNUSED(nsname);
+        lString16 attr(attrname);
+        lString8 value8 = UnicodeToUtf8(attrvalue);
+        CRLog::trace("%s  attribute: %s = %s", margin.c_str(), LCSTR(attr), value8.c_str());
+        value8.trim();
+        if (insideLink) {
+            if (attr == "type")
+                linkType = value8;
+            else if (attr == "href")
+                linkHref = makeLink(value8);
+        }
+
+    }
+
+    /// called on text
+    virtual void OnText( const lChar16 * text, int len, lUInt32 flags ) {
+        CR_UNUSED(flags);
+        lString16 txt(text, len);
+        lString8 txt8 = UnicodeToUtf8(txt);
+        CRLog::trace("%s  text: %s", margin.c_str(), txt8.c_str());
+        if (insideEntry) {
+            if (insideTitle)
+                entryTitle = txt8;
+            else if (insideContent)
+                entryContent = txt8;
+
+        }
+    }
+
+    /// add named BLOB data to document
+    virtual bool OnBlob(lString16 name, const lUInt8 * data, int size) {
+        CR_UNUSED3(name, data, size);
+        return true;
+    }
+
+    bool parse(lString8 _url, LVStreamRef stream) {
+        url = _url;
+        int protocolEnd = url.pos("://");
+        if (protocolEnd < 0)
+            return false;
+        protocol = url.substr(0, protocolEnd);
+        int hostStart = protocolEnd + 3;
+        int hostEnd = url.pos("/", hostStart);
+        if (hostEnd < 0)
+            return false;
+        host = url.substr(hostStart, hostEnd - hostStart);
+        serverurl = url.substr(0, hostEnd + 1);
+        CRLog::trace("url=%s protocol=%s host=%s serverurl=%s", url.c_str(), protocol.c_str(), host.c_str(), serverurl.c_str());
+        LVXMLParser parser(stream, this);
+        if (parser.Parse()) {
+            CRLog::trace("Parsed ok");
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
 
 /// download result
 void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
-    CRLog::trace("onDownloadProgress task=%d url=%s result=%d totalSize=%d", downloadTaskId, url.c_str(), result, size);
+    CRLog::trace("onDownloadProgress task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, resultMessage.c_str(), size);
     if (stream.isNull()) {
         CRLog::trace("No data received");
     } else {
         CRLog::trace("Stream size is %d", (int)stream->GetSize());
+    }
+    lString8 charset;
+    if (_requestId == downloadTaskId) {
+        _requestId = 0;
+        // received OPDS data
+        if (mimeType.startsWith("application/atom+xml")) {
+            lString8Collection typeParams;
+            typeParams.split(mimeType, lString8(";"));
+            for (int i = 1; i < typeParams.length(); i++) {
+                if (typeParams[i].startsWith("charset="))
+                    charset = typeParams[i].substr(8);
+            }
+            //
+            OPDSParser callback;
+            if (callback.parse(url, stream)) {
+                CRLog::trace("Parsed ok");
+
+            }
+        } else {
+            CRLog::error("Unexpected content type: %s", mimeType.c_str());
+        }
     }
 }
 
@@ -191,6 +366,12 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
 void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
     CR_UNUSED3(result, resultMessage, mimeType);
     CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
+}
+
+void CRUIOpdsBrowserWidget::afterNavigationTo() {
+    if (_dir && _catalog)
+        _requestId = getMain()->openUrl(this, _dir->getPathName(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+    requestLayout();
 }
 
 CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL)

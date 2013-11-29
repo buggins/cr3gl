@@ -320,6 +320,10 @@ void OpenGLWindow::cancelDownload(int downloadTaskId) {
     _downloadManager->cancelDownload(downloadTaskId);
 }
 
+CRUIHttpTaskQt::~CRUIHttpTaskQt() {
+    CRLog::trace("CRUIHttpTaskQt::~CRUIHttpTaskQt()");
+}
+
 /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
 void CRUIHttpTaskQt::doDownload() {
     url.setUrl(QString::fromUtf8(_url.c_str()));
@@ -345,6 +349,8 @@ void CRUIHttpTaskQt::httpFinished() {
     _stream->SetPos(0);
     CRLog::trace("httpFinished(result=%d resultMessage=%s mimeType=%s)", _result, _resultMessage.c_str(), _mimeType.c_str());
     _taskManager->onTaskFinished(this);
+    reply->deleteLater();
+    deleteLater();
 }
 
 void CRUIHttpTaskQt::httpReadyRead() {
@@ -356,7 +362,11 @@ void CRUIHttpTaskQt::httpReadyRead() {
     dataReceived((const lUInt8 *)data.constData(), data.length());
 }
 
-//    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+void CRUIHttpTaskQt::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes) {
+    CR_UNUSED2(bytesRead, totalBytes);
+    // progress
+}
+
 //    void enableDownloadButton();
 void CRUIHttpTaskQt::slotAuthenticationRequired(QNetworkReply*,QAuthenticator * authenticator) {
     CRLog::trace("slotAuthenticationRequired()");
