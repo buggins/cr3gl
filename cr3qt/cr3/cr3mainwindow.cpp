@@ -47,6 +47,10 @@
 #include <QtGui/QPainter>
 #include <QtGui/QMouseEvent>
 #include <QClipboard>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QAuthenticator>
+#include <QSslError>
 
 #include "gldrawbuf.h"
 
@@ -307,6 +311,7 @@ void OpenGLWindow::copyToClipboard(lString16 text) {
 
 /// returns 0 if not supported, task ID if download task is started
 int OpenGLWindow::openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+    CRLog::info("openUrl(%s %s) -> %s", url.c_str(), method.c_str(), saveAs.c_str());
     return _downloadManager->openUrl(url, method, login, password, saveAs);
 }
 
@@ -317,5 +322,59 @@ void OpenGLWindow::cancelDownload(int downloadTaskId) {
 
 /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
 void CRUIHttpTaskQt::doDownload() {
-
+    url.setUrl(QString::fromUtf8(_url.c_str()));
+    reply = qnam->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished()),
+            this, SLOT(httpFinished()));
+    connect(reply, SIGNAL(readyRead()),
+            this, SLOT(httpReadyRead()));
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+            this, SLOT(updateDataReadProgress(qint64,qint64)));
 }
+
+
+void CRUIHttpTaskQt::httpFinished() {
+     QNetworkReply::NetworkError error = reply->error();
+    _result = error;
+    _resultMessage = reply->errorString().toUtf8().constData();
+    QVariant contentMimeType = reply->header(QNetworkRequest::ContentTypeHeader);
+    QString contentTypeString;
+    if (contentMimeType.isValid())
+        contentTypeString = contentMimeType.toString();
+    _mimeType = contentTypeString.toUtf8().constData();
+    _stream->SetPos(0);
+    CRLog::trace("httpFinished(result=%d resultMessage=%s mimeType=%s)", _result, _resultMessage.c_str(), _mimeType.c_str());
+    _taskManager->onTaskFinished(this);
+}
+
+void CRUIHttpTaskQt::httpReadyRead() {
+    if (!_size) {
+        _size = reply->size();
+    }
+    CRLog::trace("httpReadyRead(total size = %d)", _size);
+    QByteArray data = reply->readAll();
+    dataReceived((const lUInt8 *)data.constData(), data.length());
+}
+
+//    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+//    void enableDownloadButton();
+void CRUIHttpTaskQt::slotAuthenticationRequired(QNetworkReply*,QAuthenticator * authenticator) {
+    CRLog::trace("slotAuthenticationRequired()");
+    authenticator->setUser(QString::fromUtf8(_login.c_str()));
+    authenticator->setPassword(QString::fromUtf8(_password.c_str()));
+}
+
+#ifndef QT_NO_OPENSSL
+void CRUIHttpTaskQt::sslErrors(QNetworkReply*,const QList<QSslError> &errors) {
+    CRLog::trace("sslErrors()");
+    QString errorString;
+    foreach (const QSslError &error, errors) {
+        if (!errorString.isEmpty())
+            errorString += ", ";
+        errorString += error.errorString();
+    }
+    CRLog::error("SSL Errors, ignoring: %s", errorString.toUtf8().constData());
+    reply->ignoreSslErrors();
+}
+
+#endif

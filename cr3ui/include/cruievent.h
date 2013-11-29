@@ -408,6 +408,9 @@ public:
 
     /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
     virtual void doDownload() { }
+
+    /// call to pass received data to output buffer
+    virtual void dataReceived(const lUInt8 * data, int len);
 };
 
 class CRUIHttpTaskManagerBase {

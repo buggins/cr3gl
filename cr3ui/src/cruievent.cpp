@@ -713,6 +713,24 @@ void CRUIHttpTaskManagerBase::cancelDownload(int downloadTaskId) {
     }
 }
 
+/// call to pass received data to output buffer
+void CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
+    // TODO: accept data
+    if (_stream.isNull()) {
+        if (_saveAs.empty()) {
+            // create memory stream
+            _stream = LVCreateMemoryStream();
+        } else {
+            // create file stream
+        }
+    }
+    CRLog::trace("dataReceived(%d)", len);
+    if (!_stream.isNull()) {
+        lvsize_t bytesWritten = 0;
+        _stream->Write(data, len, &bytesWritten);
+    }
+}
+
 void CRUIHttpTaskBase::run() {
     _taskManager->executeTask(this);
 }

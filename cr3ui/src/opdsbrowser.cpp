@@ -157,8 +157,13 @@ using namespace CRUI;
 //    }
 //};
 
-void CRUIOpdsBrowserWidget::setDirectory(CRDirContentItem * dir)
+void CRUIOpdsBrowserWidget::setDirectory(BookDBCatalog * catalog, CRDirContentItem * dir)
 {
+    if (_catalog) {
+        delete _catalog;
+    }
+    _catalog = catalog->clone();
+
     if (_dir)
         _dir->unlock();
 	_dir = dir;
@@ -168,11 +173,29 @@ void CRUIOpdsBrowserWidget::setDirectory(CRDirContentItem * dir)
     _title->setTitle(Utf8ToUnicode(dir->getPathName()));
 	//_fileList->setDirectory(dir);
 	requestLayout();
+
+    _requestId = getMain()->openUrl(this, dir->getPathName(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+}
+
+/// download result
+void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+    CRLog::trace("onDownloadProgress task=%d url=%s result=%d totalSize=%d", downloadTaskId, url.c_str(), result, size);
+    if (stream.isNull()) {
+        CRLog::trace("No data received");
+    } else {
+        CRLog::trace("Stream size is %d", (int)stream->GetSize());
+    }
+}
+
+/// download progress
+void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+    CR_UNUSED3(result, resultMessage, mimeType);
+    CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
 }
 
 CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL)
 //, _fileList(NULL),
-	, _dir(NULL)
+  , _catalog(NULL), _dir(NULL), _requestId(0)
 {
     _title = new CRUITitleBarWidget(lString16("File list"), this, this, false);
 	_body->addChild(_title);
@@ -196,6 +219,8 @@ CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindow
 	layout->setStyle("SETTINGS_ITEM_LIST");
 	layout->addChild(text1);
 	_body->addChild(layout);
+
+
 }
 
 bool CRUIOpdsBrowserWidget::onClick(CRUIWidget * widget) {
@@ -284,6 +309,10 @@ bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) 
 
 CRUIOpdsBrowserWidget::~CRUIOpdsBrowserWidget()
 {
+    if (_catalog)
+        delete _catalog;
+    if (_requestId)
+        getMain()->cancelDownload(_requestId);
     if (_dir)
         _dir->unlock();
 }

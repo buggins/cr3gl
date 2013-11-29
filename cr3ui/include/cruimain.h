@@ -172,10 +172,10 @@ public:
         ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
         return widget;
     }
-    virtual void setDirectory(CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(item); }
+    virtual void setDirectory(BookDBCatalog * catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
     virtual VIEW_MODE getMode() { return MODE_OPDS; }
-    OPDSItem(CRUIMainWidget * _main, lString8 _pathname) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
-        ((CRUIOpdsBrowserWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+    OPDSItem(CRUIMainWidget * _main, BookDBCatalog * catalog, lString8 _pathname) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
+        ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, dirCache->getOrAdd(pathname));
     }
     virtual const lString8 & getPathName() { return pathname; }
     virtual ~OPDSItem() {

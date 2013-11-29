@@ -281,7 +281,7 @@ void CRUIMainWidget::showOpds(BookDBCatalog * dir) {
     int newpos = _history.findPosByMode(MODE_OPDS, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder
-        _history.setNext(new OPDSItem(this, folder));
+        _history.setNext(new OPDSItem(this, dir, folder));
         newpos = _history.pos() + 1;
     }
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);

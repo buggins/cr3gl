@@ -66,6 +66,17 @@ private:
     QNetworkAccessManager * qnam;
     QNetworkReply *reply;
     QFile *file;
+private slots:
+//    void downloadFile();
+//    void cancelDownload();
+    void httpFinished();
+    void httpReadyRead();
+//    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+//    void enableDownloadButton();
+    void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
+#ifndef QT_NO_OPENSSL
+    void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
+#endif
 public:
     CRUIHttpTaskQt(CRUIHttpTaskManagerBase * taskManager, QNetworkAccessManager * _qnam) : CRUIHttpTaskBase(taskManager), qnam(_qnam) {}
     /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
