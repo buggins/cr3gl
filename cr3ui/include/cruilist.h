@@ -91,6 +91,8 @@ public:
 	virtual CRUIWidget * getItemWidget(int index) { return _adapter != NULL ? _adapter->getItemWidget(this, index) : 0; }
 	virtual int getItemCount() { return _adapter != NULL ? _adapter->getItemCount(this) : 0; }
 	virtual bool isItemEnabled(int index) { return _adapter != NULL ? _adapter->isEnabled(this, index) : true; }
+    virtual void getItemRect(int index, lvRect & rc);
+    virtual bool isItemVisible(int index);
 
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);

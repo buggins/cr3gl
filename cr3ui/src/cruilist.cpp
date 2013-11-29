@@ -127,6 +127,20 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 	}
 }
 
+void CRUIListWidget::getItemRect(int index, lvRect & rc) {
+    rc.clear();
+    if (index >= 0 && index < _itemRects.length())
+        rc = _itemRects[index];
+}
+
+bool CRUIListWidget::isItemVisible(int index) {
+    lvRect rc;
+    getItemRect(index, rc);
+    lvRect clientRc = _pos;
+    applyMargin(clientRc);
+    return clientRc.intersects(rc);
+}
+
 /// updates widget position based on specified rectangle
 void CRUIListWidget::layout(int left, int top, int right, int bottom) {
     CRUIWidget::layout(left, top, right, bottom);

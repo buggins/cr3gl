@@ -97,6 +97,66 @@ public:
     }
 };
 
+class CRUIOpdsProgressItemWidget : public CRUILinearLayout {
+public:
+    int _iconDx;
+    int _iconDy;
+    CRUISpinnerWidget * _icon;
+    CRUILinearLayout * _layout;
+    CRUITextWidget * _line1;
+    CRUITextWidget * _line2;
+    CRUITextWidget * _line3;
+    CRUIOpdsProgressItemWidget(int iconDx, int iconDy, const char * iconRes) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy) {
+        _icon = new CRUISpinnerWidget(iconRes, 360);
+        _icon->setAlign(ALIGN_CENTER);
+        _icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        addChild(_icon);
+        _layout = new CRUILinearLayout(true);
+        _line1 = new CRUITextWidget();
+        _line1->setFontSize(FONT_SIZE_SMALL);
+        _line2 = new CRUITextWidget();
+        _line2->setFontSize(FONT_SIZE_MEDIUM);
+        _line2->setMaxLines(2);
+        _line3 = new CRUITextWidget();
+        _line3->setFontSize(FONT_SIZE_SMALL);
+        _line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+
+        _line2->setText(lString16("Loading OPDS catalog content..."));
+
+        _layout->addChild(_line1);
+        _layout->addChild(_line2);
+        _layout->addChild(_line3);
+        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
+        _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _layout->setMaxHeight(deviceInfo.minListItemSize * 3 / 2);
+        //_layout->setMinHeight(_iconDy);
+        //_layout->setBackground(0x80C0C0C0);
+        addChild(_layout);
+        setMinWidth(MIN_ITEM_PX);
+        setMinHeight(MIN_ITEM_PX * 2 / 3);
+        setMargin(PT_TO_PX(1));
+        setStyle("LIST_ITEM");
+    }
+
+    void update(int iconDx, int iconDy) {
+        _iconDx = iconDx;
+        _iconDy = iconDy;
+        //_icon->setMinWidth(iconDx);
+        //_icon->setMinHeight(iconDy);
+        //_icon->setMaxWidth(iconDx);
+        //_icon->setMaxHeight(iconDy);
+        //_layout->setMaxHeight(_iconDy);
+        //_layout->setMinHeight(_iconDy);
+        int maxHeight = deviceInfo.minListItemSize * 2 / 3;
+        CRUIImageRef icon = _icon->getImage();
+        if (!icon.isNull())
+            if (maxHeight < icon->originalHeight() + PT_TO_PX(2))
+                maxHeight = icon->originalHeight() + PT_TO_PX(2);
+        _layout->setMinHeight(deviceInfo.minListItemSize * 2 / 3);
+        _layout->setMaxHeight(maxHeight);
+    }
+};
+
 class CRUIOpdsBookItemWidget : public CRUILinearLayout {
 public:
     int _iconDx;
@@ -177,10 +237,25 @@ protected:
     CRDirContentItem * _dir;
     CRUIOpdsDirItemWidget * _folderWidget;
     CRUIOpdsBookItemWidget * _bookWidget;
+    CRUIOpdsProgressItemWidget * _progressWidget;
     CRUIOpdsBrowserWidget * _parent;
     int _coverDx;
     int _coverDy;
+    bool _showProgressAsLastItem;
 public:
+    void setProgressItemVisible(bool showProgress) {
+        _showProgressAsLastItem = showProgress;
+        requestLayout();
+    }
+
+    virtual bool isAnimating() {
+        return _showProgressAsLastItem && isItemVisible(_dir->itemCount());
+    }
+
+    virtual void animate(lUInt64 millisPassed) {
+        _progressWidget->animate(millisPassed);
+    }
+
     void calcCoverSize(int dx, int dy) {
         if (dx < dy) {
             // vertical
@@ -205,12 +280,13 @@ public:
         CRUIListWidget::layout(left, top, right, bottom);
     }
 
-    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent) {
+    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent), _showProgressAsLastItem(true) {
         setLayoutParams(FILL_PARENT, FILL_PARENT);
         //setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
         _folderWidget = new CRUIOpdsDirItemWidget(_coverDx, _coverDy, "folder");
         _bookWidget = new CRUIOpdsBookItemWidget(_coverDx, _coverDy, parent->getMain());
+        _progressWidget = new CRUIOpdsProgressItemWidget(_coverDx, _coverDy, "spinner_white_48");
         setStyle("FILE_LIST");
         setColCount(2);
     }
@@ -218,9 +294,13 @@ public:
         if (!_dir)
             return 0;
         //CRLog::trace("item count is %d", _dir->itemCount());
-        return _dir->itemCount();
+        return _dir->itemCount() + (_showProgressAsLastItem ? 1 : 0);
     }
     virtual CRUIWidget * getItemWidget(int index) {
+        if (index >= _dir->itemCount()) {
+            _progressWidget->update(_coverDx, _coverDy);
+            return _progressWidget;
+        }
         CRDirEntry * item = _dir->getItem(index);
         if (item->isDirectory()) {
             CRUIOpdsDirItemWidget * res = _folderWidget;
@@ -415,7 +495,7 @@ public:
         lString16 tag(tagname);
         if (tag == "entry") {
             if (!entryTitle.empty()) {
-                if (!linkHref.empty() && linkType == "application/atom+xml;profile=opds-catalog") {
+                if (!linkHref.empty() && linkType.startsWith("application/atom+xml")) {
                     addEntry(entryTitle, entryContent, linkHref);
                 }
             }
@@ -514,7 +594,8 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                 for (int i = 0; i < parser._entries.length(); i++) {
                     _dir->addEntry(parser._entries[i]);
                 }
-                _fileList->setDirectory(_dir);
+                //_fileList->setDirectory(_dir);
+                _fileList->setProgressItemVisible(false);
                 requestLayout();
                 getMain()->update(true);
             }
@@ -531,8 +612,10 @@ void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url,
 }
 
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
-    if (_dir && _catalog)
+    if (_dir && _catalog && _dir->itemCount() == 0) {
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+        _fileList->setProgressItemVisible(true);
+    }
     requestLayout();
 }
 
@@ -644,12 +727,13 @@ bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) 
     if (index < 0 || index > _dir->itemCount())
         return false;
     CRDirEntry * entry = _dir->getItem(index);
+    CROpdsCatalogsItem * item = (CROpdsCatalogsItem *)entry;
     if (entry->isDirectory()) {
         widget->setSelectedItem(index);
-        getMain()->showFolder(entry->getPathName(), true);
+        getMain()->showOpds(item->getCatalog(), item->getURL());
     } else {
         // Book? open book
-        getMain()->openBook(static_cast<CRFileItem *>(entry));
+        // TODO
     }
     return true;
 }

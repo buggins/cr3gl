@@ -70,7 +70,7 @@ public:
     virtual void setTitle(lString16 title) { CR_UNUSED(title); }
     virtual lString16 getDescription() const { return lString16(); }
     virtual void setDescription(lString16 description) { CR_UNUSED(description); }
-    virtual lString8 getURL() { return lString8(); }
+    virtual lString8 getURL() const { return lString8(); }
     lString16 getSeriesName(bool numberFirst) const;
     lString16 getSeriesNameOnly() const;
     int getSeriesNumber() const;
@@ -243,9 +243,15 @@ protected:
 public:
     //virtual void setCatalog(BookDBCatalog * catalog) { _catalog = catalog->clone(); }
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_OPDS_CATALOG; }
-    CROpdsCatalogsItem(const BookDBCatalog * catalog, lString8 url) : CRDirContentItem(lString8(OPDS_CATALOG_TAG) + lString8::itoa(catalog->id) + (url.empty() ? lString8() : lString8(":") + url), false), _catalog(catalog->clone()), _url(url) {}
+    CROpdsCatalogsItem(const BookDBCatalog * catalog, lString8 url) : CRDirContentItem(lString8(OPDS_CATALOG_TAG) + lString8::itoa(catalog->id) + (url.empty() ? lString8() : lString8(":") + url), false), _catalog(catalog->clone()), _url(url)
+    {
+
+    }
     CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false)
     {
+        _url = dir->getURL();
+        _description = dir->getDescription();
+        _title = dir->getTitle();
         //_catalog = (((CROpdsCatalogsItem*)dir)->_catalog->clone());
     }
     virtual CRDirEntry * clone() const { CROpdsCatalogsItem * res = new CROpdsCatalogsItem(this); return res; }
@@ -259,7 +265,8 @@ public:
     virtual void setTitle(lString16 title) { _title = title; }
     virtual lString16 getDescription() const { return _description; }
     virtual void setDescription(lString16 description) { _description = description; }
-    virtual lString8 getURL() { return _url.empty() ? lString8(_catalog->url.c_str()) : _url; }
+    virtual lString8 getURL() const { return _url.empty() ? lString8(_catalog->url.c_str()) : _url; }
+    virtual void setURL(lString8 url) { _url = url; }
 };
 
 class CRBookDBLookupItem : public CRDirContentItem {
