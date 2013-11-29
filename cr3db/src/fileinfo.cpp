@@ -1053,7 +1053,7 @@ bool CROpdsCatalogsItem::scan() {
     bookDB->loadOpdsCatalogs(catalogs);
     for (int i = 0; i < catalogs.length(); i++) {
         BookDBCatalog * item = catalogs[i];
-        CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item);
+        CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item, lString8());
         entry->_pathName = lString8(OPDS_CATALOGS_TAG) + lString8::itoa(item->id);
         _entries.add(entry);
     }
@@ -1186,6 +1186,8 @@ DIR_TYPE CRDirItem::getDirType() const {
         return DIR_TYPE_BOOKS_SEARCH_RESULT;
     if (_pathName == SEARCH_RESULTS_TAG)
         return DIR_TYPE_BOOKS_SEARCH_RESULT;
+    if (_pathName.startsWith(OPDS_CATALOGS_TAG) || _pathName.startsWith(OPDS_CATALOG_TAG))
+        return DIR_TYPE_OPDS_CATALOG;
     return DIR_TYPE_NORMAL;
 }
 

@@ -277,7 +277,9 @@ void CRUIMainWidget::showOpds(BookDBCatalog * dir) {
     //_pendingFolder = folder;
     dir->lastUsage = GetCurrentTimeMillis();
     bookDB->updateOpdsCatalogLastUsage(dir->id);
-	lString8 folder(dir->url.c_str());
+    //lString8 folder(dir->url.c_str());
+    lString8 url(dir->url.c_str());
+    lString8 folder = lString8(OPDS_CATALOG_TAG) + lString8::itoa(dir->id) + (url.empty() ? lString8() : lString8(":") + url);
     int newpos = _history.findPosByMode(MODE_OPDS, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder

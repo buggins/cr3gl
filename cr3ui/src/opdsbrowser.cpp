@@ -18,144 +18,293 @@
 using namespace CRUI;
 
 
-//class CRUIOpdsItemListWidget : public CRUIListWidget {
-//protected:
-//    CRDirContentItem * _dir;
-//    CRUIDirItemWidget * _folderWidget;
-//    CRUIBookItemWidget * _bookWidget;
-//    CRUIOpdsBrowserWidget * _parent;
-//    int _coverDx;
-//    int _coverDy;
-//public:
-//    void calcCoverSize(int dx, int dy) {
-//        if (dx < dy) {
-//            // vertical
-//            _coverDx = dx / 6;
-//            _coverDy = _coverDx * 4 / 3;
-//        } else {
-//            // horizontal
-//            _coverDy = dy / 4;
-//            _coverDx = _coverDy * 3 / 4;
-//        }
-//    }
-//
-//    /// measure dimensions
-//    virtual void measure(int baseWidth, int baseHeight) {
-//        calcCoverSize(baseWidth, baseHeight);
-//        setColCount(baseWidth > baseHeight ? 2 : 1);
-//        CRUIListWidget::measure(baseWidth, baseHeight);
-//    }
-//
-//    /// updates widget position based on specified rectangle
-//    virtual void layout(int left, int top, int right, int bottom) {
-//        CRUIListWidget::layout(left, top, right, bottom);
-//    }
-//
-//    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent) {
-//		setLayoutParams(FILL_PARENT, FILL_PARENT);
-//		//setBackground("tx_wood_v3.jpg");
-//        calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
-//        _folderWidget = new CRUIDirItemWidget(_coverDx, _coverDy, "folder");
-//        _bookWidget = new CRUIBookItemWidget(_coverDx, _coverDy, parent->getMain());
-//		setStyle("FILE_LIST");
-//        setColCount(2);
-//	}
-//	virtual int getItemCount() {
-//		if (!_dir)
-//			return 0;
-//		//CRLog::trace("item count is %d", _dir->itemCount());
-//		return _dir->itemCount();
-//	}
-//	virtual CRUIWidget * getItemWidget(int index) {
-//		CRDirEntry * item = _dir->getItem(index);
-//		if (item->isDirectory()) {
-//            CRUIDirItemWidget * res = _folderWidget;
-//            res->setDir(item, _coverDx, _coverDy);
-//            res->_line1->setText(L"");
-//            res->_line2->setText(makeDirName(item, true));
-//            if (item->getBookCount()) {
-//                lString16 info = _16(STR_BOOK_COUNT);
-//                res->_line3->setText(info + lString16::itoa(item->getBookCount()));
-//            } else {
-//                res->_line3->setText(L"");
-//            }
-//			//CRLog::trace("returning folder item");
-//			return res;
-//		} else {
-//            CRUIBookItemWidget * res = _bookWidget;
-//            res->setBook(item, _coverDx, _coverDy);
-//			BookDBBook * book = item->getBook();
-//			lString16 text1;
-//			lString16 text2;
-//			lString16 text3;
-//			lString16 text4;
-//			if (book) {
-//				text2 = Utf8ToUnicode(book->title.c_str());
-//                text1 = item->getAuthorNames(false);
-//                text3 = item->getSeriesName(true);
-//				text4 = sizeToString(book->filesize);
-//				text4 += " ";
-//				text4 += LVDocFormatName(book->format);
-//			} else {
-//				text2 = Utf8ToUnicode(item->getFileName());
-//			}
-//			if (text2.empty())
-//				text2 = Utf8ToUnicode(item->getFileName());
-//			res->_line1->setText(text1);
-//			res->_line2->setText(text2);
-//			res->_line3->setText(text3);
-//			res->_line4->setText(text4);
-//			//CRLog::trace("returning book item");
-//			return res;
-//		}
-//	}
-//    virtual void setDirectory(CRDirContentItem * dir)
-//	{
-//		_dir = dir;
-//		dir->sort(BY_TITLE);
-//		requestLayout();
-//	}
-//
-//    /// return true if drag operation is intercepted
-//    virtual bool startDragging(const CRUIMotionEvent * event, bool vertical) {
-//        return _parent->getMain()->startDragging(event, vertical);
-//    }
-//
-//    /// returns true if all coverpages are available, false if background tasks are submitted
-//    virtual bool requestAllVisibleCoverpages() {
-//        coverPageManager->cancelAll();
-//        lvRect rc = _pos;
-//        applyMargin(rc);
-//        applyPadding(rc);
-//
-//        lvRect clip = _pos;
-//        bool foundNotReady = false;
-//        for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
-//            lvRect childRc = _itemRects[i];
-//            if (_vertical) {
-//                childRc.top -= _scrollOffset;
-//                childRc.bottom -= _scrollOffset;
-//            } else {
-//                childRc.left -= _scrollOffset;
-//                childRc.right -= _scrollOffset;
-//            }
-//            if (clip.intersects(childRc)) {
-//                CRDirEntry * item = _dir->getItem(i);
-//                if (!item->isDirectory()) {
-//                    lvPoint coverSize = _bookWidget->calcCoverSize(_coverDx, _coverDy);
-//                    LVDrawBuf * buf = coverPageManager->getIfReady(item, coverSize.x, coverSize.y);
-//                    if (buf) {
-//                        // image is ready
-//                    } else {
-//                        foundNotReady = true;
-//                        coverPageManager->prepare(item, coverSize.x, coverSize.y, NULL);
-//                    }
-//                }
-//            }
-//        }
-//        return !foundNotReady;
-//    }
-//};
+class CRUIOpdsDirItemWidget : public CRUILinearLayout {
+public:
+    int _iconDx;
+    int _iconDy;
+    CRUIImageWidget * _icon;
+    CRUILinearLayout * _layout;
+    CRUILinearLayout * _infolayout;
+    CRUITextWidget * _line1;
+    CRUITextWidget * _line2;
+    CRUITextWidget * _line3;
+    CRUITextWidget * _line4;
+    CRDirEntry * _entry;
+    CRUIOpdsDirItemWidget(int iconDx, int iconDy, const char * iconRes) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
+        _icon = new CRUIImageWidget(iconRes);
+        //_icon->setMinWidth(iconDx);
+        //_icon->setMinHeight(iconDy);
+        //_icon->setMaxWidth(iconDx);
+        //_icon->setMaxHeight(iconDy);
+        _icon->setAlign(ALIGN_CENTER);
+        _icon->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        addChild(_icon);
+        _layout = new CRUILinearLayout(true);
+        _infolayout = new CRUILinearLayout(false);
+        _line1 = new CRUITextWidget();
+        _line1->setFontSize(FONT_SIZE_SMALL);
+        _line2 = new CRUITextWidget();
+        _line2->setFontSize(FONT_SIZE_MEDIUM);
+        _line3 = new CRUITextWidget();
+        _line3->setFontSize(FONT_SIZE_SMALL);
+        _line4 = new CRUITextWidget();
+        _line4->setFontSize(FONT_SIZE_XSMALL);
+        _line4->setAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+
+        _line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _infolayout->addChild(_line3);
+        _infolayout->addChild(_line4);
+
+        _layout->addChild(spacer1);
+        _layout->addChild(_line1);
+        _layout->addChild(_line2);
+        _layout->addChild(_infolayout);
+        _layout->addChild(spacer2);
+        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
+        _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _layout->setMaxHeight(deviceInfo.minListItemSize * 3 / 2);
+        //_layout->setMinHeight(_iconDy);
+        //_layout->setBackground(0x80C0C0C0);
+        addChild(_layout);
+        setMinWidth(MIN_ITEM_PX);
+        setMinHeight(MIN_ITEM_PX * 2 / 3);
+        setMargin(PT_TO_PX(1));
+        setStyle("LIST_ITEM");
+    }
+
+    void setDir(CRDirEntry * entry, int iconDx, int iconDy) {
+        _iconDx = iconDx;
+        _iconDy = iconDy;
+        //_icon->setMinWidth(iconDx);
+        //_icon->setMinHeight(iconDy);
+        //_icon->setMaxWidth(iconDx);
+        //_icon->setMaxHeight(iconDy);
+        //_layout->setMaxHeight(_iconDy);
+        //_layout->setMinHeight(_iconDy);
+        int maxHeight = deviceInfo.minListItemSize * 2 / 3;
+        CRUIImageRef icon = _icon->getImage();
+        if (!icon.isNull())
+            if (maxHeight < icon->originalHeight() + PT_TO_PX(2))
+                maxHeight = icon->originalHeight() + PT_TO_PX(2);
+        _layout->setMinHeight(deviceInfo.minListItemSize * 2 / 3);
+        _layout->setMaxHeight(maxHeight);
+
+        _entry = entry;
+    }
+};
+
+class CRUIOpdsBookItemWidget : public CRUILinearLayout {
+public:
+    int _iconDx;
+    int _iconDy;
+    CRCoverWidget * _icon;
+    CRUILinearLayout * _layout;
+    CRUILinearLayout * _infolayout;
+    CRUITextWidget * _line1;
+    CRUITextWidget * _line2;
+    CRUITextWidget * _line3;
+    CRUITextWidget * _line4;
+    CRDirEntry * _entry;
+    CRUIOpdsBookItemWidget(int iconDx, int iconDy, CRUIMainWidget * callback) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
+        _icon = new CRCoverWidget(callback, NULL, iconDx, iconDy);
+        _icon->setSize(iconDx, iconDy);
+        addChild(_icon);
+        _layout = new CRUILinearLayout(true);
+        _infolayout = new CRUILinearLayout(false);
+        _line1 = new CRUITextWidget();
+        _line1->setFontSize(FONT_SIZE_SMALL);
+        _line2 = new CRUITextWidget();
+        _line2->setFontSize(FONT_SIZE_MEDIUM);
+        _line3 = new CRUITextWidget();
+        _line3->setFontSize(FONT_SIZE_SMALL);
+        _line4 = new CRUITextWidget();
+        _line4->setFontSize(FONT_SIZE_XSMALL);
+        _line4->setAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+
+        _line3->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _infolayout->addChild(_line3);
+        _infolayout->addChild(_line4);
+
+        _layout->addChild(spacer1);
+        _layout->addChild(_line1);
+        _layout->addChild(_line2);
+        _layout->addChild(_infolayout);
+        _layout->addChild(spacer2);
+        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
+        _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
+        //_layout->setBackground(0x80C0C0C0);
+        addChild(_layout);
+        setMinWidth(MIN_ITEM_PX);
+        setMinHeight(MIN_ITEM_PX);
+        setMargin(PT_TO_PX(1));
+        setStyle("LIST_ITEM");
+    }
+    void setBook(CRDirEntry * entry, int iconDx, int iconDy) {
+        _iconDx = iconDx;
+        _iconDy = iconDy;
+        _icon->setSize(iconDx, iconDy);
+        _icon->setBook(entry);
+        _layout->setMaxHeight(_iconDy);
+        _layout->setMinHeight(_iconDy);
+        _entry = entry;
+    }
+    lvPoint calcCoverSize(int w, int h) {
+        return _icon->calcCoverSize(w, h);
+    }
+};
+
+static lString16 sizeToString(int size) {
+    if (size < 4096)
+        return lString16::itoa(size);
+    else if (size < 4096*1024)
+        return lString16::itoa(size / 1024) + L"K";
+    else
+        return lString16::itoa(size / 1024 / 1024) + L"M";
+}
+
+class CRUIOpdsItemListWidget : public CRUIListWidget {
+protected:
+    CRDirContentItem * _dir;
+    CRUIOpdsDirItemWidget * _folderWidget;
+    CRUIOpdsBookItemWidget * _bookWidget;
+    CRUIOpdsBrowserWidget * _parent;
+    int _coverDx;
+    int _coverDy;
+public:
+    void calcCoverSize(int dx, int dy) {
+        if (dx < dy) {
+            // vertical
+            _coverDx = dx / 6;
+            _coverDy = _coverDx * 4 / 3;
+        } else {
+            // horizontal
+            _coverDy = dy / 4;
+            _coverDx = _coverDy * 3 / 4;
+        }
+    }
+
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight) {
+        calcCoverSize(baseWidth, baseHeight);
+        setColCount(baseWidth > baseHeight ? 2 : 1);
+        CRUIListWidget::measure(baseWidth, baseHeight);
+    }
+
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom) {
+        CRUIListWidget::layout(left, top, right, bottom);
+    }
+
+    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent) {
+        setLayoutParams(FILL_PARENT, FILL_PARENT);
+        //setBackground("tx_wood_v3.jpg");
+        calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
+        _folderWidget = new CRUIOpdsDirItemWidget(_coverDx, _coverDy, "folder");
+        _bookWidget = new CRUIOpdsBookItemWidget(_coverDx, _coverDy, parent->getMain());
+        setStyle("FILE_LIST");
+        setColCount(2);
+    }
+    virtual int getItemCount() {
+        if (!_dir)
+            return 0;
+        //CRLog::trace("item count is %d", _dir->itemCount());
+        return _dir->itemCount();
+    }
+    virtual CRUIWidget * getItemWidget(int index) {
+        CRDirEntry * item = _dir->getItem(index);
+        if (item->isDirectory()) {
+            CRUIOpdsDirItemWidget * res = _folderWidget;
+            res->setDir(item, _coverDx, _coverDy);
+            res->_line1->setText(L"");
+            res->_line2->setText(item->getTitle());
+            res->_line3->setText(item->getDescription());
+            //CRLog::trace("returning folder item");
+            return res;
+        } else {
+            CRUIOpdsBookItemWidget * res = _bookWidget;
+            res->setBook(item, _coverDx, _coverDy);
+            BookDBBook * book = item->getBook();
+            lString16 text1;
+            lString16 text2;
+            lString16 text3;
+            lString16 text4;
+            if (book) {
+                text2 = Utf8ToUnicode(book->title.c_str());
+                text1 = item->getAuthorNames(false);
+                text3 = item->getSeriesName(true);
+                text4 = sizeToString(book->filesize);
+                text4 += " ";
+                text4 += LVDocFormatName(book->format);
+            } else {
+                text2 = Utf8ToUnicode(item->getFileName());
+            }
+            if (text2.empty())
+                text2 = Utf8ToUnicode(item->getFileName());
+            res->_line1->setText(text1);
+            res->_line2->setText(text2);
+            res->_line3->setText(text3);
+            res->_line4->setText(text4);
+            //CRLog::trace("returning book item");
+            return res;
+        }
+    }
+    virtual void setDirectory(CRDirContentItem * dir)
+    {
+        _dir = dir;
+        //dir->sort(BY_TITLE);
+        requestLayout();
+    }
+
+    /// return true if drag operation is intercepted
+    virtual bool startDragging(const CRUIMotionEvent * event, bool vertical) {
+        return _parent->getMain()->startDragging(event, vertical);
+    }
+
+    /// returns true if all coverpages are available, false if background tasks are submitted
+    virtual bool requestAllVisibleCoverpages() {
+        coverPageManager->cancelAll();
+        lvRect rc = _pos;
+        applyMargin(rc);
+        applyPadding(rc);
+
+        lvRect clip = _pos;
+        bool foundNotReady = false;
+        for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
+            lvRect childRc = _itemRects[i];
+            if (_vertical) {
+                childRc.top -= _scrollOffset;
+                childRc.bottom -= _scrollOffset;
+            } else {
+                childRc.left -= _scrollOffset;
+                childRc.right -= _scrollOffset;
+            }
+            if (clip.intersects(childRc)) {
+                CRDirEntry * item = _dir->getItem(i);
+                if (!item->isDirectory()) {
+                    lvPoint coverSize = _bookWidget->calcCoverSize(_coverDx, _coverDy);
+                    LVDrawBuf * buf = coverPageManager->getIfReady(item, coverSize.x, coverSize.y);
+                    if (buf) {
+                        // image is ready
+                    } else {
+                        foundNotReady = true;
+                        coverPageManager->prepare(item, coverSize.x, coverSize.y, NULL);
+                    }
+                }
+            }
+        }
+        return !foundNotReady;
+    }
+};
 
 void CRUIOpdsBrowserWidget::setDirectory(BookDBCatalog * catalog, CRDirContentItem * dir)
 {
@@ -166,16 +315,18 @@ void CRUIOpdsBrowserWidget::setDirectory(BookDBCatalog * catalog, CRDirContentIt
 
     if (_dir)
         _dir->unlock();
-	_dir = dir;
+    _dir = (CROpdsCatalogsItem*)dir;
     if (_dir)
         _dir->lock();
     //_title->setTitle(makeDirName(dir, false));
-    _title->setTitle(Utf8ToUnicode(dir->getPathName()));
-	//_fileList->setDirectory(dir);
+    _title->setTitle(dir->getTitle());
+    _fileList->setDirectory(_dir);
+    //_fileList->setDirectory(dir);
 	requestLayout();
 }
 
 class OPDSParser : public LVXMLParserCallback {
+    BookDBCatalog * _catalog;
     lString8 protocol;
     lString8 host;
     lString8 url;
@@ -192,7 +343,9 @@ class OPDSParser : public LVXMLParserCallback {
     lString8 linkHref;
     lString8 linkType;
 public:
-    OPDSParser() : level(0), insideEntry(false) {
+    LVPtrVector<CRDirEntry, false> _entries;
+
+    OPDSParser(BookDBCatalog * catalog) : _catalog(catalog), level(0), insideEntry(false) {
 
     }
 
@@ -246,6 +399,10 @@ public:
 
     void addEntry(lString8 title, lString8 content, lString8 href) {
         CRLog::trace("*** Entry: title=%s content=%s href=%s", title.c_str(), content.c_str(), href.c_str());
+        CROpdsCatalogsItem * item = new CROpdsCatalogsItem(_catalog, href);
+        item->setTitle(Utf8ToUnicode(title));
+        item->setDescription(Utf8ToUnicode(content));
+        _entries.add(item);
     }
 
     /// called on tag close
@@ -351,10 +508,15 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                     charset = typeParams[i].substr(8);
             }
             //
-            OPDSParser callback;
-            if (callback.parse(url, stream)) {
-                CRLog::trace("Parsed ok");
-
+            OPDSParser parser(_catalog);
+            if (parser.parse(url, stream)) {
+                CRLog::trace("Parsed ok, %d entries found", parser._entries.length());
+                for (int i = 0; i < parser._entries.length(); i++) {
+                    _dir->addEntry(parser._entries[i]);
+                }
+                _fileList->setDirectory(_dir);
+                requestLayout();
+                getMain()->update(true);
             }
         } else {
             CRLog::error("Unexpected content type: %s", mimeType.c_str());
@@ -370,7 +532,7 @@ void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url,
 
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
     if (_dir && _catalog)
-        _requestId = getMain()->openUrl(this, _dir->getPathName(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+        _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
     requestLayout();
 }
 
@@ -380,26 +542,30 @@ CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindow
 {
     _title = new CRUITitleBarWidget(lString16("File list"), this, this, false);
 	_body->addChild(_title);
+    _fileList = new CRUIOpdsItemListWidget(this);
+    _body->addChild(_fileList);
+    _fileList->setOnItemClickListener(this);
+
     //_fileList = new CRUIOpdsItemListWidget(this);
 	//_body->addChild(_fileList);
     //_fileList->setOnItemClickListener(this);
-	CRUIVerticalLayout * layout = new CRUIVerticalLayout();
-	layout->setLayoutParams(FILL_PARENT, FILL_PARENT);
-	CRUIImageWidget * image = new CRUIImageWidget("internet");
-	image->setPadding(PT_TO_PX(8));
-	image->setAlign(ALIGN_CENTER);
-	image->setLayoutParams(FILL_PARENT, FILL_PARENT);
-	layout->addChild(image);
-	CRUITextWidget * text1 = new CRUITextWidget();
-	text1->setAlign(ALIGN_CENTER);
-	text1->setPadding(PT_TO_PX(8));
-	text1->setMaxLines(2);
-	text1->setText("OPDS catalog access is not yet implemented.");
-	text1->setFontSize(FONT_SIZE_LARGE);
-	text1->setLayoutParams(FILL_PARENT, FILL_PARENT);
-	layout->setStyle("SETTINGS_ITEM_LIST");
-	layout->addChild(text1);
-	_body->addChild(layout);
+//	CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+//	layout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+//	CRUIImageWidget * image = new CRUIImageWidget("internet");
+//	image->setPadding(PT_TO_PX(8));
+//	image->setAlign(ALIGN_CENTER);
+//	image->setLayoutParams(FILL_PARENT, FILL_PARENT);
+//	layout->addChild(image);
+//	CRUITextWidget * text1 = new CRUITextWidget();
+//	text1->setAlign(ALIGN_CENTER);
+//	text1->setPadding(PT_TO_PX(8));
+//	text1->setMaxLines(2);
+//	text1->setText("OPDS catalog access is not yet implemented.");
+//	text1->setFontSize(FONT_SIZE_LARGE);
+//	text1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+//	layout->setStyle("SETTINGS_ITEM_LIST");
+//	layout->addChild(text1);
+//	_body->addChild(layout);
 
 
 }

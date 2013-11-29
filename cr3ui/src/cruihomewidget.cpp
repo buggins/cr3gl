@@ -490,7 +490,7 @@ public:
         bookDB->loadOpdsCatalogs(catalogs);
         for (int i = 0; i < catalogs.length(); i++) {
             BookDBCatalog * item = catalogs[i];
-            CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item);
+            CROpdsCatalogsItem * entry = new CROpdsCatalogsItem(item, lString8());
             _entries.add(entry);
         }
     }

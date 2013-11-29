@@ -13,15 +13,15 @@
 #include "cruiwindow.h"
 
 class CRUITitleBarWidget;
-//class CRUIOpdsItemListWidget;
+class CRUIOpdsItemListWidget;
 
 class CRUIMainWidget;
 
 class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener, public CRUIOnLongClickListener {
 	CRUITitleBarWidget * _title;
-	//CRUIOpdsItemListWidget * _fileList;
+    CRUIOpdsItemListWidget * _fileList;
     BookDBCatalog * _catalog;
-    CRDirContentItem * _dir;
+    CROpdsCatalogsItem * _dir;
     int _requestId;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted

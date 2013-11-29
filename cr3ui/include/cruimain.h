@@ -175,7 +175,10 @@ public:
     virtual void setDirectory(BookDBCatalog * catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
     virtual VIEW_MODE getMode() { return MODE_OPDS; }
     OPDSItem(CRUIMainWidget * _main, BookDBCatalog * catalog, lString8 _pathname) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
-        ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, dirCache->getOrAdd(pathname));
+        CROpdsCatalogsItem * dir = (CROpdsCatalogsItem*)dirCache->getOrAdd(pathname);
+        dir->setCatalog(catalog);
+        ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, dir);
+
     }
     virtual const lString8 & getPathName() { return pathname; }
     virtual ~OPDSItem() {

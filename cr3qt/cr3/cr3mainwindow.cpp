@@ -346,7 +346,8 @@ void CRUIHttpTaskQt::httpFinished() {
     if (contentMimeType.isValid())
         contentTypeString = contentMimeType.toString();
     _mimeType = contentTypeString.toUtf8().constData();
-    _stream->SetPos(0);
+    if (!_stream.isNull())
+        _stream->SetPos(0);
     CRLog::trace("httpFinished(result=%d resultMessage=%s mimeType=%s)", _result, _resultMessage.c_str(), _mimeType.c_str());
     _taskManager->onTaskFinished(this);
     reply->deleteLater();
