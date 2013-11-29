@@ -223,14 +223,14 @@ public:
     }
 };
 
-static lString16 sizeToString(int size) {
-    if (size < 4096)
-        return lString16::itoa(size);
-    else if (size < 4096*1024)
-        return lString16::itoa(size / 1024) + L"K";
-    else
-        return lString16::itoa(size / 1024 / 1024) + L"M";
-}
+//static lString16 sizeToString(int size) {
+//    if (size < 4096)
+//        return lString16::itoa(size);
+//    else if (size < 4096*1024)
+//        return lString16::itoa(size / 1024) + L"K";
+//    else
+//        return lString16::itoa(size / 1024 / 1024) + L"M";
+//}
 
 class CRUIOpdsItemListWidget : public CRUIListWidget {
 protected:
@@ -544,14 +544,22 @@ public:
         OPDSLink * opdsLink = NULL;
         OPDSLink * acquisitionLink = NULL;
         OPDSLink * alternateLink = NULL;
+        lString8 coverpageUrl;
+        lString8 coverpageThumbUrl;
         for (int i = 0; i < links.length(); i++) {
-            if (links[i]->type.startsWith("application/atom+xml") && links[i]->rel.empty())
-                opdsLink = links[i];
-            else if (links[i]->rel.startsWith("http://opds-spec.org/acquisition")) {
-                acquisitionLink = links[i];
-            } else if (links[i]->rel == "alternate" && (links[i]->type == "text/html" || links[i]->type == "text")) {
-                alternateLink = links[i];
+            OPDSLink * link = links[i];
+            if (link->type.startsWith("application/atom+xml") && link->rel.empty())
+                opdsLink = link;
+            else if (link->rel.startsWith("http://opds-spec.org/acquisition")) {
+                acquisitionLink = link;
+            } else if (link->rel == "alternate" && (link->type == "text/html" || link->type == "text")) {
+                alternateLink = link;
+            } else if (link->rel == "http://opds-spec.org/image" || link->rel == "x-stanza-cover-image") {
+                coverpageUrl = link->href;
+            } else if (link->rel == "http://opds-spec.org/image/thumbnail" || link->rel == "x-stanza-cover-image-thumbnail") {
+                coverpageThumbUrl = link->href;
             }
+
         }
         if (acquisitionLink || alternateLink) {
             // add book ref
@@ -562,6 +570,8 @@ public:
             item->setDescriptionType(entryContentType);
             item->setIsBook();
             item->setLinks(links);
+            item->setCoverThumbUrl(coverpageThumbUrl);
+            item->setCoverUrl(coverpageUrl);
             _entries.add(item);
         } else if (opdsLink) {
             // add catalog ref
@@ -738,20 +748,31 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                 OPDSParser parser(_catalog);
                 if (parser.parse(url, stream)) {
                     CRLog::trace("Parsed ok, %d entries found", parser._entries.length());
-                    for (int i = 0; i < parser._entries.length(); i++) {
-                        _dir->addEntry(parser._entries[i]);
-                    }
-                    //_fileList->setDirectory(_dir);
-                    if (!parser.nextPartUrl.empty()) {
-                        _nextPartURL = parser.nextPartUrl;
-                    } else {
+                    if (parser._entries.length() == 0) {
+                        lString16 errorMsg = lString16("No entries returned from OPDS catalog");
+                        getMain()->showMessage(errorMsg, 2000);
                         _fileList->setProgressItemVisible(false);
+                    } else {
+                        for (int i = 0; i < parser._entries.length(); i++) {
+                            _dir->addEntry(parser._entries[i]);
+                        }
+                        //_fileList->setDirectory(_dir);
+                        if (!parser.nextPartUrl.empty()) {
+                            _nextPartURL = parser.nextPartUrl;
+                        } else {
+                            _fileList->setProgressItemVisible(false);
+                        }
                     }
                     requestLayout();
                     getMain()->update(true);
+                } else {
+                    lString16 errorMsg = lString16("Error while parsing OPDS catalog");
+                    getMain()->showMessage(errorMsg, 2000);
                 }
             } else {
                 _nextPartURL.clear();
+                lString16 errorMsg = lString16("Cannot parse OPDS catalog: unexpected content type ") + Utf8ToUnicode(mimeType);
+                getMain()->showMessage(errorMsg, 4000);
                 CRLog::error("Unexpected content type: %s", mimeType.c_str());
                 OPDSParser parser(_catalog);
                 if (parser.parse(url, stream)) {
@@ -761,6 +782,8 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
             }
         } else {
             CRLog::error("Error %d %s", result, resultMessage.c_str());
+            lString16 errorMsg = lString16("ERROR ") + lString16::itoa(result) + L" : " + Utf8ToUnicode(resultMessage);
+            getMain()->showMessage(errorMsg, 4000);
             _nextPartURL.clear();
             _fileList->setProgressItemVisible(false);
         }
@@ -777,6 +800,7 @@ void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url,
 
 void CRUIOpdsBrowserWidget::fetchNextPart() {
     if (!_nextPartURL.empty() && !_requestId) {
+        //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_nextPartURL), 1000);
         _requestId = getMain()->openUrl(this, _nextPartURL, lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
         _fileList->setProgressItemVisible(true);
         _nextPartURL.clear();
@@ -785,6 +809,7 @@ void CRUIOpdsBrowserWidget::fetchNextPart() {
 
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
     if (_dir && _catalog && _dir->itemCount() == 0) {
+        //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
         _fileList->setProgressItemVisible(true);
     }

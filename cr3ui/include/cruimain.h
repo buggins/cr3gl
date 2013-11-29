@@ -349,6 +349,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     LVHashTable<lUInt32, CRUIWindowWidget *> _downloadMap;
 
+    lString16 _messageText;
+
     void createBrowserSettings();
     void createReaderSettings();
 
@@ -363,6 +365,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
+
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
     CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors
     CRPropRef initNewSettings() { _newSettings = LVClonePropsContainer(_currentSettings); return _newSettings; } // to be edited by Settings editors
@@ -422,6 +425,10 @@ public:
 
     void showSlowOperationPopup();
     void hideSlowOperationPopup();
+
+    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+    virtual bool onTimerEvent(lUInt32 timerId);
+    void showMessage(lString16 text, int duration);
 
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);

@@ -214,6 +214,22 @@ void CRUIMainWidget::showBookmarks(CRUIBookmarksWidget * bm) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
+#define MESSAGE_TIMER_ID 32145
+void CRUIMainWidget::showMessage(lString16 text, int duration) {
+    _messageText = text;
+    _eventManager->setTimer(MESSAGE_TIMER_ID, this, duration, false);
+    update(true);
+}
+
+bool CRUIMainWidget::onTimerEvent(lUInt32 timerId) {
+
+    if (timerId == MESSAGE_TIMER_ID) {
+        _messageText.clear();
+        update(true);
+        return false;
+    }
+}
+
 void CRUIMainWidget::showSlowOperationPopup()
 {
 	if (_popup) {
@@ -947,6 +963,31 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
     if (_keyboard) {
         //CRLog::trace("Drawing popup");
         _keyboard->draw(buf);
+    }
+    if (!_messageText.empty()) {
+        CRUITextWidget text(_messageText);
+        text.setFontSize(FONT_SIZE_SMALL);
+        text.setMaxLines(2);
+        text.setPadding(PT_TO_PX(7));
+        text.setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        text.measure(_pos.width(), _pos.height());
+        text.setBackground(0x60FFFFFF);
+        text.setTextColor(0x00FF0000);
+        int dx = text.getMeasuredWidth();
+        int dy = text.getMeasuredHeight();
+        if (dx > _pos.width())
+            dx = _pos.width();
+        if (dy > _pos.height())
+            dy = _pos.height();
+        int ddx = (_pos.width() - dx) / 2;
+        int ddy = (_pos.height() - dy);
+        lvRect rc;
+        rc.left = _pos.left + ddx;
+        rc.right = _pos.right - ddx;
+        rc.top = _pos.top + ddy * 4 / 5;
+        rc.bottom = _pos.bottom - ddy / 5;
+        text.layout(rc.left, rc.top, rc.right, rc.bottom);
+        text.draw(buf);
     }
     _drawRequested = false;
     setScreenUpdateMode(false, animating ? 30 : 0);
