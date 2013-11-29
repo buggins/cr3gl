@@ -174,10 +174,11 @@ public:
     }
     virtual void setDirectory(BookDBCatalog * catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
     virtual VIEW_MODE getMode() { return MODE_OPDS; }
-    OPDSItem(CRUIMainWidget * _main, BookDBCatalog * catalog, lString8 _pathname, lString8 url) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
+    OPDSItem(CRUIMainWidget * _main, BookDBCatalog * catalog, lString8 _pathname, lString8 url, lString16 title) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
         CROpdsCatalogsItem * dir = (CROpdsCatalogsItem*)dirCache->getOrAdd(pathname);
         dir->setCatalog(catalog);
         dir->setURL(url);
+        dir->setTitle(title);
         ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, dir);
 
     }
@@ -424,7 +425,7 @@ public:
 
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
-    void showOpds(BookDBCatalog * dir, lString8 url);
+    void showOpds(BookDBCatalog * dir, lString8 url, lString16 title);
     void showOpdsProps(BookDBCatalog * dir);
     void showHome();
     void showSettings(lString8 path);

@@ -146,7 +146,7 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
     case CMD_OPDS_CATALOG_OPEN:
         save();
         if (_catalog->isValid())
-            _main->showOpds(_catalog, lString8());
+            _main->showOpds(_catalog, lString8(), Utf8ToUnicode(_catalog->name.c_str()));
         else
             _main->back();
         return true;

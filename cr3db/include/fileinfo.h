@@ -74,7 +74,7 @@ public:
     lString16 getSeriesName(bool numberFirst) const;
     lString16 getSeriesNameOnly() const;
     int getSeriesNumber() const;
-    lString16 getAuthorNames(bool fileAs) const;
+    virtual lString16 getAuthorNames(bool fileAs) const;
 	virtual bool isDirectory() const = 0;
 	virtual bool isArchive() const { return _isArchive; }
 	virtual BookDBBook * getBook() const { return NULL; }
@@ -228,6 +228,33 @@ public:
     CRRecentBooksItem() : CRDirContentItem(lString8(RECENT_DIR_TAG), false) {}
 };
 
+class OPDSLink {
+public:
+    lString8 type;
+    lString8 href;
+    lString8 rel;
+    lString8 title;
+    OPDSLink() {}
+    OPDSLink(OPDSLink & v) {
+        type = v.type;
+        href = v.href;
+        rel = v.rel;
+        title = v.title;
+    }
+};
+
+class OPDSAuthor {
+public:
+    lString8 name;
+    lString8 url;
+    OPDSAuthor() {}
+    OPDSAuthor(OPDSAuthor & v) {
+        name = v.name;
+        url = v.url;
+    }
+};
+
+
 class CROpdsCatalogsItem : public CRDirContentItem {
 protected:
 
@@ -236,6 +263,11 @@ protected:
     lString8 _url;
     lString16 _title;
     lString16 _description;
+    lString8 _descriptionType;
+
+    LVPtrVector<OPDSLink> _links;
+    LVPtrVector<OPDSAuthor> _authors;
+    bool _isDirectory;
 
     /// load from DB
     virtual bool scan();
@@ -245,15 +277,19 @@ public:
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_OPDS_CATALOG; }
     CROpdsCatalogsItem(const BookDBCatalog * catalog, lString8 url) : CRDirContentItem(lString8(OPDS_CATALOG_TAG) + lString8::itoa(catalog->id) + (url.empty() ? lString8() : lString8(":") + url), false), _catalog(catalog->clone()), _url(url)
     {
-
+        _isDirectory = true;
     }
     CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false)
     {
+        _isDirectory = true;
         _url = dir->getURL();
         _description = dir->getDescription();
         _title = dir->getTitle();
         //_catalog = (((CROpdsCatalogsItem*)dir)->_catalog->clone());
     }
+    virtual bool isDirectory() const { return _isDirectory; }
+    virtual void setIsBook() { _isDirectory = false; }
+
     virtual CRDirEntry * clone() const { CROpdsCatalogsItem * res = new CROpdsCatalogsItem(this); return res; }
     virtual void addEntry(CRDirEntry * entry) { _entries.add(entry); }
     BookDBCatalog * getCatalog() { return _catalog.get(); }
@@ -265,8 +301,34 @@ public:
     virtual void setTitle(lString16 title) { _title = title; }
     virtual lString16 getDescription() const { return _description; }
     virtual void setDescription(lString16 description) { _description = description; }
+    virtual lString8 getDescriptionType() const { return _descriptionType; }
+    virtual void setDescriptionType(lString8 type) { _descriptionType = type; }
     virtual lString8 getURL() const { return _url.empty() ? lString8(_catalog->url.c_str()) : _url; }
     virtual void setURL(lString8 url) { _url = url; }
+    LVPtrVector<OPDSLink> & getLinks() { return _links; }
+    void setLinks(LVPtrVector<OPDSLink> & links) {
+        _links.clear();
+        for (int i = 0; i < links.length(); i++) {
+            _links.add(new OPDSLink(*links[i]));
+        }
+    }
+    LVPtrVector<OPDSAuthor> & getAuthors() { return _authors; }
+    void setAuthors(LVPtrVector<OPDSAuthor> & authors) {
+        _authors.clear();
+        for (int i = 0; i < authors.length(); i++) {
+            _authors.add(new OPDSAuthor(*authors[i]));
+        }
+    }
+    virtual lString16 getAuthorNames(bool fileAs) const {
+        CR_UNUSED(fileAs);
+        lString16 res;
+        for (int i = 0; i < _authors.length(); i++) {
+            if (res.length())
+                res << L", ";
+            res += Utf8ToUnicode(_authors[i]->name);
+        }
+        return res;
+    }
 };
 
 class CRBookDBLookupItem : public CRDirContentItem {

@@ -243,9 +243,24 @@ protected:
     int _coverDy;
     bool _showProgressAsLastItem;
 public:
+    virtual void setScrollOffset(int offset) {
+        bool oldVisible = _showProgressAsLastItem && isItemVisible(_dir->itemCount());
+        int oldOffset = _scrollOffset;
+        CRUIListWidget::setScrollOffset(offset);
+        if (_scrollOffset != oldOffset && _showProgressAsLastItem) {
+            if (isItemVisible(_dir->itemCount()) && !oldVisible) {
+                CRLog::trace("calling _parent->fetchNextPart()");
+                _parent->fetchNextPart();
+            }
+        }
+    }
+
     void setProgressItemVisible(bool showProgress) {
-        _showProgressAsLastItem = showProgress;
-        requestLayout();
+        if (_showProgressAsLastItem != showProgress) {
+            _showProgressAsLastItem = showProgress;
+            requestLayout();
+            _parent->getMain()->update(true);
+        }
     }
 
     virtual bool isAnimating() {
@@ -280,7 +295,7 @@ public:
         CRUIListWidget::layout(left, top, right, bottom);
     }
 
-    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent), _showProgressAsLastItem(true) {
+    CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent), _showProgressAsLastItem(false) {
         setLayoutParams(FILL_PARENT, FILL_PARENT);
         //setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
@@ -313,21 +328,22 @@ public:
         } else {
             CRUIOpdsBookItemWidget * res = _bookWidget;
             res->setBook(item, _coverDx, _coverDy);
-            BookDBBook * book = item->getBook();
             lString16 text1;
             lString16 text2;
             lString16 text3;
             lString16 text4;
-            if (book) {
-                text2 = Utf8ToUnicode(book->title.c_str());
-                text1 = item->getAuthorNames(false);
-                text3 = item->getSeriesName(true);
-                text4 = sizeToString(book->filesize);
-                text4 += " ";
-                text4 += LVDocFormatName(book->format);
-            } else {
-                text2 = Utf8ToUnicode(item->getFileName());
-            }
+            text2 = item->getTitle();
+            text1 = item->getAuthorNames(false);
+//            if (book) {
+//                text2 = Utf8ToUnicode(book->title.c_str());
+//                text1 = item->getAuthorNames(false);
+//                text3 = item->getSeriesName(true);
+//                text4 = sizeToString(book->filesize);
+//                text4 += " ";
+//                text4 += LVDocFormatName(book->format);
+//            } else {
+//                text2 = Utf8ToUnicode(item->getFileName());
+//            }
             if (text2.empty())
                 text2 = Utf8ToUnicode(item->getFileName());
             res->_line1->setText(text1);
@@ -417,16 +433,40 @@ class OPDSParser : public LVXMLParserCallback {
     bool insideTitle;
     bool insideContent;
     bool insideLink;
+    bool insideLanguage;
+    bool insideFormat;
+    bool insideAuthor;
+    bool insideName;
+    bool insideUri;
     lString8 entryTitle;
     lString8 entryContent;
+    lString8 entryContentType;
     lString8 entryHref;
     lString8 linkHref;
     lString8 linkType;
+    lString8 linkRel;
+    lString8 linkTitle;
+    lString8 language;
+    lString8 format;
+    lString8 authorName;
+    lString8 authorUri;
+    LVPtrVector<OPDSLink> links;
+    LVPtrVector<OPDSAuthor> authors;
 public:
+    lString8 nextPartUrl;
+    lString8 openSearchUrl;
+    lString8 searchTermsUrl;
+
     LVPtrVector<CRDirEntry, false> _entries;
 
     OPDSParser(BookDBCatalog * catalog) : _catalog(catalog), level(0), insideEntry(false) {
-
+        insideTitle = false;
+        insideContent = false;
+        insideLink = false;
+        insideLanguage = false;
+        insideFormat = false;
+        insideAuthor = false;
+        insideName = false;
     }
 
     /// make absolute URL from relative
@@ -457,17 +497,36 @@ public:
         if (tag == "entry") {
             entryTitle.clear();
             entryContent.clear();
+            entryContentType.clear();
             linkHref.clear();
             linkType.clear();
+            language.clear();
+            format.clear();
+            links.clear();
+            authors.clear();
             insideEntry = true;
         } else if (tag== "title")
             insideTitle = true;
         else if (tag == "content")
             insideContent = true;
-        else if (tag == "link") {
+        else if (tag == "language")
+            insideLanguage = true;
+        else if (tag == "format")
+            insideFormat = true;
+        else if (tag == "author") {
+            authorName.clear();
+            authorUri.clear();
+            insideAuthor = true;
+        } else if (tag == "name")
+            insideName = true;
+        else if (tag == "uri") {
+            insideUri = true;
+        } else if (tag == "link") {
             insideLink = true;
             linkHref.clear();
             linkType.clear();
+            linkRel.clear();
+            linkTitle.clear();
         }
         return NULL;
     }
@@ -477,12 +536,48 @@ public:
         // ignore
     }
 
-    void addEntry(lString8 title, lString8 content, lString8 href) {
-        CRLog::trace("*** Entry: title=%s content=%s href=%s", title.c_str(), content.c_str(), href.c_str());
-        CROpdsCatalogsItem * item = new CROpdsCatalogsItem(_catalog, href);
-        item->setTitle(Utf8ToUnicode(title));
-        item->setDescription(Utf8ToUnicode(content));
-        _entries.add(item);
+    void addEntry() {
+        if (!links.length())
+            return;
+        if (entryTitle.empty())
+            return;
+        OPDSLink * opdsLink = NULL;
+        OPDSLink * acquisitionLink = NULL;
+        OPDSLink * alternateLink = NULL;
+        for (int i = 0; i < links.length(); i++) {
+            if (links[i]->type.startsWith("application/atom+xml") && links[i]->rel.empty())
+                opdsLink = links[i];
+            else if (links[i]->rel.startsWith("http://opds-spec.org/acquisition")) {
+                acquisitionLink = links[i];
+            } else if (links[i]->rel == "alternate" && (links[i]->type == "text/html" || links[i]->type == "text")) {
+                alternateLink = links[i];
+            }
+        }
+        if (acquisitionLink || alternateLink) {
+            // add book ref
+            CROpdsCatalogsItem * item = new CROpdsCatalogsItem(_catalog, lString8(_catalog->url.c_str()));
+            item->setTitle(Utf8ToUnicode(entryTitle));
+            item->setAuthors(authors);
+            item->setDescription(Utf8ToUnicode(entryContent));
+            item->setDescriptionType(entryContentType);
+            item->setIsBook();
+            item->setLinks(links);
+            _entries.add(item);
+        } else if (opdsLink) {
+            // add catalog ref
+            CROpdsCatalogsItem * item = new CROpdsCatalogsItem(_catalog, opdsLink->href);
+            item->setTitle(Utf8ToUnicode(entryTitle));
+            item->setDescription(Utf8ToUnicode(entryContent));
+            item->setDescriptionType(entryContentType);
+            _entries.add(item);
+        } else {
+            CRLog::error("No valid links found");
+            for (int i = 0; i < links.length(); i++) {
+                OPDSLink * link = links[i];
+                CRLog::trace("link %d href=%s type=%s rel=%s title=%s", i, link->href.c_str(), link->type.c_str(), link->rel.c_str(), link->title.c_str());
+            }
+        }
+        //CRLog::trace("*** Entry: title=%s content=%s href=%s", title.c_str(), content.c_str(), href.c_str());
     }
 
     /// called on tag close
@@ -495,17 +590,54 @@ public:
         lString16 tag(tagname);
         if (tag == "entry") {
             if (!entryTitle.empty()) {
-                if (!linkHref.empty() && linkType.startsWith("application/atom+xml")) {
-                    addEntry(entryTitle, entryContent, linkHref);
-                }
+                addEntry();
             }
             insideEntry = false;
         } else if (tag == "title")
             insideTitle = false;
         else if (tag == "content")
             insideContent = false;
-        else if (tag == "link")
+        else if (tag == "language")
+            insideLanguage = false;
+        else if (tag == "format")
+            insideFormat = false;
+        else if (tag == "author") {
+            if (!authorName.empty()) {
+                OPDSAuthor * author = new OPDSAuthor();
+                author->name = authorName;
+                author->url = authorUri;
+                authors.add(author);
+            }
+            insideAuthor = false;
+        } else if (tag == "uri") {
+            insideUri = false;
+        } else if (tag == "name")
+            insideName = false;
+        else if (tag == "link") {
+            if (insideEntry && !linkHref.empty() && !linkType.empty()) {
+                bool alreadyExists = false;
+                for (int i = 0; i <links.length(); i++) {
+                    if (links[i]->href == linkHref)
+                        alreadyExists = true;
+                }
+                if (!alreadyExists) {
+                    OPDSLink * link = new OPDSLink();
+                    link->type = linkType;
+                    link->rel = linkRel;
+                    link->title = linkTitle;
+                    link->href = linkHref;
+                    links.add(link);
+                }
+            } else if (linkRel == "next" && !linkHref.empty()) {
+                nextPartUrl = linkHref;
+            } else if (linkRel == "search" && !linkHref.empty()) {
+                if (linkType.startsWith("application/atom+xml"))
+                    searchTermsUrl = linkHref;
+                else if (linkType.startsWith("application/opensearchdescription+xml"))
+                    openSearchUrl = linkHref;
+            }
             insideLink = false;
+        }
     }
 
     /// called on element attribute
@@ -520,6 +652,13 @@ public:
                 linkType = value8;
             else if (attr == "href")
                 linkHref = makeLink(value8);
+            else if (attr == "rel")
+                linkRel = value8;
+            else if (attr == "title")
+                linkTitle = value8;
+        } else if (insideContent) {
+            if (attr == "type")
+                entryContentType = value8;
         }
 
     }
@@ -535,7 +674,14 @@ public:
                 entryTitle = txt8;
             else if (insideContent)
                 entryContent = txt8;
-
+            else if (insideLanguage)
+                language = txt8;
+            else if (insideFormat)
+                format = txt8;
+            else if (insideAuthor && insideName)
+                authorName = txt8;
+            else if (insideAuthor && insideUri)
+                authorUri = txt8;
         }
     }
 
@@ -580,28 +726,46 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
     if (_requestId == downloadTaskId) {
         _requestId = 0;
         // received OPDS data
-        if (mimeType.startsWith("application/atom+xml")) {
-            lString8Collection typeParams;
-            typeParams.split(mimeType, lString8(";"));
-            for (int i = 1; i < typeParams.length(); i++) {
-                if (typeParams[i].startsWith("charset="))
-                    charset = typeParams[i].substr(8);
-            }
-            //
-            OPDSParser parser(_catalog);
-            if (parser.parse(url, stream)) {
-                CRLog::trace("Parsed ok, %d entries found", parser._entries.length());
-                for (int i = 0; i < parser._entries.length(); i++) {
-                    _dir->addEntry(parser._entries[i]);
+        if (!result) {
+            if (mimeType.startsWith("application/atom+xml") || mimeType.startsWith("text/xml")) {
+                lString8Collection typeParams;
+                typeParams.split(mimeType, lString8(";"));
+                for (int i = 1; i < typeParams.length(); i++) {
+                    if (typeParams[i].startsWith("charset="))
+                        charset = typeParams[i].substr(8);
                 }
-                //_fileList->setDirectory(_dir);
+                //
+                OPDSParser parser(_catalog);
+                if (parser.parse(url, stream)) {
+                    CRLog::trace("Parsed ok, %d entries found", parser._entries.length());
+                    for (int i = 0; i < parser._entries.length(); i++) {
+                        _dir->addEntry(parser._entries[i]);
+                    }
+                    //_fileList->setDirectory(_dir);
+                    if (!parser.nextPartUrl.empty()) {
+                        _nextPartURL = parser.nextPartUrl;
+                    } else {
+                        _fileList->setProgressItemVisible(false);
+                    }
+                    requestLayout();
+                    getMain()->update(true);
+                }
+            } else {
+                _nextPartURL.clear();
+                CRLog::error("Unexpected content type: %s", mimeType.c_str());
+                OPDSParser parser(_catalog);
+                if (parser.parse(url, stream)) {
+
+                }
                 _fileList->setProgressItemVisible(false);
-                requestLayout();
-                getMain()->update(true);
             }
         } else {
-            CRLog::error("Unexpected content type: %s", mimeType.c_str());
+            CRLog::error("Error %d %s", result, resultMessage.c_str());
+            _nextPartURL.clear();
+            _fileList->setProgressItemVisible(false);
         }
+    } else {
+        CRLog::warn("Download finished from unknown downloadTaskId %d", downloadTaskId);
     }
 }
 
@@ -609,6 +773,14 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
 void CRUIOpdsBrowserWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
     CR_UNUSED3(result, resultMessage, mimeType);
     CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
+}
+
+void CRUIOpdsBrowserWidget::fetchNextPart() {
+    if (!_nextPartURL.empty() && !_requestId) {
+        _requestId = getMain()->openUrl(this, _nextPartURL, lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+        _fileList->setProgressItemVisible(true);
+        _nextPartURL.clear();
+    }
 }
 
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
@@ -724,13 +896,13 @@ bool CRUIOpdsBrowserWidget::onAction(const CRUIAction * action) {
 }
 
 bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) {
-    if (index < 0 || index > _dir->itemCount())
+    if (index < 0 || index >= _dir->itemCount())
         return false;
     CRDirEntry * entry = _dir->getItem(index);
     CROpdsCatalogsItem * item = (CROpdsCatalogsItem *)entry;
     if (entry->isDirectory()) {
         widget->setSelectedItem(index);
-        getMain()->showOpds(item->getCatalog(), item->getURL());
+        getMain()->showOpds(item->getCatalog(), item->getURL(), item->getTitle());
     } else {
         // Book? open book
         // TODO

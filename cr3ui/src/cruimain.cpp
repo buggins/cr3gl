@@ -272,7 +272,7 @@ void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
-void CRUIMainWidget::showOpds(BookDBCatalog * dir, lString8 url) {
+void CRUIMainWidget::showOpds(BookDBCatalog * dir, lString8 url, lString16 title) {
     CRLog::info("showOpds(catalog=%s url=%s)", dir->url.c_str(), url.c_str());
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     //_pendingFolder = folder;
@@ -285,7 +285,7 @@ void CRUIMainWidget::showOpds(BookDBCatalog * dir, lString8 url) {
     int newpos = _history.findPosByMode(MODE_OPDS, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder
-        _history.setNext(new OPDSItem(this, dir, folder, url));
+        _history.setNext(new OPDSItem(this, dir, folder, url, title));
         newpos = _history.pos() + 1;
     }
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);

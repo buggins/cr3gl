@@ -23,6 +23,7 @@ class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClic
     BookDBCatalog * _catalog;
     CROpdsCatalogsItem * _dir;
     int _requestId;
+    lString8 _nextPartURL;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted
     virtual bool requestAllVisibleCoverpages();
@@ -44,6 +45,7 @@ public:
     virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded);
 
     virtual void afterNavigationTo();
+    virtual void fetchNextPart();
 
 
     CRUIOpdsBrowserWidget(CRUIMainWidget * main);

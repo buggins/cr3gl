@@ -534,7 +534,7 @@ public:
         if (itemIndex < 1 || itemIndex > _entries.length())
             return false;
         CROpdsCatalogsItem * item = _entries[itemIndex - 1];
-        _home->getMain()->showOpds(item->getCatalog(), item->getURL());
+        _home->getMain()->showOpds(item->getCatalog(), item->getURL(), item->getTitle());
         return true;
     }
 

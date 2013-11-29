@@ -129,8 +129,16 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 
 void CRUIListWidget::getItemRect(int index, lvRect & rc) {
     rc.clear();
-    if (index >= 0 && index < _itemRects.length())
+    if (index >= 0 && index < _itemRects.length()) {
         rc = _itemRects[index];
+        if (isVertical()) {
+            rc.top -= _scrollOffset;
+            rc.bottom -= _scrollOffset;
+        } else {
+            rc.left -= _scrollOffset;
+            rc.right -= _scrollOffset;
+        }
+    }
 }
 
 bool CRUIListWidget::isItemVisible(int index) {
