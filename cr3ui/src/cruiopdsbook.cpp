@@ -1,4 +1,5 @@
 
+#include "cruiopdsbook.h"
 
 #include "crui.h"
 #include "cruiopdsprops.h"
@@ -12,7 +13,7 @@
 using namespace CRUI;
 
 
-CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * catalog) : CRUIWindowWidget(main), _title(NULL)
+CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, BookDBCatalog * catalog) : CRUIWindowWidget(main), _title(NULL)
 //, _fileList(NULL),
     , _catalog(NULL)
 {
@@ -29,11 +30,8 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * 
     //_fileList = new CRUIOpdsItemListWidget(this);
     //_body->addChild(_fileList);
     //_fileList->setOnItemClickListener(this);
-    _scroll = new CRUIScrollWidget(true);
-    _scroll->setLayoutParams(FILL_PARENT, FILL_PARENT);
-
     CRUITableLayout * layout = new CRUITableLayout(2);
-    layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+    layout->setLayoutParams(FILL_PARENT, FILL_PARENT);
 
     // add edit boxes
     CRUITextWidget * label = new CRUITextWidget(STR_OPDS_CATALOG_NAME);
@@ -67,21 +65,20 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * 
     layout->addChild(_edPassword);
     layout->setPadding(PT_TO_PX(3));
 
-//    // add spacers
-//    CRUIWidget * spacer = new CRUIWidget();
-//    spacer->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
-//    layout->addChild(spacer);
-//    spacer = new CRUIWidget();
-//    spacer->setLayoutParams(FILL_PARENT, FILL_PARENT);
-//    layout->addChild(spacer);
+    // add spacers
+    CRUIWidget * spacer = new CRUIWidget();
+    spacer->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
+    layout->addChild(spacer);
+    spacer = new CRUIWidget();
+    spacer->setLayoutParams(FILL_PARENT, FILL_PARENT);
+    layout->addChild(spacer);
 
-    _scroll->setStyle("SETTINGS_ITEM_LIST");
+    layout->setStyle("SETTINGS_ITEM_LIST");
 
-    _scroll->addChild(layout);
-    _body->addChild(_scroll);
+    _body->addChild(layout);
 }
 
-bool CRUIOpdsPropsWidget::onClick(CRUIWidget * widget) {
+bool CRUIOpdsBookWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK")
         onAction(CMD_BACK);
     else if (widget->getId() == "MENU") {
@@ -90,7 +87,7 @@ bool CRUIOpdsPropsWidget::onClick(CRUIWidget * widget) {
     return true;
 }
 
-bool CRUIOpdsPropsWidget::onLongClick(CRUIWidget * widget) {
+bool CRUIOpdsBookWidget::onLongClick(CRUIWidget * widget) {
 //    if (widget->getId() == "BACK") {
 //        CRUIActionList actions;
 //        lString8 path = _dir->getPathName();
@@ -123,7 +120,7 @@ bool CRUIOpdsPropsWidget::onLongClick(CRUIWidget * widget) {
 }
 
 /// handle menu or other action
-bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
+bool CRUIOpdsBookWidget::onAction(const CRUIAction * action) {
     switch (action->id) {
     case CMD_BACK:
         _main->back();
@@ -163,13 +160,13 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
     return false;
 }
 
-CRUIOpdsPropsWidget::~CRUIOpdsPropsWidget()
+CRUIOpdsBookWidget::~CRUIOpdsBookWidget()
 {
     if (_catalog)
         delete _catalog;
 }
 
-bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
+bool CRUIOpdsBookWidget::onKeyEvent(const CRUIKeyEvent * event) {
     int key = event->key();
     if (event->getType() == KEY_ACTION_PRESS) {
         if (key == CR_KEY_ESC || key == CR_KEY_BACK || key == CR_KEY_MENU) {
@@ -187,7 +184,7 @@ bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
     return false;
 }
 
-void CRUIOpdsPropsWidget::save() {
+void CRUIOpdsBookWidget::save() {
     // save if possible
     lString8 title = UnicodeToUtf8(_edTitle->getText());
     lString8 url = UnicodeToUtf8(_edUrl->getText());
@@ -211,14 +208,14 @@ void CRUIOpdsPropsWidget::save() {
     }
 }
 
-void CRUIOpdsPropsWidget::beforeNavigationFrom() {
+void CRUIOpdsBookWidget::beforeNavigationFrom() {
     if (!_catalog)
         return;
     save();
 }
 
 /// motion event handler, returns true if it handled event
-bool CRUIOpdsPropsWidget::onTouchEvent(const CRUIMotionEvent * event) {
+bool CRUIOpdsBookWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int action = event->getAction();
     int delta = event->getX() - event->getStartX();
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);

@@ -87,13 +87,13 @@ void CRUIWidget::defMeasure(int baseWidth, int baseHeight, int width, int height
 	int maxHeight = getMaxHeight();
 	if (_layoutWidth == FILL_PARENT && baseWidth != UNSPECIFIED)
 		_measuredWidth = baseWidth;
-	else if (_layoutWidth != WRAP_CONTENT)
+    else if (_layoutWidth != WRAP_CONTENT && _layoutWidth != FILL_PARENT)
 		_measuredWidth = _layoutWidth;
 	else
 		_measuredWidth = margin.left + margin.right + padding.left + padding.right + width;
 	if (_layoutHeight == FILL_PARENT && baseHeight != UNSPECIFIED)
 		_measuredHeight = baseHeight;
-	else if (_layoutHeight != WRAP_CONTENT)
+    else if (_layoutHeight != WRAP_CONTENT && _layoutHeight != FILL_PARENT)
 		_measuredHeight = _layoutHeight;
 	else
 		_measuredHeight = margin.top + margin.bottom + padding.top + padding.bottom + height;

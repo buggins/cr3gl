@@ -373,6 +373,7 @@ SOURCES += \
     ../../cr3ui/src/cruihomewidget.cpp \
     ../../cr3ui/src/cruilayout.cpp \
     ../../cr3ui/src/cruilist.cpp \
+    ../../cr3ui/src/cruiscrollwidget.cpp \
     ../../cr3ui/src/cruireadwidget.cpp \
     ../../cr3ui/src/cruitheme.cpp \
     ../../cr3ui/src/cruiwidget.cpp \
@@ -386,6 +387,7 @@ SOURCES += \
     ../../cr3ui/src/vkeyboard.cpp \
     ../../cr3ui/src/opdsbrowser.cpp \
     ../../cr3ui/src/cruiopdsprops.cpp \
+    ../../cr3ui/src/cruiopdsbook.cpp \
     ../../cr3ui/src/stringresource.cpp
 
 HEADERS += \
@@ -404,6 +406,7 @@ HEADERS += \
     ../../cr3ui/include/cruihomewidget.h \
     ../../cr3ui/include/cruilayout.h \
     ../../cr3ui/include/cruilist.h \
+    ../../cr3ui/include/cruiscrollwidget.h \
     ../../cr3ui/include/cruireadwidget.h \
     ../../cr3ui/include/cruitheme.h \
     ../../cr3ui/include/cruiwidget.h \
@@ -418,5 +421,6 @@ HEADERS += \
     ../../cr3ui/include/vkeyboard.h \
     ../../cr3ui/include/opdsbrowser.h \
     ../../cr3ui/include/cruiopdsprops.h \
+    ../../cr3ui/include/cruiopdsbook.h \
     ../../cr3ui/include/cruisettings.h \
     ../../cr3ui/include/stringresource.h

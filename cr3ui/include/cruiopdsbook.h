@@ -1,21 +1,16 @@
-#ifndef CRUIOPDSPROPS_H
-#define CRUIOPDSPROPS_H
+#ifndef CRUIOPDSBOOK_H
+#define CRUIOPDSBOOK_H
 
 
 #include "cruilist.h"
-#include "cruiscrollwidget.h"
 #include "fileinfo.h"
 #include "cruiwindow.h"
 
 class CRUITitleBarWidget;
-//class CRUIOpdsItemListWidget;
-
 class CRUIMainWidget;
 
-class CRUIOpdsPropsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnLongClickListener {
+class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnLongClickListener {
     CRUITitleBarWidget * _title;
-    CRUIScrollWidget * _scroll;
-    //CRUIOpdsItemListWidget * _fileList;
     CRUIEditWidget * _edTitle;
     CRUIEditWidget * _edUrl;
     CRUIEditWidget * _edLogin;
@@ -33,8 +28,8 @@ public:
     /// override to handle menu or other action - by id
     virtual void beforeNavigationFrom();
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
-    CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * catalog);
-    virtual ~CRUIOpdsPropsWidget();
+    CRUIOpdsBookWidget(CRUIMainWidget * main, BookDBCatalog * catalog);
+    virtual ~CRUIOpdsBookWidget();
 };
 
-#endif // CRUIOPDSPROPS_H
+#endif // CRUIOPDSBOOK_H

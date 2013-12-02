@@ -29,7 +29,7 @@ protected:
 	bool _isVertical;
 public:
 	/// check orientation
-	virtual bool isVertical() { return _isVertical; }
+    virtual bool isVertical() const { return _isVertical; }
 	/// sets orientation
 	virtual CRUILinearLayout * setVertical(bool vertical) { _isVertical = vertical; requestLayout(); return this; }
 	/// creates either vertical or horizontal linear layout
