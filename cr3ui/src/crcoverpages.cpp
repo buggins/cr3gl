@@ -101,7 +101,7 @@ public:
         delete book;
     }
     bool isSame(CRDirEntry * _book, int _dx, int _dy) {
-        return dx == _dx && dy == _dy && _book->getPathName() == book->getPathName();
+        return dx == _dx && dy == _dy && _book->getCoverPathName() == book->getCoverPathName();
     }
 };
 
@@ -603,9 +603,9 @@ static void correctColors(LVColorDrawBuf * buf, lUInt32 srcColor, lUInt32 dstCol
 }
 
 CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy) {
-	CRLog::trace("CRCoverImageCache::draw called for %s", _book->getPathName().c_str());
+    CRLog::trace("CRCoverImageCache::draw called for %s", _book->getCoverPathName().c_str());
 
-    LVStreamRef stream = coverCache->getStream(_book->getPathName());
+    LVStreamRef stream = coverCache->getStream(_book->getCoverPathName());
     LVImageSourceRef image;
     if (!stream.isNull()) {
         image = LVCreateStreamImageSource(stream);
@@ -644,7 +644,7 @@ CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager
 CRCoverImageCache::Entry * CRCoverImageCache::find(CRDirEntry * _book, int dx, int dy) {
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.get();
-        if (item->book->getPathName() == _book->getPathName() && item->dx == dx && item->dy == dy) {
+        if (item->book->getCoverPathName() == _book->getCoverPathName() && item->dx == dx && item->dy == dy) {
             iterator.moveToHead();
             return item;
         }
@@ -671,7 +671,7 @@ void CRCoverImageCache::checkSize() {
         totalSize += item->dx * item->dy * 4;
         totalItems++;
         if ((totalItems > _maxitems || totalSize > _maxsize) && totalItems > 10) {
-            CRLog::trace("CRCoverImageCache::checkSize() removing item %s %dx%d", item->book->getPathName().c_str(), item->dx, item->dy);
+            CRLog::trace("CRCoverImageCache::checkSize() removing item %s %dx%d", item->book->getCoverPathName().c_str(), item->dx, item->dy);
             iterator.remove();
             delete item;
         }
@@ -921,7 +921,7 @@ void CRCoverPageManager::clearImageCache() {
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);
-    CRLog::trace("CRCoverPageManager::cancel %s %dx%d", _book->getPathName().c_str(), dx, dy);
+    CRLog::trace("CRCoverPageManager::cancel %s %dx%d", _book->getCoverPathName().c_str(), dx, dy);
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         if (item->isSame(_book, dx, dy)) {

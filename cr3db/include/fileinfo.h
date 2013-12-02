@@ -65,6 +65,7 @@ public:
 	CRDirEntry(const lString8 & pathname, bool archive) : _pathName(pathname), _isArchive(archive) {}
 	virtual ~CRDirEntry() {}
     virtual const lString8 & getPathName() const { return _pathName; }
+    virtual const lString8 & getCoverPathName() const { return _pathName; }
     virtual lString8 getFileName() const;
     virtual lString16 getTitle() const;
     virtual void setTitle(lString16 title) { CR_UNUSED(title); }
@@ -300,6 +301,9 @@ public:
             _authors.add(new OPDSAuthor(*v._authors[i]));
         }
     }
+    virtual CRDirEntry * clone() const {
+        return new CROpdsCatalogsItem(*this);
+    }
     CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false)
     {
         _isDirectory = true;
@@ -311,11 +315,18 @@ public:
     virtual bool isDirectory() const { return _isDirectory; }
     virtual void setIsBook() { _isDirectory = false; }
 
-    virtual CRDirEntry * clone() const { CROpdsCatalogsItem * res = new CROpdsCatalogsItem(this); return res; }
     virtual void addEntry(CRDirEntry * entry) { _entries.add(entry); }
     BookDBCatalog * getCatalog() { return _catalog.get(); }
     void setCatalog(BookDBCatalog * catalog) {
         _catalog = catalog->clone();
+    }
+
+    virtual const lString8 & getCoverPathName() const {
+        if (!_coverThumbUrl.empty())
+            return _coverThumbUrl;
+        if (!_coverUrl.empty())
+            return _coverUrl;
+        return getPathName();
     }
 
     virtual lString16 getTitle() const { return _title.empty() ? Utf8ToUnicode(_catalog->name.c_str()) : _title; }
