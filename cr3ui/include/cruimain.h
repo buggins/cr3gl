@@ -7,6 +7,7 @@
 #include "cruireadwidget.h"
 #include "opdsbrowser.h"
 #include "cruiopdsprops.h"
+#include "cruiopdsbook.h"
 #include "cruipopup.h"
 #include "cruiwindow.h"
 #include "cruisettingswidget.h"
@@ -20,7 +21,8 @@ enum VIEW_MODE {
     MODE_TOC,
     MODE_BOOKMARKS,
     MODE_OPDS,
-    MODE_OPDS_PROPS
+    MODE_OPDS_PROPS,
+    MODE_OPDS_BOOK
 };
 
 class CRUIScreenUpdateManagerCallback {
@@ -191,21 +193,49 @@ public:
 
 class OPDSPropsItem : public NavHistoryItem {
     lString8 path;
+    BookDBCatalog * catalog;
 public:
     virtual CRUIWindowWidget * recreate() {
         if (widget)
             delete widget;
-        widget = new CRUIFolderWidget(main);
+        widget = new CRUIOpdsPropsWidget(main, catalog);
         return widget;
     }
     virtual VIEW_MODE getMode() { return MODE_OPDS_PROPS; }
-    OPDSPropsItem(CRUIMainWidget * _main, BookDBCatalog * catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, catalog)) {
+    OPDSPropsItem(CRUIMainWidget * _main, BookDBCatalog * _catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, _catalog)) {
         path = "OPDS_PROPS";
+        catalog = _catalog->clone();
     }
     virtual const lString8 & getPathName() { return path; }
     virtual ~OPDSPropsItem() {
         if (widget)
             delete widget;
+        if (catalog)
+            delete catalog;
+    }
+};
+
+class OPDSBookItem : public NavHistoryItem {
+    lString8 path;
+    CROpdsCatalogsItem * book;
+public:
+    virtual CRUIWindowWidget * recreate() {
+        if (widget)
+            delete widget;
+        widget = new CRUIOpdsBookWidget(main, book);
+        return widget;
+    }
+    virtual VIEW_MODE getMode() { return MODE_OPDS_BOOK; }
+    OPDSBookItem(CRUIMainWidget * _main, CROpdsCatalogsItem * _book) : NavHistoryItem(_main, new CRUIOpdsBookWidget(_main, _book)) {
+        path = "OPDS_BOOK";
+        book = new CROpdsCatalogsItem(*_book);
+    }
+    virtual const lString8 & getPathName() { return path; }
+    virtual ~OPDSBookItem() {
+        if (widget)
+            delete widget;
+        if (book)
+            delete book;
     }
 };
 
@@ -434,6 +464,7 @@ public:
     void showFolder(lString8 folder, bool appendHistory);
     void showOpds(BookDBCatalog * dir, lString8 url, lString16 title);
     void showOpdsProps(BookDBCatalog * dir);
+    void showOpdsBook(CROpdsCatalogsItem * book);
     void showHome();
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);

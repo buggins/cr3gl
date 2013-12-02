@@ -298,6 +298,7 @@ public:
 	virtual CRUIStyle * findStyle(const lString8 &id, bool defaultToTheme = true);
 	void registerStyle(CRUIStyle * style);
 	LVFontRef getFontForSize(lUInt8 size);
+    int getFontSize(lUInt8 size);
 	CRUITheme(lString8 name);
     void setColor(lString8 id, lUInt32 value) {
         _colors.set(id, value);

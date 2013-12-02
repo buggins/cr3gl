@@ -289,6 +289,17 @@ void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
+void CRUIMainWidget::showOpdsBook(CROpdsCatalogsItem * book) {
+    lString8 folder("OPDS_BOOK");
+    int newpos = _history.findPosByMode(MODE_OPDS_BOOK, folder);
+    if (newpos < 0) {
+        // create page now, to lock corresponding folder
+        _history.setNext(new OPDSBookItem(this, book));
+        newpos = _history.pos() + 1;
+    }
+    startAnimation(newpos, WINDOW_ANIMATION_DELAY);
+}
+
 void CRUIMainWidget::showOpds(BookDBCatalog * dir, lString8 url, lString16 title) {
     CRLog::info("showOpds(catalog=%s url=%s)", dir->url.c_str(), url.c_str());
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {

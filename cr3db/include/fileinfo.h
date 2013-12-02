@@ -281,6 +281,25 @@ public:
     {
         _isDirectory = true;
     }
+    CROpdsCatalogsItem(const CROpdsCatalogsItem & v) : CRDirContentItem(v.getPathName(), false)
+    {
+        _catalog = v._catalog->clone();
+        _url = v._url;
+        _title = v._title;
+        _description = v._description;
+        _descriptionType = v._descriptionType;
+        _coverUrl = v._coverUrl;
+        _coverThumbUrl = v._coverThumbUrl;
+        _isDirectory = v._isDirectory;
+        _pathName = v._pathName;
+        _scanned = true;
+        for (int i = 0; i < v._links.length(); i++) {
+            _links.add(new OPDSLink(*v._links[i]));
+        }
+        for (int i = 0; i < v._authors.length(); i++) {
+            _authors.add(new OPDSAuthor(*v._authors[i]));
+        }
+    }
     CROpdsCatalogsItem(const CRDirItem * dir) : CRDirContentItem(dir->getPathName(), false)
     {
         _isDirectory = true;

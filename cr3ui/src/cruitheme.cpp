@@ -29,16 +29,13 @@ CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(
     setColor(lString8(COLOR_ID_SLIDER_POINTER_COLOR_INNER), 0xFFFFFF);
 }
 
-LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
-    LVFontRef res = _fonts.get(size);
-    if (!res.isNull())
-        return res;
+int CRUITheme::getFontSize(lUInt8 size) {
     int sz = size;
-	switch (size) {
-	case FONT_SIZE_XSMALL:
+    switch (size) {
+    case FONT_SIZE_XSMALL:
         sz = deviceInfo.shortSide / 38;
-		break;
-	case FONT_SIZE_SMALL:
+        break;
+    case FONT_SIZE_SMALL:
         sz = deviceInfo.shortSide / 32;
         break;
     case FONT_SIZE_MEDIUM:
@@ -47,16 +44,24 @@ LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
     case FONT_SIZE_LARGE:
         sz = deviceInfo.shortSide / 24;
         break;
-	case FONT_SIZE_XLARGE:
+    case FONT_SIZE_XLARGE:
         sz = deviceInfo.shortSide / 19;
         break;
     default:
         break; // do nothing
-	}
+    }
     if (sz > crconfig.maxFontSize)
         sz = crconfig.maxFontSize;
     if (sz < crconfig.minFontSize)
         sz = crconfig.minFontSize;
+    return sz;
+}
+
+LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
+    LVFontRef res = _fonts.get(size);
+    if (!res.isNull())
+        return res;
+    int sz = getFontSize(size);
     res = fontMan->GetFont(sz, 400, false, css_ff_sans_serif, crconfig.uiFontFace, 0);
     _fonts.set(sz, res);
 	return res;

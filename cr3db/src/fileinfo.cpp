@@ -651,6 +651,7 @@ CRDirContentItem * CRDirCache::find(lString8 pathname) {
 
 void CRDirCache::clear() {
     CRGuard guard(_monitor);
+    CR_UNUSED(guard);
     while (_head) {
 		Item * item = _head;
 		_head = item->next;

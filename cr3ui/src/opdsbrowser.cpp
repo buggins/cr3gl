@@ -935,7 +935,8 @@ bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) 
         getMain()->showOpds(item->getCatalog(), item->getURL(), item->getTitle());
     } else {
         // Book? open book
-        // TODO
+        widget->setSelectedItem(index);
+        getMain()->showOpdsBook(item);
     }
     return true;
 }
