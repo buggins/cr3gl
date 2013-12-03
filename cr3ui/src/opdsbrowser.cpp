@@ -856,7 +856,7 @@ void CRUIOpdsBrowserWidget::cancelDownloads() {
         _requestId = 0;
     }
     if (_coverTaskId) {
-        _main->cancelDownload(_requestId);
+        _main->cancelDownload(_coverTaskId);
         if (_coverTaskBook) {
             coverPageManager->cancel(_coverTaskBook, 0, 0);
             delete _coverTaskBook;

@@ -90,15 +90,72 @@ public:
     }
 };
 
+/// download result
+void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+    CRLog::trace("onDownloadProgress task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, resultMessage.c_str(), size);
+    CR_UNUSED(mimeType);
+    if (stream.isNull()) {
+        CRLog::trace("No data received");
+    } else {
+        CRLog::trace("Stream size is %d", (int)stream->GetSize());
+    }
+    if (downloadTaskId == _coverTaskId) {
+        LVStreamRef nullref;
+        coverPageManager->setExternalImage(_coverTaskBook, result == 0 ? stream : nullref);
+        _coverTaskId = 0;
+        if (_coverTaskBook)
+            delete _coverTaskBook;
+        _coverTaskBook = NULL;
+    } else {
+        CRLog::warn("Download finished from unknown downloadTaskId %d", downloadTaskId);
+    }
+}
+
+/// download progress
+void CRUIOpdsBookWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+    CR_UNUSED3(result, resultMessage, mimeType);
+    CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
+}
+
+/// call to schedule download of image
+bool CRUIOpdsBookWidget::onRequestImageDownload(CRDirEntry * book) {
+    book = book->clone();
+    CRLog::trace("onRequestImageDownload(%s)", book->getCoverPathName().c_str());
+    if (!_coverTaskId) {
+        _coverTaskBook = book;
+        _coverTaskId = getMain()->openUrl(this, book->getCoverPathName(), lString8("GET"), lString8(_book->getCatalog()->login.c_str()), lString8(_book->getCatalog()->password.c_str()), lString8());
+        return _coverTaskId != 0;
+    }
+    return true;
+}
+
+void CRUIOpdsBookWidget::cancelDownloads() {
+    if (_coverTaskId) {
+        _main->cancelDownload(_coverTaskId);
+        if (_coverTaskBook) {
+            coverPageManager->cancel(_coverTaskBook, 0, 0);
+            delete _coverTaskBook;
+        }
+        _coverTaskId = 0;
+        _coverTaskBook = NULL;
+    }
+}
+
+void CRUIOpdsBookWidget::afterNavigationFrom() {
+    cancelDownloads();
+}
+
 
 CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem * book)
     : CRUIWindowWidget(main)
     , _title(NULL)
     , _book(NULL)
+    , _coverTaskId(0)
+    , _coverTaskBook(NULL)
 {
     _book = new CROpdsCatalogsItem(*book);
     _title = new CRUITitleBarWidget(lString16(""), this, this, true);
-    _title->setTitle(STR_OPDS_CATALOG_PROPS_DIALOG_TITLE);
+    _title->setTitle(Utf8ToUnicode(_book->getCatalog()->name.c_str()));
     _body->addChild(_title);
     CRUIScrollWidget * scroll = new CRUIScrollWidget(true);
     scroll->setLayoutParams(FILL_PARENT, FILL_PARENT);
@@ -106,7 +163,7 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem
     toplayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     CRUILinearLayout * rlayout = new CRUIVerticalLayout();
     rlayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _cover = new CRCoverWidget(getMain(), book->clone(), 200, 200);
+    _cover = new CRCoverWidget(getMain(), book->clone(), 200, 200, this);
     _caption = new CRUITextWidget(book->getTitle());
     _caption->setFontSize(FONT_SIZE_LARGE);
     _caption->setAlign(ALIGN_CENTER);
@@ -190,6 +247,22 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem
     //_body->addChild(layout);
 }
 
+void CRUIOpdsBookWidget::updateCoverSize(int baseHeight) {
+    /// calculate cover widget size
+    int coverH = baseHeight / 3;
+    _cover->setSize(coverH * 3 / 4, coverH);
+    int itemw = coverH; // + itempadding.left + itempadding.right + itemmargin.left +itemmargin.right;
+    _cover->setMinWidth(itemw);
+    _cover->setMaxWidth(itemw);
+}
+
+/// measure dimensions
+void CRUIOpdsBookWidget::measure(int baseWidth, int baseHeight) {
+    updateCoverSize(baseHeight);
+    /// measure
+    CRUIWindowWidget::measure(baseWidth, baseHeight);
+}
+
 bool CRUIOpdsBookWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "BACK")
         onAction(CMD_BACK);
@@ -198,6 +271,7 @@ bool CRUIOpdsBookWidget::onClick(CRUIWidget * widget) {
     }
     return true;
 }
+
 
 bool CRUIOpdsBookWidget::onLongClick(CRUIWidget * widget) {
 //    if (widget->getId() == "BACK") {
@@ -256,6 +330,7 @@ CRUIOpdsBookWidget::~CRUIOpdsBookWidget()
 {
     if (_book)
         delete _book;
+    cancelDownloads();
 }
 
 bool CRUIOpdsBookWidget::onKeyEvent(const CRUIKeyEvent * event) {

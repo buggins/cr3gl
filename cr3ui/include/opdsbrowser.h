@@ -18,7 +18,8 @@ class CRUIOpdsItemListWidget;
 
 class CRUIMainWidget;
 
-class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener, public CRUIOnLongClickListener, public ExternalImageSourceCallback {
+class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener
+        , public CRUIOnClickListener, public CRUIOnLongClickListener, public ExternalImageSourceCallback {
 	CRUITitleBarWidget * _title;
     CRUIOpdsItemListWidget * _fileList;
     BookDBCatalog * _catalog;
