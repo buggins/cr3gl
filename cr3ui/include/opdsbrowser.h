@@ -11,19 +11,23 @@
 #include "cruilist.h"
 #include "fileinfo.h"
 #include "cruiwindow.h"
+#include "crcoverpages.h"
 
 class CRUITitleBarWidget;
 class CRUIOpdsItemListWidget;
 
 class CRUIMainWidget;
 
-class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener, public CRUIOnLongClickListener {
+class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClickListener, public CRUIOnClickListener, public CRUIOnLongClickListener, public ExternalImageSourceCallback {
 	CRUITitleBarWidget * _title;
     CRUIOpdsItemListWidget * _fileList;
     BookDBCatalog * _catalog;
     CROpdsCatalogsItem * _dir;
     int _requestId;
     lString8 _nextPartURL;
+    int _coverTaskId;
+    CRDirEntry* _coverTaskBook;
+    LVPtrVector<CRDirEntry> _coversToLoad;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted
     virtual bool requestAllVisibleCoverpages();
@@ -45,8 +49,14 @@ public:
     virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded);
 
     virtual void afterNavigationTo();
+    virtual void afterNavigationFrom();
     virtual void fetchNextPart();
 
+    void cancelDownloads();
+
+    /// call to schedule download of image
+    virtual bool onRequestImageDownload(CRDirEntry * book);
+    virtual bool fetchCover(CRDirEntry * book);
 
     CRUIOpdsBrowserWidget(CRUIMainWidget * main);
 	virtual ~CRUIOpdsBrowserWidget();

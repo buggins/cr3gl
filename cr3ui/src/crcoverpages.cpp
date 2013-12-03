@@ -52,13 +52,14 @@ private:
     Entry * find(const lString8 & pathname);
     Entry * scan(const lString8 & pathname);
     LVStreamRef getStream(Entry * item);
+    bool knownCachedFile(const lString8 & fn);
 public:
 
     // mutex-protected externally available methods
 
     void cacheDownloadedImage(const lString8 & fn, LVStreamRef stream);
 
-    bool knownCachedFile(const lString8 & fn);
+    bool isCached(const lString8 & fn);
     /// get or scan cover stream for path
     LVStreamRef getStream(const lString8 & pathname);
 
@@ -113,7 +114,7 @@ public:
         return _book->getCoverPathName() == book->getCoverPathName();
     }
     bool isSame(CRDirEntry * _book, int _dx, int _dy) {
-        return dx == _dx && dy == _dy && isSame(_book);
+        return ((!_dx && !_dy) || (dx == _dx && dy == _dy)) && isSame(_book);
     }
 };
 
@@ -223,6 +224,8 @@ LVStreamRef LVGetBookCoverStream(lString8 _path) {
 
 LVStreamRef LVScanBookCover(lString8 _path, int & type) {
     type = COVER_EMPTY;
+    if (_path.empty())
+        return LVStreamRef();
     lString16 path = Utf8ToUnicode(_path);
     CRLog::debug("scanBookCoverInternal(%s) called", LCSTR(path));
     lString16 arcname, item;
@@ -396,8 +399,19 @@ void CRCoverFileCache::checkSize() {
     }
 }
 
-bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
+bool CRCoverFileCache::isCached(const lString8 & fn) {
     CRGuard guard(_mutex); CR_UNUSED(guard);
+    for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
+        Entry * item = iterator.get();
+        if (item->pathname == fn) {
+            iterator.moveToHead();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.get();
         if (item->cachedFile == fn)
@@ -473,6 +487,7 @@ bool CRCoverFileCache::open() {
         int p = line.rpos("=");
         if (p > 0) {
             lString8 pathname = line.substr(0, p);
+            bool isDownloaded = pathname.startsWith("http://") || pathname.startsWith("https://");
             lString8 params = line.substr(p + 1);
             if (params.length() > 0 && params.length() < 100) {
                 int t = 0;
@@ -487,7 +502,7 @@ bool CRCoverFileCache::open() {
                 }
                 if (t != COVER_CACHED && t != COVER_EMPTY && t != COVER_FROMBOOK)
                     continue;
-                if (!LVBookFileExists(pathname)) {
+                if (!isDownloaded && !LVBookFileExists(pathname)) {
                     // book file deleted
                     if (t == COVER_CACHED)
                         LVDeleteFile(coverfile);
@@ -933,10 +948,12 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
     _book = _book->clone();
     CoverTask * task = new CoverTask(_book, dx, dy, readyCallback);
     if (isExternal && downloadCallback) {
-        if (coverCache->knownCachedFile(coverPath)) {
+        if (coverCache->isCached(coverPath)) {
             // we already have image file cached, just draw it
+            CRLog::trace("Cover %s is found in cache; just drawing", coverPath.c_str());
             _queue.pushBack(task);
         } else {
+            CRLog::trace("Cover %s is not found in cache; requesting download", coverPath.c_str());
             // request for download externally
             _externalSourceQueue.pushBack(task);
             downloadCallback->onRequestImageDownload(book);
@@ -968,6 +985,8 @@ void CRCoverPageManager::setExternalImage(CRDirEntry * _book, LVStreamRef & stre
             }
             CoverTask * task = iterator.remove();
             _queue.pushBack(task);
+            if (!iterator.get())
+                break;
         }
     }
     if (changed)
@@ -1018,7 +1037,7 @@ void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
     }
     for (LVQueue<CoverTask*>::Iterator iterator = _externalSourceQueue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
-        if (item->isSame(_book, dx, dy)) {
+        if (item->isSame(_book)) {
             iterator.remove();
             delete item->callback;
             delete item;

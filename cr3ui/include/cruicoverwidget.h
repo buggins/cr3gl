@@ -5,16 +5,17 @@
 #include "fileinfo.h"
 
 class CRUIMainWidget;
-
+class ExternalImageSourceCallback;
 class CRCoverWidget : public CRUIWidget {
 protected:
     CRUIMainWidget * _main;
+    ExternalImageSourceCallback * _downloadCallback;
     CRDirEntry * _book;
     int _dx;
     int _dy;
 public:
     /// will own passed book w/o cloning - always pass copy of book - it will be deleted by widget
-    CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy);
+    CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy, ExternalImageSourceCallback * downloadCallback = NULL);
     ~CRCoverWidget() { if (_book) delete _book; }
     /// calculates cover image size (to request in cache) by control size
     lvPoint calcCoverSize(int width, int height);

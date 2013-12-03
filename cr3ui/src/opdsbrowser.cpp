@@ -169,8 +169,8 @@ public:
     CRUITextWidget * _line3;
     CRUITextWidget * _line4;
     CRDirEntry * _entry;
-    CRUIOpdsBookItemWidget(int iconDx, int iconDy, CRUIMainWidget * callback) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
-        _icon = new CRCoverWidget(callback, NULL, iconDx, iconDy);
+    CRUIOpdsBookItemWidget(int iconDx, int iconDy, CRUIMainWidget * callback, ExternalImageSourceCallback * downloadCallback) : CRUILinearLayout(false), _iconDx(iconDx), _iconDy(iconDy), _entry(NULL) {
+        _icon = new CRCoverWidget(callback, NULL, iconDx, iconDy, downloadCallback);
         _icon->setSize(iconDx, iconDy);
         addChild(_icon);
         _layout = new CRUILinearLayout(true);
@@ -300,7 +300,7 @@ public:
         //setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
         _folderWidget = new CRUIOpdsDirItemWidget(_coverDx, _coverDy, "folder");
-        _bookWidget = new CRUIOpdsBookItemWidget(_coverDx, _coverDy, parent->getMain());
+        _bookWidget = new CRUIOpdsBookItemWidget(_coverDx, _coverDy, parent->getMain(), parent);
         _progressWidget = new CRUIOpdsProgressItemWidget(_coverDx, _coverDy, "spinner_white_48");
         setStyle("FILE_LIST");
         setColCount(2);
@@ -792,6 +792,15 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
             _nextPartURL.clear();
             _fileList->setProgressItemVisible(false);
         }
+    } else if (downloadTaskId == _coverTaskId) {
+        LVStreamRef nullref;
+        coverPageManager->setExternalImage(_coverTaskBook, result == 0 ? stream : nullref);
+        _coverTaskId = 0;
+        if (_coverTaskBook)
+            delete _coverTaskBook;
+        _coverTaskBook = NULL;
+        if (_coversToLoad.length())
+            fetchCover(_coversToLoad.pop());
     } else {
         CRLog::warn("Download finished from unknown downloadTaskId %d", downloadTaskId);
     }
@@ -812,6 +821,26 @@ void CRUIOpdsBrowserWidget::fetchNextPart() {
     }
 }
 
+
+bool CRUIOpdsBrowserWidget::fetchCover(CRDirEntry * book) {
+    _coverTaskBook = book;
+    _coverTaskId = getMain()->openUrl(this, book->getCoverPathName(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
+    return _coverTaskId != 0;
+}
+
+/// call to schedule download of image
+bool CRUIOpdsBrowserWidget::onRequestImageDownload(CRDirEntry * book) {
+    book = book->clone();
+    CRLog::trace("onRequestImageDownload(%s)", book->getCoverPathName().c_str());
+    if (!_coverTaskId) {
+        fetchCover(book);
+    } else {
+        _coversToLoad.add(book);
+    }
+    return true;
+}
+
+
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
     if (_dir && _catalog && _dir->itemCount() == 0) {
         //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
@@ -821,9 +850,32 @@ void CRUIOpdsBrowserWidget::afterNavigationTo() {
     requestLayout();
 }
 
+void CRUIOpdsBrowserWidget::cancelDownloads() {
+    if (_requestId) {
+        _main->cancelDownload(_requestId);
+        _requestId = 0;
+    }
+    if (_coverTaskId) {
+        _main->cancelDownload(_requestId);
+        if (_coverTaskBook) {
+            coverPageManager->cancel(_coverTaskBook, 0, 0);
+            delete _coverTaskBook;
+        }
+        _coverTaskId = 0;
+        _coverTaskBook = NULL;
+        for (int i = 0; i < _coversToLoad.length(); i++)
+            coverPageManager->cancel(_coversToLoad[i], 0, 0);
+        _coversToLoad.clear();
+    }
+}
+
+void CRUIOpdsBrowserWidget::afterNavigationFrom() {
+    cancelDownloads();
+}
+
 CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindowWidget(main), _title(NULL)
 //, _fileList(NULL),
-  , _catalog(NULL), _dir(NULL), _requestId(0)
+  , _catalog(NULL), _dir(NULL), _requestId(0), _coverTaskId(0), _coverTaskBook(NULL)
 {
     _title = new CRUITitleBarWidget(lString16("File list"), this, this, false);
 	_body->addChild(_title);
@@ -945,8 +997,7 @@ CRUIOpdsBrowserWidget::~CRUIOpdsBrowserWidget()
 {
     if (_catalog)
         delete _catalog;
-    if (_requestId)
-        getMain()->cancelDownload(_requestId);
+    cancelDownloads();
     if (_dir)
         _dir->unlock();
 }

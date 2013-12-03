@@ -59,7 +59,7 @@ void CRCoverWidget::draw(LVDrawBuf * buf) {
 
     LVDrawBuf * cover = coverPageManager->getIfReady(_book, width, height);
     if (!cover) {
-        coverPageManager->prepare(_book, width, height, _main->createUpdateCallback());
+        coverPageManager->prepare(_book, width, height, _main->createUpdateCallback(), _downloadCallback);
         return;
     }
     applyAlign(rc, width, height);
@@ -68,7 +68,11 @@ void CRCoverWidget::draw(LVDrawBuf * buf) {
     buf->DrawRescaled(cover, rc.left, rc.top, width, height, 0);
 }
 
-CRCoverWidget::CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy) : _main(main), _book(book), _dx(64), _dy(64) {
+CRCoverWidget::CRCoverWidget(CRUIMainWidget * main, CRDirEntry * book, int dx, int dy, ExternalImageSourceCallback * downloadCallback)
+    : _main(main)
+    , _downloadCallback(downloadCallback)
+    , _book(book), _dx(64), _dy(64)
+{
     setSize(dx, dy);
     setAlign(CRUI::ALIGN_CENTER);
     setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
