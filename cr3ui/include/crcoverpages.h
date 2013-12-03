@@ -11,6 +11,13 @@
 
 class CoverTask;
 
+class ExternalImageSourceCallback {
+public:
+    /// call to schedule download of image
+    virtual bool onRequestImageDownload(CRDirEntry * book) = 0;
+    ~ExternalImageSourceCallback() {}
+};
+
 /// cover page extracting, cache and rendering manager
 class CRCoverPageManager : public CRRunnable {
 
@@ -39,6 +46,7 @@ class CRCoverPageManager : public CRRunnable {
     CRMonitorRef _monitor;
     CRThreadRef _thread;
     LVQueue<CoverTask *> _queue;
+    LVQueue<CoverTask *> _externalSourceQueue; // queue of cover images to be downloaded outside
     CRRunnable * _allTasksFinishedCallback;
     volatile bool _taskIsRunning;
     LVImageSourceRef _bookImage; // book image template
@@ -62,7 +70,10 @@ public:
     LVDrawBuf * getIfReady(CRDirEntry * _book, int dx, int dy);
 
     /// prepares coverpage in background thread; calls readyCallback in GUI thread when done
-    void prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback);
+    /// if downloadCallback is passed, and image source is url, saves task in list of external source tasks prepares coverpage in background thread; calls readyCallback in GUI thread when done
+    void prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback, ExternalImageSourceCallback * downloadCallback = NULL);
+    /// once external image source downloaded image, call this method to set image file and continue coverpage preparation
+    void setExternalImage(CRDirEntry * _book, LVStreamRef & stream);
 
     /// cancels pending coverpage task (if not yet started)
     void cancel(CRDirEntry * _book, int dx, int dy);

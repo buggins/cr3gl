@@ -33,6 +33,7 @@ public:
         }
     };
 private:
+    CRMutexRef _mutex;
     LVQueue<Entry*> _cache;
     lString16 _dir;
     lString16 _filename;
@@ -45,16 +46,24 @@ private:
     void checkSize();
     Entry * add(const lString8 & pathname, int type, int sz, lString8 & fn);
     Entry * put(const lString8 & pathname, int type, LVStreamRef stream);
-    bool knownCachedFile(const lString8 & fn);
-public:
     void clear();
-    bool open();
     bool save();
     lString16 getFilename(Entry * item);
-    LVStreamRef getStream(Entry * item);
-    LVStreamRef getStream(const lString8 & pathname);
-    Entry * scan(const lString8 & pathname);
     Entry * find(const lString8 & pathname);
+    Entry * scan(const lString8 & pathname);
+    LVStreamRef getStream(Entry * item);
+public:
+
+    // mutex-protected externally available methods
+
+    void cacheDownloadedImage(const lString8 & fn, LVStreamRef stream);
+
+    bool knownCachedFile(const lString8 & fn);
+    /// get or scan cover stream for path
+    LVStreamRef getStream(const lString8 & pathname);
+
+    // initialization / finalization
+    bool open();
     CRCoverFileCache(lString16 dir, int maxitems = 1000, int maxfiles = 200, int maxsize = 16*1024*1024);
     ~CRCoverFileCache() { save(); clear(); }
 };
@@ -100,8 +109,11 @@ public:
     virtual ~CoverTask() {
         delete book;
     }
+    bool isSame(CRDirEntry * _book) {
+        return _book->getCoverPathName() == book->getCoverPathName();
+    }
     bool isSame(CRDirEntry * _book, int _dx, int _dy) {
-        return dx == _dx && dy == _dy && _book->getCoverPathName() == book->getCoverPathName();
+        return dx == _dx && dy == _dy && isSame(_book);
     }
 };
 
@@ -285,6 +297,7 @@ CRCoverFileCache::CRCoverFileCache(lString16 dir, int maxitems, int maxfiles, in
     _filename = _dir;
     _filename += "covercache.ini";
     LVCreateDirectory(_dir);
+    _mutex = concurrencyProvider->createMutex();
 }
 
 lString8 CRCoverFileCache::generateNextFilename() {
@@ -317,6 +330,14 @@ CRCoverFileCache::Entry * CRCoverFileCache::add(const lString8 & pathname, int t
     return p;
 }
 
+void CRCoverFileCache::cacheDownloadedImage(const lString8 & fn, LVStreamRef stream) {
+    if (!stream.isNull() && stream->GetSize() != 0) {
+        put(fn, COVER_CACHED, stream);
+    } else {
+        put(fn, COVER_EMPTY, stream);
+    }
+}
+
 CRCoverFileCache::Entry * CRCoverFileCache::scan(const lString8 & pathname) {
     int type = COVER_EMPTY;
     LVStreamRef stream = LVScanBookCover(pathname, type);
@@ -329,6 +350,7 @@ CRCoverFileCache::Entry * CRCoverFileCache::put(const lString8 & pathname, int t
     	CRLog::error("CRCoverFileCache::put - existing item found for %s", pathname.c_str());
         return existing;
     }
+    CRGuard guard(_mutex); CR_UNUSED(guard);
     if (stream.isNull() || stream->GetSize() == 0)
         type = COVER_EMPTY;
     int sz = !stream.isNull() ? (int)stream->GetSize() : 0;
@@ -375,6 +397,7 @@ void CRCoverFileCache::checkSize() {
 }
 
 bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
+    CRGuard guard(_mutex); CR_UNUSED(guard);
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.get();
         if (item->cachedFile == fn)
@@ -384,6 +407,7 @@ bool CRCoverFileCache::knownCachedFile(const lString8 & fn) {
 }
 
 CRCoverFileCache::Entry * CRCoverFileCache::find(const lString8 & pathname) {
+    CRGuard guard(_mutex); CR_UNUSED(guard);
     for (LVQueue<Entry*>::Iterator iterator = _cache.iterator(); iterator.next(); ) {
         Entry * item = iterator.get();
         if (item->pathname == pathname) {
@@ -402,10 +426,10 @@ void CRCoverFileCache::clear() {
 }
 
 LVStreamRef CRCoverFileCache::getStream(const lString8 & pathname) {
-	//CRLog::trace("CRCoverFileCache::getStream %s", pathname.c_str());
+    //CRLog::trace("CRCoverFileCache::getStream %s", pathname.c_str());
     Entry * item = find(pathname);
     if (!item) {
-    	//CRLog::trace("CRCoverFileCache::getStream Cache item %s not found, scanning", pathname.c_str());
+        //CRLog::trace("CRCoverFileCache::getStream Cache item %s not found, scanning", pathname.c_str());
         item = scan(pathname);
 //        if (!item)
 //        	CRLog::trace("item %s scanned, no coverpage found", pathname.c_str());
@@ -416,6 +440,7 @@ LVStreamRef CRCoverFileCache::getStream(const lString8 & pathname) {
         return LVStreamRef();
     return getStream(item);
 }
+
 
 LVStreamRef CRCoverFileCache::getStream(Entry * item) {
     //CRLog::trace("CRCoverFileCache::getStream(type = %d)", item->type);
@@ -863,7 +888,7 @@ bool CRCoverPageManager::drawBookTemplate(LVDrawBuf * buf, lvRect & clientRect, 
     return true;
 }
 
-void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback)
+void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable * readyCallback, ExternalImageSourceCallback * downloadCallback)
 {
     //CRLog::trace("CRCoverPageManager::prepare :: wait for lock");
     CRGuard guard(_monitor);
@@ -881,6 +906,8 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
         }
         return;
     }
+    lString8 coverPath = _book->getCoverPathName();
+    bool isExternal = coverPath.startsWith("http://") || coverPath.startsWith("https://");
     _queue.iterator();
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
@@ -891,18 +918,74 @@ void CRCoverPageManager::prepare(CRDirEntry * _book, int dx, int dy, CRRunnable 
             return;
         }
     }
+    if (isExternal) {
+        for (LVQueue<CoverTask*>::Iterator iterator = _externalSourceQueue.iterator(); iterator.next(); ) {
+            CoverTask * item = iterator.get();
+            if (item->isSame(_book, dx, dy)) {
+                //CRLog::trace("CRCoverPageManager::prepare %s %dx%d -- there is already such task in queue", _book->getPathName().c_str(), dx, dy);
+                // already has the same task in queue
+                iterator.moveToHead();
+                return;
+            }
+        }
+    }
+    CRDirEntry * book = _book;
     _book = _book->clone();
     CoverTask * task = new CoverTask(_book, dx, dy, readyCallback);
-    _queue.pushBack(task);
+    if (isExternal && downloadCallback) {
+        if (coverCache->knownCachedFile(coverPath)) {
+            // we already have image file cached, just draw it
+            _queue.pushBack(task);
+        } else {
+            // request for download externally
+            _externalSourceQueue.pushBack(task);
+            downloadCallback->onRequestImageDownload(book);
+        }
+    } else {
+        _queue.pushBack(task);
+    }
     _monitor->notify();
     //CRLog::trace("CRCoverPageManager::prepare - added new task %s %dx%d", _book->getPathName().c_str(), dx, dy);
+}
+
+/// once external image source downloaded image, call this method to set image file and continue coverpage preparation
+void CRCoverPageManager::setExternalImage(CRDirEntry * _book, LVStreamRef & stream) {
+    CRGuard guard(_monitor);
+    CR_UNUSED(guard);
+    if (_stopped) {
+        CRLog::error("Ignoring new task since cover page manager is stopped");
+        return;
+    }
+    bool changed = false;
+    for (LVQueue<CoverTask*>::Iterator iterator = _externalSourceQueue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        if (item->isSame(_book)) {
+            //CRLog::trace("CRCoverPageManager::prepare %s %dx%d -- there is already such task in queue", _book->getPathName().c_str(), dx, dy);
+            // already has the same task in queue
+            if (!changed) {
+                coverCache->cacheDownloadedImage(_book->getCoverPathName(), stream);
+                changed = true;
+            }
+            CoverTask * task = iterator.remove();
+            _queue.pushBack(task);
+        }
+    }
+    if (changed)
+        _monitor->notify();
 }
 
 /// cancels all pending coverpage tasks
 void CRCoverPageManager::cancelAll() {
     CRGuard guard(_monitor);
+    CR_UNUSED(guard);
     CRLog::trace("CRCoverPageManager::cancelAll");
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        iterator.remove();
+        delete item->callback;
+        delete item;
+    }
+    for (LVQueue<CoverTask*>::Iterator iterator = _externalSourceQueue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         iterator.remove();
         delete item->callback;
@@ -913,6 +996,7 @@ void CRCoverPageManager::cancelAll() {
 /// removes all cached images from memory
 void CRCoverPageManager::clearImageCache() {
     CRGuard guard(_monitor);
+    CR_UNUSED(guard);
     CRLog::trace("CRCoverPageManager::clearImageCache()");
     coverImageCache->clear();
     _bookImageCache.clear();
@@ -921,8 +1005,18 @@ void CRCoverPageManager::clearImageCache() {
 void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 {
     CRGuard guard(_monitor);
+    CR_UNUSED(guard);
     CRLog::trace("CRCoverPageManager::cancel %s %dx%d", _book->getCoverPathName().c_str(), dx, dy);
     for (LVQueue<CoverTask*>::Iterator iterator = _queue.iterator(); iterator.next(); ) {
+        CoverTask * item = iterator.get();
+        if (item->isSame(_book, dx, dy)) {
+            iterator.remove();
+            delete item->callback;
+            delete item;
+            break;
+        }
+    }
+    for (LVQueue<CoverTask*>::Iterator iterator = _externalSourceQueue.iterator(); iterator.next(); ) {
         CoverTask * item = iterator.get();
         if (item->isSame(_book, dx, dy)) {
             iterator.remove();

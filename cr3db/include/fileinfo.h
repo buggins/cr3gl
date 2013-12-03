@@ -324,9 +324,7 @@ public:
     virtual const lString8 & getCoverPathName() const {
         if (!_coverThumbUrl.empty())
             return _coverThumbUrl;
-        if (!_coverUrl.empty())
-            return _coverUrl;
-        return getPathName();
+        return _coverUrl;
     }
 
     virtual lString16 getTitle() const { return _title.empty() ? Utf8ToUnicode(_catalog->name.c_str()) : _title; }
