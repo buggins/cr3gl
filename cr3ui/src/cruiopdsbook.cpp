@@ -106,7 +106,7 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem
     toplayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     CRUILinearLayout * rlayout = new CRUIVerticalLayout();
     rlayout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _cover = new CRCoverWidget(getMain(), book, 200, 200);
+    _cover = new CRCoverWidget(getMain(), book->clone(), 200, 200);
     _caption = new CRUITextWidget(book->getTitle());
     _caption->setFontSize(FONT_SIZE_LARGE);
     _caption->setAlign(ALIGN_CENTER);
