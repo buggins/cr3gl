@@ -753,6 +753,8 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                         getMain()->showMessage(errorMsg, 2000);
                         _fileList->setProgressItemVisible(false);
                     } else {
+                        if (_searchUrl.empty() && !parser.searchTermsUrl.empty())
+                            _searchUrl = parser.searchTermsUrl;
                         for (int i = 0; i < parser._entries.length(); i++) {
                             _dir->addEntry(parser._entries[i]);
                         }
@@ -877,7 +879,7 @@ CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindow
 //, _fileList(NULL),
   , _catalog(NULL), _dir(NULL), _requestId(0), _coverTaskId(0), _coverTaskBook(NULL)
 {
-    _title = new CRUITitleBarWidget(lString16("File list"), this, this, false);
+    _title = new CRUITitleBarWidget(lString16("File list"), this, this, true);
 	_body->addChild(_title);
     _fileList = new CRUIOpdsItemListWidget(this);
     _body->addChild(_fileList);
@@ -958,6 +960,8 @@ bool CRUIOpdsBrowserWidget::onAction(const CRUIAction * action) {
     {
         CRUIActionList actions;
         actions.add(ACTION_BACK);
+        if (!_searchUrl.empty())
+            actions.add(ACTION_OPDS_CATALOG_SEARCH);
         if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
             actions.add(ACTION_DAY_MODE);
         else
@@ -970,11 +974,134 @@ bool CRUIOpdsBrowserWidget::onAction(const CRUIAction * action) {
         showMenu(actions, ALIGN_TOP, margins, false);
         return true;
     }
+    case CMD_OPDS_CATALOG_SEARCH:
+        showSearchPopup();
+        return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/browser"));
         return true;
     }
     return false;
+}
+
+class CRUISearchOpdsPopup : public CRUIHorizontalLayout, public CRUIOnClickListener, public CRUIOnReturnPressListener {
+    CRUIOpdsBrowserWidget * _window;
+    CRUIEditWidget * _editor;
+    CRUIImageButton * _nextButton;
+public:
+    CRUISearchOpdsPopup(CRUIOpdsBrowserWidget * window) : _window(window) {
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
+        setId("FINDTEXT");
+
+        CRUIVerticalLayout * editlayout = new CRUIVerticalLayout();
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _editor = new CRUIEditWidget();
+        _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _editor->setBackgroundAlpha(0x80);
+        _editor->setOnReturnPressedListener(this);
+        //_editor->setPasswordChar('*');
+        editlayout->addChild(spacer1);
+        editlayout->addChild(_editor);
+        editlayout->addChild(spacer2);
+        editlayout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        editlayout->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        addChild(editlayout);
+
+        // Buttons
+        _nextButton = new CRUIImageButton("right_circular");
+        _nextButton->setId("FIND_NEXT");
+        addChild(_nextButton);
+        _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+
+        _nextButton->setBackgroundAlpha(0x80);
+        setBackground("home_frame.9");
+
+        _nextButton->setOnClickListener(this);
+    }
+
+    virtual bool onReturnPressed(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        _window->openSearchResults(text);
+        return true;
+    }
+
+    virtual bool onClick(CRUIWidget * widget) {
+        lString16 text = _editor->getText();
+        if (text.empty())
+            return true;
+        if (widget->getId() == "FIND_NEXT") {
+            _window->openSearchResults(text);
+        }
+        return true;
+    }
+
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() {
+        CRUIEventManager::dispatchFocusChange(_editor);
+        return true;
+    }
+
+    virtual ~CRUISearchOpdsPopup() {
+        //CRLog::trace("~CRUIFindTextPopup()");
+        //_window->getMain()->cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
+    }
+
+//    /// handle timer event; return true to allow recurring timer event occur more times, false to stop
+//    virtual bool onTimerEvent(lUInt32 timerId) {
+////        if (_moveByPageDirection) {
+////            moveByPage(_moveByPageDirection);
+////            _window->getMain()->setTimer(GO_TO_PERCENT_REPEAT_TIMER_ID, this, GO_TO_PERCENT_REPEAT_TIMER_DELAY, false);
+////        }
+//        CR_UNUSED(timerId); return false;
+//    }
+
+};
+
+lString8 encodeUrlParam(lString8 str) {
+    lString8 res;
+    for (int i = 0; i < str.length(); i++) {
+        lUInt8 ch = str[i];
+        if (ch >= 127 || ch <= ' ' || ch == '&' || ch == '%') {
+            char buf[10];
+            sprintf(buf, "%%%02x", ch);
+            res += buf;
+        } else
+            res += ch;
+    }
+    return res;
+}
+
+void CRUIOpdsBrowserWidget::openSearchResults(lString16 pattern) {
+    _popupControl.close();
+    lString8 url = _searchUrl;
+    lString8 pattern8 = UnicodeToUtf8(pattern);
+    pattern8.trim();
+    if (pattern8.length()) {
+        int pos = url.pos("{searchTerms}");
+        lString8 encoded = encodeUrlParam(pattern8);
+        url.replace(pos, 13, encoded);
+        CRLog::info("Search url: %s", url.c_str());
+        //getMain()->showOpds();
+    } else {
+        getMain()->showMessage(lString16("No pattern to search"), 2000);
+    }
+}
+
+void CRUIOpdsBrowserWidget::showSearchPopup() {
+    lvRect margins;
+    CRUISearchOpdsPopup * popup = new CRUISearchOpdsPopup(this);
+    preparePopup(popup, ALIGN_TOP, margins, 0x80, false, false);
 }
 
 bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) {

@@ -29,6 +29,7 @@ class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClic
     int _coverTaskId;
     CRDirEntry* _coverTaskBook;
     LVPtrVector<CRDirEntry> _coversToLoad;
+    lString8 _searchUrl;
 public:
     /// returns true if all coverpages are available, false if background tasks are submitted
     virtual bool requestAllVisibleCoverpages();
@@ -54,6 +55,9 @@ public:
     virtual void fetchNextPart();
 
     void cancelDownloads();
+
+    void showSearchPopup();
+    void openSearchResults(lString16 pattern);
 
     /// call to schedule download of image
     virtual bool onRequestImageDownload(CRDirEntry * book);
