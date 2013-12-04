@@ -13,6 +13,14 @@
         fontSize="large"
     />
     <style
+        id="BUTTON_CAPTION"
+    >
+        <style
+            state="disabled" stateMask="disabled"
+            textColor="0x80000000"
+        />
+    </style>
+    <style
         id="EDITBOX"
         fontSize="large"
     />

@@ -250,7 +250,7 @@ void CRUIProgressWidget::measure(int baseWidth, int baseHeight) {
         _measuredHeight = 0;
         return;
     }
-    int height = PT_TO_PX(4);
+    int height = MIN_ITEM_PX / 6;
     if (height < 6)
         height = 6;
     int width = height;

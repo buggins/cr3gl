@@ -36,17 +36,21 @@ enum {
     DOWNLOADED
 };
 
-class CRUIBookDownloadWidget : public CRUIVerticalLayout, public CRUIOnClickListener {
+class CRUIBookDownloadWidget : public CRUIHorizontalLayout, public CRUIOnClickListener {
     CRUIOpdsBookWidget * _bookwidget;
     CROpdsCatalogsItem * _book;
     OPDSLink * _link;
     lString16 _formatName;
-    CRUIButton * _button;
+    CRUIImageButton * _button;
+    CRUITextWidget * _caption;
     CRUIProgressWidget * _progress;
     int _state;
 public:
+    OPDSLink * getLink() { return _link; }
+
     void downloadStarted(CRUIBookDownloadWidget * activeWidget) {
         if (activeWidget != this) {
+            _caption->setState(CRUI::STATE_DISABLED, CRUI::STATE_DISABLED);
             _button->setState(CRUI::STATE_DISABLED, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0x80);
         } else {
@@ -58,6 +62,7 @@ public:
 
     void downloadCancelled(CRUIBookDownloadWidget * activeWidget) {
         if (activeWidget != this) {
+            _caption->setState(0, CRUI::STATE_DISABLED);
             _button->setState(0, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0);
         } else {
@@ -68,6 +73,7 @@ public:
 
     void downloadFinished(CRUIBookDownloadWidget * activeWidget) {
         if (activeWidget != this) {
+            _caption->setState(0, CRUI::STATE_DISABLED);
             _button->setState(0, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0);
         } else {
@@ -97,15 +103,15 @@ public:
         switch (_state) {
         default:
         case NOT_DOWNLOADED:
-            _button->setText(lString16("Download ") + _formatName);
-            _button->setIcon("downloads");
+            _caption->setText(lString16("Download ") + _formatName);
+            _button->setIcon("download");
             break;
         case DOWNLOADED:
-            _button->setText(lString16("Open ") + _formatName);
+            _caption->setText(lString16("Open ") + _formatName);
             _button->setIcon("book");
             break;
         case DOWNLOADING:
-            _button->setText(lString16("Cancel download"));
+            _caption->setText(lString16("Downloading ") + _formatName + L"...");
             _button->setIcon("cancel");
             break;
         }
@@ -113,16 +119,43 @@ public:
 
     CRUIBookDownloadWidget(CRUIOpdsBookWidget * bookwidget, CROpdsCatalogsItem * book, OPDSLink * link) : _bookwidget(bookwidget), _book(book), _link(link), _state(NOT_DOWNLOADED) {
         _formatName = mimeToFormatName(link->type);
-        _button = new CRUIButton(lString16("Download ") + _formatName, "downloads");
-        _button->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-        _button->setMaxLines(2);
-        _button->setMargin(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(0)));
+        _button = new CRUIImageButton("download", "BUTTON");
+        _button->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        _button->setPadding(lvRect(PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1)));
         _button->setOnClickListener(this);
-        addChild(_button);
+        _button->setMinHeight(MIN_ITEM_PX * 3 / 4);
+        _button->setMinWidth(MIN_ITEM_PX * 3 / 4);
+        _button->setMaxHeight(MIN_ITEM_PX);
+        _button->setMaxWidth(MIN_ITEM_PX);
+        _button->setAlign(ALIGN_CENTER);
+
+        _caption = new CRUITextWidget(lString16("Download ") + _formatName);
+        _caption->setMaxLines(2);
+        _caption->setFontSize(FONT_SIZE_LARGE);
+        _caption->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
+        _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _caption->setMargin(PT_TO_PX(1));
+        _caption->setStyle("BUTTON_CAPTION");
+        CRUIProgressWidget * _progress0 = new CRUIProgressWidget();
         _progress = new CRUIProgressWidget();
-        _progress->setMargin(lvRect(PT_TO_PX(4), PT_TO_PX(0), PT_TO_PX(4), PT_TO_PX(3)));
+        _progress->setMargin(PT_TO_PX(2));
+        _progress0->setMargin(PT_TO_PX(2));
         //_progress->setProgress(5000);
-        addChild(_progress);
+        addChild(_button);
+        CRUIVerticalLayout * layout = new CRUIVerticalLayout();
+        CRUIWidget * spacer1 = new CRUIWidget(); spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget(); spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        layout->setMaxHeight(MIN_ITEM_PX);
+        layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        layout->addChild(spacer1);
+        layout->addChild(_progress0);
+        layout->addChild(_caption);
+        layout->addChild(_progress);
+        layout->addChild(spacer2);
+        //layout->setBackground(0xC0808080);
+        layout->setMargin(1);
+        //_caption->setBackground(0xC0000080);
+        addChild(layout);
         setBookState(NOT_DOWNLOADED);
         setBackgroundAlpha(0x40);
     }
@@ -207,7 +240,7 @@ public:
 
 /// download result
 void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
-    CRLog::trace("onDownloadProgress task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, resultMessage.c_str(), size);
+    CRLog::trace("onDownloadResult task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, result ? resultMessage.c_str() : "", size);
     CR_UNUSED(mimeType);
     if (stream.isNull()) {
         CRLog::trace("No data received");
@@ -221,6 +254,17 @@ void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int 
         if (_coverTaskBook)
             delete _coverTaskBook;
         _coverTaskBook = NULL;
+    } else if (downloadTaskId == _currentDownloadTaskId) {
+        CRLog::debug("Book download is finished with result=%d", result);
+        _currentDownloadTaskId = 0;
+        for (int i = 0; i < _downloads.length(); i++) {
+            if (result == 0)
+                _downloads[i]->downloadFinished(_currentDownload);
+            else
+                _downloads[i]->downloadCancelled(_currentDownload);
+        }
+        _currentDownload = NULL;
+        _main->update(true);
     } else {
         CRLog::warn("Download finished from unknown downloadTaskId %d", downloadTaskId);
     }
@@ -230,6 +274,11 @@ void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int 
 void CRUIOpdsBookWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
     CR_UNUSED3(result, resultMessage, mimeType);
     CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
+    if (_currentDownload && downloadTaskId == _currentDownloadTaskId) {
+        int progress = size > 0 ? sizeDownloaded / size : 5000;
+        _currentDownload->downloadProgress(progress);
+        _main->update(true);
+    }
 }
 
 /// call to schedule download of image
@@ -492,14 +541,21 @@ bool CRUIOpdsBookWidget::onTouchEvent(const CRUIMotionEvent * event) {
 void CRUIOpdsBookWidget::onDownloadButton(CRUIBookDownloadWidget * control) {
     if (_currentDownload)
         return;
-    _currentDownload = control;
-    for (int i = 0; i < _downloads.length(); i++)
-        _downloads[i]->downloadStarted(control);
+    _currentDownloadTaskId = _main->openUrl(this, control->getLink()->href, lString8("GET"),
+            lString8(_book->getCatalog()->login.c_str()), lString8(_book->getCatalog()->password.c_str()), lString8());
+    if (_currentDownloadTaskId) {
+        _currentDownload = control;
+        for (int i = 0; i < _downloads.length(); i++)
+            _downloads[i]->downloadStarted(control);
+    } else {
+        _main->showMessage(lString16("Cannot download"), 3000);
+    }
 }
 
 void CRUIOpdsBookWidget::onCancelButton(CRUIBookDownloadWidget * control) {
     if (!_currentDownload)
         return;
+    _main->cancelDownload(_currentDownloadTaskId);
     for (int i = 0; i < _downloads.length(); i++)
         _downloads[i]->downloadCancelled(control);
     _currentDownload = NULL;
@@ -507,5 +563,5 @@ void CRUIOpdsBookWidget::onCancelButton(CRUIBookDownloadWidget * control) {
 }
 
 void CRUIOpdsBookWidget::onOpenButton(CRUIBookDownloadWidget * control) {
-
+    _main->showMessage(lString16("TODO: open book"), 3000);
 }

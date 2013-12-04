@@ -845,6 +845,7 @@ void CRUIOpdsBrowserWidget::afterNavigationTo() {
         //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
         _fileList->setProgressItemVisible(true);
+        _main->update(true);
     }
     requestLayout();
 }

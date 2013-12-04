@@ -80,8 +80,6 @@ SOURCES += \
     ../../../cr3/crengine/src/hist.cpp \
     ../../../cr3/crengine/src/epubfmt.cpp \
     ../../../cr3/crengine/src/crtxtenc.cpp \
-    ../../../cr3/crengine/src/crtest.cpp \
-    ../../../cr3/crengine/src/crskin.cpp \
     ../../../cr3/crengine/src/cri18n.cpp \
     ../../../cr3/crengine/src/cp_stats.cpp \
     ../../../cr3/crengine/src/bookformats.cpp \
@@ -130,8 +128,6 @@ HEADERS += \
     ../../../cr3/crengine/include/cssdef.h \
     ../../../cr3/crengine/include/crtxtenc.h \
     ../../../cr3/crengine/include/crtrace.h \
-    ../../../cr3/crengine/include/crtest.h \
-    ../../../cr3/crengine/include/crskin.h \
     ../../../cr3/crengine/include/crsetup.h \
     ../../../cr3/crengine/include/cri18n.h \
     ../../../cr3/crengine/include/crengine.h \

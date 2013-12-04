@@ -327,7 +327,9 @@ CRUIHttpTaskQt::~CRUIHttpTaskQt() {
 /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
 void CRUIHttpTaskQt::doDownload() {
     url.setUrl(QString::fromUtf8(_url.c_str()));
-    reply = qnam->get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, QVariant(QString("CoolReader/3.0/newui")));
+    reply = qnam->get(request);
     connect(reply, SIGNAL(finished()),
             this, SLOT(httpFinished()));
     connect(reply, SIGNAL(readyRead()),
@@ -348,7 +350,7 @@ void CRUIHttpTaskQt::httpFinished() {
     _mimeType = contentTypeString.toUtf8().constData();
     if (!_stream.isNull())
         _stream->SetPos(0);
-    CRLog::trace("httpFinished(result=%d resultMessage=%s mimeType=%s)", _result, _resultMessage.c_str(), _mimeType.c_str());
+    CRLog::debug("httpFinished(result=%d resultMessage=%s mimeType=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _mimeType.c_str(), _url.c_str());
     _taskManager->onTaskFinished(this);
     reply->deleteLater();
     deleteLater();
