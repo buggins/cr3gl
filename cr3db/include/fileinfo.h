@@ -312,6 +312,11 @@ public:
         _title = dir->getTitle();
         //_catalog = (((CROpdsCatalogsItem*)dir)->_catalog->clone());
     }
+
+    void setPathName(lString8 path) {
+        _pathName = path;
+    }
+
     virtual bool isDirectory() const { return _isDirectory; }
     virtual void setIsBook() { _isDirectory = false; }
 

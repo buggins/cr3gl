@@ -1092,7 +1092,7 @@ void CRUIOpdsBrowserWidget::openSearchResults(lString16 pattern) {
         lString8 encoded = encodeUrlParam(pattern8);
         url.replace(pos, 13, encoded);
         CRLog::info("Search url: %s", url.c_str());
-        //getMain()->showOpds();
+        getMain()->showOpds(_dir->getCatalog(), url, lString16("Search results: " + pattern));
     } else {
         getMain()->showMessage(lString16("No pattern to search"), 2000);
     }
