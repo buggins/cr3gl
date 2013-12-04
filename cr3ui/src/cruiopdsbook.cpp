@@ -49,8 +49,8 @@ public:
         if (activeWidget != this) {
             _button->setState(CRUI::STATE_DISABLED, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0x80);
-            _progress->setProgress(0);
         } else {
+            _progress->setProgress(0);
             setBookState(DOWNLOADING);
         }
 
@@ -60,8 +60,8 @@ public:
         if (activeWidget != this) {
             _button->setState(0, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0);
-            _progress->setProgress(-1);
         } else {
+            _progress->setProgress(-1);
             setBookState(NOT_DOWNLOADED);
         }
     }
@@ -84,9 +84,9 @@ public:
         CR_UNUSED(widget);
         if (_state == NOT_DOWNLOADED)
             _bookwidget->onDownloadButton(this);
-        if (_state == DOWNLOADING)
+        else if (_state == DOWNLOADING)
             _bookwidget->onCancelButton(this);
-        if (_state == DOWNLOADED)
+        else if (_state == DOWNLOADED)
             _bookwidget->onOpenButton(this);
         return true;
     }
