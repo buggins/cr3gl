@@ -241,6 +241,51 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
 	}
 }
 
+
+
+/// measure dimensions
+void CRUIProgressWidget::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    int height = PT_TO_PX(4);
+    if (height < 6)
+        height = 6;
+    int width = height;
+    defMeasure(baseWidth, baseHeight, width, height);
+}
+
+/// updates widget position based on specified rectangle
+void CRUIProgressWidget::layout(int left, int top, int right, int bottom) {
+    CRUIWidget::layout(left, top, right, bottom);
+}
+
+/// draws widget with its children to specified surface
+void CRUIProgressWidget::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+    if (_progress < 0)
+        return;
+    CRUIWidget::draw(buf);
+    LVDrawStateSaver saver(*buf);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+    if (getBackgroundAlpha())
+        buf->setAlpha(getBackgroundAlpha());
+    buf->Rect(rc, 0x40808080);
+    rc.shrink(2);
+    rc.right = rc.left + rc.width() * _progress / 10000;
+    buf->FillRect(rc, 0x204040FF);
+}
+
+
+
+
 void CRUISpinnerWidget::animate(lUInt64 millisPassed) {
     _angle += millisPassed * _speed;
     _angle = _angle % 360000;

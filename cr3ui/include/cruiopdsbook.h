@@ -11,6 +11,7 @@
 class CRUITitleBarWidget;
 class CRUIMainWidget;
 
+class CRUIBookDownloadWidget;
 class CRUIRichTextWidget;
 class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener
         , public CRUIOnLongClickListener, public ExternalImageSourceCallback {
@@ -20,8 +21,10 @@ class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener
     CRUITextWidget * _caption;
     CRUITextWidget * _authors;
     CRUIRichTextWidget * _description;
+    CRUITableLayout  * _buttonsTable;
     int _coverTaskId;
     CRDirEntry* _coverTaskBook;
+    LVPtrVector<CRUIBookDownloadWidget, false> _downloads;
 public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);

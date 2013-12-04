@@ -424,7 +424,8 @@ void CRUIWidget::draw(LVDrawBuf * buf) {
     CRUIImageRef background2 = getBackground2();
     if (!background.isNull() || !background2.isNull()) {
 		LVDrawStateSaver saver(*buf);
-        buf->setAlpha(_backgroundAlpha);
+        if (getBackgroundAlpha())
+            buf->setAlpha(getBackgroundAlpha());
 		lvRect rc = _pos;
 		applyMargin(rc);
 		setClipRect(buf, rc);

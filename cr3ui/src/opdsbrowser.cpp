@@ -1072,12 +1072,15 @@ lString8 encodeUrlParam(lString8 str) {
     lString8 res;
     for (int i = 0; i < str.length(); i++) {
         lUInt8 ch = str[i];
-        if (ch >= 127 || ch <= ' ' || ch == '&' || ch == '%') {
+        if ((ch>='A' && ch <='Z') || (ch>='a' && ch <='z') || (ch>='0' && ch <='9')
+                || ch == '_' || ch == '-')
+        {
+            res += ch;
+        } else {
             char buf[10];
             sprintf(buf, "%%%02x", ch);
             res += buf;
-        } else
-            res += ch;
+        }
     }
     return res;
 }

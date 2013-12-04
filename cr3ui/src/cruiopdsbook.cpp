@@ -14,6 +14,73 @@
 
 using namespace CRUI;
 
+lString16 mimeToFormatName(lString8 mime) {
+    if (mime.startsWith("application/fb2"))
+        return lString16(L"FB2");
+    if (mime.startsWith("application/epub"))
+        return lString16(L"EPUB");
+    if (mime.startsWith("application/x-mobipocket-ebook"))
+        return lString16(L"MOBI");
+    if (mime.startsWith("application/txt"))
+        return lString16(L"TXT");
+    if (mime.startsWith("application/html") || mime.startsWith("text/html"))
+        return lString16(L"HTML");
+    if (mime.startsWith("application/rtf"))
+        return lString16(L"RTF");
+    return lString16("Unknown");
+}
+
+enum {
+    NOT_DOWNLOADED,
+    DOWNLOADING,
+    DOWNLOADED
+};
+class CRUIBookDownloadWidget : public CRUIVerticalLayout {
+    CRUIOpdsBookWidget * _bookwidget;
+    CROpdsCatalogsItem * _book;
+    OPDSLink * _link;
+    lString16 _formatName;
+    CRUIButton * _button;
+    CRUIProgressWidget * _progress;
+    int _state;
+public:
+    int getBookState() { return _state; }
+    void setBookState(int state) {
+        _state = state;
+        switch (_state) {
+        default:
+        case NOT_DOWNLOADED:
+            _button->setText(lString16("Download ") + _formatName);
+            _button->setIcon("downloads");
+            break;
+        case DOWNLOADED:
+            _button->setText(lString16("Open ") + _formatName);
+            _button->setIcon("book");
+            break;
+        case DOWNLOADING:
+            _button->setText(lString16("Cancel download"));
+            _button->setIcon("cancel");
+            break;
+        }
+    }
+
+    CRUIBookDownloadWidget(CRUIOpdsBookWidget * bookwidget, CROpdsCatalogsItem * book, OPDSLink * link) : _bookwidget(bookwidget), _book(book), _link(link), _state(NOT_DOWNLOADED) {
+        _formatName = mimeToFormatName(link->type);
+        _button = new CRUIButton(lString16("Download ") + _formatName, "downloads");
+        _button->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _button->setMaxLines(2);
+        _button->setMargin(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(0)));
+        addChild(_button);
+        _progress = new CRUIProgressWidget();
+        _progress->setMargin(lvRect(PT_TO_PX(4), PT_TO_PX(0), PT_TO_PX(4), PT_TO_PX(3)));
+        _progress->setProgress(5000);
+        addChild(_progress);
+        setBookState(NOT_DOWNLOADED);
+        setBackgroundAlpha(0x40);
+    }
+};
+
+
 
 class CRUIDocView;
 class CRUIRichTextWidget : public CRUIWidget {
@@ -187,12 +254,12 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem
         _description->setPlainText(_book->getDescription());
     scroll->addChild(toplayout);
     scroll->addChild(_description);
-    CRUIButton * button = new CRUIButton(lString16("Download EPUB"));
-    scroll->addChild(button);
-    button = new CRUIButton(lString16("Download FB2"));
-    scroll->addChild(button);
-    button = new CRUIButton(lString16("Download RTF"));
-    scroll->addChild(button);
+//    CRUIButton * button = new CRUIButton(lString16("Download EPUB"));
+//    scroll->addChild(button);
+//    button = new CRUIButton(lString16("Download FB2"));
+//    scroll->addChild(button);
+//    button = new CRUIButton(lString16("Download RTF"));
+//    scroll->addChild(button);
     _body->addChild(scroll);
 
 //    //_fileList = new CRUIOpdsItemListWidget(this);
@@ -242,9 +309,21 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem
 //    layout->addChild(spacer);
 
     //layout->
+
     setStyle("SETTINGS_ITEM_LIST");
 
+    _buttonsTable = new CRUITableLayout(2);
     //_body->addChild(layout);
+    for (int i = 0; i < _book->getLinks().length(); i++) {
+        OPDSLink * link = _book->getLinks()[i];
+        if (link->rel.startsWith("http://opds-spec.org/acquisition") ||
+                (link->rel == "alternate" && (link->type == "text/html" || link->type == "text"))) {
+            CRUIBookDownloadWidget * widget = new CRUIBookDownloadWidget(this, _book, link);
+            _downloads.add(widget);
+            _buttonsTable->addChild(widget);
+        }
+    }
+    scroll->addChild(_buttonsTable);
 }
 
 void CRUIOpdsBookWidget::updateCoverSize(int baseHeight) {

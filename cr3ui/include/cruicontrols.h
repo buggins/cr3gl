@@ -58,6 +58,27 @@ public:
 	virtual void draw(LVDrawBuf * buf);
 };
 
+class CRUIProgressWidget : public CRUIWidget {
+protected:
+    int _progress;
+public:
+    virtual void setProgress(int progress) {
+        _progress = progress;
+        if (_progress > 10000)
+            _progress = 10000;
+        invalidate();
+    }
+    virtual int getProgress() { return _progress; }
+
+    CRUIProgressWidget() : _progress(-1) { }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
+};
+
 class CRUISpinnerWidget : public CRUIImageWidget {
 protected:
     int _angle;
@@ -80,7 +101,7 @@ public:
     virtual CRUIWidget * setFontSize(lUInt8 sz) {
         if (_label)
             _label->setFontSize(sz);
-        return this; \
+        return this;
     }
 
     /// set background alpha, 0..255 (0==opaque, 255 fully transparent)
@@ -99,6 +120,14 @@ public:
         if (_label)
             _label->setText(text);
         return this;
+    }
+    virtual void setIcon(const char * icon) {
+        if (_icon)
+            _icon->setImage(icon);
+    }
+    virtual void setMaxLines(int n) {
+        if (_label)
+            _label->setMaxLines(n);
     }
 };
 
