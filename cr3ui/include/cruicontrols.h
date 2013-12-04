@@ -129,6 +129,19 @@ public:
         if (_label)
             _label->setMaxLines(n);
     }
+
+    virtual CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }
+    virtual CRUIWidget * setState(lUInt32 state) {
+        if (_state != state) {
+            _state = state;
+            if (_label)
+                _label->setState(_state);
+            if (_icon)
+                _icon->setState(_state);
+            invalidate();
+        }
+        return this;
+    }
 };
 
 class CRUIImageButton : public CRUIButton {

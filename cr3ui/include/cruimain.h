@@ -67,7 +67,6 @@ protected:
     CRUIMainWidget * main;
     CRUIWindowWidget * widget;
 public:
-    virtual CRUIWindowWidget * recreate() = 0;
     virtual void setDirectory(CRDirCacheItem * item) { CR_UNUSED(item); }
     virtual const lString8 & getPathName() { return lString8::empty_str; }
     virtual VIEW_MODE getMode() = 0;
@@ -79,12 +78,6 @@ public:
 
 class HomeItem : public NavHistoryItem {
 public:
-    virtual CRUIWindowWidget * recreate() {
-        if (widget)
-            delete widget;
-        widget = new CRUIHomeWidget(main);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_HOME; }
     //HomeItem(CRUIMainWidget * _main) : NavHistoryItem(_main, new CRUIHomeWidget(_main)) {}
     HomeItem(CRUIMainWidget * _main, CRUIHomeWidget * _widget) : NavHistoryItem(_main, _widget) {}
@@ -92,52 +85,24 @@ public:
 
 class ReadItem : public NavHistoryItem {
 public:
-    // recreate on config change
-    virtual CRUIWindowWidget * recreate() {
-        lvRect pos = ((CRUIWidget*)main)->getPos();
-        widget->measure(pos.width(), pos.height());
-        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_READ; }
     ReadItem(CRUIMainWidget * _main, CRUIReadWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class SettingsItem : public NavHistoryItem {
 public:
-    // recreate on config change
-    virtual CRUIWindowWidget * recreate() {
-        lvRect pos = ((CRUIWidget*)main)->getPos();
-        widget->measure(pos.width(), pos.height());
-        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_SETTINGS; }
     SettingsItem(CRUIMainWidget * _main, CRUISettingsWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class TOCItem : public NavHistoryItem {
 public:
-    // recreate on config change
-    virtual CRUIWindowWidget * recreate() {
-        lvRect pos = ((CRUIWidget*)main)->getPos();
-        widget->measure(pos.width(), pos.height());
-        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_TOC; }
     TOCItem(CRUIMainWidget * _main, CRUITOCWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
 
 class BookmarksItem : public NavHistoryItem {
 public:
-    // recreate on config change
-    virtual CRUIWindowWidget * recreate() {
-        lvRect pos = ((CRUIWidget*)main)->getPos();
-        widget->measure(pos.width(), pos.height());
-        widget->layout(pos.left, pos.top, pos.right, pos.bottom);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_BOOKMARKS; }
     BookmarksItem(CRUIMainWidget * _main, CRUIBookmarksWidget * _widget) : NavHistoryItem(_main, _widget) {}
 };
@@ -145,13 +110,6 @@ public:
 class FolderItem : public NavHistoryItem {
     lString8 pathname;
 public:
-    virtual CRUIWindowWidget * recreate() {
-        if (widget)
-            delete widget;
-        widget = new CRUIFolderWidget(main);
-        ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
-        return widget;
-    }
     virtual void setDirectory(CRDirCacheItem * item) { ((CRUIFolderWidget*)widget)->setDirectory(item); }
     virtual VIEW_MODE getMode() { return MODE_FOLDER; }
     FolderItem(CRUIMainWidget * _main, lString8 _pathname) : NavHistoryItem(_main, new CRUIFolderWidget(_main)), pathname(_pathname) {
@@ -167,16 +125,9 @@ public:
 class OPDSItem : public NavHistoryItem {
     lString8 pathname;
 public:
-    virtual CRUIWindowWidget * recreate() {
-        if (widget)
-            delete widget;
-        widget = new CRUIFolderWidget(main);
-        ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
-        return widget;
-    }
-    virtual void setDirectory(BookDBCatalog * catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
+    virtual void setDirectory(LVClonePtr<BookDBCatalog> & catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
     virtual VIEW_MODE getMode() { return MODE_OPDS; }
-    OPDSItem(CRUIMainWidget * _main, BookDBCatalog * catalog, lString8 _pathname, lString8 url, lString16 title) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
+    OPDSItem(CRUIMainWidget * _main, LVClonePtr<BookDBCatalog> & catalog, lString8 _pathname, lString8 url, lString16 title) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
         CROpdsCatalogsItem * dir = (CROpdsCatalogsItem*)dirCache->getOrAdd(pathname);
         dir->setCatalog(catalog);
         dir->setURL(url);
@@ -193,49 +144,33 @@ public:
 
 class OPDSPropsItem : public NavHistoryItem {
     lString8 path;
-    BookDBCatalog * catalog;
+    LVClonePtr<BookDBCatalog> catalog;
 public:
-    virtual CRUIWindowWidget * recreate() {
-        if (widget)
-            delete widget;
-        widget = new CRUIOpdsPropsWidget(main, catalog);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_OPDS_PROPS; }
-    OPDSPropsItem(CRUIMainWidget * _main, BookDBCatalog * _catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, _catalog)) {
+    OPDSPropsItem(CRUIMainWidget * _main, LVClonePtr<BookDBCatalog> & _catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, _catalog)) {
         path = "OPDS_PROPS";
-        catalog = _catalog->clone();
+        catalog = _catalog;
     }
     virtual const lString8 & getPathName() { return path; }
     virtual ~OPDSPropsItem() {
         if (widget)
             delete widget;
-        if (catalog)
-            delete catalog;
     }
 };
 
 class OPDSBookItem : public NavHistoryItem {
     lString8 path;
-    CROpdsCatalogsItem * book;
+    LVClonePtr<CROpdsCatalogsItem>  book;
 public:
-    virtual CRUIWindowWidget * recreate() {
-        if (widget)
-            delete widget;
-        widget = new CRUIOpdsBookWidget(main, book);
-        return widget;
-    }
     virtual VIEW_MODE getMode() { return MODE_OPDS_BOOK; }
-    OPDSBookItem(CRUIMainWidget * _main, CROpdsCatalogsItem * _book) : NavHistoryItem(_main, new CRUIOpdsBookWidget(_main, _book)) {
+    OPDSBookItem(CRUIMainWidget * _main, LVClonePtr<CROpdsCatalogsItem> & _book) : NavHistoryItem(_main, new CRUIOpdsBookWidget(_main, _book)) {
         path = "OPDS_BOOK";
-        book = new CROpdsCatalogsItem(*_book);
+        book = _book;
     }
     virtual const lString8 & getPathName() { return path; }
     virtual ~OPDSBookItem() {
         if (widget)
             delete widget;
-        if (book)
-            delete book;
     }
 };
 
@@ -462,9 +397,9 @@ public:
 
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
-    void showOpds(BookDBCatalog * dir, lString8 url, lString16 title);
-    void showOpdsProps(BookDBCatalog * dir);
-    void showOpdsBook(CROpdsCatalogsItem * book);
+    void showOpds(LVClonePtr<BookDBCatalog> & dir, lString8 url, lString16 title);
+    void showOpdsProps(LVClonePtr<BookDBCatalog> & dir);
+    void showOpdsBook(LVClonePtr<CROpdsCatalogsItem> & book);
     void showHome();
     void showSettings(lString8 path);
     void showSettings(CRUISettingsItem * setting);

@@ -12,12 +12,12 @@
 using namespace CRUI;
 
 
-CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * catalog) : CRUIWindowWidget(main), _title(NULL)
+CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookDBCatalog> & catalog) : CRUIWindowWidget(main), _title(NULL)
 //, _fileList(NULL),
     , _catalog(NULL)
 {
-    if (catalog)
-        _catalog = catalog ->clone();
+    if (!catalog.isNull())
+        _catalog = catalog;
     else {
         _catalog = new BookDBCatalog();
         _catalog->name = "";
@@ -141,10 +141,9 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
     }
     case CMD_OPDS_CATALOG_REMOVE:
         if (_catalog->id) {
-            bookDB->removeOpdsCatalog(_catalog);
+            bookDB->removeOpdsCatalog(_catalog.get());
         }
-        delete _catalog;
-        _catalog = NULL;
+        _catalog.clear();
         _main->back();
         return true;
     case CMD_OPDS_CATALOG_OPEN:
@@ -155,8 +154,7 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
             _main->back();
         return true;
     case CMD_OPDS_CATALOG_CANCEL_CHANGES:
-        delete _catalog;
-        _catalog = NULL;
+        _catalog.clear();
         _main->back();
         return true;
     }
@@ -165,8 +163,6 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
 
 CRUIOpdsPropsWidget::~CRUIOpdsPropsWidget()
 {
-    if (_catalog)
-        delete _catalog;
 }
 
 bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
@@ -205,7 +201,7 @@ void CRUIOpdsPropsWidget::save() {
                 _catalog->login = login.c_str();
                 _catalog->password = password.c_str();
                 _catalog->lastUsage = GetCurrentTimeMillis();
-                bookDB->saveOpdsCatalog(_catalog);
+                bookDB->saveOpdsCatalog(_catalog.get());
             }
         }
     }

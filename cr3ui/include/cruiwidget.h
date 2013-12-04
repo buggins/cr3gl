@@ -130,8 +130,8 @@ public:
     CRUIWidget * setId(const char * id) { _id = id; return this; }
     virtual lUInt32 getState() { return _state | (isFocused() ? CRUI::STATE_FOCUSED : 0); }
     lUInt32 getState(lUInt32 mask) { return getState() & mask; }
-	CRUIWidget * setState(lUInt32 state) { if (_state != state) { _state = state; invalidate(); } return this; }
-	CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }
+    virtual CRUIWidget * setState(lUInt32 state) { if (_state != state) { _state = state; invalidate(); } return this; }
+    virtual CRUIWidget * setState(lUInt32 state, lUInt32 mask) { return setState((_state & ~mask) | (state & mask)); }
 
     virtual const lvRect & getPos() { return _pos; }
 	virtual lUInt32 getAlign();

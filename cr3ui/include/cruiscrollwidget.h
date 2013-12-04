@@ -16,6 +16,7 @@ protected:
 public:
 
     CRUIScrollWidget(bool vertical = true);
+    virtual ~CRUIScrollWidget() {}
 
     virtual CRUIDragListener * getOnDragListener() { return _onStartDragCallback; }
     virtual void setOnDragListener(CRUIDragListener * listener) { _onStartDragCallback = listener; }

@@ -528,7 +528,8 @@ public:
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
         if (itemIndex == 0) {
-            _home->getMain()->showOpdsProps(NULL);
+            LVClonePtr<BookDBCatalog> c;
+            _home->getMain()->showOpdsProps(c);
             return true;
         }
         if (itemIndex < 1 || itemIndex > _entries.length())
@@ -541,7 +542,8 @@ public:
     virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
         CR_UNUSED(widget);
         if (itemIndex == 0) {
-            _home->getMain()->showOpdsProps(NULL);
+            LVClonePtr<BookDBCatalog> c;
+            _home->getMain()->showOpdsProps(c);
             return true;
         }
         if (itemIndex < 1 || itemIndex > _entries.length())

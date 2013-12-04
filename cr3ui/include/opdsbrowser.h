@@ -22,7 +22,7 @@ class CRUIOpdsBrowserWidget : public CRUIWindowWidget, public CRUIOnListItemClic
         , public CRUIOnClickListener, public CRUIOnLongClickListener, public ExternalImageSourceCallback {
 	CRUITitleBarWidget * _title;
     CRUIOpdsItemListWidget * _fileList;
-    BookDBCatalog * _catalog;
+    LVClonePtr<BookDBCatalog> _catalog;
     CROpdsCatalogsItem * _dir;
     int _requestId;
     lString8 _nextPartURL;
@@ -39,7 +39,7 @@ public:
     virtual bool onClick(CRUIWidget * widget);
     virtual bool onLongClick(CRUIWidget * widget);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
-    virtual void setDirectory(BookDBCatalog * _catalog, CRDirContentItem * _dir);
+    virtual void setDirectory(LVClonePtr<BookDBCatalog> & _catalog, CRDirContentItem * _dir);
     /// override to handle menu or other action
     virtual bool onAction(const CRUIAction * action);
     /// override to handle menu or other action - by id

@@ -236,7 +236,7 @@ public:
     lString8 rel;
     lString8 title;
     OPDSLink() {}
-    OPDSLink(OPDSLink & v) {
+    OPDSLink(const OPDSLink & v) {
         type = v.type;
         href = v.href;
         rel = v.rel;
@@ -259,7 +259,7 @@ public:
 class CROpdsCatalogsItem : public CRDirContentItem {
 protected:
 
-    LVAutoPtr<BookDBCatalog> _catalog;
+    LVClonePtr<BookDBCatalog> _catalog;
 
     lString8 _url;
     lString16 _title;
@@ -278,13 +278,13 @@ protected:
 public:
     //virtual void setCatalog(BookDBCatalog * catalog) { _catalog = catalog->clone(); }
     virtual DIR_TYPE getDirType() const { return DIR_TYPE_OPDS_CATALOG; }
-    CROpdsCatalogsItem(const BookDBCatalog * catalog, lString8 url) : CRDirContentItem(lString8(OPDS_CATALOG_TAG) + lString8::itoa(catalog->id) + (url.empty() ? lString8() : lString8(":") + url), false), _catalog(catalog->clone()), _url(url)
+    CROpdsCatalogsItem(BookDBCatalog * catalog, lString8 url) : CRDirContentItem(lString8(OPDS_CATALOG_TAG) + lString8::itoa(catalog->id) + (url.empty() ? lString8() : lString8(":") + url), false), _catalog(catalog), _url(url)
     {
         _isDirectory = true;
     }
     CROpdsCatalogsItem(const CROpdsCatalogsItem & v) : CRDirContentItem(v.getPathName(), false)
     {
-        _catalog = v._catalog->clone();
+        _catalog = v._catalog;
         _url = v._url;
         _title = v._title;
         _description = v._description;
@@ -321,9 +321,9 @@ public:
     virtual void setIsBook() { _isDirectory = false; }
 
     virtual void addEntry(CRDirEntry * entry) { _entries.add(entry); }
-    BookDBCatalog * getCatalog() { return _catalog.get(); }
-    void setCatalog(BookDBCatalog * catalog) {
-        _catalog = catalog->clone();
+    LVClonePtr<BookDBCatalog> & getCatalog() { return _catalog; }
+    void setCatalog(LVClonePtr<BookDBCatalog> & catalog) {
+        _catalog = catalog;
     }
 
     virtual const lString8 & getCoverPathName() const {

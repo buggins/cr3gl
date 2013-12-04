@@ -402,12 +402,9 @@ public:
     }
 };
 
-void CRUIOpdsBrowserWidget::setDirectory(BookDBCatalog * catalog, CRDirContentItem * dir)
+void CRUIOpdsBrowserWidget::setDirectory(LVClonePtr<BookDBCatalog> & catalog, CRDirContentItem * dir)
 {
-    if (_catalog) {
-        delete _catalog;
-    }
-    _catalog = catalog->clone();
+    _catalog = catalog;
 
     if (_dir)
         _dir->unlock();
@@ -745,7 +742,7 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                         charset = typeParams[i].substr(8);
                 }
                 //
-                OPDSParser parser(_catalog);
+                OPDSParser parser(_catalog.get());
                 if (parser.parse(url, stream)) {
                     CRLog::trace("Parsed ok, %d entries found", parser._entries.length());
                     if (parser._entries.length() == 0) {
@@ -776,7 +773,7 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
                 lString16 errorMsg = lString16("Cannot parse OPDS catalog: unexpected content type ") + Utf8ToUnicode(mimeType);
                 getMain()->showMessage(errorMsg, 4000);
                 CRLog::error("Unexpected content type: %s", mimeType.c_str());
-                OPDSParser parser(_catalog);
+                OPDSParser parser(_catalog.get());
                 if (parser.parse(url, stream)) {
 
                 }
@@ -844,7 +841,7 @@ bool CRUIOpdsBrowserWidget::onRequestImageDownload(CRDirEntry * book) {
 
 
 void CRUIOpdsBrowserWidget::afterNavigationTo() {
-    if (_dir && _catalog && _dir->itemCount() == 0) {
+    if (_dir && !_catalog.isNull() && _dir->itemCount() == 0) {
         //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
         _fileList->setProgressItemVisible(true);
@@ -1118,15 +1115,14 @@ bool CRUIOpdsBrowserWidget::onListItemClick(CRUIListWidget * widget, int index) 
     } else {
         // Book? open book
         widget->setSelectedItem(index);
-        getMain()->showOpdsBook(item);
+        LVClonePtr<CROpdsCatalogsItem> book(item);
+        getMain()->showOpdsBook(book);
     }
     return true;
 }
 
 CRUIOpdsBrowserWidget::~CRUIOpdsBrowserWidget()
 {
-    if (_catalog)
-        delete _catalog;
     cancelDownloads();
     if (_dir)
         _dir->unlock();

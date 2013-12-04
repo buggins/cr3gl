@@ -555,8 +555,8 @@ bool CRCoverFileCache::save() {
 
 
 static lUInt32 getAvgColor(LVColorDrawBuf * buf, lvRect & rc, int borderSize = 0) {
-    int stats[16*16*16];
-    memset(stats, 0, sizeof(stats));
+    int stats[0x1000];
+    memset(stats, 0, sizeof(int) * 0x1000);
     for (int y = rc.top; y < rc.bottom; y++) {
         bool hborder = !borderSize || y <= rc.top + borderSize || y > rc.bottom - borderSize;
         lUInt32 * row = (lUInt32*)buf->GetScanLine(y);

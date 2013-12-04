@@ -20,7 +20,7 @@ class CRUIOpdsPropsWidget : public CRUIWindowWidget, public CRUIOnClickListener,
     CRUIEditWidget * _edUrl;
     CRUIEditWidget * _edLogin;
     CRUIEditWidget * _edPassword;
-    BookDBCatalog * _catalog;
+    LVClonePtr<BookDBCatalog> _catalog;
     void save();
 public:
     /// motion event handler, returns true if it handled event
@@ -33,7 +33,7 @@ public:
     /// override to handle menu or other action - by id
     virtual void beforeNavigationFrom();
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
-    CRUIOpdsPropsWidget(CRUIMainWidget * main, BookDBCatalog * catalog);
+    CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookDBCatalog> & catalog);
     virtual ~CRUIOpdsPropsWidget();
 };
 

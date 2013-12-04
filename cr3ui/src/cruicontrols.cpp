@@ -392,7 +392,9 @@ void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {
 
 /// motion event handler, returns true if it handled event
 bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
-	int action = event->getAction();
+    if (getState(STATE_DISABLED))
+        return false;
+    int action = event->getAction();
     //CRLog::trace("CRUIButton::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
 	switch (action) {
 	case ACTION_DOWN:
@@ -402,17 +404,17 @@ bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
         break;
 	case ACTION_UP:
 		{
-			setState(0, STATE_PRESSED);
-			bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
-			if (isLong && onLongClickEvent())
-				return true;
-			onClickEvent();
+            setState(0, STATE_PRESSED);
+            bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+            if (isLong && onLongClickEvent())
+                return true;
+            onClickEvent();
 		}
 		// fire onclick
 		//CRLog::trace("button UP");
 		break;
 	case ACTION_FOCUS_IN:
-		setState(STATE_PRESSED, STATE_PRESSED);
+        setState(STATE_PRESSED, STATE_PRESSED);
 		//CRLog::trace("button FOCUS IN");
 		break;
 	case ACTION_FOCUS_OUT:

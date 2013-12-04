@@ -16,7 +16,7 @@ class CRUIRichTextWidget;
 class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener
         , public CRUIOnLongClickListener, public ExternalImageSourceCallback {
     CRUITitleBarWidget * _title;
-    CROpdsCatalogsItem * _book;
+    LVClonePtr<CROpdsCatalogsItem> _book;
     CRCoverWidget * _cover;
     CRUITextWidget * _caption;
     CRUITextWidget * _authors;
@@ -25,6 +25,8 @@ class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener
     int _coverTaskId;
     CRDirEntry* _coverTaskBook;
     LVPtrVector<CRUIBookDownloadWidget, false> _downloads;
+    CRUIBookDownloadWidget * _currentDownload;
+    int _currentDownloadTaskId;
 public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
@@ -38,7 +40,9 @@ public:
     virtual void afterNavigationFrom();
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 
-    void measure(int baseWidth, int baseHeight);
+    virtual void draw(LVDrawBuf * buf);
+    virtual void measure(int baseWidth, int baseHeight);
+    virtual void layout(int left, int top, int right, int bottom);
     void updateCoverSize(int baseHeight);
 
     /// download result
@@ -51,7 +55,11 @@ public:
 
     void cancelDownloads();
 
-    CRUIOpdsBookWidget(CRUIMainWidget * main, CROpdsCatalogsItem * book);
+    virtual void onDownloadButton(CRUIBookDownloadWidget * control);
+    virtual void onCancelButton(CRUIBookDownloadWidget * control);
+    virtual void onOpenButton(CRUIBookDownloadWidget * control);
+
+    CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsCatalogsItem> & book);
     virtual ~CRUIOpdsBookWidget();
 };
 

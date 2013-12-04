@@ -350,7 +350,7 @@ lvPoint CRUITableLayout::layoutTable(LVArray<Col> &_cols, LVArray<Row> & _rows, 
         }
     }
     // update row heights
-    int rowh = maxh / rowcount;
+    int rowh = rowcount > 0 ? maxh / rowcount : 0;
     int totalrowweight = 0;
     int totalrowheight = 0;
     for (int i = 0; i < rowcount; i++) {

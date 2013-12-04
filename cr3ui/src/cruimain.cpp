@@ -278,7 +278,7 @@ void CRUIMainWidget::hideSlowOperationPopup()
     }
 }
 
-void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
+void CRUIMainWidget::showOpdsProps(LVClonePtr<BookDBCatalog> &  dir) {
     lString8 folder("OPDS_PROPS");
     int newpos = _history.findPosByMode(MODE_OPDS_PROPS, folder);
     if (newpos < 0) {
@@ -289,7 +289,7 @@ void CRUIMainWidget::showOpdsProps(BookDBCatalog * dir) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
-void CRUIMainWidget::showOpdsBook(CROpdsCatalogsItem * book) {
+void CRUIMainWidget::showOpdsBook(LVClonePtr<CROpdsCatalogsItem> & book) {
     lString8 folder("OPDS_BOOK");
     int newpos = _history.findPosByMode(MODE_OPDS_BOOK, folder);
     if (newpos < 0) {
@@ -300,12 +300,13 @@ void CRUIMainWidget::showOpdsBook(CROpdsCatalogsItem * book) {
     startAnimation(newpos, WINDOW_ANIMATION_DELAY);
 }
 
-void CRUIMainWidget::showOpds(BookDBCatalog * dir, lString8 url, lString16 title) {
+void CRUIMainWidget::showOpds(LVClonePtr<BookDBCatalog> & dir, lString8 url, lString16 title) {
     CRLog::info("showOpds(catalog=%s url=%s)", dir->url.c_str(), url.c_str());
    //if ((_currentFolder != folder && _pendingFolder != folder) || _mode != MODE_FOLDER) {
     //_pendingFolder = folder;
     dir->lastUsage = GetCurrentTimeMillis();
     bookDB->updateOpdsCatalogLastUsage(dir->id);
+
     //lString8 folder(dir->url.c_str());
     if (url.empty())
         url = (dir->url.c_str());
