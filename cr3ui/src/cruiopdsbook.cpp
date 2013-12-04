@@ -273,9 +273,9 @@ void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int 
 /// download progress
 void CRUIOpdsBookWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
     CR_UNUSED3(result, resultMessage, mimeType);
-    CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d", downloadTaskId, url.c_str(), sizeDownloaded, size);
     if (_currentDownload && downloadTaskId == _currentDownloadTaskId) {
-        int progress = size > 0 ? sizeDownloaded / size : 5000;
+        int progress = size > 0 ? sizeDownloaded * 10000 / size : 0;
+        CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d   %d.%02d%%", downloadTaskId, url.c_str(), sizeDownloaded, size, progress / 100, progress % 100);
         _currentDownload->downloadProgress(progress);
         _main->update(true);
     }

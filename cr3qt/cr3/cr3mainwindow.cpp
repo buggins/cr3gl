@@ -334,20 +334,54 @@ void CRUIHttpTaskQt::doDownload() {
             this, SLOT(httpFinished()));
     connect(reply, SIGNAL(readyRead()),
             this, SLOT(httpReadyRead()));
+//    connect(reply, SIGNAL(error()),
+//            this, SLOT(httpError()));
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
             this, SLOT(updateDataReadProgress(qint64,qint64)));
 }
 
+void CRUIHttpTaskQt::httpError(QNetworkReply::NetworkError code) {
+    QNetworkReply::NetworkError error = reply->error();
+    _result = error;
+    _resultMessage = reply->errorString().toUtf8().constData();
+    CRLog::warn("httpError(result=%d resultMessage=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _url.c_str());
+}
 
 void CRUIHttpTaskQt::httpFinished() {
+    //CRLog::trace("CRUIHttpTaskQt::httpFinished()");
      QNetworkReply::NetworkError error = reply->error();
     _result = error;
     _resultMessage = reply->errorString().toUtf8().constData();
+
+    QVariant possibleRedirectUrl =
+             reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    QUrl redirectUrl = possibleRedirectUrl.toUrl();
+    if (!redirectUrl.isEmpty()) {
+        lString8 redir(redirectUrl.toString().toUtf8().constData());
+        CRLog::warn("Redirection to %s", redir.c_str());
+        if (redirectCount < 3) {
+            _url = redir;
+            reply->deleteLater();
+            doDownload();
+            return;
+        } else {
+            _result = 1;
+            _resultMessage = "Too many redirections";
+        }
+    }
+
     QVariant contentMimeType = reply->header(QNetworkRequest::ContentTypeHeader);
     QString contentTypeString;
     if (contentMimeType.isValid())
         contentTypeString = contentMimeType.toString();
     _mimeType = contentTypeString.toUtf8().constData();
+//    if (!_result) {
+//        QByteArray data = reply->readAll();
+//        if (data.length()) {
+//            CRLog::trace("readAll() in httpFinished returned %d bytes", data.length());
+//            dataReceived((const lUInt8 *)data.constData(), data.length());
+//        }
+//    }
     if (!_stream.isNull())
         _stream->SetPos(0);
     CRLog::debug("httpFinished(result=%d resultMessage=%s mimeType=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _mimeType.c_str(), _url.c_str());
@@ -358,9 +392,14 @@ void CRUIHttpTaskQt::httpFinished() {
 
 void CRUIHttpTaskQt::httpReadyRead() {
     if (!_size) {
-        _size = reply->size();
+    //reply->a
+        QVariant contentLength = reply->header(QNetworkRequest::ContentLengthHeader);
+        bool ok = false;
+        int len = contentLength.toInt(&ok);
+        if (ok)
+            _size = len;
     }
-    CRLog::trace("httpReadyRead(total size = %d)", _size);
+    //CRLog::trace("httpReadyRead(total size = %d)", _size);
     QByteArray data = reply->readAll();
     dataReceived((const lUInt8 *)data.constData(), data.length());
 }
@@ -368,6 +407,9 @@ void CRUIHttpTaskQt::httpReadyRead() {
 void CRUIHttpTaskQt::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes) {
     CR_UNUSED2(bytesRead, totalBytes);
     // progress
+    _size = (int)totalBytes;
+    _sizeDownloaded = (int)bytesRead;
+    _taskManager->onTaskProgress(this);
 }
 
 CRUIHttpTaskManagerQt::CRUIHttpTaskManagerQt(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {

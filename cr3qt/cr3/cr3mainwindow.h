@@ -48,6 +48,7 @@
 #include <QThread>
 #include <QNetworkAccessManager>
 #include <QUrl>
+#include <QNetworkReply>
 
 #include "cr3qt.h"
 #include "cruimain.h"
@@ -66,18 +67,20 @@ public:
     QNetworkAccessManager * qnam;
     QNetworkReply *reply;
     QFile *file;
+    int redirectCount;
 private slots:
 //    void downloadFile();
 //    void cancelDownload();
     void httpFinished();
     void httpReadyRead();
     void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+    void httpError(QNetworkReply::NetworkError code);
 //    void enableDownloadButton();
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
 #endif
 public:
-    CRUIHttpTaskQt(CRUIHttpTaskManagerBase * taskManager, QNetworkAccessManager * _qnam) : CRUIHttpTaskBase(taskManager), qnam(_qnam) {}
+    CRUIHttpTaskQt(CRUIHttpTaskManagerBase * taskManager, QNetworkAccessManager * _qnam) : CRUIHttpTaskBase(taskManager), qnam(_qnam), redirectCount(0) {}
     virtual ~CRUIHttpTaskQt();
     /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
     virtual void doDownload();

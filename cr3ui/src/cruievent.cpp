@@ -724,7 +724,7 @@ void CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
             // create file stream
         }
     }
-    CRLog::trace("dataReceived(%d)", len);
+    //CRLog::trace("dataReceived(%d)", len);
     if (!_stream.isNull()) {
         lvsize_t bytesWritten = 0;
         _stream->Write(data, len, &bytesWritten);
