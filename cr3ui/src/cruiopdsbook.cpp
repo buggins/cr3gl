@@ -161,6 +161,49 @@ public:
     }
 };
 
+lString16 convertDescription(lString8 description) {
+    return Utf8ToUnicode(description);
+}
+
+class CRUIOPDSLinkWidget : public CRUIHorizontalLayout, public CRUIOnClickListener {
+    CRUIOpdsBookWidget * _bookwidget;
+    CROpdsCatalogsItem * _book;
+    OPDSLink * _link;
+    CRUIImageButton * _button;
+    CRUITextWidget * _caption;
+public:
+    virtual bool onClick(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        _bookwidget->onAdditionalLinkButton(_link);
+        return true;
+    }
+
+
+    CRUIOPDSLinkWidget(CRUIOpdsBookWidget * bookwidget, CROpdsCatalogsItem * book, OPDSLink * link) : _bookwidget(bookwidget), _book(book), _link(link) {
+        _button = new CRUIImageButton("forward", "BUTTON");
+        _button->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        _button->setPadding(lvRect(PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1)));
+        _button->setOnClickListener(this);
+        _button->setMinHeight(MIN_ITEM_PX * 3 / 4);
+        _button->setMinWidth(MIN_ITEM_PX * 3 / 4);
+        _button->setMaxHeight(MIN_ITEM_PX);
+        _button->setMaxWidth(MIN_ITEM_PX);
+        _button->setAlign(ALIGN_CENTER);
+
+        _caption = new CRUITextWidget(convertDescription(_link->title));
+        _caption->setMaxLines(2);
+        _caption->setFontSize(FONT_SIZE_LARGE);
+        _caption->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
+        _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _caption->setMargin(PT_TO_PX(1));
+        _caption->setStyle("BUTTON_CAPTION");
+        addChild(_button);
+        addChild(_caption);
+        //layout->setBackground(0xC0808080);
+        setBackgroundAlpha(0x40);
+    }
+};
+
 
 
 class CRUIDocView;
@@ -382,6 +425,14 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsC
 
     scroll->addChild(_buttonsTable);
 
+    for (int i = 0; i < _book->getLinks().length(); i++) {
+        OPDSLink * link = _book->getLinks()[i];
+        if (link->type.startsWith("application/atom+xml") && !link->title.empty()) {
+            CRUIOPDSLinkWidget * widget = new CRUIOPDSLinkWidget(this, _book.get(), link);
+            scroll->addChild(widget);
+        }
+    }
+
 
     _body->addChild(scroll);
     setStyle("SETTINGS_ITEM_LIST");
@@ -560,6 +611,10 @@ void CRUIOpdsBookWidget::onCancelButton(CRUIBookDownloadWidget * control) {
         _downloads[i]->downloadCancelled(control);
     _currentDownload = NULL;
     _currentDownloadTaskId = 0;
+}
+
+void CRUIOpdsBookWidget::onAdditionalLinkButton(OPDSLink * link) {
+    _main->showOpds(_book->getCatalog(), link->href, Utf8ToUnicode(link->title));
 }
 
 void CRUIOpdsBookWidget::onOpenButton(CRUIBookDownloadWidget * control) {

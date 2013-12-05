@@ -59,6 +59,8 @@ public:
     virtual void onCancelButton(CRUIBookDownloadWidget * control);
     virtual void onOpenButton(CRUIBookDownloadWidget * control);
 
+    virtual void onAdditionalLinkButton(OPDSLink * link);
+
     CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsCatalogsItem> & book);
     virtual ~CRUIOpdsBookWidget();
 };

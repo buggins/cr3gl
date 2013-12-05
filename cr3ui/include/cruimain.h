@@ -125,6 +125,9 @@ public:
 class OPDSItem : public NavHistoryItem {
     lString8 pathname;
 public:
+    static lString8 makePath(LVClonePtr<BookDBCatalog> & dir, const lString8 & url) {
+        return lString8(OPDS_CATALOG_TAG) + lString8::itoa(dir->id) + (url.empty() ? lString8() : lString8(":") + url);
+    }
     virtual void setDirectory(LVClonePtr<BookDBCatalog> & catalog, CRDirCacheItem * item) { ((CRUIOpdsBrowserWidget*)widget)->setDirectory(catalog, item); }
     virtual VIEW_MODE getMode() { return MODE_OPDS; }
     OPDSItem(CRUIMainWidget * _main, LVClonePtr<BookDBCatalog> & catalog, lString8 _pathname, lString8 url, lString16 title) : NavHistoryItem(_main, new CRUIOpdsBrowserWidget(_main)), pathname(_pathname) {
@@ -146,9 +149,12 @@ class OPDSPropsItem : public NavHistoryItem {
     lString8 path;
     LVClonePtr<BookDBCatalog> catalog;
 public:
+    static lString8 makePath(LVClonePtr<BookDBCatalog> & _catalog) {
+        return lString8("OPDS_BOOK:") + lString8::itoa(_catalog->id);
+    }
     virtual VIEW_MODE getMode() { return MODE_OPDS_PROPS; }
     OPDSPropsItem(CRUIMainWidget * _main, LVClonePtr<BookDBCatalog> & _catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, _catalog)) {
-        path = "OPDS_PROPS";
+        path = makePath(_catalog);
         catalog = _catalog;
     }
     virtual const lString8 & getPathName() { return path; }
@@ -162,9 +168,13 @@ class OPDSBookItem : public NavHistoryItem {
     lString8 path;
     LVClonePtr<CROpdsCatalogsItem>  book;
 public:
+    static lString8 makePath(LVClonePtr<CROpdsCatalogsItem> & _book) {
+        return lString8("OPDS_BOOK:") + _book->getPathName();
+    }
+
     virtual VIEW_MODE getMode() { return MODE_OPDS_BOOK; }
     OPDSBookItem(CRUIMainWidget * _main, LVClonePtr<CROpdsCatalogsItem> & _book) : NavHistoryItem(_main, new CRUIOpdsBookWidget(_main, _book)) {
-        path = "OPDS_BOOK";
+        path = makePath(_book);
         book = _book;
     }
     virtual const lString8 & getPathName() { return path; }

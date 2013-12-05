@@ -279,7 +279,7 @@ void CRUIMainWidget::hideSlowOperationPopup()
 }
 
 void CRUIMainWidget::showOpdsProps(LVClonePtr<BookDBCatalog> &  dir) {
-    lString8 folder("OPDS_PROPS");
+    lString8 folder = OPDSPropsItem::makePath(dir);
     int newpos = _history.findPosByMode(MODE_OPDS_PROPS, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder
@@ -290,7 +290,7 @@ void CRUIMainWidget::showOpdsProps(LVClonePtr<BookDBCatalog> &  dir) {
 }
 
 void CRUIMainWidget::showOpdsBook(LVClonePtr<CROpdsCatalogsItem> & book) {
-    lString8 folder("OPDS_BOOK");
+    lString8 folder = OPDSBookItem::makePath(book);
     int newpos = _history.findPosByMode(MODE_OPDS_BOOK, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder
@@ -310,7 +310,7 @@ void CRUIMainWidget::showOpds(LVClonePtr<BookDBCatalog> & dir, lString8 url, lSt
     //lString8 folder(dir->url.c_str());
     if (url.empty())
         url = (dir->url.c_str());
-    lString8 folder = lString8(OPDS_CATALOG_TAG) + lString8::itoa(dir->id) + (url.empty() ? lString8() : lString8(":") + url);
+    lString8 folder = OPDSItem::makePath(dir, url);
     int newpos = _history.findPosByMode(MODE_OPDS, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder
