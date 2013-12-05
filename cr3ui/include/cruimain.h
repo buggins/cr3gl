@@ -405,6 +405,7 @@ public:
     virtual bool onTimerEvent(lUInt32 timerId);
     void showMessage(lString16 text, int duration);
 
+    void openBookFromFile(lString8 filename);
     void openBook(const CRFileItem * file);
     void showFolder(lString8 folder, bool appendHistory);
     void showOpds(LVClonePtr<BookDBCatalog> & dir, lString8 url, lString16 title);

@@ -25,6 +25,8 @@ lString16 mimeToFormatName(lString8 mime) {
         return lString16(L"TXT");
     if (mime.startsWith("application/html") || mime.startsWith("text/html"))
         return lString16(L"HTML");
+    if (mime.startsWith("application/doc") || mime.startsWith("application/msword"))
+        return lString16(L"DOC");
     if (mime.startsWith("application/rtf"))
         return lString16(L"RTF");
     return Utf8ToUnicode(mime);
@@ -32,9 +34,9 @@ lString16 mimeToFormatName(lString8 mime) {
 
 lString8 normalizeFilename(lString8 fn) {
     lString8 res;
-    for (int i = 0; i <fn.length(); fn++) {
-        char ch = fn[i];
-        if (ch <=32 || ch == '/' || ch == '\\' || ch == ':' || ch == ';' || ch == '@')
+    for (int i = 0; i <fn.length(); i++) {
+        int ch = (lUInt8)fn[i];
+        if (ch <=32 || ch == '/' || ch == '\\' || ch == ':' || ch == ';' || ch == '@' || ch == '(' || ch == ')' || ch == '[' || ch == ']')
             res << "_";
         else
             res << ch;
@@ -43,19 +45,31 @@ lString8 normalizeFilename(lString8 fn) {
 }
 
 lString8 mimeToExtension(lString8 mime) {
+    if (mime.startsWith("application/fb2+zip"))
+        return lString8(".fb2.zip");
     if (mime.startsWith("application/fb2"))
-        return lString8(L"FB2");
-    if (mime.startsWith("application/epub"))
-        return lString8(L"EPUB");
+        return lString8(".fb2");
+    if (mime.startsWith("application/epub+zip"))
+        return lString8(".epub");
     if (mime.startsWith("application/x-mobipocket-ebook"))
-        return lString8(L"MOBI");
+        return lString8(".mobi");
+    if (mime.startsWith("application/txt+zip"))
+        return lString8(".txt.zip");
     if (mime.startsWith("application/txt"))
-        return lString8(L"TXT");
+        return lString8(".txt");
+    if (mime.startsWith("application/html+zip") || mime.startsWith("text/html+zip"))
+        return lString8(".html.zip");
     if (mime.startsWith("application/html") || mime.startsWith("text/html"))
-        return lString8(L"HTML");
+        return lString8(".html");
+    if (mime.startsWith("application/rtf+zip"))
+        return lString8(".rtf.zip");
+    if (mime.startsWith("application/doc+zip") || mime.startsWith("application/msword+zip"))
+        return lString8(".doc.zip");
+    if (mime.startsWith("application/doc") || mime.startsWith("application/msword"))
+        return lString8(".doc");
     if (mime.startsWith("application/rtf"))
-        return lString8(L"RTF");
-    return normalizeFilename(mime);
+        return lString8(".rtf");
+    return lString8(".") + normalizeFilename(mime);
 }
 
 enum {
@@ -84,8 +98,18 @@ public:
         lString16 path = Utf8ToUnicode(_downloadDir);
         LVRemoveLastPathDelimiter(path);
         if (LVDirectoryExists(path))
-            return true;
-        return LVCreateDirectory(path);
+            return LVDirectoryIsWritable(path);
+        if (!LVCreateDirectory(path))
+            return false;
+        return LVDirectoryIsWritable(path);
+    }
+
+    bool deleteTempFile() {
+        return LVDeleteFile(_downloadTmpFilename);
+    }
+
+    bool renameTempFileToBookFile() {
+        return LVRenameFile(_downloadTmpFilename, _downloadFilename);
     }
 
     lString8 getDownloadDir() { return _downloadDir; }
@@ -106,13 +130,13 @@ public:
 
     void updateDirs(lString8 downloadsDir) {
         //
-        lString8 subdir = _book->getAuthorNames(false);
+        lString8 subdir = UnicodeToUtf8(_book->getAuthorNames(false));
         subdir.trim();
         if (subdir.empty())
             subdir = "No Author";
         _downloadDir = downloadsDir + normalizeFilename(subdir);
         LVAppendPathDelimiter(_downloadDir);
-        lString8 bookname = _book->getTitle();
+        lString8 bookname = UnicodeToUtf8(_book->getTitle());
         bookname.trim();
         if (bookname.empty())
             bookname = _link->title;
@@ -125,6 +149,7 @@ public:
         bookname << extension;
         _downloadFilename = _downloadDir + bookname;
         _downloadTmpFilename = _downloadDir + bookname + ".cr3.tmp";
+        setBookState(LVFileExists(_downloadFilename) ? DOWNLOADED : NOT_DOWNLOADED);
     }
 
     void downloadCancelled(CRUIBookDownloadWidget * activeWidget) {
@@ -135,6 +160,7 @@ public:
         } else {
             _progress->setProgress(-1);
             setBookState(NOT_DOWNLOADED);
+            deleteTempFile();
         }
     }
 
@@ -144,8 +170,11 @@ public:
             _button->setState(0, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0);
         } else {
-            setBookState(DOWNLOADED);
+            renameTempFileToBookFile();
             _progress->setProgress(-1);
+            if (!LVFileExists(_downloadFilename))
+                deleteTempFile();
+            setBookState(LVFileExists(_downloadFilename) ? DOWNLOADED : NOT_DOWNLOADED);
         }
     }
 
@@ -170,15 +199,15 @@ public:
         switch (_state) {
         default:
         case NOT_DOWNLOADED:
-            _caption->setText(lString16("Download ") + _formatName);
+            _caption->setText(_16(STR_OPDS_BOOK_DOWNLOAD) + L" " + _formatName);
             _button->setIcon("download");
             break;
         case DOWNLOADED:
-            _caption->setText(lString16("Open ") + _formatName);
+            _caption->setText(_16(STR_OPDS_BOOK_OPEN) + L" " + _formatName);
             _button->setIcon("book");
             break;
         case DOWNLOADING:
-            _caption->setText(lString16("Downloading ") + _formatName + L"...");
+            _caption->setText(_16(STR_OPDS_BOOK_DOWNLOADING) + L" " + _formatName + L"...");
             _button->setIcon("cancel");
             break;
         }
@@ -223,7 +252,7 @@ public:
         layout->setMargin(1);
         //_caption->setBackground(0xC0000080);
         addChild(layout);
-        setBookState(NOT_DOWNLOADED);
+        setBookState(LVFileExists(_downloadFilename) ? DOWNLOADED : NOT_DOWNLOADED);
         setBackgroundAlpha(0x40);
     }
 };
@@ -384,7 +413,7 @@ void CRUIOpdsBookWidget::onDownloadResult(int downloadTaskId, lString8 url, int 
 void CRUIOpdsBookWidget::onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
     CR_UNUSED3(result, resultMessage, mimeType);
     if (_currentDownload && downloadTaskId == _currentDownloadTaskId) {
-        int progress = size > 0 ? sizeDownloaded * 10000 / size : 0;
+        int progress = (int)(size > 0 ? (lInt64)sizeDownloaded * 10000 / size : 0);
         CRLog::trace("onDownloadProgress task=%d url=%s bytesRead=%d totalSize=%d   %d.%02d%%", downloadTaskId, url.c_str(), sizeDownloaded, size, progress / 100, progress % 100);
         _currentDownload->downloadProgress(progress);
         _main->update(true);
@@ -434,9 +463,8 @@ void CRUIOpdsBookWidget::updateDirs() {
         CRLog::warn("Download folder is not specified! Downloads disabled.");
     }
     for (int i = 0; i < _downloads.length(); i++) {
-        _downloads[i]->updateDirs(_downloads.length());
+        _downloads[i]->updateDirs(_downloadFolder);
     }
-
 }
 
 CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsCatalogsItem> & book)
@@ -688,14 +716,21 @@ void CRUIOpdsBookWidget::onDownloadButton(CRUIBookDownloadWidget * control) {
         return;
     }
 
+    if (!control->createDownloadDir()) {
+        CRLog::error("Cannot write to download directory.");
+        _main->showMessage(_16(STR_ERROR_DOWNLOADS_DIRECTORY_NOT_WRITABLE), 4000);
+        return;
+    }
+
     _currentDownloadTaskId = _main->openUrl(this, control->getLink()->href, lString8("GET"),
-            lString8(_book->getCatalog()->login.c_str()), lString8(_book->getCatalog()->password.c_str()), lString8());
+            lString8(_book->getCatalog()->login.c_str()), lString8(_book->getCatalog()->password.c_str()), control->getDownloadTmpFilename());
     if (_currentDownloadTaskId) {
         _currentDownload = control;
         for (int i = 0; i < _downloads.length(); i++)
             _downloads[i]->downloadStarted(control);
     } else {
-        _main->showMessage(lString16("Cannot download"), 3000);
+        CRLog::error("Cannot start download.");
+        _main->showMessage(_16(STR_ERROR_DOWNLOADS_CANNOT_START_DOWNLOAD), 4000);
     }
 }
 
@@ -713,6 +748,12 @@ void CRUIOpdsBookWidget::onAdditionalLinkButton(OPDSLink * link) {
     _main->showOpds(_book->getCatalog(), link->href, Utf8ToUnicode(link->title));
 }
 
+
 void CRUIOpdsBookWidget::onOpenButton(CRUIBookDownloadWidget * control) {
-    _main->showMessage(lString16("TODO: open book"), 3000);
+    lString8 fn = control->getDownloadFilename();
+    if (LVFileExists(fn)) {
+        _main->openBookFromFile(fn);
+    } else {
+        _main->showMessage(lString16("Cannot open book file"), 3000);
+    }
 }

@@ -363,6 +363,15 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 //    }
 }
 
+void CRUIMainWidget::openBookFromFile(lString8 filename) {
+    const CRFileItem * file = dirCache->scanFile(filename);
+    if (!file) {
+        showMessage(lString16("Cannot open book from file ") + Utf8ToUnicode(filename), 3000);
+        return;
+    }
+    openBook(file);
+}
+
 void CRUIMainWidget::openBook(const CRFileItem * file) {
     if (!file) {
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));

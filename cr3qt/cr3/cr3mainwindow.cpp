@@ -409,7 +409,8 @@ void CRUIHttpTaskQt::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes)
     // progress
     _size = (int)totalBytes;
     _sizeDownloaded = (int)bytesRead;
-    _taskManager->onTaskProgress(this);
+    if (_size > 0)
+        _taskManager->onTaskProgress(this);
 }
 
 CRUIHttpTaskManagerQt::CRUIHttpTaskManagerQt(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {

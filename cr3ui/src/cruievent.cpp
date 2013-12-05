@@ -713,8 +713,22 @@ void CRUIHttpTaskManagerBase::cancelDownload(int downloadTaskId) {
     }
 }
 
+/// if output is being performed to file, close file
+void CRUIHttpTaskBase::closeOutputFile() {
+    if (!_saveAs.empty()) {
+        _stream.Clear();
+    }
+}
+
+/// if output is being performed to file, delete this file
+void CRUIHttpTaskBase::deleteOutputFile() {
+    if (!_saveAs.empty()) {
+        LVDeleteFile(_saveAs);
+    }
+}
+
 /// call to pass received data to output buffer
-void CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
+bool CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
     // TODO: accept data
     if (_stream.isNull()) {
         if (_saveAs.empty()) {
@@ -722,13 +736,17 @@ void CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
             _stream = LVCreateMemoryStream();
         } else {
             // create file stream
+            _stream = LVOpenFileStream(_saveAs.c_str(), LVOM_WRITE);
         }
     }
     //CRLog::trace("dataReceived(%d)", len);
     if (!_stream.isNull()) {
         lvsize_t bytesWritten = 0;
         _stream->Write(data, len, &bytesWritten);
+        return bytesWritten == (lvsize_t)len;
     }
+    CRLog::error("CRUIHttpTaskBase::dataReceived Failed to write data");
+    return false;
 }
 
 void CRUIHttpTaskBase::run() {
@@ -752,9 +770,15 @@ void CRUIHttpTaskManagerBase::onTaskProgress(CRUIHttpTaskBase * task) {
 }
 
 void CRUIHttpTaskManagerBase::onTaskFinished(CRUIHttpTaskBase * task) {
+    task->closeOutputFile();
     if (!task->_cancelled) {
         _eventManager->dispatchDownloadResult(task->_downloadTaskId, task->_url, task->_result, task->_resultMessage, task->_mimeType, task->_size, task->_stream);
+    } else {
+        task->_stream.Clear();
+        task->closeOutputFile();
+        _eventManager->dispatchDownloadResult(task->_downloadTaskId, task->_url, 2, lString8("Download is cancelled"), lString8(), 0, task->_stream);
     }
+
     CRGuard guard(_lock); CR_UNUSED(guard);
     // remove task from list
     _activeTasks.remove(task->_downloadTaskId);
