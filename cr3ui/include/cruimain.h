@@ -290,6 +290,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     CRUIScreenUpdateManagerCallback * _screenUpdater;
     CRUIPlatform * _platform;
     lString8 _pendingFolder;
+    lString8 _pendingBookOpenFolder;
+    lString8 _pendingBookOpenFile;
     lUInt64 _lastAnimationTs;
 
     struct AnimationControl {

@@ -89,6 +89,28 @@ void CRUIMainWidget::onAllCoverpagesReady(int newpos) {
 static bool first_recent_dir_scan = true;
 void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
     CRLog::trace("CRUIMainWidget::onDirectoryScanFinished");
+    if (item->getPathName() == _pendingBookOpenFolder) {
+        hideSlowOperationPopup();
+        for (int i = 0; i < item->itemCount(); i++) {
+            CRFileItem * file = (CRFileItem*)item->getItem(i);
+            lString8 fn = file->getPathName();
+            if (fn == _pendingBookOpenFile) {
+                openBook(file);
+                _pendingBookOpenFile.clear();
+                _pendingBookOpenFolder.clear();
+                return;
+            } else if (fn.startsWith(_pendingBookOpenFile)) {
+                openBook(file);
+                _pendingBookOpenFile.clear();
+                _pendingBookOpenFolder.clear();
+                return;
+            }
+        }
+        _pendingBookOpenFile.clear();
+        _pendingBookOpenFolder.clear();
+        showMessage(lString16("Cannot open book from file ") + Utf8ToUnicode(item->getPathName()), 3000);
+        return;
+    }
     if (item->getDirType() == DIR_TYPE_RECENT) {
         // set recent book
         if (item->itemCount() == 0 && first_recent_dir_scan) {
@@ -364,12 +386,22 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 }
 
 void CRUIMainWidget::openBookFromFile(lString8 filename) {
-    const CRFileItem * file = dirCache->scanFile(filename);
-    if (!file) {
-        showMessage(lString16("Cannot open book from file ") + Utf8ToUnicode(filename), 3000);
-        return;
+    lString8 arcname;
+    lString8 fn;
+    lString8 folder;
+    if (LVSplitArcName(filename, arcname, fn)) {
+        // from archive
+        folder = LVExtractPath(arcname);
+    } else {
+        // from file
+        folder = LVExtractPath(filename);
     }
-    openBook(file);
+    CRLog::info("Opening book from file %s. Scanning directory %s first.", filename.c_str(), folder.c_str());
+    _pendingBookOpenFolder = folder;
+    _pendingBookOpenFile = filename;
+    showSlowOperationPopup();
+    CRLog::info("Starting background directory scan for %s", folder.c_str());
+    dirCache->scan(folder);
 }
 
 void CRUIMainWidget::openBook(const CRFileItem * file) {
@@ -390,7 +422,10 @@ void CRUIMainWidget::openBook(const CRFileItem * file) {
     }
     _read->measure(_measuredWidth, _measuredHeight);
     _read->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
-    _read->openBook(file);
+    if (!_read->openBook(file)) {
+        hideSlowOperationPopup();
+        showMessage(lString16("Failed to open book"), 3000);
+    }
 }
 
 void CRUIMainWidget::runStartupTasksIfNeeded() {
@@ -1108,7 +1143,7 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     case CMD_HELP:
         {
             CRFileItem * book = createManualBook();
-            openBook(book);
+            openBookFromFile(book->getPathName());
             delete book;
         }
         return true;

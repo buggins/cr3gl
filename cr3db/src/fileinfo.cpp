@@ -754,7 +754,8 @@ BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName, LVCon
         if (!stat(arcname.c_str(), &fs )) {
             createTime = fs.st_mtime * (lInt64)1000;
         }
-        if (!arcContainer.isNull()) {
+        if (!arcContainer.isNull() && arcname == UnicodeToUtf8(arcContainer->GetName())) {
+            CRLog::trace("Reusing opened archive");
             arc = arcContainer;
         }
         if (arc.isNull()) {
