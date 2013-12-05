@@ -150,7 +150,7 @@ class OPDSPropsItem : public NavHistoryItem {
     LVClonePtr<BookDBCatalog> catalog;
 public:
     static lString8 makePath(LVClonePtr<BookDBCatalog> & _catalog) {
-        return lString8("OPDS_BOOK:") + lString8::itoa(_catalog->id);
+        return lString8("OPDS_BOOK:") + lString8::itoa(!_catalog ? 0 : _catalog->id);
     }
     virtual VIEW_MODE getMode() { return MODE_OPDS_PROPS; }
     OPDSPropsItem(CRUIMainWidget * _main, LVClonePtr<BookDBCatalog> & _catalog) : NavHistoryItem(_main, new CRUIOpdsPropsWidget(_main, _catalog)) {

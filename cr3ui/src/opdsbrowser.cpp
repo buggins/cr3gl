@@ -545,7 +545,7 @@ public:
         lString8 coverpageThumbUrl;
         for (int i = 0; i < links.length(); i++) {
             OPDSLink * link = links[i];
-            if (link->type.startsWith("application/atom+xml") && link->rel.empty())
+            if (link->type.startsWith("application/atom+xml") && (link->rel.empty() || link->rel == "subsection"))
                 opdsLink = link;
             else if (link->rel.startsWith("http://opds-spec.org/acquisition")) {
                 acquisitionLink = link;

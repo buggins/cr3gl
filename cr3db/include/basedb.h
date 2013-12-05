@@ -60,8 +60,8 @@ public:
 	bool operator != (const DBString & s) const { return !operator == (s); }
 	bool operator == (const char * s) const;
 	bool operator != (const char * s) const { return !operator == (s); }
-	bool operator !() const { return !str; }
-	const char * c_str() const { return str; }
+    bool operator !() const { return !str || !str[0]; }
+    const char * c_str() const { return str; }
 	~DBString();
 };
 lUInt32 getHash(const DBString & s);

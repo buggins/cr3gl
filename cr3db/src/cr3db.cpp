@@ -468,12 +468,9 @@ bool CRBookDB::saveOpdsCatalog(BookDBCatalog * catalog) {
             stmt.bindInt64(6, catalog->id);
             err = (stmt.step() != DB_DONE) || err;
             if (!err) {
-                catalog->id = stmt.lastInsertId();
                 BookDBCatalog * cacheItem = catalog->clone();
                 _catalogCache.put(cacheItem);
             }
-            // update cache item
-            *byId = *catalog;
         }
     } else {
         //CRLog::trace("before prepare INSERT (%s, %d)", item->name.get(), item->name.length());

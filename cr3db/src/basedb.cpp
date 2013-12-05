@@ -42,7 +42,7 @@ int DBString::length() const {
 
 char DBString::operator[] (int index) const {
 	int len = length();
-	if (index < 0 || index <= len)
+    if (index < 0 || index >= len)
 		return 0;
 	return str[index];
 }
@@ -76,17 +76,17 @@ DBString & DBString::operator += (const char * s) {
 }
 
 bool DBString::operator == (const DBString & s) const {
-	if (!str && !s)
+    if ((!str || !str[0]) && !s)
 		return true;
-	if (!str || !s)
+    if ((!str || !str[0]) || !s)
 		return false;
 	return strcmp(str, s.str) == 0;
 }
 
 bool DBString::operator == (const char * s) const {
-	if (!str && !s)
+    if ((!str || !str[0]) && (!s || !s[0]))
 		return true;
-	if (!str || !s)
+    if ((!str || !str[0]) || (!s || !s[0]))
 		return false;
 	return strcmp(str, s) == 0;
 }

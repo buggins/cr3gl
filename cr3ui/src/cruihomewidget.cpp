@@ -535,6 +535,7 @@ public:
         if (itemIndex < 1 || itemIndex > _entries.length())
             return false;
         CROpdsCatalogsItem * item = _entries[itemIndex - 1];
+        this->_list->setScrollOffset(0);
         _home->getMain()->showOpds(item->getCatalog(), item->getURL(), item->getTitle());
         return true;
     }
@@ -543,12 +544,14 @@ public:
         CR_UNUSED(widget);
         if (itemIndex == 0) {
             LVClonePtr<BookDBCatalog> c;
+            this->_list->setScrollOffset(0);
             _home->getMain()->showOpdsProps(c);
             return true;
         }
         if (itemIndex < 1 || itemIndex > _entries.length())
             return false;
         CROpdsCatalogsItem * item = _entries[itemIndex - 1];
+        this->_list->setScrollOffset(0);
         _home->getMain()->showOpdsProps(item->getCatalog());
         return true;
     }

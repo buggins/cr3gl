@@ -194,6 +194,12 @@ void CRUIOpdsPropsWidget::save() {
     login.trim();
     password.trim();
     if (_catalog->name != title.c_str() || _catalog->url != url.c_str() || _catalog->login != login.c_str() || _catalog->password != password.c_str()) {
+        CRLog::trace("Catalog props changed: title '%s' -> '%s', url: '%s' -> '%s', login '%s' -> '%s'",
+                     _catalog->name.c_str(), title.c_str(), _catalog->url.c_str(), url.c_str(),
+                     _catalog->login.c_str(), login.c_str());
+        if (_catalog->login != login.c_str()) {
+            CRLog::trace("login has been changed");
+        }
         if (!title.empty()) {
             if ((url.startsWith("http://") || url.startsWith("https://")) && url.length() >= 12) {
                 _catalog->name = title.c_str();
