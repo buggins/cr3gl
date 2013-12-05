@@ -32,15 +32,52 @@ lString16 mimeToFormatName(lString8 mime) {
     return Utf8ToUnicode(mime);
 }
 
-lString8 normalizeFilename(lString8 fn) {
+lString8 normalizeFilename(lString8 fn, int maxLen, bool appendCRCIfTooLong, bool appendEllipsisIfTooLong = false) {
     lString8 res;
+    bool lastPoint = false;
+    bool lastUnderscore = false;
     for (int i = 0; i <fn.length(); i++) {
         int ch = (lUInt8)fn[i];
         if (ch <=32 || ch == '/' || ch == '\\' || ch == ':' || ch == ';' || ch == '@' || ch == '(' || ch == ')' || ch == '[' || ch == ']')
-            res << "_";
-        else
-            res << ch;
+            ch = '_';
+        if (ch == '.') {
+            if (!lastPoint)
+                res << ch;
+            lastPoint = true;
+            lastUnderscore = false;
+        } else {
+            if (ch == '_') {
+                if (!lastUnderscore)
+                    res << ch;
+                lastUnderscore = true;
+            }
+            lastPoint = false;
+        }
     }
+    if (maxLen > 0) {
+        lString16 text = Utf8ToUnicode(res);
+        if (text.length() > maxLen) {
+            lUInt32 crc = text.getHash();
+            text = text.substr(0, maxLen);
+            while (text.lastChar() == '_' || text.lastChar() == '.')
+                text.erase(text.length() - 1, 1);
+            if (appendCRCIfTooLong) {
+                char buf[32];
+                sprintf(buf, "%08x", crc);
+                text << buf;
+            }
+
+            res = UnicodeToUtf8(text);
+        } else {
+            appendEllipsisIfTooLong = false;
+        }
+    } else {
+        appendEllipsisIfTooLong = false;
+    }
+    while (res.lastChar() == '_' || res.lastChar() == '.')
+        res.erase(res.length() - 1, 1);
+    if (appendEllipsisIfTooLong)
+        res << "...";
     return res;
 }
 
@@ -69,7 +106,7 @@ lString8 mimeToExtension(lString8 mime) {
         return lString8(".doc");
     if (mime.startsWith("application/rtf"))
         return lString8(".rtf");
-    return lString8(".") + normalizeFilename(mime);
+    return lString8(".") + normalizeFilename(mime, 15, false);
 }
 
 enum {
@@ -134,7 +171,7 @@ public:
         subdir.trim();
         if (subdir.empty())
             subdir = "No Author";
-        _downloadDir = downloadsDir + normalizeFilename(subdir);
+        _downloadDir = downloadsDir + normalizeFilename(subdir, 20, false);
         LVAppendPathDelimiter(_downloadDir);
         lString8 bookname = UnicodeToUtf8(_book->getTitle());
         bookname.trim();
@@ -143,7 +180,7 @@ public:
         bookname.trim();
         if (bookname.empty())
             bookname = "noname"; // TODO: generate name
-        bookname = normalizeFilename(bookname);
+        bookname = normalizeFilename(bookname, 30, true);
         lString8 extension = mimeToExtension(_link->type);
         bookname << '.';
         bookname << extension;
