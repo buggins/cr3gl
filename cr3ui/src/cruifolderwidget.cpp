@@ -455,7 +455,7 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         lString8 path = _dir->getPathName();
         lString8 currentDownloadsFolder = bookDB->getDownloadsDir();
         //ACTION_FOLDER_BOOKMARK_USE_FOR_DOWNLOADS
-        if (currentDownloadsFolder != path)
+        if (currentDownloadsFolder != path && !_dir->isArchive()) // TODO: check if CAN WRITE
             actions.add(ACTION_FOLDER_BOOKMARK_USE_FOR_DOWNLOADS);
         if (bookDB->isFolderBookmarked(path) && currentDownloadsFolder != path)
             actions.add(ACTION_FOLDER_BOOKMARK_REMOVE);

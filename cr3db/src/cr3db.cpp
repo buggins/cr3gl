@@ -378,6 +378,11 @@ void CRBookDB::setDownloadsDir(lString8 path) {
         newvalue->type = DIR_TYPE_DOWNLOADS;
         saveFolderBookmark(newvalue);
     } else {
+        if (downloadsBookmark) {
+            BookDBFolderBookmark * newvalue = downloadsBookmark->clone();
+            newvalue->type = DIR_TYPE_NORMAL;
+            saveFolderBookmark(newvalue);
+        }
         // new bookmark
         BookDBFolderBookmark * newvalue = new BookDBFolderBookmark();
         newvalue->name = path.c_str();
