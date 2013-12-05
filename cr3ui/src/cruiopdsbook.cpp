@@ -27,7 +27,7 @@ lString16 mimeToFormatName(lString8 mime) {
         return lString16(L"HTML");
     if (mime.startsWith("application/rtf"))
         return lString16(L"RTF");
-    return lString16("Unknown");
+    return Utf8ToUnicode(mime);
 }
 
 enum {
@@ -348,6 +348,13 @@ void CRUIOpdsBookWidget::cancelDownloads() {
     }
 }
 
+void CRUIOpdsBookWidget::afterNavigationTo() {
+    _downloadFolder = bookDB->getDownloadsDir();
+    if (_downloadFolder.empty()) {
+        CRLog::warn("Download folder is not specified! Downloads disabled.");
+    }
+}
+
 void CRUIOpdsBookWidget::afterNavigationFrom() {
     cancelDownloads();
 }
@@ -368,6 +375,11 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsC
     , _currentDownloadTaskId(0)
 {
     CRLog::trace("CRUIOpdsBookWidget::CRUIOpdsBookWidget %08x", (lUInt64)this);
+
+    _downloadFolder = bookDB->getDownloadsDir();
+    if (_downloadFolder.empty()) {
+        CRLog::warn("Download folder is not specified! Downloads disabled.");
+    }
 
     _title = new CRUITitleBarWidget(lString16(""), this, this, true);
     _title->setTitle(Utf8ToUnicode(_book->getCatalog()->name.c_str()));
@@ -592,6 +604,13 @@ bool CRUIOpdsBookWidget::onTouchEvent(const CRUIMotionEvent * event) {
 void CRUIOpdsBookWidget::onDownloadButton(CRUIBookDownloadWidget * control) {
     if (_currentDownload)
         return;
+
+    if (_downloadFolder.empty()) {
+        CRLog::warn("Download folder is not specified! Downloads disabled.");
+        _main->showMessage(_16(STR_ERROR_DOWNLOADS_DIRECTORY_NOT_SET), 4000);
+        return;
+    }
+
     _currentDownloadTaskId = _main->openUrl(this, control->getLink()->href, lString8("GET"),
             lString8(_book->getCatalog()->login.c_str()), lString8(_book->getCatalog()->password.c_str()), lString8());
     if (_currentDownloadTaskId) {

@@ -8,6 +8,7 @@
 #include "cr3db.h"
 #include <lvstring.h>
 #include <stdio.h>
+#include <fileinfo.h>
 
 CRBookDB * bookDB = NULL;
 
@@ -359,6 +360,35 @@ bool CRBookDB::removeFolderBookmark(lString8 path) {
     if (!bookmark)
         return false;
     return removeFolderBookmark(bookmark);
+}
+
+void CRBookDB::setDownloadsDir(lString8 path) {
+    DBString s(path.c_str());
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.get(s);
+    BookDBFolderBookmark * downloadsBookmark = _folderBookmarkCache.getByType(DIR_TYPE_DOWNLOADS);
+    if (bookmark) {
+        if (bookmark->type == DIR_TYPE_DOWNLOADS)
+            return;
+        if (downloadsBookmark) {
+            BookDBFolderBookmark * newvalue = downloadsBookmark->clone();
+            newvalue->type = DIR_TYPE_NORMAL;
+            saveFolderBookmark(newvalue);
+        }
+        BookDBFolderBookmark * newvalue = bookmark->clone();
+        newvalue->type = DIR_TYPE_DOWNLOADS;
+        saveFolderBookmark(newvalue);
+    } else {
+        // new bookmark
+        BookDBFolderBookmark * newvalue = new BookDBFolderBookmark();
+        newvalue->name = path.c_str();
+        newvalue->type = DIR_TYPE_DOWNLOADS;
+        saveFolderBookmark(newvalue);
+    }
+}
+
+lString8 CRBookDB::getDownloadsDir() {
+    BookDBFolderBookmark * bookmark = _folderBookmarkCache.getByType(DIR_TYPE_DOWNLOADS);
+    return bookmark ? lString8(bookmark->name.c_str()) : lString8();
 }
 
 bool CRBookDB::isFolderBookmarked(lString8 path) {
@@ -1941,6 +1971,18 @@ void BookDBFolderCache::clear() {
 
 
 
+
+BookDBFolderBookmark * BookDBFolderBookmarkCache::getByType(int type) {
+    LVHashTable<lUInt64, BookDBFolderBookmark *>::iterator iter = _byId.forwardIterator();
+    for (;;) {
+        LVHashTable<lUInt64, BookDBFolderBookmark *>::pair * item = iter.next();
+        if (!item)
+            break;
+        if (item->value->type == type)
+            return item->value;
+    }
+    return NULL;
+}
 
 BookDBFolderBookmark * BookDBFolderBookmarkCache::get(lInt64 key) {
     return _byId.get(key);

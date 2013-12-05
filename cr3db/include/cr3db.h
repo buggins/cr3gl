@@ -401,6 +401,7 @@ public:
     BookDBFolderBookmark * getClone(lInt64 key) { BookDBFolderBookmark * res = key ? get(key) : NULL; return res ? res->clone() : NULL; }
     BookDBFolderBookmark * get(lInt64 key);
     BookDBFolderBookmark * get(const DBString & name);
+    BookDBFolderBookmark * getByType(int type);
     void getAll(LVPtrVector<BookDBFolderBookmark> & folderBookmarks);
     void put(BookDBFolderBookmark * item);
     void remove(lInt64 id);
@@ -532,6 +533,9 @@ public:
     bool removeFolderBookmark(BookDBFolderBookmark * folderBookmark);
     bool removeFolderBookmark(lString8 path);
     bool isFolderBookmarked(lString8 path);
+
+    lString8 getDownloadsDir();
+    void setDownloadsDir(lString8 path);
 
     /// protected by mutex
 	bool saveBooks(LVPtrVector<BookDBBook> & books);

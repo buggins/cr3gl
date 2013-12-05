@@ -13,6 +13,7 @@
 #include "cruimain.h"
 #include "crcoverpages.h"
 #include "cruicoverwidget.h"
+#include "cruiconfig.h"
 
 using namespace CRUI;
 
@@ -312,9 +313,32 @@ public:
         _items.addAll(deviceInfo.topDirs);
         LVPtrVector<BookDBFolderBookmark> folderBookmarks;
         bookDB->loadFolderBookmarks(folderBookmarks);
+        //defaultDownloadsDir
+        if (!crconfig.defaultDownloadsDir.empty()) {
+            BookDBFolderBookmark * downloadsDir = NULL;
+            bool alreadyHasDownloadsDirPath = false;
+            for (int i = 0; i < folderBookmarks.length(); i++) {
+                BookDBFolderBookmark * bmk = folderBookmarks[i];
+                if (bmk->type == DIR_TYPE_DOWNLOADS)
+                    downloadsDir = bmk;
+                if (bmk->name == crconfig.defaultDownloadsDir.c_str())
+                    alreadyHasDownloadsDirPath = true;
+            }
+            if (!downloadsDir) {
+                if (alreadyHasDownloadsDirPath) {
+                    CRLog::warn("Downloads dir %s already added to bookmarks as usual dir! Will not allow downloads unless new directory is not assigned for downloads!", crconfig.defaultDownloadsDir.c_str());
+                } else {
+                    CRLog::info("Setting up Downloads dir to %s", crconfig.defaultDownloadsDir.c_str());
+                    bookDB->setDownloadsDir(crconfig.defaultDownloadsDir);
+                    // reloading folder bookmarks
+                    folderBookmarks.clear();
+                    bookDB->loadFolderBookmarks(folderBookmarks);
+                }
+            }
+        }
         for (int i = 0; i < folderBookmarks.length(); i++) {
             BookDBFolderBookmark * bmk = folderBookmarks[i];
-            _items.addItem(DIR_TYPE_NORMAL, lString8(bmk->name.c_str()), bmk->lastUsage);
+            _items.addItem((DIR_TYPE)bmk->type, lString8(bmk->name.c_str()), bmk->lastUsage);
         }
     }
 

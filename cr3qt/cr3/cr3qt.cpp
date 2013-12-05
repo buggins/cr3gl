@@ -247,7 +247,8 @@ void InitCREngine(lString16 exePath) {
         const char *homedir = pw->pw_dir;
         deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("/"));
         deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8(homedir));
-        deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8(homedir) + "/Downloads");
+        crconfig.defaultDownloadsDir = lString8(homedir) + "/Downloads";
+        //deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8(homedir) + "/Downloads");
         crconfig.uiFontFace = "DejaVu Sans";
         crconfig.monoFontFace = "DejaVu Sans Mono";
         crconfig.fallbackFontFace = "Liberation Sans";

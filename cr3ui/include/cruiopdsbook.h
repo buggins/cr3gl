@@ -27,6 +27,7 @@ class CRUIOpdsBookWidget : public CRUIWindowWidget, public CRUIOnClickListener
     LVPtrVector<CRUIBookDownloadWidget, false> _downloads;
     CRUIBookDownloadWidget * _currentDownload;
     int _currentDownloadTaskId;
+    lString8 _downloadFolder;
 public:
     /// motion event handler, returns true if it handled event
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
@@ -38,6 +39,7 @@ public:
     /// override to handle menu or other action - by id
     virtual void beforeNavigationFrom();
     virtual void afterNavigationFrom();
+    virtual void afterNavigationTo();
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
 
     virtual void draw(LVDrawBuf * buf);

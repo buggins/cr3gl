@@ -45,6 +45,7 @@ struct CRUIConfig {
     lString8 fallbackFontFace;
     lString8 monoFontFace;
     lString8 cssDir;
+    lString8 defaultDownloadsDir;
 
     lString8 systemLanguage;
 

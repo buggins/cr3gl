@@ -427,6 +427,13 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     case CMD_BACK:
         _main->back();
         return true;
+    case CMD_FOLDER_BOOKMARK_USE_FOR_DOWNLOADS:
+    {
+        lString8 path = _dir->getPathName();
+        bookDB->setDownloadsDir(path);
+        _main->updateFolderBookmarks();
+        return true;
+    }
     case CMD_FOLDER_BOOKMARK_ADD:
     {
         lString8 path = _dir->getPathName();
@@ -446,7 +453,11 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         CRUIActionList actions;
         actions.add(ACTION_BACK);
         lString8 path = _dir->getPathName();
-        if (bookDB->isFolderBookmarked(path))
+        lString8 currentDownloadsFolder = bookDB->getDownloadsDir();
+        //ACTION_FOLDER_BOOKMARK_USE_FOR_DOWNLOADS
+        if (currentDownloadsFolder != path)
+            actions.add(ACTION_FOLDER_BOOKMARK_USE_FOR_DOWNLOADS);
+        if (bookDB->isFolderBookmarked(path) && currentDownloadsFolder != path)
             actions.add(ACTION_FOLDER_BOOKMARK_REMOVE);
         else if (!deviceInfo.isTopDir(path))
             actions.add(ACTION_FOLDER_BOOKMARK_ADD);
