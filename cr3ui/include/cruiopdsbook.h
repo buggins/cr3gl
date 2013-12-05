@@ -63,6 +63,8 @@ public:
 
     virtual void onAdditionalLinkButton(OPDSLink * link);
 
+    void updateDirs();
+
     CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsCatalogsItem> & book);
     virtual ~CRUIOpdsBookWidget();
 };

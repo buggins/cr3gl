@@ -30,11 +30,40 @@ lString16 mimeToFormatName(lString8 mime) {
     return Utf8ToUnicode(mime);
 }
 
+lString8 normalizeFilename(lString8 fn) {
+    lString8 res;
+    for (int i = 0; i <fn.length(); fn++) {
+        char ch = fn[i];
+        if (ch <=32 || ch == '/' || ch == '\\' || ch == ':' || ch == ';' || ch == '@')
+            res << "_";
+        else
+            res << ch;
+    }
+    return res;
+}
+
+lString8 mimeToExtension(lString8 mime) {
+    if (mime.startsWith("application/fb2"))
+        return lString8(L"FB2");
+    if (mime.startsWith("application/epub"))
+        return lString8(L"EPUB");
+    if (mime.startsWith("application/x-mobipocket-ebook"))
+        return lString8(L"MOBI");
+    if (mime.startsWith("application/txt"))
+        return lString8(L"TXT");
+    if (mime.startsWith("application/html") || mime.startsWith("text/html"))
+        return lString8(L"HTML");
+    if (mime.startsWith("application/rtf"))
+        return lString8(L"RTF");
+    return normalizeFilename(mime);
+}
+
 enum {
     NOT_DOWNLOADED,
     DOWNLOADING,
     DOWNLOADED
 };
+
 
 class CRUIBookDownloadWidget : public CRUIHorizontalLayout, public CRUIOnClickListener {
     CRUIOpdsBookWidget * _bookwidget;
@@ -45,8 +74,23 @@ class CRUIBookDownloadWidget : public CRUIHorizontalLayout, public CRUIOnClickLi
     CRUITextWidget * _caption;
     CRUIProgressWidget * _progress;
     int _state;
+    lString8 _downloadDir;
+    lString8 _downloadFilename;
+    lString8 _downloadTmpFilename;
 public:
     OPDSLink * getLink() { return _link; }
+
+    bool createDownloadDir() {
+        lString16 path = Utf8ToUnicode(_downloadDir);
+        LVRemoveLastPathDelimiter(path);
+        if (LVDirectoryExists(path))
+            return true;
+        return LVCreateDirectory(path);
+    }
+
+    lString8 getDownloadDir() { return _downloadDir; }
+    lString8 getDownloadFilename() { return _downloadFilename; }
+    lString8 getDownloadTmpFilename() { return _downloadTmpFilename; }
 
     void downloadStarted(CRUIBookDownloadWidget * activeWidget) {
         if (activeWidget != this) {
@@ -58,6 +102,29 @@ public:
             setBookState(DOWNLOADING);
         }
 
+    }
+
+    void updateDirs(lString8 downloadsDir) {
+        //
+        lString8 subdir = _book->getAuthorNames(false);
+        subdir.trim();
+        if (subdir.empty())
+            subdir = "No Author";
+        _downloadDir = downloadsDir + normalizeFilename(subdir);
+        LVAppendPathDelimiter(_downloadDir);
+        lString8 bookname = _book->getTitle();
+        bookname.trim();
+        if (bookname.empty())
+            bookname = _link->title;
+        bookname.trim();
+        if (bookname.empty())
+            bookname = "noname"; // TODO: generate name
+        bookname = normalizeFilename(bookname);
+        lString8 extension = mimeToExtension(_link->type);
+        bookname << '.';
+        bookname << extension;
+        _downloadFilename = _downloadDir + bookname;
+        _downloadTmpFilename = _downloadDir + bookname + ".cr3.tmp";
     }
 
     void downloadCancelled(CRUIBookDownloadWidget * activeWidget) {
@@ -360,6 +427,18 @@ void CRUIOpdsBookWidget::afterNavigationFrom() {
 }
 
 
+void CRUIOpdsBookWidget::updateDirs() {
+    _downloadFolder = bookDB->getDownloadsDir();
+    LVAppendPathDelimiter(_downloadFolder);
+    if (_downloadFolder.empty()) {
+        CRLog::warn("Download folder is not specified! Downloads disabled.");
+    }
+    for (int i = 0; i < _downloads.length(); i++) {
+        _downloads[i]->updateDirs(_downloads.length());
+    }
+
+}
+
 CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsCatalogsItem> & book)
     : CRUIWindowWidget(main)
     , _title(NULL)
@@ -376,10 +455,7 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsC
 {
     CRLog::trace("CRUIOpdsBookWidget::CRUIOpdsBookWidget %08x", (lUInt64)this);
 
-    _downloadFolder = bookDB->getDownloadsDir();
-    if (_downloadFolder.empty()) {
-        CRLog::warn("Download folder is not specified! Downloads disabled.");
-    }
+    updateDirs();
 
     _title = new CRUITitleBarWidget(lString16(""), this, this, true);
     _title->setTitle(Utf8ToUnicode(_book->getCatalog()->name.c_str()));
@@ -445,6 +521,7 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsC
         }
     }
 
+    updateDirs();
 
     _body->addChild(scroll);
     setStyle("SETTINGS_ITEM_LIST");
