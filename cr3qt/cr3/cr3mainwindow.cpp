@@ -341,7 +341,7 @@ void CRUIHttpTaskQt::doDownload() {
 }
 
 void CRUIHttpTaskQt::httpError(QNetworkReply::NetworkError code) {
-    QNetworkReply::NetworkError error = reply->error();
+    QNetworkReply::NetworkError error = code;
     _result = error;
     _resultMessage = reply->errorString().toUtf8().constData();
     CRLog::warn("httpError(result=%d resultMessage=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _url.c_str());

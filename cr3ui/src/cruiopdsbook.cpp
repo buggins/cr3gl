@@ -50,6 +50,8 @@ lString8 normalizeFilename(lString8 fn, int maxLen, bool appendCRCIfTooLong, boo
                 if (!lastUnderscore)
                     res << ch;
                 lastUnderscore = true;
+            } else {
+                res << ch;
             }
             lastPoint = false;
         }

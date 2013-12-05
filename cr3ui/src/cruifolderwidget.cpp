@@ -52,7 +52,7 @@ lString16 makeDirName(const CRDirEntry * entry, bool shortForm) {
         }
         return title;
     } else {
-        return Utf8ToUnicode(entry->getFileName());
+        return Utf8ToUnicode(shortForm ? entry->getFileName() : entry->getPathName());
     }
 }
 

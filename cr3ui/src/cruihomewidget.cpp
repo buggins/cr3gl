@@ -310,7 +310,6 @@ public:
     void updateItems() {
 
         _items.clear();
-        _items.addAll(deviceInfo.topDirs);
         LVPtrVector<BookDBFolderBookmark> folderBookmarks;
         bookDB->loadFolderBookmarks(folderBookmarks);
         //defaultDownloadsDir
@@ -340,6 +339,7 @@ public:
             BookDBFolderBookmark * bmk = folderBookmarks[i];
             _items.addItem((DIR_TYPE)bmk->type, lString8(bmk->name.c_str()), bmk->lastUsage);
         }
+        _items.addAll(deviceInfo.topDirs);
     }
 
     virtual int getItemCount(CRUIListWidget * list) {

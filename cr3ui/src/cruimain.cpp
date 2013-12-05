@@ -313,6 +313,7 @@ void CRUIMainWidget::showOpdsProps(LVClonePtr<BookDBCatalog> &  dir) {
 
 void CRUIMainWidget::showOpdsBook(LVClonePtr<CROpdsCatalogsItem> & book) {
     lString8 folder = OPDSBookItem::makePath(book);
+    CRLog::trace("showOpdsBook(%s)", folder.c_str());
     int newpos = _history.findPosByMode(MODE_OPDS_BOOK, folder);
     if (newpos < 0) {
         // create page now, to lock corresponding folder

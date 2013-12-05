@@ -267,6 +267,7 @@ protected:
     lString8 _descriptionType;
     lString8 _coverUrl;
     lString8 _coverThumbUrl;
+    lString8 _id;
 
     LVPtrVector<OPDSLink> _links;
     LVPtrVector<OPDSAuthor> _authors;
@@ -286,6 +287,7 @@ public:
     {
         _catalog = v._catalog;
         _url = v._url;
+        _id = v._id;
         _title = v._title;
         _description = v._description;
         _descriptionType = v._descriptionType;
@@ -344,6 +346,8 @@ public:
     virtual void setCoverThumbUrl(lString8 url) { _coverThumbUrl = url; }
     virtual lString8 getURL() const { return _url.empty() ? lString8(_catalog->url.c_str()) : _url; }
     virtual void setURL(lString8 url) { _url = url; }
+    virtual lString8 getId() { return _id; }
+    virtual void setId(lString8 id) { _id = id; }
     LVPtrVector<OPDSLink> & getLinks() { return _links; }
     void setLinks(LVPtrVector<OPDSLink> & links) {
         _links.clear();

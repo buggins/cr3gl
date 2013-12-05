@@ -169,7 +169,7 @@ class OPDSBookItem : public NavHistoryItem {
     LVClonePtr<CROpdsCatalogsItem>  book;
 public:
     static lString8 makePath(LVClonePtr<CROpdsCatalogsItem> & _book) {
-        return lString8("OPDS_BOOK:") + _book->getPathName();
+        return lString8("OPDS_BOOK:") + _book->getPathName() + ":" + _book->getId();
     }
 
     virtual VIEW_MODE getMode() { return MODE_OPDS_BOOK; }

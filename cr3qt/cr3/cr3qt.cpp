@@ -16,6 +16,10 @@
 #include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
 
+#ifdef _WIN32
+    #include <ShlObj.h>
+    #pragma comment(lib, "shell32.lib")
+#endif
 #ifdef _LINUX
     #include <unistd.h>
     #include <sys/types.h>
@@ -189,26 +193,62 @@ void InitCREngine(lString16 exePath) {
     concurrencyProvider = new QtConcurrencyProvider();
 
 #ifdef _WIN32
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\arial.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\ariali.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbd.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\arialbi.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\tahoma.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\tahomabd.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\comic.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\comicbd.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibri.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrib.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrii.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\calibrili.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\cour.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\courbd.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\couri.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\courbi.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\times.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesi.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbd.ttf");
-    crconfig.fontFiles.add("C:\\Windows\\Fonts\\timesbi.ttf");
+    lString8 downloadsPath;
+    lString8 fontsPath;
+
+    WCHAR szPath[MAX_PATH];
+
+    if(SUCCEEDED(SHGetFolderPathW(NULL,
+                                 CSIDL_FONTS|CSIDL_FLAG_NO_ALIAS|CSIDL_FLAG_DONT_UNEXPAND,
+                                 NULL,
+                                 0,
+                                 szPath)))
+    {
+        fontsPath = UnicodeToUtf8(szPath);
+    }
+    if(SUCCEEDED(SHGetFolderPathW(NULL,
+                                  CSIDL_PROFILE|CSIDL_FLAG_NO_ALIAS|CSIDL_FLAG_DONT_UNEXPAND|CSIDL_FLAG_CREATE,
+                                 NULL,
+                                 0,
+                                 szPath)))
+    {
+        downloadsPath = UnicodeToUtf8(szPath) + "\\Downloads";
+    }
+
+//    PWSTR downpathptr = NULL;
+//    if (S_OK == SHGetKnownFolderPath(FOLDERID_Downloads, KF_FLAG_NO_ALIAS|KF_FLAG_DONT_UNEXPAND, NULL, &downpathptr)) {
+//        downloadsPath = UnicodeToUtf8(downpathptr);
+//    }
+//    lString8 fontsPath;
+//    PWSTR fontspathptr = NULL;
+//    if (S_OK == SHGetKnownFolderPath(FOLDERID_Fonts, KF_FLAG_NO_ALIAS|KF_FLAG_DONT_UNEXPAND, NULL, &fontspathptr)) {
+//        fontsPath = UnicodeToUtf8(fontspathptr);
+//    }
+    CRLog::info("Downloads path: %s", downloadsPath.c_str());
+    CRLog::info("Fonts path: %s", fontsPath.c_str());
+    if (fontsPath.empty())
+        fontsPath = "C:\\Windows\\Fonts";
+
+    crconfig.fontFiles.add(fontsPath + "\\arial.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\ariali.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\arialbd.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\arialbi.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\tahoma.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\tahomabd.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\comic.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\comicbd.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\calibri.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\calibrib.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\calibrii.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\calibrili.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\cour.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\courbd.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\couri.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\courbi.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\times.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\timesi.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\timesbd.ttf");
+    crconfig.fontFiles.add(fontsPath + "\\timesbi.ttf");
     crconfig.uiFontFace = "Arial";
     crconfig.monoFontFace = "Courier New";
     crconfig.fallbackFontFace = "Arial Unicode MS";
@@ -234,13 +274,22 @@ void InitCREngine(lString16 exePath) {
     //QString homePath = QDir::homePath();
 
 #ifdef _WIN32
-    deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("c:\\"));
-    deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));
+    for (char letter = 'A'; letter <= 'Z'; letter++) {
+        lString16 s;
+        s << letter;
+        s << L":\\";
+        int t = GetDriveTypeW(s.c_str());
+        if (t != DRIVE_UNKNOWN && t != DRIVE_NO_ROOT_DIR) {
+            deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, UnicodeToUtf8(s));
+        }
+    }
+    //deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, lString8("c:\\"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("c:\\"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_FS_ROOT, lString8("d:\\"));
-    deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8("c:\\Shared\\Books"));
+    //deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8("c:\\Shared\\Books"));
     //deviceInfo.topDirs.addItem(DIR_TYPE_CURRENT_BOOK_DIR, lString8("c:\\Shared\\Books"));
-    deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("c:\\Shared\\Books\\Downloads"));
+    crconfig.defaultDownloadsDir = downloadsPath;
+    //deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8("c:\\Shared\\Books\\Downloads"));
 #else
     {
         struct passwd *pw = getpwuid(getuid());

@@ -435,6 +435,7 @@ class OPDSParser : public LVXMLParserCallback {
     bool insideAuthor;
     bool insideName;
     bool insideUri;
+    bool insideId;
     lString8 entryTitle;
     lString8 entryContent;
     lString8 entryContentType;
@@ -447,6 +448,7 @@ class OPDSParser : public LVXMLParserCallback {
     lString8 format;
     lString8 authorName;
     lString8 authorUri;
+    lString8 id;
     LVPtrVector<OPDSLink> links;
     LVPtrVector<OPDSAuthor> authors;
 public:
@@ -464,6 +466,8 @@ public:
         insideFormat = false;
         insideAuthor = false;
         insideName = false;
+        insideUri = false;
+        insideId = false;
     }
 
     /// make absolute URL from relative
@@ -501,6 +505,7 @@ public:
             format.clear();
             links.clear();
             authors.clear();
+            id.clear();
             insideEntry = true;
         } else if (tag== "title")
             insideTitle = true;
@@ -510,6 +515,8 @@ public:
             insideLanguage = true;
         else if (tag == "format")
             insideFormat = true;
+        else if (tag == "id")
+            insideId = true;
         else if (tag == "author") {
             authorName.clear();
             authorUri.clear();
@@ -569,10 +576,12 @@ public:
             item->setLinks(links);
             item->setCoverThumbUrl(coverpageThumbUrl);
             item->setCoverUrl(coverpageUrl);
+            item->setId(id);
             _entries.add(item);
         } else if (opdsLink) {
             // add catalog ref
             CROpdsCatalogsItem * item = new CROpdsCatalogsItem(_catalog, opdsLink->href);
+            item->setId(id);
             item->setTitle(Utf8ToUnicode(entryTitle));
             item->setDescription(Utf8ToUnicode(entryContent));
             item->setDescriptionType(entryContentType);
@@ -604,6 +613,8 @@ public:
             insideTitle = false;
         else if (tag == "content")
             insideContent = false;
+        else if (tag == "id")
+            insideId = false;
         else if (tag == "language")
             insideLanguage = false;
         else if (tag == "format")
@@ -685,6 +696,8 @@ public:
                 language = txt8;
             else if (insideFormat)
                 format = txt8;
+            else if (insideId)
+                id = txt8;
             else if (insideAuthor && insideName)
                 authorName = txt8;
             else if (insideAuthor && insideUri)
@@ -845,6 +858,7 @@ void CRUIOpdsBrowserWidget::afterNavigationTo() {
         //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
         _fileList->setProgressItemVisible(true);
+        requestLayout();
         _main->update(true);
     }
     requestLayout();
