@@ -736,7 +736,10 @@ bool CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
             _stream = LVCreateMemoryStream();
         } else {
             // create file stream
-            _stream = LVOpenFileStream(_saveAs.c_str(), LVOM_WRITE);
+            _stream = LVOpenFileStream(Utf8ToUnicode(_saveAs).c_str(), LVOM_WRITE);
+            if (_stream.isNull()) {
+                CRLog::error("Failed to create file %s", _saveAs.c_str());
+            }
         }
     }
     //CRLog::trace("dataReceived(%d)", len);

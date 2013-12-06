@@ -211,8 +211,10 @@ public:
         } else {
             renameTempFileToBookFile();
             _progress->setProgress(-1);
-            if (!LVFileExists(_downloadFilename))
+            if (!LVFileExists(_downloadFilename)) {
+                _bookwidget->getMain()->showMessage(lString16(L"Failed to rename downloaded file"), 4000);
                 deleteTempFile();
+            }
             setBookState(LVFileExists(_downloadFilename) ? DOWNLOADED : NOT_DOWNLOADED);
         }
     }
