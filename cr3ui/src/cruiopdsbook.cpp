@@ -19,6 +19,10 @@ lString16 mimeToFormatName(lString8 mime) {
         return lString16(L"FB2");
     if (mime.startsWith("application/epub"))
         return lString16(L"EPUB");
+    if (mime.startsWith("application/pdf"))
+        return lString16(L"PDF");
+    if (mime.startsWith("application/djvu"))
+        return lString16(L"DJVU");
     if (mime.startsWith("application/x-mobipocket-ebook"))
         return lString16(L"MOBI");
     if (mime.startsWith("application/txt"))
@@ -85,30 +89,34 @@ lString8 normalizeFilename(lString8 fn, int maxLen, bool appendCRCIfTooLong, boo
 
 lString8 mimeToExtension(lString8 mime) {
     if (mime.startsWith("application/fb2+zip"))
-        return lString8(".fb2.zip");
+        return lString8("fb2.zip");
     if (mime.startsWith("application/fb2"))
-        return lString8(".fb2");
+        return lString8("fb2");
+    if (mime.startsWith("application/pdf"))
+        return lString8("pdf");
+    if (mime.startsWith("application/djvu"))
+        return lString8("djvu");
     if (mime.startsWith("application/epub+zip"))
-        return lString8(".epub");
+        return lString8("epub");
     if (mime.startsWith("application/x-mobipocket-ebook"))
-        return lString8(".mobi");
+        return lString8("mobi");
     if (mime.startsWith("application/txt+zip"))
-        return lString8(".txt.zip");
+        return lString8("txt.zip");
     if (mime.startsWith("application/txt"))
-        return lString8(".txt");
+        return lString8("txt");
     if (mime.startsWith("application/html+zip") || mime.startsWith("text/html+zip"))
-        return lString8(".html.zip");
+        return lString8("html.zip");
     if (mime.startsWith("application/html") || mime.startsWith("text/html"))
-        return lString8(".html");
+        return lString8("html");
     if (mime.startsWith("application/rtf+zip"))
-        return lString8(".rtf.zip");
+        return lString8("rtf.zip");
     if (mime.startsWith("application/doc+zip") || mime.startsWith("application/msword+zip"))
-        return lString8(".doc.zip");
+        return lString8("doc.zip");
     if (mime.startsWith("application/doc") || mime.startsWith("application/msword"))
-        return lString8(".doc");
+        return lString8("doc");
     if (mime.startsWith("application/rtf"))
-        return lString8(".rtf");
-    return lString8(".") + normalizeFilename(mime, 15, false);
+        return lString8("rtf");
+    return normalizeFilename(mime, 15, false);
 }
 
 enum {
