@@ -8,12 +8,16 @@
 #include "cruiwidget.h"
 #include "CoolReader.h"
 #include "CoolReaderFrame.h"
+#include "FNetHttpIHttpTransactionEventListener.h"
+#include "FNetHttpHttpSession.h"
+#include "FNetHttpHttpTransaction.h"
 
 
 using namespace CRUI;
 using namespace Tizen::Base;
 using namespace Tizen::Ui;
 using namespace Tizen::Ui::Controls;
+using namespace Tizen::Net::Http;
 
 const GLfloat ONEP = GLfloat(+1.0f);
 const GLfloat ONEN = GLfloat(-1.0f);
@@ -34,6 +38,7 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 {
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
+	_downloadManager = new CRUIHttpTaskManagerTizen(_eventManager);
 	_widget = new CRUIMainWidget();
 	_eventManager->setRootWidget(_widget);
 	_widget->setScreenUpdater(this);
@@ -207,6 +212,27 @@ void CR3Renderer::minimizeApp() {
 
 }
 
+/// override to open URL in external browser; returns false if failed or feature not supported by platform
+bool CR3Renderer::openLinkInExternalBrowser(lString8 url) {
+	return false;
+}
+
+/// override to open file in external application; returns false if failed or feature not supported by platform
+bool CR3Renderer::openFileInExternalApp(lString8 filename, lString8 mimeType) {
+	return false;
+}
+
+/// returns 0 if not supported, task ID if download task is started
+int CR3Renderer::openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+	return _downloadManager->openUrl(url, method, login, password, saveAs);
+}
+
+/// cancel specified download task
+void CR3Renderer::cancelDownload(int downloadTaskId) {
+	_downloadManager->cancelDownload(downloadTaskId);
+}
+
+
 // copy text to clipboard
 void CR3Renderer::copyToClipboard(lString16 text) {
 	ClipboardItem item;
@@ -313,4 +339,52 @@ void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
     	// double drawing, workaround for Tizen screen update issues
     	concurrencyProvider->executeGui(new CRTizenRedrawEvent(__player));
 	}
+}
+
+
+#define DOWNLOAD_THREADS 1
+CRUIHttpTaskManagerTizen::CRUIHttpTaskManagerTizen(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {
+
+}
+
+CRUIHttpTaskTizen::~CRUIHttpTaskTizen() {
+
+}
+
+void CRUIHttpTaskTizen::OnTransactionAborted (HttpSession &httpSession, HttpTransaction &httpTransaction, result r) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionAborted");
+}
+
+bool CRUIHttpTaskTizen::OnTransactionCertVerificationRequestedN (HttpSession &httpSession, HttpTransaction &httpTransaction, Tizen::Base::Collection::IList *pCertList) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionCertVerificationRequestedN");
+	return true;
+}
+
+void CRUIHttpTaskTizen::OnTransactionCertVerificationRequiredN (HttpSession &httpSession, HttpTransaction &httpTransaction, Tizen::Base::String *pCert) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionCertVerificationRequiredN");
+
+}
+
+void CRUIHttpTaskTizen::OnTransactionCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionCompleted");
+
+}
+
+void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionHeaderCompleted");
+
+}
+
+void CRUIHttpTaskTizen::OnTransactionReadyToRead (HttpSession &httpSession, HttpTransaction &httpTransaction, int availableBodyLen) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToRead");
+
+}
+
+void CRUIHttpTaskTizen::OnTransactionReadyToWrite (HttpSession &httpSession, HttpTransaction &httpTransaction, int recommendedChunkSize) {
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToWrite");
+}
+
+/// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
+void CRUIHttpTaskTizen::doDownload() {
+
 }

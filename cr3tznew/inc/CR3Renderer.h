@@ -14,6 +14,44 @@
 #include "cr3tizen.h"
 #include "cruimain.h"
 #include "gldrawbuf.h"
+#include "FNetHttpIHttpTransactionEventListener.h"
+#include "FNetHttpHttpSession.h"
+#include "FNetHttpHttpTransaction.h"
+
+class CRUIHttpTaskTizen : public CRUIHttpTaskBase
+		, public Tizen::Net::Http::IHttpTransactionEventListener
+{
+
+private:
+    Tizen::Net::Http::HttpSession* __pHttpSession;
+public:
+    int redirectCount;
+
+public:
+    CRUIHttpTaskTizen(CRUIHttpTaskManagerBase * taskManager) : CRUIHttpTaskBase(taskManager), redirectCount(0) {}
+    virtual ~CRUIHttpTaskTizen();
+    /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
+    virtual void doDownload();
+
+
+
+    virtual void OnTransactionAborted (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, result r);
+    virtual bool OnTransactionCertVerificationRequestedN (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, Tizen::Base::Collection::IList *pCertList);
+    virtual void OnTransactionCertVerificationRequiredN (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, Tizen::Base::String *pCert);
+    virtual void OnTransactionCompleted (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction);
+    virtual void OnTransactionHeaderCompleted (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired);
+    virtual void OnTransactionReadyToRead (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int availableBodyLen);
+    virtual void OnTransactionReadyToWrite (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int recommendedChunkSize);
+};
+
+class CRUIHttpTaskManagerTizen : public CRUIHttpTaskManagerBase {
+private:
+public:
+    CRUIHttpTaskManagerTizen(CRUIEventManager * eventManager);
+    /// override to create task of custom type
+    virtual CRUIHttpTaskBase * createTask() { return new CRUIHttpTaskTizen(this); }
+};
+
 
 
 class LVDocView;
@@ -31,6 +69,7 @@ class CR3Renderer
 	CRUIMainWidget * _widget;
 	CRUIEventManager * _eventManager;
 	CRUIEventAdapter * _eventAdapter;
+	CRUIHttpTaskManagerTizen * _downloadManager;
 	GLDrawBuf * _backbuffer;
 	Tizen::Ui::Controls::Keypad * _keypad;
 	bool _keypadShown;
@@ -68,6 +107,11 @@ public:
 	/// minimize app or show Home Screen
 	virtual void minimizeApp();
 
+    /// override to open URL in external browser; returns false if failed or feature not supported by platform
+    virtual bool openLinkInExternalBrowser(lString8 url);
+    /// override to open file in external application; returns false if failed or feature not supported by platform
+    virtual bool openFileInExternalApp(lString8 filename, lString8 mimeType);
+
     // copy text to clipboard
     virtual void copyToClipboard(lString16 text);
 
@@ -79,6 +123,12 @@ public:
     virtual void showVirtualKeyboard(int mode, lString16 text, bool multiline);
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard();
+
+
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs);
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId);
 
     // ITextEventListener
     virtual void OnTextValueChanged(const Tizen::Ui::Control& source);
