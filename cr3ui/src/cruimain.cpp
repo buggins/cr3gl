@@ -411,7 +411,8 @@ void CRUIMainWidget::openBook(const CRFileItem * file) {
         file = dir && dir->itemCount() ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
     } else {
         if (!file->getBook()) {
-            file = dirCache->scanFile(file->getPathName());
+            showMessage(lString16("Cannot open book"), 3000);
+            //file = dirCache->scanFile(file->getPathName());
         }
     }
     if (!file)

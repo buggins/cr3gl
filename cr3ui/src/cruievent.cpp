@@ -727,6 +727,13 @@ void CRUIHttpTaskBase::deleteOutputFile() {
     }
 }
 
+/// returns true if allows to redirect; recreates output file
+bool CRUIHttpTaskBase::canRedirect(lString8 url) {
+    _stream.Clear();
+    deleteOutputFile();
+    return true;
+}
+
 /// call to pass received data to output buffer
 bool CRUIHttpTaskBase::dataReceived(const lUInt8 * data, int len) {
     // TODO: accept data

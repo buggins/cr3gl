@@ -416,6 +416,9 @@ public:
     virtual void closeOutputFile();
     /// if output is being performed to file, delete this file
     virtual void deleteOutputFile();
+
+    /// returns true if allows to redirect; recreates output file
+    virtual bool canRedirect(lString8 url);
 };
 
 class CRUIHttpTaskManagerBase {
