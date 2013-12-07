@@ -598,6 +598,12 @@ CRUIOpdsBookWidget::CRUIOpdsBookWidget(CRUIMainWidget * main, LVClonePtr<CROpdsC
         }
     }
 
+    // fix strange behavior under Tizen
+    CRUIWidget * spacer = new CRUIWidget();
+    spacer->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+    spacer->setMinHeight(deviceInfo.longSide);
+    scroll->addChild(spacer);
+
     updateDirs();
 
     _body->addChild(scroll);

@@ -68,9 +68,10 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
     layout->setPadding(PT_TO_PX(3));
 
 //    // add spacers
-//    CRUIWidget * spacer = new CRUIWidget();
-//    spacer->setLayoutParams(WRAP_CONTENT, FILL_PARENT);
-//    layout->addChild(spacer);
+    CRUIWidget * spacer = new CRUIWidget();
+    spacer->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+    spacer->setMinHeight(deviceInfo.longSide);
+    layout->addChild(spacer);
 //    spacer = new CRUIWidget();
 //    spacer->setLayoutParams(FILL_PARENT, FILL_PARENT);
 //    layout->addChild(spacer);
@@ -79,7 +80,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
 
     _scroll->addChild(layout);
     _body->addChild(_scroll);
-    _body->setStyle("SETTINGS_ITEM_LIST");
+    //_body->setStyle("SETTINGS_ITEM_LIST");
 }
 
 bool CRUIOpdsPropsWidget::onClick(CRUIWidget * widget) {

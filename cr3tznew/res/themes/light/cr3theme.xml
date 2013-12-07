@@ -59,11 +59,11 @@
     >
         <style
             state="pressed" stateMask="pressed"
-            background="0x40C0C080"
+            background="0xA0C0C080"
         />
         <style
             state="focused" stateMask="focused"
-            background="0x40C0C080"
+            background="0xA0C0C080"
         />
         <style
             state="disabled" stateMask="disabled"
