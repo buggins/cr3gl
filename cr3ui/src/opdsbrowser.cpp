@@ -807,6 +807,7 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
     } else if (downloadTaskId == _coverTaskId) {
         LVStreamRef nullref;
         coverPageManager->setExternalImage(_coverTaskBook, result == 0 ? stream : nullref);
+        invalidate();
         _coverTaskId = 0;
         if (_coverTaskBook)
             delete _coverTaskBook;

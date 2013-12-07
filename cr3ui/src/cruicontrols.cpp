@@ -746,6 +746,7 @@ bool CRUIEditWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int action = event->getAction();
     if (!isFocused()) {
         if (action == ACTION_UP) {
+            CRUIEventManager::showVirtualKeyboard(0, getText(), false);
             CRUIEventManager::dispatchFocusChange(this);
         }
         return true;
@@ -859,6 +860,7 @@ void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds, bool changeC
         if (_cursorPos > text.length())
             _cursorPos = text.length();
     }
+    invalidate();
 }
 
 bool CRUIEditWidget::onFocusChange(bool focused) {
@@ -941,6 +943,7 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
                 updateCursor(_cursorPos + eventText.length());
                 if (_passwordChar)
                     CRUIEventManager::setTimer(EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID, this, 500, false);
+                invalidate();
             }
             return true;
         }

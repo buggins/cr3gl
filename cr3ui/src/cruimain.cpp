@@ -526,6 +526,7 @@ void CRUIMainWidget::createReaderSettings() {
 }
 
 void CRUIMainWidget::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
+    //CRLog::trace("showVirtualKeyboard(text = %s)", LCSTR(text));
     if (_keyboard)
         return;
     if (_platform->supportsVirtualKeyboard()) {

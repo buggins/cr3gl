@@ -254,8 +254,14 @@ bool CR3Renderer::isVirtualKeyboardShown() {
 }
 /// show platform native virtual keyboard
 void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
-	if (_keypadShown)
+	String txt(text.c_str());
+	CRLog::trace("CR3Renderer::showVirtualKeyboard text = %s", LCSTR(txt));
+	if (_keypadShown) {
+		CRLog::trace("CR3Renderer::showVirtualKeyboard - already shown");
+		if (_keypad)
+			_keypad->SetText(txt);
 		return;
+	}
 	_keypadShown = true;
     // Creates an instance of Keypad
 	if (!_keypad) {
@@ -266,7 +272,6 @@ void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) 
 		_keypad->AddTextEventListener(*this);
 	}
 	_keypad->SetSingleLineEnabled(!multiline);
-	String txt(text.c_str());
 	_keypad->SetText(txt);
 
     // Changes to desired show state
