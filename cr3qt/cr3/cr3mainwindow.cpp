@@ -379,6 +379,7 @@ void CRUIHttpTaskQt::httpFinished() {
         lString8 redir(redirectUrl.toString().toUtf8().constData());
         CRLog::warn("Redirection to %s", redir.c_str());
         if (redirectCount < 3 && canRedirect(redir)) {
+            redirectCount++;
             _url = redir;
             reply->deleteLater();
             doDownload();

@@ -344,11 +344,12 @@ void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 
 #define DOWNLOAD_THREADS 1
 CRUIHttpTaskManagerTizen::CRUIHttpTaskManagerTizen(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {
-
 }
 
 CRUIHttpTaskTizen::~CRUIHttpTaskTizen() {
-
+	CRLog::trace("~CRUIHttpTaskTizen()");
+	if (__pHttpSession)
+		delete __pHttpSession;
 }
 
 void CRUIHttpTaskTizen::OnTransactionAborted (HttpSession &httpSession, HttpTransaction &httpTransaction, result r) {
@@ -362,22 +363,108 @@ bool CRUIHttpTaskTizen::OnTransactionCertVerificationRequestedN (HttpSession &ht
 
 void CRUIHttpTaskTizen::OnTransactionCertVerificationRequiredN (HttpSession &httpSession, HttpTransaction &httpTransaction, Tizen::Base::String *pCert) {
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionCertVerificationRequiredN");
+	httpTransaction.Resume();
+}
 
+static lString8 getHeaderStringField(HttpHeader* pHttpHeader, const char * field) {
+	//CRLog::trace("Checking header field %s", field);
+	String fieldName(field);
+	Tizen::Base::Collection::IEnumerator * values = pHttpHeader->GetFieldValuesN(fieldName);
+	if (GetLastResult() != E_SUCCESS) {
+		//CRLog::trace("Header field %s not found - exception", field);
+		SetLastResult(E_SUCCESS);
+		return lString8();
+	}
+	if (values && !IsFailed(values->MoveNext())) {
+		String * v = (String*)values->GetCurrent();
+		lString8 res = UnicodeToUtf8(v->GetPointer());
+		CRLog::trace("Header field %s value: %s", field, res.c_str());
+		return res;
+	} else {
+		//CRLog::trace("Header field not found");
+		return lString8();
+	}
 }
 
 void CRUIHttpTaskTizen::OnTransactionCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction) {
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionCompleted");
-
+	HttpResponse* pHttpResponse = null;
+	HttpHeader* pHttpHeader = null;
+	pHttpResponse = httpTransaction.GetResponse();
+	pHttpHeader = pHttpResponse->GetHeader();
+    String statusText = pHttpResponse->GetStatusText();
+    int statusCode = pHttpResponse->GetHttpStatusCode();
+    _result = statusCode == 200 ? 0 : statusCode;
+    _resultMessage = UnicodeToUtf8(statusText.GetPointer());
+    //IList * fieldNames = pHttpHeader->GetFieldNamesN();
+    lString8 location = getHeaderStringField(pHttpHeader, "Location");
+    lString8 contentType = getHeaderStringField(pHttpHeader, "Content-Type");
+    lString8 contentLength = getHeaderStringField(pHttpHeader, "Content-Length");
+    lString8 redir;
+    if (_result == 300 || _result == 301 || _result == 302 || _result == 303 || _result == 307)
+    	redir = location;
+    if (!redir.empty()) {
+    	CRLog::info("Redirection to %s", redir.c_str());
+        if (redirectCount < 3 && canRedirect(redir)) {
+        	redirectCount++;
+            _url = redir;
+            doDownload();
+            return;
+        } else {
+            _result = 1;
+            _resultMessage = "Too many redirections";
+        }
+    }
+    if (!contentType.empty())
+    	_mimeType = contentType;
+    if (!contentLength.empty())
+    	_size = contentLength.atoi();
+    if (!_stream.isNull())
+        _stream->SetPos(0);
+    CRLog::debug("httpFinished(result=%d resultMessage=%s mimeType=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _mimeType.c_str(), _url.c_str());
+    _taskManager->onTaskFinished(this);
 }
 
 void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired) {
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionHeaderCompleted");
-
+	if (bAuthRequired) {
+		HttpTransaction* pTransaction =
+				const_cast<HttpTransaction*>(&httpTransaction);
+		HttpAuthentication* pAuth = pTransaction->OpenAuthenticationInfoN();
+		String basicName(Utf8ToUnicode(_login).c_str());
+		String basicpass(Utf8ToUnicode(_password).c_str());
+		HttpCredentials* pCredential = new HttpCredentials(basicName,
+				basicpass);
+		String* pRealm = pAuth->GetRealmN();
+		NetHttpAuthScheme scheme = pAuth->GetAuthScheme();
+		if (scheme == NET_HTTP_AUTH_WWW_BASIC
+				&& pRealm->CompareTo(L"MyWorld") == 0)
+		HttpTransaction* pNewTransaction = pAuth->SetCredentials(
+				*pCredential);
+	}
 }
 
 void CRUIHttpTaskTizen::OnTransactionReadyToRead (HttpSession &httpSession, HttpTransaction &httpTransaction, int availableBodyLen) {
-	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToRead");
+	ByteBuffer* pBody = null;
+	HttpResponse* pHttpResponse = null;
+	HttpHeader* pHttpHeader = null;
 
+	pHttpResponse = httpTransaction.GetResponse();
+    String statusText = pHttpResponse->GetStatusText();
+    int statusCode = pHttpResponse->GetHttpStatusCode();
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToRead result=%d availableBodyLen=%d", statusCode, availableBodyLen);
+    if (statusCode == HTTP_STATUS_OK)
+    {
+    	pHttpHeader = pHttpResponse->GetHeader();
+    	pBody = pHttpResponse->ReadBodyN();
+    	int len = pBody->GetRemaining();
+    	if (len > 0) {
+			lUInt8 * data = new lUInt8[len];
+			pBody->GetArray(data, 0, len);
+			dataReceived(data, len);
+    	}
+    	delete pBody;
+    }
 }
 
 void CRUIHttpTaskTizen::OnTransactionReadyToWrite (HttpSession &httpSession, HttpTransaction &httpTransaction, int recommendedChunkSize) {
@@ -386,5 +473,32 @@ void CRUIHttpTaskTizen::OnTransactionReadyToWrite (HttpSession &httpSession, Htt
 
 /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
 void CRUIHttpTaskTizen::doDownload() {
+	String* pProxyAddr = null;
+	int p = _url.pos("/", 8);
+	String uri = Utf8ToUnicode(_url).c_str();
+	lString8 host = _url.substr(0, p);
+	String hostAddr = Utf8ToUnicode(host).c_str();//L"http://localhost:port";
+	CRLog::trace("Opening HTTP session for host %s", host.c_str());
 
+	String fieldName, fieldValue;
+	HttpHeader* pHeader = null;
+	HttpTransaction* pHttpTransaction = null;
+	if (!__pHttpSession) {
+		__pHttpSession = new HttpSession();
+		__pHttpSession->Construct(NET_HTTP_SESSION_MODE_NORMAL, pProxyAddr, hostAddr, null);
+	}
+
+	pHttpTransaction = __pHttpSession->OpenTransactionN();
+
+	pHttpTransaction->AddHttpTransactionListener(*this);
+
+	HttpRequest* pHttpRequest = pHttpTransaction->GetRequest();
+
+	pHttpRequest->SetMethod(NET_HTTP_METHOD_GET);
+	pHttpRequest->SetUri(uri);
+
+	pHeader = pHttpRequest->GetHeader();
+	pHeader->AddField(L"Accept", L"image/gif");
+
+	pHttpTransaction->Submit();
 }

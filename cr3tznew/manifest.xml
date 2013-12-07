@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Manifest xmlns="http://schemas.tizen.org/2012/12/manifest">
     <Id>CoolReader</Id>
-    <Version>3.3.11</Version>
+    <Version>3.3.15</Version>
     <Type>C++App</Type>
     <Requirements>
         <Feature Name="http://tizen.org/feature/opengles.version.1_1">true</Feature>
@@ -13,7 +13,9 @@
     </Requirements>
     <Apps>
         <ApiVersion>2.2</ApiVersion>
-        <Privileges/>
+        <Privileges>
+            <Privilege>http://tizen.org/privilege/http</Privilege>
+        </Privileges>
         <UiApp LaunchingHistoryVisible="True" Main="True" MenuIconVisible="True" Name="CoolReader">
             <UiScalability CoordinateSystem="Physical"/>
             <UiTheme SystemTheme="White"/>
