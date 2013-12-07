@@ -79,7 +79,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
 
     _scroll->addChild(layout);
     _body->addChild(_scroll);
-    setStyle("SETTINGS_ITEM_LIST");
+    _body->setStyle("SETTINGS_ITEM_LIST");
 }
 
 bool CRUIOpdsPropsWidget::onClick(CRUIWidget * widget) {

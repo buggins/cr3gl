@@ -11,10 +11,14 @@
 #include "FNetHttpIHttpTransactionEventListener.h"
 #include "FNetHttpHttpSession.h"
 #include "FNetHttpHttpTransaction.h"
-
+#include "FBaseColHashMap.h"
+#include "FAppAppControl.h"
+#include "FAppAppManager.h"
 
 using namespace CRUI;
+using namespace Tizen::App;
 using namespace Tizen::Base;
+using namespace Tizen::Base::Collection;
 using namespace Tizen::Ui;
 using namespace Tizen::Ui::Controls;
 using namespace Tizen::Net::Http;
@@ -214,7 +218,20 @@ void CR3Renderer::minimizeApp() {
 
 /// override to open URL in external browser; returns false if failed or feature not supported by platform
 bool CR3Renderer::openLinkInExternalBrowser(lString8 url) {
-	return false;
+	CRLog::trace("Opening url in external browser: %s", url.c_str());
+	HashMap extraData;
+	extraData.Construct();
+	String urlKey = L"url";
+	String urlVal = Utf8ToUnicode(url).c_str();//L"http://www.tizen.org";
+	extraData.Add(&urlKey, &urlVal);
+
+	AppControl* pAc = AppManager::FindAppControlN(L"tizen.internet",
+			L"http://tizen.org/appcontrol/operation/view");
+	if (pAc) {
+		pAc->Start(null, null, &extraData, null);
+		delete pAc;
+	}
+	return true;
 }
 
 /// override to open file in external application; returns false if failed or feature not supported by platform
@@ -455,6 +472,8 @@ void CRUIHttpTaskTizen::OnTransactionCompleted (HttpSession &httpSession, HttpTr
 
 void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired) {
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionHeaderCompleted");
+	// authentication crashes on tizen. Disabling so far.
+#if 0
 	if (bAuthRequired) {
 		CRLog::warn("Authentication is required");
 		HttpTransaction* pTransaction =
@@ -474,6 +493,7 @@ void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, 
 			CRLog::trace("Realm=%s scheme=%d - comparision not passed", LCSTR(lString16(pRealm->GetPointer())), scheme);
 		}
 	}
+#endif
 }
 
 void CRUIHttpTaskTizen::OnTransactionReadyToRead (HttpSession &httpSession, HttpTransaction &httpTransaction, int availableBodyLen) {
