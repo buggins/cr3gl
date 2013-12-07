@@ -574,8 +574,11 @@ bool CRBookDB::updateOpdsCatalogLastUsage(lInt64 id) {
         return false;
     BookDBCatalog * catalog = _catalogCache.get(id);
     if (catalog) {
+        catalog = catalog->clone();
         catalog->lastUsage = GetCurrentTimeMillis();
-        return saveOpdsCatalog(catalog);
+        bool res = saveOpdsCatalog(catalog);
+        delete catalog;
+        return res;
     }
     return false;
 }

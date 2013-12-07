@@ -135,6 +135,11 @@ public:
     virtual void copyToClipboard(lString16 text);
     /// minimize app or show Home Screen
     virtual void minimizeApp();
+    /// override to open URL in external browser; returns false if failed or feature not supported by platform
+    virtual bool openLinkInExternalBrowser(lString8 url);
+    /// override to open file in external application; returns false if failed or feature not supported by platform
+    virtual bool openFileInExternalApp(lString8 filename, lString8 mimeType);
+
 
     /// returns 0 if not supported, task ID if download task is started
     virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs);

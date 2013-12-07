@@ -40,6 +40,10 @@ public:
 	virtual void minimizeApp() = 0;
     // copy text to clipboard
     virtual void copyToClipboard(lString16 text) = 0;
+    /// override to open URL in external browser; returns false if failed or feature not supported by platform
+    virtual bool openLinkInExternalBrowser(lString8 url) { CR_UNUSED(url); return false; }
+    /// override to open file in external application; returns false if failed or feature not supported by platform
+    virtual bool openFileInExternalApp(lString8 filename, lString8 mimeType) { CR_UNUSED2(filename, mimeType); return false; }
 
     /// return true if platform supports native virtual keyboard
     virtual bool supportsVirtualKeyboard() { return false; }

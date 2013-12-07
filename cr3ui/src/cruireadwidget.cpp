@@ -1765,6 +1765,9 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     CRLog::info("Link pressed: %s", LCSTR(link));
                     if (link.startsWith("http://") || link.startsWith("https://")) {
                         // TODO: support external links
+                        if (!_main->getPlatform()->openLinkInExternalBrowser(UnicodeToUtf8(link))) {
+                            _main->showMessage(lString16("Failed to open link ") + link, 3000);
+                        }
                     } else {
                         _docview->goLink(link);
                         invalidate();

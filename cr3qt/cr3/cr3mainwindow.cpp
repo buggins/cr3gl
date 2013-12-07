@@ -51,6 +51,7 @@
 #include <QNetworkReply>
 #include <QAuthenticator>
 #include <QSslError>
+#include <QDesktopServices>
 
 #include "gldrawbuf.h"
 
@@ -298,6 +299,24 @@ void OpenGLWindow::minimizeApp() {
 
 void OpenGLWindow::exitApp() {
     QApplication::exit();
+}
+
+/// override to open URL in external browser; returns false if failed or feature not supported by platform
+bool OpenGLWindow::openLinkInExternalBrowser(lString8 url) {
+    CRLog::trace("openLinkInExternalBrowser(%s)", url.c_str());
+    QString link = QString::fromUtf8(url.c_str());
+    QUrl linkurl(link);
+    return QDesktopServices::openUrl(linkurl);
+}
+
+/// override to open file in external application; returns false if failed or feature not supported by platform
+bool OpenGLWindow::openFileInExternalApp(lString8 filename, lString8 mimeType) {
+    CR_UNUSED(mimeType);
+    filename = lString8("file:///") + filename;
+    CRLog::trace("openFileInExternalApp(%s)", filename.c_str());
+    QString link = QString::fromUtf8(filename.c_str());
+    QUrl linkurl(link);
+    return QDesktopServices::openUrl(linkurl);
 }
 
 // copy text to clipboard
