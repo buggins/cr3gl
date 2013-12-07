@@ -15,11 +15,13 @@
 #include "cruimain.h"
 #include "gldrawbuf.h"
 #include "FNetHttpIHttpTransactionEventListener.h"
+#include "FNetHttpIHttpProgressEventListener.h"
 #include "FNetHttpHttpSession.h"
 #include "FNetHttpHttpTransaction.h"
 
 class CRUIHttpTaskTizen : public CRUIHttpTaskBase
 		, public Tizen::Net::Http::IHttpTransactionEventListener
+		, public Tizen::Net::Http::IHttpProgressEventListener
 {
 
 private:
@@ -28,13 +30,13 @@ public:
     int redirectCount;
 
 public:
-    CRUIHttpTaskTizen(CRUIHttpTaskManagerBase * taskManager) : CRUIHttpTaskBase(taskManager), redirectCount(0) {}
+    CRUIHttpTaskTizen(CRUIHttpTaskManagerBase * taskManager) : CRUIHttpTaskBase(taskManager), __pHttpSession(NULL), redirectCount(0) {}
     virtual ~CRUIHttpTaskTizen();
     /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
     virtual void doDownload();
 
 
-
+    // transaction listener
     virtual void OnTransactionAborted (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, result r);
     virtual bool OnTransactionCertVerificationRequestedN (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, Tizen::Base::Collection::IList *pCertList);
     virtual void OnTransactionCertVerificationRequiredN (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, Tizen::Base::String *pCert);
@@ -42,6 +44,12 @@ public:
     virtual void OnTransactionHeaderCompleted (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired);
     virtual void OnTransactionReadyToRead (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int availableBodyLen);
     virtual void OnTransactionReadyToWrite (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, int recommendedChunkSize);
+
+
+    // progress listener
+    virtual void  OnHttpDownloadInProgress (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, long long currentLength, long long totalLength);
+    virtual void  OnHttpUploadInProgress (Tizen::Net::Http::HttpSession &httpSession, Tizen::Net::Http::HttpTransaction &httpTransaction, long long currentLength, long long totalLength);
+
 };
 
 class CRUIHttpTaskManagerTizen : public CRUIHttpTaskManagerBase {
@@ -50,6 +58,7 @@ public:
     CRUIHttpTaskManagerTizen(CRUIEventManager * eventManager);
     /// override to create task of custom type
     virtual CRUIHttpTaskBase * createTask() { return new CRUIHttpTaskTizen(this); }
+    virtual void onTaskFinished(CRUIHttpTaskBase * task);
 };
 
 

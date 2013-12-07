@@ -346,10 +346,20 @@ void CR3Renderer::setScreenUpdateMode(bool updateNow, int animationFps) {
 CRUIHttpTaskManagerTizen::CRUIHttpTaskManagerTizen(CRUIEventManager * eventManager) : CRUIHttpTaskManagerBase(eventManager, DOWNLOAD_THREADS) {
 }
 
+void CRUIHttpTaskManagerTizen::onTaskFinished(CRUIHttpTaskBase * task) {
+
+	CRUIHttpTaskManagerBase::onTaskFinished(task);
+	CRLog::trace("Deleting task");
+	delete task;
+}
+
 CRUIHttpTaskTizen::~CRUIHttpTaskTizen() {
 	CRLog::trace("~CRUIHttpTaskTizen()");
-	if (__pHttpSession)
+	if (__pHttpSession) {
+	    __pHttpSession->CloseAllTransactions();
 		delete __pHttpSession;
+	}
+
 }
 
 void CRUIHttpTaskTizen::OnTransactionAborted (HttpSession &httpSession, HttpTransaction &httpTransaction, result r) {
@@ -422,12 +432,17 @@ void CRUIHttpTaskTizen::OnTransactionCompleted (HttpSession &httpSession, HttpTr
     if (!_stream.isNull())
         _stream->SetPos(0);
     CRLog::debug("httpFinished(result=%d resultMessage=%s mimeType=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _mimeType.c_str(), _url.c_str());
+    __pHttpSession->CloseTransaction(httpTransaction);
+    __pHttpSession->CloseAllTransactions();
+    delete __pHttpSession;
+    __pHttpSession = NULL;
     _taskManager->onTaskFinished(this);
 }
 
 void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, HttpTransaction &httpTransaction, int headerLen, bool bAuthRequired) {
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionHeaderCompleted");
 	if (bAuthRequired) {
+		CRLog::warn("Authentication is required");
 		HttpTransaction* pTransaction =
 				const_cast<HttpTransaction*>(&httpTransaction);
 		HttpAuthentication* pAuth = pTransaction->OpenAuthenticationInfoN();
@@ -471,6 +486,21 @@ void CRUIHttpTaskTizen::OnTransactionReadyToWrite (HttpSession &httpSession, Htt
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToWrite");
 }
 
+void  CRUIHttpTaskTizen::OnHttpDownloadInProgress(HttpSession &httpSession, HttpTransaction &httpTransaction, long long currentLength, long long totalLength) {
+	CRLog::trace("CRUIHttpTaskTizen::OnHttpDownloadInProgress(%d of %d)", (int)currentLength, (int)totalLength);
+    _size = (int)totalLength;
+    _sizeDownloaded = (int)currentLength;
+	HttpResponse* pHttpResponse = null;
+	pHttpResponse = httpTransaction.GetResponse();
+    int statusCode = pHttpResponse->GetHttpStatusCode();
+    if (_size > 0 && statusCode == 200)
+        _taskManager->onTaskProgress(this);
+}
+
+void  CRUIHttpTaskTizen::OnHttpUploadInProgress (HttpSession &httpSession, HttpTransaction &httpTransaction, long long currentLength, long long totalLength) {
+	// not used
+}
+
 /// override if you want do main work inside task instead of inside CRUIHttpTaskManagerBase::executeTask
 void CRUIHttpTaskTizen::doDownload() {
 	String* pProxyAddr = null;
@@ -486,11 +516,17 @@ void CRUIHttpTaskTizen::doDownload() {
 	if (!__pHttpSession) {
 		__pHttpSession = new HttpSession();
 		__pHttpSession->Construct(NET_HTTP_SESSION_MODE_NORMAL, pProxyAddr, hostAddr, null);
+		CRLog::trace("enabling auto redirection");
+		__pHttpSession->SetAutoRedirectionEnabled(true);
+	} else {
+		CRLog::trace("closing all transactions");
+		__pHttpSession->CloseAllTransactions();
 	}
 
 	pHttpTransaction = __pHttpSession->OpenTransactionN();
 
 	pHttpTransaction->AddHttpTransactionListener(*this);
+	pHttpTransaction->SetHttpProgressListener(*this);
 
 	HttpRequest* pHttpRequest = pHttpTransaction->GetRequest();
 
@@ -498,7 +534,7 @@ void CRUIHttpTaskTizen::doDownload() {
 	pHttpRequest->SetUri(uri);
 
 	pHeader = pHttpRequest->GetHeader();
-	pHeader->AddField(L"Accept", L"image/gif");
+	pHeader->AddField(L"User-Agent", L"CoolReader/3.3 (Tizen)");
 
 	pHttpTransaction->Submit();
 }

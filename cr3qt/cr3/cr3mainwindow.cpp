@@ -347,7 +347,7 @@ CRUIHttpTaskQt::~CRUIHttpTaskQt() {
 void CRUIHttpTaskQt::doDownload() {
     url.setUrl(QString::fromUtf8(_url.c_str()));
     QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::UserAgentHeader, QVariant(QString("CoolReader/3.0/newui")));
+    request.setHeader(QNetworkRequest::UserAgentHeader, QVariant(QString("CoolReader/3.3 (Qt)")));
     reply = qnam->get(request);
     connect(reply, SIGNAL(finished()),
             this, SLOT(httpFinished()));
@@ -429,7 +429,7 @@ void CRUIHttpTaskQt::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes)
     // progress
     _size = (int)totalBytes;
     _sizeDownloaded = (int)bytesRead;
-    if (_size > 0)
+    if (_size > 0 && _result == 0)
         _taskManager->onTaskProgress(this);
 }
 

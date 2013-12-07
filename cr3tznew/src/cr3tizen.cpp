@@ -302,8 +302,9 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     //String internalPath = Tizen::System::Environment::GetExternalStoragePath();
     lString16 externalPath(Tizen::System::Environment::GetExternalStoragePath().GetPointer());
     deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, lString8("/mnt/ums"));
-    if (!downloadPath.empty())
-    	deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, UnicodeToUtf8(downloadPath)); //lString8("/mnt/ums/Downloads")
+    crconfig.defaultDownloadsDir = UnicodeToUtf8(downloadPath);
+//    if (!downloadPath.empty())
+//    	deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, UnicodeToUtf8(downloadPath)); //lString8("/mnt/ums/Downloads")
     if (!externalPath.empty())
     	deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, UnicodeToUtf8(externalPath));
     //deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
