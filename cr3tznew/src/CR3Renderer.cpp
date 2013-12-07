@@ -40,6 +40,7 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	, __player(NULL)
 	, __playerStarted(true)
 {
+	CRLog::trace("CR3Renderer::CR3Renderer");
 	_eventManager = new CRUIEventManager();
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
 	_downloadManager = new CRUIHttpTaskManagerTizen(_eventManager);
@@ -47,6 +48,7 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	_eventManager->setRootWidget(_widget);
 	_widget->setScreenUpdater(this);
 	_widget->setPlatform(this);
+	CRLog::trace("CR3Renderer::CR3Renderer done");
 }
 
 CR3Renderer::~CR3Renderer(void)

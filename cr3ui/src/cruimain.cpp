@@ -575,6 +575,7 @@ CRUIMainWidget::CRUIMainWidget()
 , _readerSettings(STR_SETTINGS_READER, STR_SETTINGS_READER_DESC, SETTINGS_PATH_READER)
 , _downloadMap(100)
 {
+	CRLog::info("CRUIMainWidget::CRUIMainWidget");
     setId("MAIN");
     _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors

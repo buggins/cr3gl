@@ -259,7 +259,7 @@ lString8 getTizenSystemLang() {
 
 void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	LVSetTizenLogger();
-	CRLog::info("Starting CoolReader");
+	CRLog::info("LVInitCoolReaderTizen: Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
 
 	Tizen::Graphics::Dimension phys = Tizen::Graphics::CoordinateSystem::GetPhysicalResolution();
@@ -271,6 +271,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("Logical resolution: %dx%d  physical resolution %dx%d using dpi=%d", phys.width, phys.height, logical.width, logical.height, dpi);
 	deviceInfo.setScreenDimensions(phys.width, phys.height, dpi);
 
+	CRLog::info("Creating concurrency provider");
 	concurrencyProvider = new TizenConcurrencyProvider(new TizenGuiExecutor());
 
 //	CRLog::trace("testing concurrency provider");
@@ -287,17 +288,21 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 //	CRMonitor * monitor = concurrencyProvider->createMonitor();
 //	monitor->acquire();
 //	monitor->wait();
+	CRLog::info("Initializing language");
 	crconfig.systemLanguage = getTizenSystemLang();
 	CRLog::info("System language: %s", crconfig.systemLanguage.c_str());
 
+	CRLog::info("Initializing font list");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansRegular.ttf");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
 	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 
+	CRLog::info("Setting up resource dirs");
     crconfig.setupUserDir(UnicodeToUtf8(dbDir));
     crconfig.setupResources(UnicodeToUtf8(resourceDir));
 
+	CRLog::info("Checking download path and SD card path");
     lString16 downloadPath(Tizen::System::Environment::GetDefaultDownloadPath().GetPointer());
     //String internalPath = Tizen::System::Environment::GetExternalStoragePath();
     lString16 externalPath(Tizen::System::Environment::GetExternalStoragePath().GetPointer());
@@ -309,6 +314,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     	deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, UnicodeToUtf8(externalPath));
     //deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
 
+	CRLog::info("Calling crconfig.initEngine");
     crconfig.initEngine(false); // don't set logger
 	CRLog::info("Engine initialization done");
 }

@@ -368,6 +368,7 @@ void CRUIConfig::initEngine(bool setLogger) {
 
     HyphMan::initDictionaries(lString16(), true);
 
+    CRLog::info("Opening Book DB");
     bookDB = new CRBookDB();
     if (bookDB->open(dbFile.c_str()))
         CRLog::error("Error while opening DB file");
@@ -375,9 +376,12 @@ void CRUIConfig::initEngine(bool setLogger) {
         CRLog::error("Error while updating DB schema");
     if (!bookDB->fillCaches())
         CRLog::error("Error while filling caches");
+    CRLog::info("Book DB opened");
 
+    CRLog::info("Setting up dir cache manager");
     CRSetupDirectoryCacheManager();
 
+    CRLog::info("Setting up resource resolver");
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2_DARK), lString8("tx_paper_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@oldbook1"), lString8(STR_RESOURCE_BACKGROUND_NAME_OLDBOOK1), lString8("tx_old_book.jpg")));
@@ -397,7 +401,9 @@ void CRUIConfig::initEngine(bool setLogger) {
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1_DARK), lString8("tx_stones_dark.jpg")));
 
+    CRLog::info("Setting theme to Light");
     setTheme(lString8("light"));
+    CRLog::info("Setting up resources");
     setupResourcesForScreenSize();
 }
 
