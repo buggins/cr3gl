@@ -736,7 +736,7 @@ public:
 
 /// download result
 void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
-    CRLog::trace("onDownloadProgress task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, resultMessage.c_str(), size);
+    CRLog::trace("onDownloadResult task=%d url=%s result=%d resultMessage=%s, totalSize=%d", downloadTaskId, url.c_str(), result, resultMessage.c_str(), size);
     if (stream.isNull()) {
         CRLog::trace("No data received");
     } else {
@@ -794,7 +794,7 @@ void CRUIOpdsBrowserWidget::onDownloadResult(int downloadTaskId, lString8 url, i
             }
         } else {
             CRLog::error("Error %d %s", result, resultMessage.c_str());
-            if (result == 204) {
+            if (result == 204 || result == 401) {
                 lString16 errorMsg = lString16("Authentication required. Please specify Login and Password in this catalog settings.");
                 getMain()->showMessage(errorMsg, 4000);
             } else {

@@ -255,7 +255,7 @@ bool CR3Renderer::isVirtualKeyboardShown() {
 /// show platform native virtual keyboard
 void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
 	String txt(text.c_str());
-	CRLog::trace("CR3Renderer::showVirtualKeyboard text = %s", LCSTR(txt));
+	CRLog::trace("CR3Renderer::showVirtualKeyboard text = %s", LCSTR(text));
 	if (_keypadShown) {
 		CRLog::trace("CR3Renderer::showVirtualKeyboard - already shown");
 		if (_keypad)
@@ -270,6 +270,8 @@ void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) 
 		_keypad->SetTextPredictionEnabled(false);
 		// Adds an instance of ITextEventListener
 		_keypad->AddTextEventListener(*this);
+		//CRLog::trace("Adding keypad as control");
+		//_frame->AddControl(_keypad);
 	}
 	_keypad->SetSingleLineEnabled(!multiline);
 	_keypad->SetText(txt);
@@ -278,6 +280,7 @@ void CR3Renderer::showVirtualKeyboard(int mode, lString16 text, bool multiline) 
     _keypad->SetShowState(true);
     _keypad->Show();
 
+	_keypad->SetText(txt);
 }
 
 /// hide platform native virtual keyboard
@@ -286,6 +289,10 @@ void CR3Renderer::hideVirtualKeyboard() {
 		return;
 	_keypadShown = false;
     _keypad->SetShowState(false);
+
+    CRLog::trace("Deleting keypad");
+    delete _keypad; // otherwise, setText does not have an effect
+    _keypad = NULL;
     //Invalidate(true);
 }
 
@@ -297,6 +304,8 @@ void CR3Renderer::OnTextValueChanged(const Tizen::Ui::Control& source) {
 		CRUIKeyEvent * event = new CRUIKeyEvent(KEY_ACTION_RELEASE, CR_KEY_RETURN, false, 1, 0);
 		_eventManager->getFocusedWidget()->onKeyEvent(event);
 		_eventManager->getRootWidget()->update(false);
+		hideVirtualKeyboard();
+		//_keypadShown = false;
 	}
 }
 
@@ -457,10 +466,13 @@ void CRUIHttpTaskTizen::OnTransactionHeaderCompleted (HttpSession &httpSession, 
 				basicpass);
 		String* pRealm = pAuth->GetRealmN();
 		NetHttpAuthScheme scheme = pAuth->GetAuthScheme();
-		if (scheme == NET_HTTP_AUTH_WWW_BASIC
-				&& pRealm->CompareTo(L"MyWorld") == 0)
-		HttpTransaction* pNewTransaction = pAuth->SetCredentials(
-				*pCredential);
+		CRLog::trace("Realm=%s scheme=%d", LCSTR(lString16(pRealm->GetPointer())), scheme);
+		if (scheme == NET_HTTP_AUTH_WWW_BASIC) {// && pRealm->CompareTo(L"MyWorld") == 0) {
+			HttpTransaction* pNewTransaction = pAuth->SetCredentials(*pCredential);
+			CR_UNUSED(pNewTransaction);
+		} else {
+			CRLog::trace("Realm=%s scheme=%d - comparision not passed", LCSTR(lString16(pRealm->GetPointer())), scheme);
+		}
 	}
 }
 
@@ -475,16 +487,21 @@ void CRUIHttpTaskTizen::OnTransactionReadyToRead (HttpSession &httpSession, Http
 	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToRead result=%d availableBodyLen=%d", statusCode, availableBodyLen);
     if (statusCode == HTTP_STATUS_OK)
     {
+    	CRLog::trace("Reading data");
     	pHttpHeader = pHttpResponse->GetHeader();
     	pBody = pHttpResponse->ReadBodyN();
     	int len = pBody->GetRemaining();
+    	CRLog::trace("%d bytes available", len);
     	if (len > 0) {
 			lUInt8 * data = new lUInt8[len];
 			pBody->GetArray(data, 0, len);
+	    	CRLog::trace("saving %d bytes to stream", len);
 			dataReceived(data, len);
+			delete data;
     	}
     	delete pBody;
     }
+	CRLog::trace("CRUIHttpTaskTizen::OnTransactionReadyToRead - exit");
 }
 
 void CRUIHttpTaskTizen::OnTransactionReadyToWrite (HttpSession &httpSession, HttpTransaction &httpTransaction, int recommendedChunkSize) {
