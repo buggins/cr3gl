@@ -244,6 +244,7 @@ NEWUI_FILES += \
     cr3/cr3ui/src/cruihomewidget.cpp \
     cr3/cr3ui/src/cruilayout.cpp \
     cr3/cr3ui/src/cruilist.cpp \
+    cr3/cr3ui/src/cruiscrollwidget.cpp \
     cr3/cr3ui/src/cruireadwidget.cpp \
     cr3/cr3ui/src/cruitheme.cpp \
     cr3/cr3ui/src/cruiwidget.cpp \
@@ -255,6 +256,8 @@ NEWUI_FILES += \
     cr3/cr3ui/src/cruicoverwidget.cpp \
     cr3/cr3ui/src/cruisettingswidget.cpp \
     cr3/cr3ui/src/opdsbrowser.cpp \
+    cr3/cr3ui/src/cruiopdsprops.cpp \
+    cr3/cr3ui/src/cruiopdsbook.cpp \
     cr3/cr3ui/src/vkeyboard.cpp \
     cr3/cr3ui/src/stringresource.cpp
 
