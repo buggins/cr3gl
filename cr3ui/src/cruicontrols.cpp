@@ -864,6 +864,7 @@ void CRUIEditWidget::updateCursor(int pos, bool scrollIfNearBounds, bool changeC
 }
 
 bool CRUIEditWidget::onFocusChange(bool focused) {
+    invalidate();
     cancelScrollTimer();
     if (focused) {
         updateCursor(_text.length());
@@ -877,6 +878,7 @@ bool CRUIEditWidget::onFocusChange(bool focused) {
 
 /// key event handler, returns true if it handled event
 bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
+    invalidate();
     cancelScrollTimer();
     if (event->getType() == KEY_ACTION_PRESS) {
         switch(event->key()) {

@@ -217,6 +217,9 @@ public:
             _button->setState(0, CRUI::STATE_DISABLED);
             _button->setBackgroundAlpha(0);
         } else {
+            if (!LVFileExists(_downloadTmpFilename)) {
+                CRLog::warn("File %s does not exist", _downloadTmpFilename.c_str());
+            }
             renameTempFileToBookFile();
             _progress->setProgress(-1);
             if (!LVFileExists(_downloadFilename)) {

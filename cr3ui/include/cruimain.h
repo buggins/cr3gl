@@ -45,6 +45,8 @@ public:
     /// override to open file in external application; returns false if failed or feature not supported by platform
     virtual bool openFileInExternalApp(lString8 filename, lString8 mimeType) { CR_UNUSED2(filename, mimeType); return false; }
 
+    /// return true if device has hardware keyboard connected
+    virtual bool hasHardwareKeyboard() { return false; }
     /// return true if platform supports native virtual keyboard
     virtual bool supportsVirtualKeyboard() { return false; }
     /// return true if platform native virtual keyboard is shown

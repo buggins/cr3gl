@@ -25,6 +25,7 @@ win32 {
         _CRT_SECURE_NO_WARNINGS \
         CR_EMULATE_GETTEXT=1
     LIBS += -lgdi32
+    RC_FILE = cr3.rc
 }
 !win32 {
     DEFINES += _LINUX=1 \

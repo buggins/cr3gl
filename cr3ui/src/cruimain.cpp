@@ -529,7 +529,9 @@ void CRUIMainWidget::showVirtualKeyboard(int mode, lString16 text, bool multilin
     //CRLog::trace("showVirtualKeyboard(text = %s)", LCSTR(text));
     if (_keyboard)
         return;
-    if (_platform->supportsVirtualKeyboard()) {
+    if (_platform->hasHardwareKeyboard()) {
+        return;
+    } if (_platform->supportsVirtualKeyboard()) {
         if (_platform->isVirtualKeyboardShown())
             return;
         _platform->showVirtualKeyboard(mode, text, multiline);

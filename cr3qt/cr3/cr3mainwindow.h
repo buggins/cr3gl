@@ -146,6 +146,8 @@ public:
     /// cancel specified download task
     virtual void cancelDownload(int downloadTaskId);
 
+    /// return true if device has hardware keyboard connected
+    virtual bool hasHardwareKeyboard() { return true; }
 
 public slots:
     void renderLater();
