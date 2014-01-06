@@ -35,6 +35,9 @@ protected:
         	AppLogInternal("", 0, "%s", buf);
         else
         	AppLogDebugInternal("", 0, "%s", buf);
+        if (!strcmp("FATAL", level)) {
+        	assert(0);
+        }
     }
 public:
     CRTizenLogger()

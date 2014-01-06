@@ -73,7 +73,7 @@ protected:
     CRUIMainWidget * main;
     CRUIWindowWidget * widget;
 public:
-    virtual void setDirectory(CRDirCacheItem * item) { CR_UNUSED(item); }
+    //virtual void setDirectory(CRDirCacheItem * item) { CR_UNUSED(item); }
     virtual const lString8 & getPathName() { return lString8::empty_str; }
     virtual VIEW_MODE getMode() = 0;
     virtual CRUIWindowWidget * getWidget() { return widget; }
