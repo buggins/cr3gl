@@ -106,6 +106,18 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
 
 static int translateKeyCode(int key) {
     switch(key) {
+    case Qt::Key_F1: return CR_KEY_F1;
+    case Qt::Key_F2: return CR_KEY_F2;
+    case Qt::Key_F3: return CR_KEY_F3;
+    case Qt::Key_F4: return CR_KEY_F4;
+    case Qt::Key_F5: return CR_KEY_F5;
+    case Qt::Key_F6: return CR_KEY_F6;
+    case Qt::Key_F7: return CR_KEY_F7;
+    case Qt::Key_F8: return CR_KEY_F8;
+    case Qt::Key_F9: return CR_KEY_F9;
+    case Qt::Key_F10: return CR_KEY_F10;
+    case Qt::Key_F11: return CR_KEY_F11;
+    case Qt::Key_F12: return CR_KEY_F12;
     case Qt::Key_0: return CR_KEY_0;
     case Qt::Key_1: return CR_KEY_1;
     case Qt::Key_2: return CR_KEY_2;
@@ -181,14 +193,16 @@ QOpenGLFunctions * _qtgl = NULL;
 #include "cruiconfig.h"
 
 void InitCREngine(lString16 exePath) {
-    CRLog::setStderrLogger();
-    CRLog::setLogLevel(CRLog::LL_TRACE);
-    // fill config parameters
-
     // Logger
 #ifdef _WIN32
     crconfig.logFile = UnicodeToUtf8(exePath + L"cr3.log");
+    CRLog::setFileLogger(crconfig.logFile.c_str(), true);
+#else
+    CRLog::setStderrLogger();
 #endif
+    CRLog::setLogLevel(CRLog::LL_TRACE);
+    // fill config parameters
+
     // Concurrency
     concurrencyProvider = new QtConcurrencyProvider();
 
@@ -305,6 +319,6 @@ void InitCREngine(lString16 exePath) {
 #endif
 
     // init
-    crconfig.initEngine();
+    crconfig.initEngine(false);
 }
 

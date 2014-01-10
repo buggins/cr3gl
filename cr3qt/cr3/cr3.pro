@@ -24,7 +24,10 @@ win32 {
         WIN32=1 \
         _CRT_SECURE_NO_WARNINGS \
         CR_EMULATE_GETTEXT=1
-    LIBS += -lgdi32
+    LIBS += -lgdi32 -Lc:/Qt/OpenSSL/lib
+#    debug:LIBS += -lQt5PlatformSupportd -lQt5Cored
+#    !debug:LIBS += -lQt5PlatformSupport -lQt5Core
+    LIBS += -lQt5PlatformSupport -lQt5Core
     RC_FILE = cr3.rc
 }
 !win32 {
@@ -33,9 +36,9 @@ win32 {
     INCLUDEPATH += /usr/include/freetype2
 }
 
-debug:DEFINES += _DEBUG=1 DEBUG=1
-!debug:DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
-#DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
+#debug:DEFINES += _DEBUG=1 DEBUG=1
+#!debug:DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
+DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
 
 DEFINES += USE_FREETYPE=1 \
     COLOR_BACKBUFFER=1 \
@@ -142,143 +145,147 @@ HEADERS += \
     ../../../cr3/crengine/include/lvautoptr.h
 
 
-!win32 {
+#!win32 {
     unix:LIBS += -ljpeg
-    win32:LIBS += libjpeg.lib
-}
+#    win32:LIBS += libjpeg.lib
+#}
 win32 {
-    INCLUDEPATH += ../../../cr3/thirdparty/libjpeg
-    SOURCES += ../../../cr3/thirdparty/libjpeg/jcapimin.c \
-        ../../../cr3/thirdparty/libjpeg/jcapistd.c \
-        ../../../cr3/thirdparty/libjpeg/jccoefct.c \
-        ../../../cr3/thirdparty/libjpeg/jccolor.c \
-        ../../../cr3/thirdparty/libjpeg/jcdctmgr.c \
-        ../../../cr3/thirdparty/libjpeg/jchuff.c \
-        ../../../cr3/thirdparty/libjpeg/jcinit.c \
-        ../../../cr3/thirdparty/libjpeg/jcmainct.c \
-        ../../../cr3/thirdparty/libjpeg/jcmarker.c \
-        ../../../cr3/thirdparty/libjpeg/jcmaster.c \
-        ../../../cr3/thirdparty/libjpeg/jcomapi.c \
-        ../../../cr3/thirdparty/libjpeg/jcparam.c \
-        ../../../cr3/thirdparty/libjpeg/jcphuff.c \
-        ../../../cr3/thirdparty/libjpeg/jcprepct.c \
-        ../../../cr3/thirdparty/libjpeg/jcsample.c \
-        ../../../cr3/thirdparty/libjpeg/jctrans.c \
-        ../../../cr3/thirdparty/libjpeg/jdapimin.c \
-        ../../../cr3/thirdparty/libjpeg/jdapistd.c \
-        ../../../cr3/thirdparty/libjpeg/jdatadst.c \
-        ../../../cr3/thirdparty/libjpeg/jdatasrc.c \
-        ../../../cr3/thirdparty/libjpeg/jdcoefct.c \
-        ../../../cr3/thirdparty/libjpeg/jdcolor.c \
-        ../../../cr3/thirdparty/libjpeg/jddctmgr.c \
-        ../../../cr3/thirdparty/libjpeg/jdhuff.c \
-        ../../../cr3/thirdparty/libjpeg/jdinput.c \
-        ../../../cr3/thirdparty/libjpeg/jdmainct.c \
-        ../../../cr3/thirdparty/libjpeg/jdmarker.c \
-        ../../../cr3/thirdparty/libjpeg/jdmaster.c \
-        ../../../cr3/thirdparty/libjpeg/jdmerge.c \
-        ../../../cr3/thirdparty/libjpeg/jdphuff.c \
-        ../../../cr3/thirdparty/libjpeg/jdpostct.c \
-        ../../../cr3/thirdparty/libjpeg/jdsample.c \
-        ../../../cr3/thirdparty/libjpeg/jdtrans.c \
-        ../../../cr3/thirdparty/libjpeg/jerror.c \
-        ../../../cr3/thirdparty/libjpeg/jfdctflt.c \
-        ../../../cr3/thirdparty/libjpeg/jfdctfst.c \
-        ../../../cr3/thirdparty/libjpeg/jfdctint.c \
-        ../../../cr3/thirdparty/libjpeg/jidctflt.c \
-        ../../../cr3/thirdparty/libjpeg/jidctfst.c \
-        ../../../cr3/thirdparty/libjpeg/jidctint.c \
-        ../../../cr3/thirdparty/libjpeg/jidctred.c \
-        ../../../cr3/thirdparty/libjpeg/jmemmgr.c \
-        ../../../cr3/thirdparty/libjpeg/jquant1.c \
-        ../../../cr3/thirdparty/libjpeg/jquant2.c \
-        ../../../cr3/thirdparty/libjpeg/jutils.c \
-        ../../../cr3/thirdparty/libjpeg/jmemnobs.c
+    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\libjpeg
+#    INCLUDEPATH += ../../../cr3/thirdparty/libjpeg
+#    SOURCES += ../../../cr3/thirdparty/libjpeg/jcapimin.c \
+#        ../../../cr3/thirdparty/libjpeg/jcapistd.c \
+#        ../../../cr3/thirdparty/libjpeg/jccoefct.c \
+#        ../../../cr3/thirdparty/libjpeg/jccolor.c \
+#        ../../../cr3/thirdparty/libjpeg/jcdctmgr.c \
+#        ../../../cr3/thirdparty/libjpeg/jchuff.c \
+#        ../../../cr3/thirdparty/libjpeg/jcinit.c \
+#        ../../../cr3/thirdparty/libjpeg/jcmainct.c \
+#        ../../../cr3/thirdparty/libjpeg/jcmarker.c \
+#        ../../../cr3/thirdparty/libjpeg/jcmaster.c \
+#        ../../../cr3/thirdparty/libjpeg/jcomapi.c \
+#        ../../../cr3/thirdparty/libjpeg/jcparam.c \
+#        ../../../cr3/thirdparty/libjpeg/jcphuff.c \
+#        ../../../cr3/thirdparty/libjpeg/jcprepct.c \
+#        ../../../cr3/thirdparty/libjpeg/jcsample.c \
+#        ../../../cr3/thirdparty/libjpeg/jctrans.c \
+#        ../../../cr3/thirdparty/libjpeg/jdapimin.c \
+#        ../../../cr3/thirdparty/libjpeg/jdapistd.c \
+#        ../../../cr3/thirdparty/libjpeg/jdatadst.c \
+#        ../../../cr3/thirdparty/libjpeg/jdatasrc.c \
+#        ../../../cr3/thirdparty/libjpeg/jdcoefct.c \
+#        ../../../cr3/thirdparty/libjpeg/jdcolor.c \
+#        ../../../cr3/thirdparty/libjpeg/jddctmgr.c \
+#        ../../../cr3/thirdparty/libjpeg/jdhuff.c \
+#        ../../../cr3/thirdparty/libjpeg/jdinput.c \
+#        ../../../cr3/thirdparty/libjpeg/jdmainct.c \
+#        ../../../cr3/thirdparty/libjpeg/jdmarker.c \
+#        ../../../cr3/thirdparty/libjpeg/jdmaster.c \
+#        ../../../cr3/thirdparty/libjpeg/jdmerge.c \
+#        ../../../cr3/thirdparty/libjpeg/jdphuff.c \
+#        ../../../cr3/thirdparty/libjpeg/jdpostct.c \
+#        ../../../cr3/thirdparty/libjpeg/jdsample.c \
+#        ../../../cr3/thirdparty/libjpeg/jdtrans.c \
+#        ../../../cr3/thirdparty/libjpeg/jerror.c \
+#        ../../../cr3/thirdparty/libjpeg/jfdctflt.c \
+#        ../../../cr3/thirdparty/libjpeg/jfdctfst.c \
+#        ../../../cr3/thirdparty/libjpeg/jfdctint.c \
+#        ../../../cr3/thirdparty/libjpeg/jidctflt.c \
+#        ../../../cr3/thirdparty/libjpeg/jidctfst.c \
+#        ../../../cr3/thirdparty/libjpeg/jidctint.c \
+#        ../../../cr3/thirdparty/libjpeg/jidctred.c \
+#        ../../../cr3/thirdparty/libjpeg/jmemmgr.c \
+#        ../../../cr3/thirdparty/libjpeg/jquant1.c \
+#        ../../../cr3/thirdparty/libjpeg/jquant2.c \
+#        ../../../cr3/thirdparty/libjpeg/jutils.c \
+#        ../../../cr3/thirdparty/libjpeg/jmemnobs.c
 }
-!win32 {
+#!win32 {
     unix:LIBS += -lpng
-    win32:LIBS += libpng.lib
-}
+#    win32:LIBS += libpng.lib
+#}
 win32 {
-    INCLUDEPATH += ../../../cr3/thirdparty/libpng
-    SOURCES += ../../../cr3/thirdparty/libpng/png.c \
-        ../../../cr3/thirdparty/libpng/pngset.c \
-        ../../../cr3/thirdparty/libpng/pngget.c \
-        ../../../cr3/thirdparty/libpng/pngrutil.c \
-        ../../../cr3/thirdparty/libpng/pngtrans.c \
-        ../../../cr3/thirdparty/libpng/pngwutil.c \
-        ../../../cr3/thirdparty/libpng/pngread.c \
-        ../../../cr3/thirdparty/libpng/pngrio.c \
-        ../../../cr3/thirdparty/libpng/pngwio.c \
-        ../../../cr3/thirdparty/libpng/pngwrite.c \
-        ../../../cr3/thirdparty/libpng/pngrtran.c \
-        ../../../cr3/thirdparty/libpng/pngwtran.c \
-        ../../../cr3/thirdparty/libpng/pngmem.c \
-        ../../../cr3/thirdparty/libpng/pngerror.c \
-        ../../../cr3/thirdparty/libpng/pngpread.c
+#    INCLUDEPATH += ../../../cr3/thirdparty/libpng
+    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\libpng
+#    SOURCES += ../../../cr3/thirdparty/libpng/png.c \
+#        ../../../cr3/thirdparty/libpng/pngset.c \
+#        ../../../cr3/thirdparty/libpng/pngget.c \
+#        ../../../cr3/thirdparty/libpng/pngrutil.c \
+#        ../../../cr3/thirdparty/libpng/pngtrans.c \
+#        ../../../cr3/thirdparty/libpng/pngwutil.c \
+#        ../../../cr3/thirdparty/libpng/pngread.c \
+#        ../../../cr3/thirdparty/libpng/pngrio.c \
+#        ../../../cr3/thirdparty/libpng/pngwio.c \
+#        ../../../cr3/thirdparty/libpng/pngwrite.c \
+#        ../../../cr3/thirdparty/libpng/pngrtran.c \
+#        ../../../cr3/thirdparty/libpng/pngwtran.c \
+#        ../../../cr3/thirdparty/libpng/pngmem.c \
+#        ../../../cr3/thirdparty/libpng/pngerror.c \
+#        ../../../cr3/thirdparty/libpng/pngpread.c
 }
-!win32 {
+#!win32 {
     unix:LIBS += -lfreetype -lfontconfig
-    win32:LIBS += libfreetype.lib
-}
+#    win32:LIBS += libfreetype.lib
+#}
 win32 {
     DEFINES += FT2_BUILD_LIBRARY=1
-    INCLUDEPATH += ../../../cr3/thirdparty/freetype/include
-    SOURCES += ../../../cr3/thirdparty/freetype/src/autofit/autofit.c \
-        ../../../cr3/thirdparty/freetype/src/bdf/bdf.c \
-        ../../../cr3/thirdparty/freetype/src/cff/cff.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftbase.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftbbox.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftbdf.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftbitmap.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftgasp.c \
-        ../../../cr3/thirdparty/freetype/src/cache/ftcache.c \
-        ../../../cr3/thirdparty/freetype/builds/win32/ftdebug.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftglyph.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftgxval.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftinit.c \
-        ../../../cr3/thirdparty/freetype/src/lzw/ftlzw.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftmm.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftotval.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftpfr.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftstroke.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftsynth.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftsystem.c \
-        ../../../cr3/thirdparty/freetype/src/base/fttype1.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftwinfnt.c \
-        ../../../cr3/thirdparty/freetype/src/base/ftxf86.c \
-        ../../../cr3/thirdparty/freetype/src/pcf/pcf.c \
-        ../../../cr3/thirdparty/freetype/src/pfr/pfr.c \
-        ../../../cr3/thirdparty/freetype/src/psaux/psaux.c \
-        ../../../cr3/thirdparty/freetype/src/pshinter/pshinter.c \
-        ../../../cr3/thirdparty/freetype/src/psnames/psmodule.c \
-        ../../../cr3/thirdparty/freetype/src/raster/raster.c \
-        ../../../cr3/thirdparty/freetype/src/sfnt/sfnt.c \
-        ../../../cr3/thirdparty/freetype/src/smooth/smooth.c \
-        ../../../cr3/thirdparty/freetype/src/truetype/truetype.c \
-        ../../../cr3/thirdparty/freetype/src/type1/type1.c \
-        ../../../cr3/thirdparty/freetype/src/cid/type1cid.c \
-        ../../../cr3/thirdparty/freetype/src/type42/type42.c \
-        ../../../cr3/thirdparty/freetype/src/winfonts/winfnt.c
+#    INCLUDEPATH += ../../../cr3/thirdparty/freetype/include
+    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\freetype\include
+#    SOURCES += ../../../cr3/thirdparty/freetype/src/autofit/autofit.c \
+#        ../../../cr3/thirdparty/freetype/src/bdf/bdf.c \
+#        ../../../cr3/thirdparty/freetype/src/cff/cff.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftbase.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftbbox.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftbdf.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftbitmap.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftgasp.c \
+#        ../../../cr3/thirdparty/freetype/src/cache/ftcache.c \
+#        ../../../cr3/thirdparty/freetype/builds/win32/ftdebug.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftglyph.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftgxval.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftinit.c \
+#        ../../../cr3/thirdparty/freetype/src/lzw/ftlzw.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftmm.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftotval.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftpfr.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftstroke.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftsynth.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftsystem.c \
+#        ../../../cr3/thirdparty/freetype/src/base/fttype1.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftwinfnt.c \
+#        ../../../cr3/thirdparty/freetype/src/base/ftxf86.c \
+#        ../../../cr3/thirdparty/freetype/src/pcf/pcf.c \
+#        ../../../cr3/thirdparty/freetype/src/pfr/pfr.c \
+#        ../../../cr3/thirdparty/freetype/src/psaux/psaux.c \
+#        ../../../cr3/thirdparty/freetype/src/pshinter/pshinter.c \
+#        ../../../cr3/thirdparty/freetype/src/psnames/psmodule.c \
+#        ../../../cr3/thirdparty/freetype/src/raster/raster.c \
+#        ../../../cr3/thirdparty/freetype/src/sfnt/sfnt.c \
+#        ../../../cr3/thirdparty/freetype/src/smooth/smooth.c \
+#        ../../../cr3/thirdparty/freetype/src/truetype/truetype.c \
+#        ../../../cr3/thirdparty/freetype/src/type1/type1.c \
+#        ../../../cr3/thirdparty/freetype/src/cid/type1cid.c \
+#        ../../../cr3/thirdparty/freetype/src/type42/type42.c \
+#        ../../../cr3/thirdparty/freetype/src/winfonts/winfnt.c
 }
-!win32 {
+#!win32 {
     unix:LIBS += -lz
-    win32:LIBS += libz.lib
-}
+#    win32:LIBS += libz.lib
+#}
 win32 {
-    INCLUDEPATH += ../../../cr3/thirdparty/zlib
-    SOURCES += ../../../cr3/thirdparty/zlib/adler32.c \
-        ../../../cr3/thirdparty/zlib/compress.c \
-        ../../../cr3/thirdparty/zlib/crc32.c \
-        ../../../cr3/thirdparty/zlib/gzio.c \
-        ../../../cr3/thirdparty/zlib/uncompr.c \
-        ../../../cr3/thirdparty/zlib/deflate.c \
-        ../../../cr3/thirdparty/zlib/trees.c \
-        ../../../cr3/thirdparty/zlib/zutil.c \
-        ../../../cr3/thirdparty/zlib/inflate.c \
-        ../../../cr3/thirdparty/zlib/infback.c \
-        ../../../cr3/thirdparty/zlib/inftrees.c \
-        ../../../cr3/thirdparty/zlib/inffast.c
+    #INCLUDEPATH += ../../../cr3/thirdparty/zlib
+    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\zlib
+#    SOURCES += ../../../cr3/thirdparty/zlib/adler32.c \
+#        ../../../cr3/thirdparty/zlib/compress.c \
+#        ../../../cr3/thirdparty/zlib/crc32.c \
+#        ../../../cr3/thirdparty/zlib/gzio.c \
+#        ../../../cr3/thirdparty/zlib/uncompr.c \
+#        ../../../cr3/thirdparty/zlib/deflate.c \
+#        ../../../cr3/thirdparty/zlib/trees.c \
+#        ../../../cr3/thirdparty/zlib/zutil.c \
+#        ../../../cr3/thirdparty/zlib/inflate.c \
+#        ../../../cr3/thirdparty/zlib/infback.c \
+#        ../../../cr3/thirdparty/zlib/inftrees.c \
+#        ../../../cr3/thirdparty/zlib/inffast.c
 }
 
 SOURCES += \

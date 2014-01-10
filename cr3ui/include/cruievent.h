@@ -157,6 +157,19 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_8 '8'
 #define CR_KEY_9 '9'
 
+#define CR_KEY_F1 0x401
+#define CR_KEY_F2 0x402
+#define CR_KEY_F3 0x403
+#define CR_KEY_F4 0x404
+#define CR_KEY_F5 0x405
+#define CR_KEY_F6 0x406
+#define CR_KEY_F7 0x407
+#define CR_KEY_F8 0x408
+#define CR_KEY_F9 0x409
+#define CR_KEY_F10 0x40A
+#define CR_KEY_F11 0x40B
+#define CR_KEY_F12 0x40C
+
 #define CR_KEY_A 'A'
 #define CR_KEY_B 'B'
 #define CR_KEY_C 'C'

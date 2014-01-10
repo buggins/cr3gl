@@ -647,7 +647,7 @@ CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager
 
     LVStreamRef stream = coverCache->getStream(_book->getCoverPathName());
     LVImageSourceRef image;
-    if (!stream.isNull()) {
+    if (!stream.isNull() && stream->GetSize() != 0) {
         image = LVCreateStreamImageSource(stream);
     }
 

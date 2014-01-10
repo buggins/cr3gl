@@ -314,6 +314,7 @@ public:
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
     void postUpdatePosition(int delay = 1000);
+    void onScrollAnimationStop();
 
     /// overriden to treat popup as first child
     virtual int getChildCount();

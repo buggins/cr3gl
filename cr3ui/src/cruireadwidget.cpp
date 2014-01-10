@@ -997,6 +997,18 @@ CRUIWidget * CRUIReadWidget::getChild(int index) {
     return _popupControl.popup;
 }
 
+void CRUIReadWidget::onScrollAnimationStop() {
+    if (_viewMode == DVM_PAGES && !_scroll.isCancelled()) {
+        CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
+        _docview->goToPage(_pagedCache.getNewPage(), true);
+//            if (_scroll.dir() > 0)
+//                _docview->doCommand(DCMD_PAGEDOWN, 1);
+//            else if (_scroll.dir() < 0)
+//                _docview->doCommand(DCMD_PAGEUP, 1);
+    }
+    postUpdatePosition();
+}
+
 void CRUIReadWidget::animate(lUInt64 millisPassed) {
     if (_locked) {
         if (_scroll.isActive())
@@ -1023,15 +1035,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
         }
     }
     if (scrollWasActive && !_scroll.isActive()) {
-        if (_viewMode == DVM_PAGES && !_scroll.isCancelled()) {
-            CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
-            _docview->goToPage(_pagedCache.getNewPage(), true);
-//            if (_scroll.dir() > 0)
-//                _docview->doCommand(DCMD_PAGEDOWN, 1);
-//            else if (_scroll.dir() < 0)
-//                _docview->doCommand(DCMD_PAGEUP, 1);
-        }
-        postUpdatePosition();
+        onScrollAnimationStop();
     }
 }
 
@@ -1163,9 +1167,26 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     }
     bool longPress = event->getDownDuration() > 500;
     if (event->getType() == KEY_ACTION_RELEASE) {
-        if (_scroll.isActive())
-            _scroll.stop();
         switch(key) {
+        case CR_KEY_PGDOWN:
+        case CR_KEY_SPACE:
+        case CR_KEY_PGUP:
+        case CR_KEY_HOME:
+        case CR_KEY_END:
+        case CR_KEY_UP:
+        case CR_KEY_DOWN:
+        case CR_KEY_LEFT:
+        case CR_KEY_RIGHT:
+            return true;
+        default:
+            break;
+        }
+        if (_scroll.isActive()) {
+            _scroll.stop();
+            onScrollAnimationStop();
+        }
+        switch(key) {
+        case CR_KEY_F9:
         case CR_KEY_MENU:
             if (longPress)
                 _main->showSettings(lString8("@settings/reader"));
@@ -1187,8 +1208,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     }
 
     if (event->getType() == KEY_ACTION_PRESS) {
-        if (_scroll.isActive())
+        if (_scroll.isActive()) {
             _scroll.stop();
+            onScrollAnimationStop();
+        }
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_PGDOWN:
@@ -1201,18 +1224,20 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
             invalidate();
             return true;
         case CR_KEY_HOME:
-            _docview->doCommand(DCMD_BEGIN);
+            doCommand(DCMD_BEGIN);
             invalidate();
             return true;
         case CR_KEY_END:
-            _docview->doCommand(DCMD_END);
+            doCommand(DCMD_END);
             invalidate();
             return true;
+        case CR_KEY_LEFT:
         case CR_KEY_UP:
             doCommand(DCMD_LINEUP, 1);
             invalidate();
             return true;
         case CR_KEY_DOWN:
+        case CR_KEY_RIGHT:
             doCommand(DCMD_LINEDOWN, 1);
             invalidate();
             return true;
@@ -1222,7 +1247,9 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
 //            invalidate();
 //            return true;
         case CR_KEY_MENU:
-        	return true;
+        case CR_KEY_RETURN:
+        case CR_KEY_F9:
+            return true;
         default:
             break;
         }
@@ -1669,12 +1696,15 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     case ACTION_DOWN:
         if (_scroll.isActive()) {
             _scroll.stop();
-            if (_viewMode == DVM_PAGES && !_scroll.isCancelled())
-                _docview->goToPage(_pagedCache.getNewPage());
-            event->cancelAllPointers();
-            _isDragging = false;
-            invalidate();
-            return true;
+            onScrollAnimationStop();
+//            if (_viewMode == DVM_PAGES && !_scroll.isCancelled())
+//                _docview->goToPage(_pagedCache.getNewPage());
+            if (_isDragging) {
+                event->cancelAllPointers();
+                _isDragging = false;
+                invalidate();
+                return true;
+            }
         }
         _isDragging = false;
         _dragStart.x = event->getX();
