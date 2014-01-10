@@ -147,6 +147,7 @@ static int translateKeyCode(int key) {
     case Qt::Key_Delete: return CR_KEY_DELETE;
     case Qt::Key_Backspace: return CR_KEY_BACKSPACE;
     case Qt::Key_Back: return CR_KEY_BACK;
+    case Qt::Key_Tab: return CR_KEY_TAB;
     default:
         return 0;
     }
@@ -318,6 +319,7 @@ void InitCREngine(lString16 exePath) {
     }
 #endif
 
+    crconfig.touchMode = false;
     // init
     crconfig.initEngine(false);
 }

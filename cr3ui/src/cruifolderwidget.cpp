@@ -255,6 +255,7 @@ public:
     }
 
     CRUIFileListWidget(CRUIFolderWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent) {
+        setId("FILE_LIST");
 		setLayoutParams(FILL_PARENT, FILL_PARENT);
 		//setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
@@ -379,6 +380,7 @@ CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(mai
     _fileList = new CRUIFileListWidget(this);
 	_body->addChild(_fileList);
     _fileList->setOnItemClickListener(this);
+    setDefaultWidget(_fileList);
 }
 
 bool CRUIFolderWidget::onClick(CRUIWidget * widget) {
@@ -520,7 +522,7 @@ bool CRUIFolderWidget::onKeyEvent(const CRUIKeyEvent * event) {
         	return true;
         }
     }
-    return false;
+    return CRUIWindowWidget::onKeyEvent(event);
 }
 
 /// motion event handler, returns true if it handled event

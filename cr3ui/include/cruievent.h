@@ -216,6 +216,8 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_DELETE 0x119
 #define CR_KEY_BACKSPACE 0x11A
 
+#define CR_KEY_TAB 0x11B
+
 #define CR_KEY_RETURN 0x120
 
 #define CR_KEY_BACK 0x130

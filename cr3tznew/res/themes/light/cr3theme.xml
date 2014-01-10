@@ -81,7 +81,12 @@
         background="tx_wood_v3.jpg|tiled"
         background2="list_shadow_vertical.9"
         listDelimiterVertical="divider_light_v3"
-    />
+    >
+        <style
+            state="focused" stateMask="focused"
+            background2="list_shadow_vertical_focused.9"
+        />
+    </style>
     <style
         id = "HOME_LIST_CAPTION"
         textColor="0x00402000"

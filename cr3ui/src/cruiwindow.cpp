@@ -1,6 +1,7 @@
 #include "cruiwindow.h"
 #include "crui.h"
 #include "cruimain.h"
+#include "cruiconfig.h"
 
 using namespace CRUI;
 
@@ -23,9 +24,168 @@ CRUIWidget * CRUIWindowWidget::getChild(int index) {
     return _popupControl.popup;
 }
 
+/// sets widget as default for focus
+void CRUIWindowWidget::setDefaultWidget(CRUIWidget * widget) {
+    if (!widget) {
+        _defaultControlId.clear();
+        return;
+    }
+    lString8 id = widget->getId();
+    _defaultControlId = id;
+}
+
+/// returns default widget for window, NULL if not found or deleted
+CRUIWidget * CRUIWindowWidget::getDefaultWidget() {
+    if (_defaultControlId.empty())
+        return NULL;
+    return childById(_defaultControlId);
+}
+
+/// returns focused widget inside window, NULL if not found
+CRUIWidget * CRUIWindowWidget::getFocusedWidget() {
+    CRUIWidget * res = CRUIEventManager::getFocusedWidget();
+    if (isChild(res))
+        return res;
+    return NULL;
+}
+
+static bool isBetterDistance(int bestd, int newd) {
+    if (bestd >= 0 && newd < 0)
+        return false;
+    if (bestd < 0 && newd >= 0)
+        return true;
+    if (bestd < 0 && newd < 0)
+        return bestd > newd; // turn around
+    // both positive
+    return bestd > newd;
+}
+
+static bool smallDist(int n1, int n2) {
+    int d = n1 - n2;
+    return (d <= MIN_ITEM_PX / 10 || d >= - MIN_ITEM_PX / 10);
+}
+
+static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & bestpos, lvRect & newpos) {
+    int dx = newpos.left - currpos.left;
+    int dy = newpos.top - currpos.top;
+    int bdx = bestpos.left - currpos.left;
+    int bdy = bestpos.top - currpos.top;
+    switch(op) {
+    case FOCUS_PREV:
+    case FOCUS_LEFT:
+        if (smallDist(dy, bdy)) {
+            // on the same line
+            return isBetterDistance(-bdx, -dx);
+        } else {
+            // different lines
+            return isBetterDistance(-(bdx + bdy * 1000), -(dx + dy * 1000));
+        }
+    case FOCUS_NEXT:
+    case FOCUS_RIGHT:
+        if (smallDist(dy, bdy)) {
+            // on the same line
+            return isBetterDistance(bdx, dx);
+        } else {
+            // different lines
+            return isBetterDistance((bdx + bdy * 1000), (dx + dy * 1000));
+        }
+    case FOCUS_UP:
+        if (smallDist(dx, bdx)) {
+            // on the same line
+            return isBetterDistance(-bdy, -dy);
+        } else {
+            // different lines
+            return isBetterDistance(-(bdy + bdx * 1000), -(dy + dx * 1000));
+        }
+    case FOCUS_DOWN:
+        if (smallDist(dx, bdx)) {
+            // on the same line
+            return isBetterDistance(bdy, dy);
+        } else {
+            // different lines
+            return isBetterDistance((bdy + bdx * 1000), (dy + dx * 1000));
+        }
+    default:
+        return false;
+    }
+}
+
+void CRUIWindowWidget::findBestFocus(CRUI_FOCUS_OP op, CRUIWidget * root, CRUIWidget * current, lvRect & currentPos, lvRect & bestFoundPos, CRUIWidget * & bestFoundWidget) {
+    if (root->getVisibility() != VISIBLE)
+        return;
+    if (current && root == current)
+        return;
+    if (root->canFocus()) {
+        lvRect pos = root->getPos();
+        if (bestFoundWidget) {
+            if (!isBetterFocusPosition(op, currentPos, bestFoundPos, pos))
+                return; // already found better choice
+        }
+        bestFoundPos = pos;
+        bestFoundWidget = root;
+    } else {
+        // recursive search
+        for (int i = 0; i < root->getChildCount(); i++) {
+            findBestFocus(op, root->getChild(i), current, currentPos, bestFoundPos, bestFoundWidget);
+        }
+    }
+}
+
+/// moves focus
+bool CRUIWindowWidget::moveFocus(CRUI_FOCUS_OP op) {
+    CRUIWidget * current = getFocusedWidget();
+    lvRect rc;
+    if (current) {
+        rc = current->getPos();
+    }
+    if (op == FOCUS_OFF) {
+        CRUIEventManager::dispatchFocusChange(NULL);
+        invalidate();
+        return true;
+    }
+    if (op == FOCUS_DEFAULT || current == NULL) {
+        CRUIEventManager::dispatchFocusChange(getDefaultWidget());
+        invalidate();
+        return true;
+    }
+    lvRect bestPos;
+    CRUIWidget * bestWidget = NULL;
+    findBestFocus(op, this, current, rc, bestPos, bestWidget);
+    if (bestWidget) {
+        CRLog::trace("new focus: {%d,%d,%d,%d}", bestPos.left, bestPos.top, bestPos.right, bestPos.bottom);
+        CRUIEventManager::dispatchFocusChange(bestWidget);
+        CRUIImageRef bg = bestWidget->getBackground();
+        invalidate();
+        return true;
+    }
+    return false;
+}
+
+void CRUIWindowWidget::afterNavigationTo() {
+    if (!crconfig.touchMode)
+        moveFocus(FOCUS_DEFAULT);
+}
+
 /// return true if drag operation is intercepted
 bool CRUIWindowWidget::onStartDragging(const CRUIMotionEvent * event, bool vertical) {
     return getMain()->startDragging(event, vertical);
+}
+
+CRUI_FOCUS_OP keyToFocusOp(int key, bool shift) {
+    switch(key) {
+    case CR_KEY_UP:
+        return FOCUS_UP;
+    case CR_KEY_DOWN:
+        return FOCUS_DOWN;
+    case CR_KEY_LEFT:
+        return FOCUS_LEFT;
+    case CR_KEY_RIGHT:
+        return FOCUS_RIGHT;
+    case CR_KEY_TAB:
+        return shift ? FOCUS_PREV : FOCUS_NEXT;
+    default:
+        return FOCUS_OFF;
+    }
 }
 
 bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
@@ -43,6 +203,13 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
         if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
             return true;
         }
+        CRUI_FOCUS_OP focusOp = keyToFocusOp(key, (event->modifiers() & CR_KEY_MODIFIER_SHIFT) != 0);
+        if (focusOp != FOCUS_OFF) {
+            if (moveFocus(focusOp)) {
+                _main->update(false);
+            }
+            return true;
+        }
     } else if (event->getType() == KEY_ACTION_RELEASE) {
         if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
         	if (_popupControl.popup) {
@@ -51,6 +218,10 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
         	} else {
         		_main->back();
         	}
+            return true;
+        }
+        CRUI_FOCUS_OP focusOp = keyToFocusOp(key, (event->modifiers() & CR_KEY_MODIFIER_SHIFT) != 0);
+        if (focusOp != FOCUS_OFF) {
             return true;
         }
     }

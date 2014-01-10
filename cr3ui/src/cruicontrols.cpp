@@ -339,6 +339,42 @@ void CRUIImageButton::onThemeChanged() {
 
 CRUIButton::CRUIButton(lString16 text, const char * imageRes, bool vertical) : CRUILinearLayout(vertical), _icon(NULL), _label(NULL) {
     init(text, imageRes, vertical);
+    setFocusable(true);
+}
+
+/// key event handler, returns true if it handled event
+bool CRUIButton::onKeyEvent(const CRUIKeyEvent * event) {
+    if (event->getType() == KEY_ACTION_PRESS) {
+        switch(event->key()) {
+        case CR_KEY_SPACE:
+        case CR_KEY_RETURN:
+            if (isFocused()) {
+                setState(STATE_PRESSED, STATE_PRESSED);
+                return true;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    if (event->getType() == KEY_ACTION_RELEASE) {
+        switch(event->key()) {
+        case CR_KEY_SPACE:
+        case CR_KEY_RETURN:
+            if (isFocused()) {
+                setState(0, STATE_PRESSED);
+                bool isLong = event->getDownDuration() > 500; // 0.5 seconds threshold
+                if (isLong && onLongClickEvent())
+                    return true;
+                onClickEvent();
+                return true;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return false;
 }
 
 void CRUIButton::init(lString16 text, const char * imageRes, bool vertical) {

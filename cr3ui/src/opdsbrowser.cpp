@@ -296,6 +296,7 @@ public:
     }
 
     CRUIOpdsItemListWidget(CRUIOpdsBrowserWidget * parent) : CRUIListWidget(true), _dir(NULL), _parent(parent), _showProgressAsLastItem(false) {
+        setId("FILE_LIST");
         setLayoutParams(FILL_PARENT, FILL_PARENT);
         //setBackground("tx_wood_v3.jpg");
         calcCoverSize(deviceInfo.shortSide, deviceInfo.longSide);
@@ -305,6 +306,7 @@ public:
         setStyle("FILE_LIST");
         setColCount(2);
     }
+
     virtual int getItemCount() {
         if (!_dir)
             return 0;
@@ -897,7 +899,7 @@ CRUIOpdsBrowserWidget::CRUIOpdsBrowserWidget(CRUIMainWidget * main) : CRUIWindow
     _fileList = new CRUIOpdsItemListWidget(this);
     _body->addChild(_fileList);
     _fileList->setOnItemClickListener(this);
-
+    setDefaultWidget(_fileList);
     //_fileList = new CRUIOpdsItemListWidget(this);
 	//_body->addChild(_fileList);
     //_fileList->setOnItemClickListener(this);

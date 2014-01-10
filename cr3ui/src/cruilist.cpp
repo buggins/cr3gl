@@ -23,6 +23,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
   _onItemClickListener(NULL), _onItemLongClickListener(NULL), _onStartDragCallback(NULL)
 {
     setStyle("MENU_LIST");
+    setFocusable(true);
 }
 
 bool CRUIListWidget::onItemClickEvent(int itemIndex) {

@@ -98,6 +98,9 @@ protected:
     void init(lString16 text, const char * imageRes, bool vertical);
 public:
 
+    /// key event handler, returns true if it handled event
+    virtual bool onKeyEvent(const CRUIKeyEvent * event);
+
     virtual CRUIWidget * setFontSize(lUInt8 sz) {
         if (_label)
             _label->setFontSize(sz);

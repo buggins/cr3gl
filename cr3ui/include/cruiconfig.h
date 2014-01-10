@@ -60,6 +60,8 @@ struct CRUIConfig {
     int maxFontSize;
     int defFontSize;
 
+    bool touchMode;
+
     /// font directories to register all files from
     lString8Collection fontDirs;
     /// separate font files to register

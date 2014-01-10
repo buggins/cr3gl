@@ -36,12 +36,17 @@ class CRUINowReadingWidget : public CRUILinearLayout {
     const CRDirEntry * _lastBook;
 public:
 
+    CRCoverWidget * getCoverWidget() {
+        return _cover;
+    }
+
     CRUINowReadingWidget(CRUIHomeWidget * home) : CRUILinearLayout(false), _home(home), _lastBook(NULL) {
         setId("HOME_CURRENT_BOOK");
         _coverImage = CRUIImageRef(); //resourceResolver->getIcon("cr3_logo");//new CRUISolidFillImage(0xE0E0A0);
         //int coverSize = deviceInfo.shortSide / 4;
         _cover = new CRCoverWidget(_home->getMain(), NULL, 75, 100);
         _cover->setMargin(PT_TO_PX(4));
+        _cover->setId("CURRENT_BOOK_COVER");
 		addChild(_cover);
         _buttonLayout = new CRUILinearLayout(true);
         _captionLayout = new CRUILinearLayout(true);
@@ -741,6 +746,7 @@ CRUIHomeWidget::CRUIHomeWidget(CRUIMainWidget * main) : CRUIWindowWidget(main){
 	_body->addChild(_onlineCatalogsList);
 	setStyle("HOME_WIDGET");
     setId("HOME_WIDGET");
+    setDefaultWidget(_currentBook->getCoverWidget());
 }
 
 /// measure dimensions
@@ -822,7 +828,7 @@ bool CRUIHomeWidget::onKeyEvent(const CRUIKeyEvent * event) {
 	if (event->getType() == KEY_ACTION_PRESS && (event->key() == CR_KEY_MENU)) {
         return true;
 	}
-	return false;
+    return CRUIWindowWidget::onKeyEvent(event);
 }
 
 /// motion event handler, returns true if it handled event

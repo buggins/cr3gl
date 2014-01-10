@@ -52,17 +52,42 @@ public:
     }
 };
 
+enum CRUI_FOCUS_OP {
+    FOCUS_OFF,
+    FOCUS_DEFAULT,
+    FOCUS_PREV,
+    FOCUS_NEXT,
+    FOCUS_UP,
+    FOCUS_DOWN,
+    FOCUS_LEFT,
+    FOCUS_RIGHT
+};
+
 /// base class for full screen widgets, supporting popups
 class CRUIWindowWidget : public CRUIFrameLayout, public CRUIDragListener {
 protected:
     CRUIMainWidget * _main;
     CRUILinearLayout * _body;
+    lString8 _defaultControlId;
 
     PopupControl _popupControl;
 
     void preparePopup(CRUIWidget * widget, int location, const lvRect & margins, int backgroundAlpha = 0, bool showHandle = true, bool wantsTouchEventsOutside = false);
 
+    void findBestFocus(CRUI_FOCUS_OP op, CRUIWidget * root, CRUIWidget * current, lvRect & currentPos, lvRect & bestFoundPos, CRUIWidget * & bestFoundWidget);
 public:
+
+    // focus control
+    /// sets widget as default for focus
+    virtual void setDefaultWidget(CRUIWidget * widget);
+    /// returns default widget for window, NULL if not found or deleted
+    virtual CRUIWidget * getDefaultWidget();
+    /// moves focus
+    virtual bool moveFocus(CRUI_FOCUS_OP op);
+    /// returns focused widget inside window, NULL if not found
+    virtual CRUIWidget * getFocusedWidget();
+
+
     /// return true if drag operation is intercepted
     virtual bool onStartDragging(const CRUIMotionEvent * event, bool vertical);
 
@@ -119,7 +144,7 @@ public:
     virtual void beforeNavigationFrom() {}
     virtual void afterNavigationFrom() {}
     virtual void beforeNavigationTo() {}
-    virtual void afterNavigationTo() {}
+    virtual void afterNavigationTo();
 };
 
 class CRUITitleBarWidget : public CRUILinearLayout {
