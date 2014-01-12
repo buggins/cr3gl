@@ -18,6 +18,9 @@
 
 /// Abstract drawing buffer
 class GLDrawBuf : public LVDrawBuf
+        #if QT_GL
+            , protected QOpenGLFunctions
+        #endif
 {
 protected:
 	int _dx;

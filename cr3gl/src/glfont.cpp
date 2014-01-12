@@ -47,7 +47,11 @@ class GLFont;
 static GLGlyphCache * _glGlyphCache = NULL;
 
 #define GL_GLYPH_CACHE_PAGE_SIZE 1024
-class GLGlyphCachePage {
+class GLGlyphCachePage
+        #if QT_GL
+            : protected QOpenGLFunctions
+        #endif
+{
 	GLGlyphCache * cache;
 	LVGrayDrawBuf * drawbuf;
 	int currentLine;
@@ -63,7 +67,10 @@ public:
 		//drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 		// init free lines
 		currentLine = nextLine = x = 0;
-	}
+#if QT_GL
+        initializeOpenGLFunctions();
+#endif
+    }
 	virtual ~GLGlyphCachePage() {
 		if (drawbuf)
 			delete drawbuf;

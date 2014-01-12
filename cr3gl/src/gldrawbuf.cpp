@@ -87,7 +87,11 @@ void LVGLClearImageCache() {
 	glImageCache->clear();
 }
 
-class GLImageCachePage {
+class GLImageCachePage
+        #if QT_GL
+            : protected QOpenGLFunctions
+        #endif
+{
 	GLImageCache * _cache;
 	int _tdx;
 	int _tdy;
@@ -105,7 +109,10 @@ public:
 		_tdx = nearestPOT(dx);
 		_tdy = nearestPOT(dy);
 		_itemCount = 0;
-	}
+#if QT_GL
+        initializeOpenGLFunctions();
+#endif
+    }
 
 	virtual ~GLImageCachePage() {
 		if (_drawbuf)
@@ -865,7 +872,11 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 	}
 }
 
-class GLDrawTextureItem : public GLSceneItem {
+class GLDrawTextureItem : public GLSceneItem
+        #if QT_GL
+            , protected QOpenGLFunctions
+        #endif
+{
 	int textureId;
 	int dstx0;
 	int dsty0;
@@ -887,8 +898,10 @@ public:
       color(_color),
       linear(_linear)
 	{
-
-	}
+#if QT_GL
+        initializeOpenGLFunctions();
+#endif
+    }
     virtual void draw() {
     	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
@@ -1219,6 +1232,8 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
         _alpha(0)
 {
     //if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
+    if (!isInitialized(d_ptr))
+        initializeOpenGLFunctions();
 }
 
 /// destructor

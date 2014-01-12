@@ -187,7 +187,7 @@ void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     delete ev;
 }
 
-QOpenGLFunctions * _qtgl = NULL;
+//QOpenGLFunctions * _qtgl = NULL;
 
 
 

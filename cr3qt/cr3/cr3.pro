@@ -25,9 +25,9 @@ win32 {
         _CRT_SECURE_NO_WARNINGS \
         CR_EMULATE_GETTEXT=1
     LIBS += -lgdi32 -Lc:/Qt/OpenSSL/lib
-#    debug:LIBS += -lQt5PlatformSupportd -lQt5Cored
+    debug:LIBS += -lQt5PlatformSupportd -lQt5Cored
 #    !debug:LIBS += -lQt5PlatformSupport -lQt5Core
-    LIBS += -lQt5PlatformSupport -lQt5Core
+#    LIBS += -lQt5PlatformSupport -lQt5Core
     RC_FILE = cr3.rc
 }
 !win32 {
@@ -36,9 +36,9 @@ win32 {
     INCLUDEPATH += /usr/include/freetype2
 }
 
-#debug:DEFINES += _DEBUG=1 DEBUG=1
+debug:DEFINES += _DEBUG=1 DEBUG=1
 #!debug:DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
-DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
+#DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
 
 DEFINES += USE_FREETYPE=1 \
     COLOR_BACKBUFFER=1 \
