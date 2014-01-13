@@ -68,7 +68,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     int dy = 500; // 800;
     resize(QSize(dx, dy));
 
-    _qtgl = this;
+    //_qtgl = this;
 
     deviceInfo.setScreenDimensions(dx, dy, 200);
     crconfig.setupResourcesForScreenSize();
@@ -91,7 +91,7 @@ OpenGLWindow::~OpenGLWindow()
     delete _downloadManager;
     delete _widget;
 //    delete m_device;
-    _qtgl = NULL;
+    //_qtgl = NULL;
 }
 
 //! [2]

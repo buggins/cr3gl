@@ -63,7 +63,10 @@ public:
 		//drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 		// init free lines
 		currentLine = nextLine = x = 0;
-	}
+#if QT_GL
+        initializeOpenGLFunctions();
+#endif
+    }
 	virtual ~GLGlyphCachePage() {
 		if (drawbuf)
 			delete drawbuf;
