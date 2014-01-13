@@ -58,5 +58,23 @@ extern QOpenGLFunctions * _qtgl;
 //#endif
 #endif
 
+class CRGLSupport
+#if QT_GL
+    : protected QOpenGLFunctions
+#endif
+{
+#ifdef QT_OPENGL_ES_2
+    static QGLShaderProgram *program_texture;
+    static QGLShaderProgram *program_solid;
+#endif
+public:
+    CRGLSupport();
+
+    void drawSolidFillRect(GLfloat * matrix, GLfloat vertices[], GLfloat colors[]);
+    void drawColorAndTextureRect(GLfloat * matrix, GLfloat vertices[], GLfloat txcoords[], GLfloat colors[], GLint textureId);
+
+    static void init();
+    static void uninit();
+};
 
 #endif // GLWRAPPER_H

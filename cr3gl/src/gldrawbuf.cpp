@@ -87,7 +87,7 @@ void LVGLClearImageCache() {
 	glImageCache->clear();
 }
 
-class GLImageCachePage {
+class GLImageCachePage : public CRGLSupport {
 	GLImageCache * _cache;
 	int _tdx;
 	int _tdy;
@@ -296,40 +296,10 @@ public:
                 glTranslatef(-x, -y, 0);
             }
 
-        	glEnable(GL_BLEND);
-        	glDisable(GL_ALPHA_TEST);
-        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            float colors[6*4];
+            LVGLFillColor(color, colors, 6);
 
-	    	LVGLSetColor(color);
-	    	//glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	    	//glDisable(GL_LIGHTING);
-	    	glActiveTexture(GL_TEXTURE0);
-            checkError("glActiveTexture");
-            glEnable(GL_TEXTURE_2D);
-            checkError("glEnable(GL_TEXTURE_2D)");
-            glBindTexture(GL_TEXTURE_2D, _textureId);
-            checkError("glBindTexture");
-
-	    	glEnable(GL_BLEND);
-	    	//GL_SRC_ALPHA
-	    	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	    	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-            //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-	    	glDisableClientState(GL_COLOR_ARRAY);
-            checkError("glDisableClientState(GL_COLOR_ARRAY)");
-            glEnableClientState(GL_VERTEX_ARRAY);
-            checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
-            glVertexPointer(3, GL_FLOAT, 0, vertices);
-            checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-            glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-            checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
-
-	    	glDrawArrays(GL_TRIANGLES, 0, 6);
-            checkError("glDrawArrays");
+            drawColorAndTextureRect(NULL, vertices, texcoords, colors, _textureId);
 
             if (rotationAngle) {
                 glMatrixMode(GL_PROJECTION);
@@ -337,12 +307,7 @@ public:
                 checkError("pop matrix");
             }
 
-	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	    	glDisableClientState(GL_VERTEX_ARRAY);
-            glDisable(GL_BLEND);
-            glDisable(GL_ALPHA_TEST);
-            glDisable(GL_TEXTURE_2D);
-		}
+        }
 	}
 	void close() {
 		_closed = true;
@@ -649,7 +614,7 @@ void LVGLFillColor(lUInt32 color, float * buf, int count) {
 	}
 }
 
-class GLFillRectItem : public GLSceneItem {
+class GLFillRectItem : public GLSceneItem, public CRGLSupport {
 public:
 	int x0;
 	int y0;
@@ -677,26 +642,8 @@ public:
         LVGLFillColor(color3, colors + 4*4, 1);
         LVGLFillColor(color2, colors + 4*5, 1);
 
-    	glEnable(GL_BLEND);
-    	glDisable(GL_ALPHA_TEST);
-    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        checkError("glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-        glEnableClientState(GL_VERTEX_ARRAY);
-        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-        glEnableClientState(GL_COLOR_ARRAY);
-        checkError("glEnableClientState(GL_COLOR_ARRAY)");
-        glVertexPointer(3, GL_FLOAT, 0, vertices);
-        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-        glColorPointer(4, GL_FLOAT, 0, colors);
-        checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+        drawSolidFillRect(NULL, vertices, colors);
 
-    	glDrawArrays(GL_TRIANGLES, 0, 6);
-        checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
-
-    	glDisableClientState(GL_COLOR_ARRAY);
-    	glDisableClientState(GL_VERTEX_ARRAY);
-    	glDisable(GL_ALPHA_TEST);
-    	glDisable(GL_BLEND);
     }
 };
 
@@ -865,7 +812,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 	}
 }
 
-class GLDrawTextureItem : public GLSceneItem {
+class GLDrawTextureItem : public GLSceneItem, public CRGLSupport {
 	int textureId;
 	int dstx0;
 	int dsty0;
@@ -892,50 +839,54 @@ public:
     virtual void draw() {
     	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-    	//GLfloat colors[6 * 4];
+        float colors[6*4];
+        LVGLFillColor(color, colors, 6);
+        //GLfloat colors[6 * 4];
     	//LVGLFillColor(color, colors, 6);
-    	glEnable(GL_BLEND);
-    	glDisable(GL_ALPHA_TEST);
-    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    	//LVGLSetColor(0xFFFFFF);
-        float alpha = 1.0f - ((color >> 24) & 255)/ 255.0f;
-        glColor4f(1,1,1,alpha);
-    	glActiveTexture(GL_TEXTURE0);
-        checkError("glActiveTexture");
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("glBindTexture");
-        glEnable(GL_TEXTURE_2D);
+//    	glEnable(GL_BLEND);
+//    	glDisable(GL_ALPHA_TEST);
+//    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    	//LVGLSetColor(0xFFFFFF);
+//        float alpha = 1.0f - ((color >> 24) & 255)/ 255.0f;
+//        glColor4f(1,1,1,alpha);
+//    	glActiveTexture(GL_TEXTURE0);
+//        checkError("glActiveTexture");
+//        glBindTexture(GL_TEXTURE_2D, textureId);
+//        checkError("glBindTexture");
+//        glEnable(GL_TEXTURE_2D);
 
-        int flt = linear ? GL_LINEAR : GL_NEAREST;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, flt);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flt);
-        checkError("texParameter");
+        drawColorAndTextureRect(NULL, vertices, texcoords, colors, textureId);
+
+//        int flt = linear ? GL_LINEAR : GL_NEAREST;
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, flt);
+//        checkError("texParameter");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flt);
+//        checkError("texParameter");
 
 
-        checkError("glEnable(GL_TEXTURE_2D)");
-        glEnableClientState(GL_VERTEX_ARRAY);
-        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-        //glEnableClientState(GL_COLOR_ARRAY);
-    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
-        glVertexPointer(3, GL_FLOAT, 0, vertices);
-        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-        //glColorPointer(4, GL_FLOAT, 0, colors);
-    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-        checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
+//        checkError("glEnable(GL_TEXTURE_2D)");
+//        glEnableClientState(GL_VERTEX_ARRAY);
+//        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+//        //glEnableClientState(GL_COLOR_ARRAY);
+//    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+//        checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+//        glVertexPointer(3, GL_FLOAT, 0, vertices);
+//        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+//        //glColorPointer(4, GL_FLOAT, 0, colors);
+//    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+//        checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
 
-    	glDrawArrays(GL_TRIANGLES, 0, 6);
-        checkError("glDrawArrays");
+//    	glDrawArrays(GL_TRIANGLES, 0, 6);
+//        checkError("glDrawArrays");
 
-    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    	//glDisableClientState(GL_COLOR_ARRAY);
-    	glDisableClientState(GL_VERTEX_ARRAY);
-    	glDisable(GL_TEXTURE_2D);
-    	checkError("glDisable(GL_TEXTURE_2D)");
+//    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+//    	//glDisableClientState(GL_COLOR_ARRAY);
+//    	glDisableClientState(GL_VERTEX_ARRAY);
+//    	glDisable(GL_TEXTURE_2D);
+//    	checkError("glDisable(GL_TEXTURE_2D)");
 
-    	glDisable(GL_ALPHA_TEST);
-    	glDisable(GL_BLEND);
+//    	glDisable(GL_ALPHA_TEST);
+//    	glDisable(GL_BLEND);
     }
 };
 

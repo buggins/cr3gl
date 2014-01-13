@@ -47,7 +47,7 @@ class GLFont;
 static GLGlyphCache * _glGlyphCache = NULL;
 
 #define GL_GLYPH_CACHE_PAGE_SIZE 1024
-class GLGlyphCachePage {
+class GLGlyphCachePage : public CRGLSupport {
 	GLGlyphCache * cache;
 	LVGrayDrawBuf * drawbuf;
 	int currentLine;
@@ -129,28 +129,32 @@ public:
 			}
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+            float colors[6*4];
+            LVGLFillColor(color, colors, 6);
 
-        	glEnable(GL_BLEND);
-        	glDisable(GL_ALPHA_TEST);
-        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            drawColorAndTextureRect(NULL, vertices, texcoords, colors, textureId);
 
-	    	LVGLSetColor(color);
-	    	glActiveTexture(GL_TEXTURE0);
-	    	glEnable(GL_TEXTURE_2D);
-	    	glBindTexture(GL_TEXTURE_2D, textureId);
+//        	glEnable(GL_BLEND);
+//        	glDisable(GL_ALPHA_TEST);
+//        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	    	glEnableClientState(GL_VERTEX_ARRAY);
-	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+//	    	LVGLSetColor(color);
+//	    	glActiveTexture(GL_TEXTURE0);
+//	    	glEnable(GL_TEXTURE_2D);
+//	    	glBindTexture(GL_TEXTURE_2D, textureId);
 
-	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+//	    	glEnableClientState(GL_VERTEX_ARRAY);
+//	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+//	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
+//	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 
-	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	    	glDisableClientState(GL_VERTEX_ARRAY);
-	    	glDisable(GL_TEXTURE_2D);
-        	glDisable(GL_ALPHA_TEST);
-        	glDisable(GL_BLEND);
+//	    	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+//	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+//	    	glDisableClientState(GL_VERTEX_ARRAY);
+//	    	glDisable(GL_TEXTURE_2D);
+//        	glDisable(GL_ALPHA_TEST);
+//        	glDisable(GL_BLEND);
 		}
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {
