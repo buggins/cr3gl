@@ -896,26 +896,6 @@ void GLDrawBuf::deleteFramebuffer()
 	}
 }
 
-void myGlOrtho(float left, float right, float bottom, float top,
-                                         float zNearPlane, float zFarPlane)
-{
-	float m[16];
-
-    float r_l = 1.0f / (right - left);
-    float t_b = 1.0f / (top - bottom);
-    float f_n = 1.0f / (zFarPlane - zNearPlane);
-
-    memset(m, 0, sizeof(m));
-    m[0] = 2.0f * r_l;
-    m[5] = 2.0f * t_b;
-    m[10] = -2.0f * f_n;
-    m[12] = (-(right + left)) * r_l;
-    m[13] = (-(top + bottom)) * t_b;
-    m[14] = (-(zFarPlane + zNearPlane)) * f_n;
-    m[15] = 1.0f;
-	glLoadMatrixf(m);
-}
-
 
 void GLDrawBuf::beforeDrawing()
 {
@@ -926,22 +906,12 @@ void GLDrawBuf::beforeDrawing()
 				createFramebuffer();
 			}
 			//CRLog::debug("Setting render to texture");
-			glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
-			if (checkError("beforeDrawing glBindFramebufferOES")) return;
+            //glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
+            CRGL->bindFramebuffer(_framebufferId);
+            //if (checkError("beforeDrawing glBindFramebufferOES")) return;
 		}
-        glMatrixMode(GL_PROJECTION);
-        //glPushMatrix();
-        checkError("glPushMatrix");
-		glLoadIdentity();
-		myGlOrtho(0, _dx, 0, _dy, -1.0f, 5.0f);
-		//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-		glViewport(0,0,_dx,_dy);
-        checkError("glViewport");
         _scene = LVGLPushScene(new GLScene());
-		glMatrixMode(GL_MODELVIEW);
-        //glPushMatrix();
-        checkError("glPushMatrix");
-        glLoadIdentity();
+        CRGL->setOrthoProjection(_dx, _dy);
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
     }
@@ -966,17 +936,9 @@ void GLDrawBuf::afterDrawing()
         }
 		if (_textureBuf) {
 			//bind the base framebuffer
-			//CRLog::debug("Finished render to texture");
-			glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
-			checkError("afterDrawing - glBindFramebuffer");
-			glFlush();
+            CRGL->bindFramebuffer(0);
+            CRGL->flush();
 		}
-        //glMatrixMode(GL_MODELVIEW);
-        //glPopMatrix();
-        //checkError("glPopMatrix");
-        //glMatrixMode(GL_PROJECTION);
-        //glPopMatrix();
-        //checkError("glPopMatrix");
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
     }

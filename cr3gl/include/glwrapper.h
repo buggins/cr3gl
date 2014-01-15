@@ -110,6 +110,8 @@ public:
     void deleteFramebuffer(GLuint &textureId, GLuint &framebufferId);
 
     bool bindFramebuffer(GLuint framebufferId);
+    void setOrthoProjection(int dx, int dy);
+    void flush();
 
     static CRGLSupport * instance();
 };

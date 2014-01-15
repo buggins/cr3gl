@@ -28,6 +28,7 @@ static bool _checkError(const char *srcfile, int line, const char * context) {
 #define checkError(context) _checkError(__FILE__, __LINE__, context)
 
 
+
 #ifdef QT_OPENGL_ES_2
 #include <QtOpenGL/QGLShaderProgram>
 QGLShaderProgram *CRGLSupport::program_texture = NULL;
@@ -360,6 +361,46 @@ void CRGLSupport::deleteFramebuffer(GLuint &textureId, GLuint &framebufferId) {
 bool CRGLSupport::bindFramebuffer(GLuint framebufferId) {
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     return !checkError("beforeDrawing glBindFramebufferOES");
+}
+
+void CRGLSupport::flush() {
+    glFlush();
+    checkError("glFlush");
+}
+
+void myGlOrtho(float left, float right, float bottom, float top,
+                                         float zNearPlane, float zFarPlane)
+{
+    float m[16];
+
+    float r_l = 1.0f / (right - left);
+    float t_b = 1.0f / (top - bottom);
+    float f_n = 1.0f / (zFarPlane - zNearPlane);
+
+    memset(m, 0, sizeof(m));
+    m[0] = 2.0f * r_l;
+    m[5] = 2.0f * t_b;
+    m[10] = -2.0f * f_n;
+    m[12] = (-(right + left)) * r_l;
+    m[13] = (-(top + bottom)) * t_b;
+    m[14] = (-(zFarPlane + zNearPlane)) * f_n;
+    m[15] = 1.0f;
+    glLoadMatrixf(m);
+}
+
+void CRGLSupport::setOrthoProjection(int dx, int dy) {
+    glMatrixMode(GL_PROJECTION);
+    //glPushMatrix();
+    checkError("glPushMatrix");
+    glLoadIdentity();
+    myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
+    //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+    glViewport(0,0,dx,dy);
+    checkError("glViewport");
+    glMatrixMode(GL_MODELVIEW);
+    //glPushMatrix();
+    checkError("glPushMatrix");
+    glLoadIdentity();
 }
 
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
