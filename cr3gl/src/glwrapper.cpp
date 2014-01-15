@@ -2,9 +2,19 @@
 #include <lvstring.h>
 
 CRGLSupport::CRGLSupport() {
-#if QT_GL
-    initializeOpenGLFunctions();
-#endif
+    init();
+}
+
+CRGLSupport::~CRGLSupport() {
+    uninit();
+}
+
+static CRGLSupport * _crGLSupportInstance = NULL;
+CRGLSupport * CRGLSupport::instance() {
+    if (_crGLSupportInstance)
+        return _crGLSupportInstance;
+    _crGLSupportInstance = new CRGLSupport();
+    return _crGLSupportInstance;
 }
 
 static bool _checkError(const char *srcfile, int line, const char * context) {
@@ -19,6 +29,7 @@ static bool _checkError(const char *srcfile, int line, const char * context) {
 
 
 #ifdef QT_OPENGL_ES_2
+#include <QtOpenGL/QGLShaderProgram>
 QGLShaderProgram *CRGLSupport::program_texture = NULL;
 QGLShaderProgram *CRGLSupport::program_solid = NULL;
 #define PROGRAM_VERTEX_ATTRIBUTE 0
@@ -108,6 +119,13 @@ void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[
 }
 
 void CRGLSupport::init() {
+
+#if QT_GL
+    CRLog::trace("CRGLSupport::init() -- calling initializeOpenGLFunctions()");
+    initializeOpenGLFunctions();
+    Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
+#endif
+
 #if QT_GL
 #ifdef QT_OPENGL_ES_2
 
@@ -208,3 +226,104 @@ void CRGLSupport::uninit() {
 #endif
 }
 
+GLuint CRGLSupport::genTexture() {
+    GLuint textureId = 0;
+    glGenTextures(1, &textureId);
+    if (checkError("glGenTextures")) return 0;
+    return textureId;
+}
+
+void CRGLSupport::deleteTexture(GLuint textureId) {
+    if (!textureId)
+        return;
+    if (glIsTexture(textureId) != GL_TRUE) {
+        CRLog::error("Invalid texture %d", textureId);
+        return;
+    }
+    glDeleteTextures(1, &textureId);
+    checkError("~GLImageCachePage - glDeleteTextures");
+}
+
+bool CRGLSupport::setTextureImage(GLuint textureId, int dx, int dy, lUInt8 * pixels) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    checkError("updateTexture - glBindTexture");
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    checkError("updateTexture - glPixelStorei");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkError("updateTexture - glTexParameteri");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    checkError("updateTexture - glTexImage2D");
+    if (glGetError() != GL_NO_ERROR) {
+        CRLog::error("Cannot set image for texture");
+        return false;
+    }
+    return true;
+}
+
+/// returns texture ID for buffer, 0 if failed
+bool CRGLSupport::createFramebuffer(GLuint &textureId, GLuint &framebufferId, int dx, int dy) {
+    bool res = true;
+    textureId = framebufferId = 0;
+    textureId = genTexture();
+    if (!textureId)
+        return false;
+    glGenFramebuffersOES(1, &framebufferId);
+    if (checkError("createFramebuffer glGenFramebuffersOES")) return false;
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
+    if (checkError("createFramebuffer glBindFramebuffer")) return false;
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+    checkError("glTexImage2D");
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    checkError("texParameter");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    checkError("texParameter");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkError("texParameter");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkError("texParameter");
+
+    glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, textureId, 0);
+    checkError("glFramebufferTexture2DOES");
+    // Always check that our framebuffer is ok
+    if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+        CRLog::error("glFramebufferTexture2DOES failed");
+        res = false;
+    }
+    checkError("glCheckFramebufferStatusOES");
+    //glClearColor(0.5f, 0, 0, 1);
+    glClearColor(0, 0, 0, 0);
+    checkError("glClearColor");
+    glClear(GL_COLOR_BUFFER_BIT);
+    checkError("glClear");
+    return res;
+}
+
+void CRGLSupport::deleteFramebuffer(GLuint &textureId, GLuint &framebufferId) {
+    //CRLog::debug("GLDrawBuf::deleteFramebuffer");
+    if (textureId != 0) {
+        deleteTexture(textureId);
+    }
+    if (framebufferId != 0) {
+        glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
+        checkError("deleteFramebuffer - glBindFramebufferOES");
+        glDeleteFramebuffersOES(1, &framebufferId);
+        checkError("deleteFramebuffer - glDeleteFramebuffer");
+    }
+    textureId = 0;
+    framebufferId = 0;
+}
+
+bool CRGLSupport::bindFramebuffer(GLuint framebufferId) {
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
+    return !checkError("beforeDrawing glBindFramebufferOES");
+}

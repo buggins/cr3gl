@@ -128,31 +128,39 @@ public:
 			return; // no draw buffer!!!
 	    if (_textureId == 0) {
 	    	//CRLog::debug("updateTexture - new texture");
-			glGenTextures(1, &_textureId);
-			if (glGetError() != GL_NO_ERROR)
-				return;
+            _textureId = CRGL->genTexture();
+            if (!_textureId)
+                return;
+//			glGenTextures(1, &_textureId);
+//			if (glGetError() != GL_NO_ERROR)
+//				return;
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
-	    glBindTexture(GL_TEXTURE_2D, _textureId);
-        checkError("updateTexture - glBindTexture");
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        checkError("updateTexture - glPixelStorei");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        checkError("updateTexture - glTexParameteri");
         lUInt8 * pixels = _drawbuf->GetScanLine(0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	    checkError("updateTexture - glTexImage2D");
-	    if (glGetError() != GL_NO_ERROR) {
-	        glDeleteTextures(1, &_textureId);
+        if (!CRGL->setTextureImage(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), pixels)) {
+            CRGL->deleteTexture(_textureId);
             _textureId = 0;
-	        return;
-	    }
+            return;
+        }
+//        glBindTexture(GL_TEXTURE_2D, _textureId);
+//        checkError("updateTexture - glBindTexture");
+//        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//        checkError("updateTexture - glPixelStorei");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        checkError("updateTexture - glTexParameteri");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        checkError("updateTexture - glTexParameteri");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        checkError("updateTexture - glTexParameteri");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//        checkError("updateTexture - glTexParameteri");
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+//	    checkError("updateTexture - glTexImage2D");
+//	    if (glGetError() != GL_NO_ERROR) {
+//	        glDeleteTextures(1, &_textureId);
+//            _textureId = 0;
+//	        return;
+//	    }
 	    _needUpdateTexture = false;
 	    if (_closed) {
 	    	delete _drawbuf;
@@ -815,15 +823,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 	}
 }
 
-<<<<<<< HEAD
 class GLDrawTextureItem : public GLSceneItem, public CRGLSupport {
-=======
-class GLDrawTextureItem : public GLSceneItem
-        #if QT_GL
-            , protected QOpenGLFunctions
-        #endif
-{
->>>>>>> 73dd76d094b21701702b01d5fbe2f0a87702498d
 	int textureId;
 	int dstx0;
 	int dsty0;
@@ -1015,39 +1015,40 @@ void GLDrawBuf::createFramebuffer()
 	if (_textureBuf) {
 		// generate IDs
 		//CRLog::debug("GLDrawBuf::createFramebuffer %dx%d", _tdx, _tdy);
-		glGenTextures(1, &_textureId);
-		if (checkError("createFramebuffer glGenTextures")) return;
-		glGenFramebuffersOES(1, &_framebufferId);
-		if (checkError("createFramebuffer glGenFramebuffersOES")) return;
-		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
-		if (checkError("createFramebuffer glBindFramebuffer")) return;
+        CRGL->createFramebuffer(_textureId, _framebufferId, _tdx, _tdy);
+//		glGenTextures(1, &_textureId);
+//		if (checkError("createFramebuffer glGenTextures")) return;
+//		glGenFramebuffersOES(1, &_framebufferId);
+//		if (checkError("createFramebuffer glGenFramebuffersOES")) return;
+//		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
+//		if (checkError("createFramebuffer glBindFramebuffer")) return;
 
-		glBindTexture(GL_TEXTURE_2D, _textureId);
-        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-		checkError("glTexImage2D");
+//		glBindTexture(GL_TEXTURE_2D, _textureId);
+//        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+//		checkError("glTexImage2D");
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        checkError("texParameter");
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        checkError("texParameter");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        checkError("texParameter");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        checkError("texParameter");
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//        checkError("texParameter");
 
-		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
-		checkError("glFramebufferTexture2DOES");
-		// Always check that our framebuffer is ok
-		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-			CRLog::error("glFramebufferTexture2DOES failed");
-		}
-        checkError("glCheckFramebufferStatusOES");
-        //glClearColor(0.5f, 0, 0, 1);
-        glClearColor(0, 0, 0, 0);
-        checkError("glClearColor");
-        glClear(GL_COLOR_BUFFER_BIT);
-        checkError("glClear");
+//		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
+//		checkError("glFramebufferTexture2DOES");
+//		// Always check that our framebuffer is ok
+//		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+//			CRLog::error("glFramebufferTexture2DOES failed");
+//		}
+//        checkError("glCheckFramebufferStatusOES");
+//        //glClearColor(0.5f, 0, 0, 1);
+//        glClearColor(0, 0, 0, 0);
+//        checkError("glClearColor");
+//        glClear(GL_COLOR_BUFFER_BIT);
+//        checkError("glClear");
     }
 }
 
@@ -1055,22 +1056,23 @@ void GLDrawBuf::deleteFramebuffer()
 {
 	if (_textureBuf) {
 		//CRLog::debug("GLDrawBuf::deleteFramebuffer");
-		if (_textureId != 0) {
-            if (glIsTexture(_textureId) != GL_TRUE) {
-                CRLog::error("Invalid texture %d", _textureId);
-                return;
-            }
-            glDeleteTextures(1, &_textureId);
-			checkError("deleteFramebuffer - glDeleteTextures");
-		}
-		if (_framebufferId != 0) {
-			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
-            checkError("deleteFramebuffer - glBindFramebufferOES");
-            glDeleteFramebuffersOES(1, &_framebufferId);
-			checkError("deleteFramebuffer - glDeleteFramebuffer");
-		}
-		_textureId = 0;
-		_framebufferId = 0;
+        CRGL->deleteFramebuffer(_textureId, _framebufferId);
+//		if (_textureId != 0) {
+//            if (glIsTexture(_textureId) != GL_TRUE) {
+//                CRLog::error("Invalid texture %d", _textureId);
+//                return;
+//            }
+//            glDeleteTextures(1, &_textureId);
+//			checkError("deleteFramebuffer - glDeleteTextures");
+//		}
+//		if (_framebufferId != 0) {
+//			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
+//            checkError("deleteFramebuffer - glBindFramebufferOES");
+//            glDeleteFramebuffersOES(1, &_framebufferId);
+//			checkError("deleteFramebuffer - glDeleteFramebuffer");
+//		}
+//		_textureId = 0;
+//		_framebufferId = 0;
 	}
 }
 

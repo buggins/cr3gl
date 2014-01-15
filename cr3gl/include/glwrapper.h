@@ -74,6 +74,8 @@
 //#endif
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
+
 class CRGLSupport
 #if QT_GL
     : protected QOpenGLFunctions
@@ -83,14 +85,30 @@ class CRGLSupport
     static QGLShaderProgram *program_texture;
     static QGLShaderProgram *program_solid;
 #endif
+    void init();
+    void uninit();
 public:
     CRGLSupport();
+    ~CRGLSupport();
 
     void drawSolidFillRect(GLfloat * matrix, GLfloat vertices[], GLfloat colors[]);
     void drawColorAndTextureRect(GLfloat * matrix, GLfloat vertices[], GLfloat txcoords[], GLfloat colors[], GLint textureId);
 
-    static void init();
-    static void uninit();
+    GLuint genTexture();
+    void deleteTexture(GLuint textureId);
+    /// returns false if failed
+    bool setTextureImage(GLuint textureId, int dx, int dy, unsigned char * pixels);
+    /// returns texture ID for buffer, 0 if failed
+    bool createFramebuffer(GLuint &textureId, GLuint &framebufferId, int dx, int dy);
+
+    void deleteFramebuffer(GLuint &textureId, GLuint &framebufferId);
+
+    bool bindFramebuffer(GLuint framebufferId);
+
+    static CRGLSupport * instance();
 };
+
+
+#define CRGL CRGLSupport::instance()
 
 #endif // GLWRAPPER_H
