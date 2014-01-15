@@ -239,6 +239,10 @@ void CRGLSupport::uninit() {
 #endif
 }
 
+bool CRGLSupport::isTexture(GLuint textureId) {
+    return glIsTexture(textureId) == GL_TRUE;
+}
+
 GLuint CRGLSupport::genTexture() {
     GLuint textureId = 0;
     glGenTextures(1, &textureId);
@@ -401,6 +405,18 @@ void CRGLSupport::setOrthoProjection(int dx, int dy) {
     //glPushMatrix();
     checkError("glPushMatrix");
     glLoadIdentity();
+}
+
+void CRGLSupport::setRotation(int x, int y, int rotationAngle) {
+    if (!rotationAngle)
+        return;
+    glMatrixMode(GL_PROJECTION);
+    //glPushMatrix();
+    //checkError("push matrix");
+    checkError("matrix mode");
+    glTranslatef(x, y, 0);
+    glRotatef(rotationAngle, 0, 0, 1);
+    glTranslatef(-x, -y, 0);
 }
 
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color

@@ -111,12 +111,7 @@ public:
 		if (_drawbuf)
 			delete _drawbuf;
         if (_textureId != 0) {
-            if (glIsTexture(_textureId) != GL_TRUE) {
-                CRLog::error("Invalid texture %d", _textureId);
-                return;
-            }
-            glDeleteTextures(1, &_textureId);
-            checkError("~GLImageCachePage - glDeleteTextures");
+            CRGL->deleteTexture(_textureId);
         }
 	}
 
@@ -234,7 +229,7 @@ public:
         if (_needUpdateTexture)
 			updateTexture();
 		if (_textureId != 0) {
-            if (glIsTexture(_textureId) != GL_TRUE) {
+            if (!CRGL->isTexture(_textureId)) {
                 CRLog::error("Invalid texture %d", _textureId);
                 return;
             }
@@ -269,25 +264,20 @@ public:
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
             //rotationAngle = 0;
+            int x = (dstx0 + dstx1) / 2;
+            int y = (dsty0 + dsty1) / 2;
             if (rotationAngle) {
                 //rotationAngle = 0;
-                glMatrixMode(GL_PROJECTION);
-                glPushMatrix();
-                checkError("push matrix");
-                int x = (dstx0 + dstx1) / 2;
-                int y = (dsty0 + dsty1) / 2;
-                checkError("matrix mode");
-                glTranslatef(x, y, 0);
-                glRotatef(rotationAngle, 0, 0, 1);
-                glTranslatef(-x, -y, 0);
+                CRGL->setRotation(x, y, rotationAngle);
             }
 
             CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
-                glMatrixMode(GL_PROJECTION);
-                glPopMatrix();
-                checkError("pop matrix");
+                CRGL->setRotation(x, y, -rotationAngle);
+//                glMatrixMode(GL_PROJECTION);
+//                glPopMatrix();
+//                checkError("pop matrix");
             }
 
         }
@@ -560,14 +550,14 @@ lUInt32 GLDrawBuf::GetInterpolatedColor(int x16, int y16)
 	return 0;
 }
 
-// converts color from CoolReader format and calls glColor4f
-void LVGLSetColor(lUInt32 color) {
-	float r = ((color >> 16) & 255) / 255.0f;
-	float g = ((color >> 8) & 255) / 255.0f;
-	float b = ((color >> 0) & 255) / 255.0f;
-	float a = (((color >> 24) & 255) ^ 255) / 255.0f;
-	glColor4f(r, g, b, a);
-}
+//// converts color from CoolReader format and calls glColor4f
+//void LVGLSetColor(lUInt32 color) {
+//	float r = ((color >> 16) & 255) / 255.0f;
+//	float g = ((color >> 8) & 255) / 255.0f;
+//	float b = ((color >> 0) & 255) / 255.0f;
+//	float a = (((color >> 24) & 255) ^ 255) / 255.0f;
+//	glColor4f(r, g, b, a);
+//}
 
 class GLFillRectItem : public GLSceneItem {
 public:

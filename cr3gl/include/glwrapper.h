@@ -99,6 +99,7 @@ public:
     void drawColorAndTextureRect(GLfloat * matrix, GLfloat vertices[], GLfloat txcoords[], GLfloat colors[], GLint textureId);
 
     GLuint genTexture();
+    bool isTexture(GLuint textureId);
     void deleteTexture(GLuint textureId);
     /// set texture image in RGBA format, returns false if failed
     bool setTextureImage(GLuint textureId, int dx, int dy, unsigned char * pixels);
@@ -111,6 +112,7 @@ public:
 
     bool bindFramebuffer(GLuint framebufferId);
     void setOrthoProjection(int dx, int dy);
+    void setRotation(int x, int y, int rotationAngle);
     void flush();
 
     static CRGLSupport * instance();
