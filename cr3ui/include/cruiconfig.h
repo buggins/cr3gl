@@ -93,6 +93,7 @@ struct CRUIConfig {
 
     void initEngine(bool setLogger = true);
     void uninitEngine();
+    void startBackgroundThreads();
 
     CRUIConfig();
 private:

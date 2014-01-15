@@ -564,10 +564,13 @@ CRDirCache::~CRDirCache() {
     clear();
 }
 
+void CRDirCache::start() {
+    _thread->start();
+}
+
 CRDirCache::CRDirCache() : _head(NULL), _byName(1000), _stopped(false), _defCallback(NULL) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
-    _thread->start();
 }
 
 CRDirContentItem * CRDirCache::getOrAdd(CRDirItem * dir) {
@@ -1203,6 +1206,12 @@ void CRStopDirectoryCacheManager() {
         dirCache->stop();
         delete dirCache;
         dirCache = NULL;
+    }
+}
+
+void CRStartDirectoryCacheManager() {
+    if (dirCache) {
+        dirCache->start();
     }
 }
 

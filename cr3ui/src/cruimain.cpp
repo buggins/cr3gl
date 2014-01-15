@@ -435,6 +435,7 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
         return;
     _initialized = true;
     dirCache->setDefaultCallback(this);
+    crconfig.startBackgroundThreads();
     dirCache->scan(lString8(RECENT_DIR_TAG));
 }
 

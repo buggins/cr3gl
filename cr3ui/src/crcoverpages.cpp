@@ -1049,7 +1049,6 @@ void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
 CRCoverPageManager::CRCoverPageManager() : _stopped(false), _allTasksFinishedCallback(NULL), _taskIsRunning(false) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
-    _thread->start();
 }
 
 CRCoverPageManager::~CRCoverPageManager() {
@@ -1062,6 +1061,11 @@ CRCoverPageManager::~CRCoverPageManager() {
 	_thread.clear();
 }
 
+/// start thread
+void CRCoverPageManager::start() {
+    _thread->start();
+}
+
 CRCoverPageManager * coverPageManager = NULL;
 
 void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles, int maxsize, int maxRenderCacheItems, int maxRenderCacheBytes) {
@@ -1070,6 +1074,12 @@ void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles
     coverCache->open();
     coverImageCache = new CRCoverImageCache(maxRenderCacheItems, maxRenderCacheBytes);
     coverPageManager = new CRCoverPageManager();
+}
+
+void CRStartCoverpageManager() {
+    if (coverPageManager) {
+        coverPageManager->start();
+    }
 }
 
 void CRStopCoverpageManager() {

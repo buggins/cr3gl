@@ -441,6 +441,7 @@ public:
 
     CRDirCache();
     ~CRDirCache();
+    void start();
     CRDirContentItem * find(lString8 pathname);
     CRDirContentItem * find(CRDirItem * dir) { return find(dir->getPathName()); }
     CRDirContentItem * getOrAdd(CRDirItem * dir);
@@ -464,6 +465,7 @@ extern CRDirCache * dirCache;
 void CRSetupDirectoryCacheManager();
 /// stop dirCache thread, remove dirCache
 void CRStopDirectoryCacheManager();
+void CRStartDirectoryCacheManager();
 
 BookDBBook * LVParseBook(const lString8 & path, const lString8 & pathName, LVContainerRef & arcContainer);
 

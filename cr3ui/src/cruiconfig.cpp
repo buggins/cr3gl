@@ -300,6 +300,11 @@ void CRUIConfig::clearGraphicsCaches() {
 	fontMan->clearGlyphCache();
 }
 
+void CRUIConfig::startBackgroundThreads() {
+    CRStartDirectoryCacheManager();
+    CRStartCoverpageManager();
+}
+
 void CRUIConfig::initEngine(bool setLogger) {
 
     if (systemLanguage.empty())
