@@ -100,8 +100,10 @@ public:
 
     GLuint genTexture();
     void deleteTexture(GLuint textureId);
-    /// returns false if failed
+    /// set texture image in RGBA format, returns false if failed
     bool setTextureImage(GLuint textureId, int dx, int dy, unsigned char * pixels);
+    /// sets texture image as ALPHA only, returns false if failed
+    bool setTextureImageAlpha(GLuint textureId, int dx, int dy, unsigned char * pixels);
     /// returns texture ID for buffer, 0 if failed
     bool createFramebuffer(GLuint &textureId, GLuint &framebufferId, int dx, int dy);
 

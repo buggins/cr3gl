@@ -48,7 +48,6 @@ static GLGlyphCache * _glGlyphCache = NULL;
 
 #define GL_GLYPH_CACHE_PAGE_SIZE 1024
 class GLGlyphCachePage
-        //: public CRGLSupport
 {
 	GLGlyphCache * cache;
 	LVGrayDrawBuf * drawbuf;
@@ -61,46 +60,31 @@ class GLGlyphCachePage
 public:
 	GLGlyphCache * getCache() { return cache; }
 	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(NULL), closed(false), needUpdateTexture(false), textureId(0) {
-		// create drawing buffer
-		//drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 		// init free lines
 		currentLine = nextLine = x = 0;
-//#if QT_GL
-//        initializeOpenGLFunctions();
-//#endif
     }
 	virtual ~GLGlyphCachePage() {
 		if (drawbuf)
 			delete drawbuf;
-		if (textureId != 0)
-			glDeleteTextures(1, &textureId);
+        if (textureId != 0) {
+            CRGL->deleteTexture(textureId);
+        }
 	}
 	void updateTexture() {
 		if (drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (textureId == 0) {
 	    	CRLog::debug("GLGlyphCache updateTexture - new texture");
-			glGenTextures(1, &textureId);
-			if (glGetError() != GL_NO_ERROR)
-				return;
+            textureId = CRGL->genTexture();
+            if (!textureId)
+                return;
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", drawbuf->GetWidth(), drawbuf->GetHeight());
-	    glBindTexture(GL_TEXTURE_2D, textureId);
-	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
-	    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
-//#define DP(x) (drawbuf->GetPixel(x,0)!=0?'1':'0')
-    	//CRLog::debug("%c%c%c%c%c%c%c%c%c%c", DP(0),DP(1),DP(2),DP(3),DP(4),DP(5),DP(6),DP(7),DP(8),DP(9));
-	    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, drawbuf->GetWidth(), drawbuf->GetHeight(), 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, drawbuf->GetScanLine(0));
-	    checkError("updateTexture - glTexImage2D");
-	    if (glGetError() != GL_NO_ERROR) {
-	        glDeleteTextures(1, &textureId);
-	        return;
-	    }
+        if (!CRGL->setTextureImageAlpha(textureId, drawbuf->GetWidth(), drawbuf->GetHeight(), drawbuf->GetScanLine(0))) {
+            CRGL->deleteTexture(textureId);
+            textureId = 0;
+            return;
+        }
 	    needUpdateTexture = false;
 	    if (closed) {
 	    	delete drawbuf;
@@ -136,28 +120,6 @@ public:
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
             CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
-
-//        	glEnable(GL_BLEND);
-//        	glDisable(GL_ALPHA_TEST);
-//        	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-//	    	LVGLSetColor(color);
-//	    	glActiveTexture(GL_TEXTURE0);
-//	    	glEnable(GL_TEXTURE_2D);
-//	    	glBindTexture(GL_TEXTURE_2D, textureId);
-
-//	    	glEnableClientState(GL_VERTEX_ARRAY);
-//	    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-//	    	glVertexPointer(3, GL_FLOAT, 0, vertices);
-//	    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-
-//	    	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-//	    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-//	    	glDisableClientState(GL_VERTEX_ARRAY);
-//	    	glDisable(GL_TEXTURE_2D);
-//        	glDisable(GL_ALPHA_TEST);
-//        	glDisable(GL_BLEND);
 		}
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {

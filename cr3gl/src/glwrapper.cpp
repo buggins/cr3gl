@@ -278,6 +278,28 @@ bool CRGLSupport::setTextureImage(GLuint textureId, int dx, int dy, lUInt8 * pix
     return true;
 }
 
+bool CRGLSupport::setTextureImageAlpha(GLuint textureId, int dx, int dy, lUInt8 * pixels) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    checkError("updateTexture - glBindTexture");
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    checkError("updateTexture - glPixelStorei");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkError("updateTexture - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkError("updateTexture - glTexParameteri");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
+    checkError("updateTexture - glTexImage2D");
+    if (glGetError() != GL_NO_ERROR) {
+        CRLog::error("Cannot set image for texture");
+        return false;
+    }
+    return true;
+}
+
 /// returns texture ID for buffer, 0 if failed
 bool CRGLSupport::createFramebuffer(GLuint &textureId, GLuint &framebufferId, int dx, int dy) {
     bool res = true;
