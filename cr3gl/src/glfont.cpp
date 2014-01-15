@@ -32,14 +32,6 @@
 
 #endif
 
-static bool checkError(const char * context) {
-	if (glGetError() != GL_NO_ERROR) {
-		CRLog::error("GLFont : GL Error at %s", context);
-		return true;
-	}
-	return false;
-}
-
 class GLGlyphCachePage;
 class GLGlyphCache;
 class GLFont;
@@ -56,7 +48,7 @@ class GLGlyphCachePage
 	int x;
 	bool closed;
 	bool needUpdateTexture;
-	GLuint textureId;
+    lUInt32 textureId;
 public:
 	GLGlyphCache * getCache() { return cache; }
 	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(NULL), closed(false), needUpdateTexture(false), textureId(0) {
@@ -116,8 +108,8 @@ public:
 				dsty1 += clip->bottom;
 				srcy1 -= clip->bottom * txpp;
 			}
-	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
             CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
 		}

@@ -18,9 +18,6 @@
 
 /// Abstract drawing buffer
 class GLDrawBuf : public LVDrawBuf
-        #if QT_GL
-            , protected QOpenGLFunctions
-        #endif
 {
 protected:
 	int _dx;
@@ -33,9 +30,9 @@ protected:
 	lUInt32 _textColor;
 	lUInt32 _backgroundColor;
 	bool _textureBuf;
-	GLuint _textureId;
-	GLuint _framebufferId;
-	//GLuint _renderbufferId;
+    lUInt32 _textureId;
+    lUInt32 _framebufferId;
+    //lUInt32 _renderbufferId;
 	int _prepareStage;
 	GLScene * _scene;
     int _alpha;

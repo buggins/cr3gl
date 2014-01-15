@@ -1,20 +1,139 @@
 #include "glwrapper.h"
 #include <lvstring.h>
 
-CRGLSupport::CRGLSupport() {
-    init();
-}
 
-CRGLSupport::~CRGLSupport() {
-    uninit();
-}
+#if QT_GL
+
+#ifdef QT_NO_OPENGL
+#error "no opengl"
+#endif
+
+
+//#include <QtGui/qopengl.h>
+//#include <QtGui/qopenglext.h>
+//#include <QtGui/qopenglfunctions.h>
+//#include <QtGui/QOpenGLFunctions>
+//#include <QtOpenGL/QtOpenGLDepends>
+//#include <QOpenGLFunctions>
+//#include <QtOpenGL/QtOpenGL>
+//#include <QGLFunctions>
+#include <QtGui/QOpenGLFunctions>
+#include <QtOpenGLExtensions/QOpenGLExtensions>
+
+//#include <GL/gl.h>
+
+//extern QOpenGLFunctions * _qtgl;
+//#include <QtGui/QOpenGLFunctions_ES2>
+//#include <QtGui/qopengles2ext.h>
+//#include <QtGui/qopenglext.h>
+//#include <QtGui/qopengl.h>
+//#include <QtOpenGL/QtOpenGL>
+//#include <QtOpenGLExtensions/QOpenGLExtensions>
+
+#define glActiveTexture glActiveTexture
+#define glGenFramebuffersOES glGenFramebuffers
+#define glBindFramebufferOES glBindFramebuffer
+#define glFramebufferTexture2DOES glFramebufferTexture2D
+#define GL_FRAMEBUFFER_OES GL_FRAMEBUFFER
+#define GL_COLOR_ATTACHMENT0_OES GL_COLOR_ATTACHMENT0
+#define glCheckFramebufferStatusOES glCheckFramebufferStatus
+#define GL_FRAMEBUFFER_COMPLETE_OES GL_FRAMEBUFFER_COMPLETE
+#define glOrthof glOrthofOES
+#define glDeleteFramebuffersOES glDeleteFramebuffers
+#define glActiveTexture glActiveTexture
+
+#else
+//#ifdef _WIN32
+//#include <GL/glew.h>
+//#include <GL/wglew.h>
+//#define glGenFramebuffersOES glGenFramebuffers
+//#define glBindFramebufferOES glBindFramebuffer
+//#define glFramebufferTexture2DOES glFramebufferTexture2D
+//#define GL_FRAMEBUFFER_OES GL_FRAMEBUFFER
+//#define GL_COLOR_ATTACHMENT0_OES GL_COLOR_ATTACHMENT0
+//#define glCheckFramebufferStatusOES glCheckFramebufferStatus
+//#define GL_FRAMEBUFFER_COMPLETE_OES GL_FRAMEBUFFER_COMPLETE
+//#define glOrthof glOrthofOES
+//#define glDeleteFramebuffersOES glDeleteFramebuffers
+//#else
+#if defined(ANDROID)
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+//#include <EGL/egl.h>
+//#define glGenFramebuffersOES glGenFramebuffers
+//#define glBindFramebufferOES glBindFramebuffer
+//#define glFramebufferTexture2DOES glFramebufferTexture2D
+//#define GL_FRAMEBUFFER_OES GL_FRAMEBUFFER
+//#define GL_COLOR_ATTACHMENT0_OES GL_COLOR_ATTACHMENT0
+//#define glCheckFramebufferStatusOES glCheckFramebufferStatus
+//#define GL_FRAMEBUFFER_COMPLETE_OES GL_FRAMEBUFFER_COMPLETE
+
+#else
+#include <gl.h>
+#include <glext.h>
+#endif
+//#endif
+#endif
+
+
+QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
+class CRGLSupportImpl : public CRGLSupport
+#if QT_GL
+    , protected QOpenGLFunctions
+#endif
+{
+#ifdef QT_OPENGL_ES_2
+    static QGLShaderProgram *program_texture;
+    static QGLShaderProgram *program_solid;
+#endif
+    void init();
+    void uninit();
+public:
+    CRGLSupportImpl();
+    ~CRGLSupportImpl();
+
+    void drawSolidFillRect(float * matrix, float vertices[], float color);
+    void drawSolidFillRect(float * matrix, float vertices[], float colors[]);
+    void drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], float color, lUInt32 textureId);
+    void drawColorAndTextureRect(float * matrix, float vertices[], float txcoords[], float colors[], lUInt32 textureId);
+
+    lUInt32 genTexture();
+    bool isTexture(lUInt32 textureId);
+    void deleteTexture(lUInt32 textureId);
+    /// set texture image in RGBA format, returns false if failed
+    bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
+    /// sets texture image as ALPHA only, returns false if failed
+    bool setTextureImageAlpha(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
+    /// returns texture ID for buffer, 0 if failed
+    bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy);
+
+    void deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId);
+
+    bool bindFramebuffer(lUInt32 framebufferId);
+    void setOrthoProjection(int dx, int dy);
+    void setRotation(int x, int y, int rotationAngle);
+    void flush();
+
+    static CRGLSupport * instance();
+};
 
 static CRGLSupport * _crGLSupportInstance = NULL;
 CRGLSupport * CRGLSupport::instance() {
     if (_crGLSupportInstance)
         return _crGLSupportInstance;
-    _crGLSupportInstance = new CRGLSupport();
+    _crGLSupportInstance = new CRGLSupportImpl();
     return _crGLSupportInstance;
+}
+
+
+
+
+CRGLSupportImpl::CRGLSupportImpl() {
+    init();
+}
+
+CRGLSupportImpl::~CRGLSupportImpl() {
+    uninit();
 }
 
 static bool _checkError(const char *srcfile, int line, const char * context) {
@@ -31,20 +150,20 @@ static bool _checkError(const char *srcfile, int line, const char * context) {
 
 #ifdef QT_OPENGL_ES_2
 #include <QtOpenGL/QGLShaderProgram>
-QGLShaderProgram *CRGLSupport::program_texture = NULL;
-QGLShaderProgram *CRGLSupport::program_solid = NULL;
+QGLShaderProgram *CRGLSupportImpl::program_texture = NULL;
+QGLShaderProgram *CRGLSupportImpl::program_solid = NULL;
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_COLOR_ATTRIBUTE 1
 #define PROGRAM_TEXCOORD_ATTRIBUTE 2
 #endif
 
-void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat color) {
+void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], float color) {
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     drawSolidFillRect(matrixPtr, vertices, colors);
 }
 
-void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat colors[]) {
+void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], float colors[]) {
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(matrixPtr);
     program_solid->setUniformValue("matrix", m);
@@ -73,13 +192,13 @@ void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLf
 #endif
 }
 
-void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat texcoords[], GLfloat color, GLint textureId) {
+void CRGLSupportImpl::drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], float color, lUInt32 textureId) {
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     drawColorAndTextureRect(matrixPtr, vertices, texcoords, colors, textureId);
 }
 
-void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat texcoords[], GLfloat colors[], GLint textureId) {
+void CRGLSupportImpl::drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], float colors[], lUInt32 textureId) {
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(matrixPtr);
     program_solid->setUniformValue("matrix", m);
@@ -131,10 +250,10 @@ void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[
 #endif
 }
 
-void CRGLSupport::init() {
+void CRGLSupportImpl::init() {
 
 #if QT_GL
-    CRLog::trace("CRGLSupport::init() -- calling initializeOpenGLFunctions()");
+    CRLog::trace("CRGLSupportImpl::init() -- calling initializeOpenGLFunctions()");
     initializeOpenGLFunctions();
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
 #endif
@@ -224,7 +343,7 @@ void CRGLSupport::init() {
 #endif
 }
 
-void CRGLSupport::uninit() {
+void CRGLSupportImpl::uninit() {
 #if QT_GL
 #ifdef QT_OPENGL_ES_2
     if (program_texture) {
@@ -239,29 +358,30 @@ void CRGLSupport::uninit() {
 #endif
 }
 
-bool CRGLSupport::isTexture(GLuint textureId) {
+bool CRGLSupportImpl::isTexture(lUInt32 textureId) {
     return glIsTexture(textureId) == GL_TRUE;
 }
 
-GLuint CRGLSupport::genTexture() {
+lUInt32 CRGLSupportImpl::genTexture() {
     GLuint textureId = 0;
     glGenTextures(1, &textureId);
     if (checkError("glGenTextures")) return 0;
     return textureId;
 }
 
-void CRGLSupport::deleteTexture(GLuint textureId) {
+void CRGLSupportImpl::deleteTexture(lUInt32 textureId) {
     if (!textureId)
         return;
     if (glIsTexture(textureId) != GL_TRUE) {
         CRLog::error("Invalid texture %d", textureId);
         return;
     }
-    glDeleteTextures(1, &textureId);
+    GLuint id = textureId;
+    glDeleteTextures(1, &id);
     checkError("~GLImageCachePage - glDeleteTextures");
 }
 
-bool CRGLSupport::setTextureImage(GLuint textureId, int dx, int dy, lUInt8 * pixels) {
+bool CRGLSupportImpl::setTextureImage(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
     glBindTexture(GL_TEXTURE_2D, textureId);
     checkError("updateTexture - glBindTexture");
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -283,7 +403,7 @@ bool CRGLSupport::setTextureImage(GLuint textureId, int dx, int dy, lUInt8 * pix
     return true;
 }
 
-bool CRGLSupport::setTextureImageAlpha(GLuint textureId, int dx, int dy, lUInt8 * pixels) {
+bool CRGLSupportImpl::setTextureImageAlpha(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
     glBindTexture(GL_TEXTURE_2D, textureId);
     checkError("updateTexture - glBindTexture");
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -306,14 +426,16 @@ bool CRGLSupport::setTextureImageAlpha(GLuint textureId, int dx, int dy, lUInt8 
 }
 
 /// returns texture ID for buffer, 0 if failed
-bool CRGLSupport::createFramebuffer(GLuint &textureId, GLuint &framebufferId, int dx, int dy) {
+bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy) {
     bool res = true;
     textureId = framebufferId = 0;
     textureId = genTexture();
     if (!textureId)
         return false;
-    glGenFramebuffersOES(1, &framebufferId);
+    GLuint fid = 0;
+    glGenFramebuffersOES(1, &fid);
     if (checkError("createFramebuffer glGenFramebuffersOES")) return false;
+    framebufferId = fid;
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     if (checkError("createFramebuffer glBindFramebuffer")) return false;
 
@@ -347,7 +469,7 @@ bool CRGLSupport::createFramebuffer(GLuint &textureId, GLuint &framebufferId, in
     return res;
 }
 
-void CRGLSupport::deleteFramebuffer(GLuint &textureId, GLuint &framebufferId) {
+void CRGLSupportImpl::deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId) {
     //CRLog::debug("GLDrawBuf::deleteFramebuffer");
     if (textureId != 0) {
         deleteTexture(textureId);
@@ -355,19 +477,20 @@ void CRGLSupport::deleteFramebuffer(GLuint &textureId, GLuint &framebufferId) {
     if (framebufferId != 0) {
         glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
         checkError("deleteFramebuffer - glBindFramebufferOES");
-        glDeleteFramebuffersOES(1, &framebufferId);
+        GLuint fid = framebufferId;
+        glDeleteFramebuffersOES(1, &fid);
         checkError("deleteFramebuffer - glDeleteFramebuffer");
     }
     textureId = 0;
     framebufferId = 0;
 }
 
-bool CRGLSupport::bindFramebuffer(GLuint framebufferId) {
+bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     return !checkError("beforeDrawing glBindFramebufferOES");
 }
 
-void CRGLSupport::flush() {
+void CRGLSupportImpl::flush() {
     glFlush();
     checkError("glFlush");
 }
@@ -392,7 +515,7 @@ void myGlOrtho(float left, float right, float bottom, float top,
     glLoadMatrixf(m);
 }
 
-void CRGLSupport::setOrthoProjection(int dx, int dy) {
+void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();
     checkError("glPushMatrix");
@@ -407,7 +530,7 @@ void CRGLSupport::setOrthoProjection(int dx, int dy) {
     glLoadIdentity();
 }
 
-void CRGLSupport::setRotation(int x, int y, int rotationAngle) {
+void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
     if (!rotationAngle)
         return;
     glMatrixMode(GL_PROJECTION);

@@ -58,17 +58,6 @@ static int nearestPOT(int n) {
 	return MIN_TEX_SIZE;
 }
 
-static bool _checkError(const char *srcfile, int line, const char * context) {
-    int err = glGetError();
-    if (err != GL_NO_ERROR) {
-        CRLog::error("GLDrawBuf : GL Error %04x at %s : %s : %d", err, context, srcfile, line);
-		return true;
-	}
-	return false;
-}
-
-#define checkError(context) _checkError(__FILE__, __LINE__, context)
-
 GLImageCache * glImageCache = NULL;
 
 /// object deletion listener callback function type
@@ -97,7 +86,7 @@ class GLImageCachePage {
 	int _x;
 	bool _closed;
 	bool _needUpdateTexture;
-	GLuint _textureId;
+    lUInt32 _textureId;
 	int _itemCount;
 public:
 	GLImageCachePage(GLImageCache * cache, int dx, int dy) : _cache(cache), _drawbuf(NULL), _currentLine(0), _nextLine(0), _x(0), _closed(false), _needUpdateTexture(false), _textureId(0) {
@@ -261,8 +250,8 @@ public:
 
                 //CRLog::trace("after clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
             }
-	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
             //rotationAngle = 0;
             int x = (dstx0 + dstx1) / 2;
             int y = (dsty0 + dsty1) / 2;
@@ -572,14 +561,14 @@ public:
     GLFillRectItem(int _x0, int _y0, int _x1, int _y1, lUInt32 _color1, lUInt32 _color2, lUInt32 _color3, lUInt32 _color4) : x0(_x0), y0(_y0), x1(_x1), y1(_y1)
       , color1(_color1), color2(_color2) , color3(_color3) , color4(_color4) { }
     virtual void draw() {
-    	GLfloat vertices[] = {
+        float vertices[] = {
                 (float)x0,(float)y0,0,
                 (float)x0,(float)y1,0,
                 (float)x1,(float)y1,0,
                 (float)x0,(float)y0,0,
                 (float)x1,(float)y1,0,
                 (float)x1,(float)y0,0};
-    	GLfloat colors[6 * 4];
+        float colors[6 * 4];
         LVGLFillColor(color1, colors + 4*0, 1);
         LVGLFillColor(color4, colors + 4*1, 1);
         LVGLFillColor(color3, colors + 4*2, 1);
@@ -781,8 +770,8 @@ public:
 	{
     }
     virtual void draw() {
-    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+        float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+        float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
         CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
     }
 };
@@ -951,20 +940,15 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 		_hidePartialGlyphs(false), _clipRect(0, 0, width, height),
 		_textColor(0x000000), _backgroundColor(0xFFFFFF),
 		_textureBuf(useTexture), _textureId(0), _framebufferId(0),
-		//_renderbufferId(0),
 		_prepareStage(0),
         _scene(NULL),
         _alpha(0)
 {
-    //if (_textureBuf) CRLog::trace("GLDrawBuf::GLDrawBuf");
-    if (!isInitialized(d_ptr))
-        initializeOpenGLFunctions();
 }
 
 /// destructor
 GLDrawBuf::~GLDrawBuf()
 {
-    //if (_textureBuf) CRLog::trace("GLDrawBuf::~GLDrawBuf");
     deleteFramebuffer();
 }
 
