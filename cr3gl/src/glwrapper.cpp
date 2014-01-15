@@ -37,6 +37,12 @@ QGLShaderProgram *CRGLSupport::program_solid = NULL;
 #define PROGRAM_TEXCOORD_ATTRIBUTE 2
 #endif
 
+void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat color) {
+    float colors[6*4];
+    LVGLFillColor(color, colors, 6);
+    drawSolidFillRect(matrixPtr, vertices, colors);
+}
+
 void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat colors[]) {
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(matrixPtr);
@@ -64,6 +70,12 @@ void CRGLSupport::drawSolidFillRect(GLfloat * matrixPtr, GLfloat vertices[], GLf
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
 #endif
+}
+
+void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat texcoords[], GLfloat color, GLint textureId) {
+    float colors[6*4];
+    LVGLFillColor(color, colors, 6);
+    drawColorAndTextureRect(matrixPtr, vertices, texcoords, colors, textureId);
 }
 
 void CRGLSupport::drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat texcoords[], GLfloat colors[], GLint textureId) {
@@ -327,3 +339,18 @@ bool CRGLSupport::bindFramebuffer(GLuint framebufferId) {
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     return !checkError("beforeDrawing glBindFramebufferOES");
 }
+
+// utility function to fill 4-float array of vertex colors with converted CR 32bit color
+void LVGLFillColor(lUInt32 color, float * buf, int count) {
+    float r = ((color >> 16) & 255) / 255.0f;
+    float g = ((color >> 8) & 255) / 255.0f;
+    float b = ((color >> 0) & 255) / 255.0f;
+    float a = (((color >> 24) & 255) ^ 255) / 255.0f;
+    for (int i=0; i<count; i++) {
+        *buf++ = r;
+        *buf++ = g;
+        *buf++ = b;
+        *buf++ = a;
+    }
+}
+

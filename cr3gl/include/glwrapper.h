@@ -1,6 +1,8 @@
 #ifndef GLWRAPPER_H
 #define GLWRAPPER_H
 
+#include <lvtypes.h>
+
 #if QT_GL
 
 #ifdef QT_NO_OPENGL
@@ -91,7 +93,9 @@ public:
     CRGLSupport();
     ~CRGLSupport();
 
+    void drawSolidFillRect(GLfloat * matrix, GLfloat vertices[], GLfloat color);
     void drawSolidFillRect(GLfloat * matrix, GLfloat vertices[], GLfloat colors[]);
+    void drawColorAndTextureRect(GLfloat * matrixPtr, GLfloat vertices[], GLfloat texcoords[], GLfloat color, GLint textureId);
     void drawColorAndTextureRect(GLfloat * matrix, GLfloat vertices[], GLfloat txcoords[], GLfloat colors[], GLint textureId);
 
     GLuint genTexture();
@@ -108,6 +112,7 @@ public:
     static CRGLSupport * instance();
 };
 
+void LVGLFillColor(lUInt32 color, float * buf, int count);
 
 #define CRGL CRGLSupport::instance()
 

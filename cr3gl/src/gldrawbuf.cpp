@@ -87,7 +87,7 @@ void LVGLClearImageCache() {
 	glImageCache->clear();
 }
 
-class GLImageCachePage : public CRGLSupport {
+class GLImageCachePage {
 	GLImageCache * _cache;
 	int _tdx;
 	int _tdy;
@@ -105,9 +105,6 @@ public:
 		_tdx = nearestPOT(dx);
 		_tdy = nearestPOT(dy);
 		_itemCount = 0;
-#if QT_GL
-        initializeOpenGLFunctions();
-#endif
     }
 
 	virtual ~GLImageCachePage() {
@@ -131,9 +128,6 @@ public:
             _textureId = CRGL->genTexture();
             if (!_textureId)
                 return;
-//			glGenTextures(1, &_textureId);
-//			if (glGetError() != GL_NO_ERROR)
-//				return;
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
         lUInt8 * pixels = _drawbuf->GetScanLine(0);
@@ -142,25 +136,6 @@ public:
             _textureId = 0;
             return;
         }
-//        glBindTexture(GL_TEXTURE_2D, _textureId);
-//        checkError("updateTexture - glBindTexture");
-//        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//        checkError("updateTexture - glPixelStorei");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//        checkError("updateTexture - glTexParameteri");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//        checkError("updateTexture - glTexParameteri");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//        checkError("updateTexture - glTexParameteri");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//        checkError("updateTexture - glTexParameteri");
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _drawbuf->GetWidth(), _drawbuf->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-//	    checkError("updateTexture - glTexImage2D");
-//	    if (glGetError() != GL_NO_ERROR) {
-//	        glDeleteTextures(1, &_textureId);
-//            _textureId = 0;
-//	        return;
-//	    }
 	    _needUpdateTexture = false;
 	    if (_closed) {
 	    	delete _drawbuf;
@@ -307,10 +282,7 @@ public:
                 glTranslatef(-x, -y, 0);
             }
 
-            float colors[6*4];
-            LVGLFillColor(color, colors, 6);
-
-            drawColorAndTextureRect(NULL, vertices, texcoords, colors, _textureId);
+            CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
                 glMatrixMode(GL_PROJECTION);
@@ -507,20 +479,6 @@ void GLDrawBuf::GetClipRect( lvRect * clipRect )
 	*clipRect = _clipRect;
 }
 
-//class ClipRectItem : public GLSceneItem {
-//	lvRect _rc;
-//public:
-//	ClipRectItem(int left, int top, int right, int bottom) {
-//		_rc.left = left;
-//		_rc.right = right;
-//		_rc.top = top;
-//		_rc.bottom = bottom;
-//	}
-//	virtual void draw() {
-//		//glViewport(_rc.left, _rc.top, _rc.width(), _rc.height());
-//	}
-//};
-
 /// sets clip rect
 void GLDrawBuf::SetClipRect( const lvRect * clipRect )
 {
@@ -611,21 +569,7 @@ void LVGLSetColor(lUInt32 color) {
 	glColor4f(r, g, b, a);
 }
 
-// utility function to fill 4-float array of vertex colors with converted CR 32bit color
-void LVGLFillColor(lUInt32 color, float * buf, int count) {
-	float r = ((color >> 16) & 255) / 255.0f;
-	float g = ((color >> 8) & 255) / 255.0f;
-	float b = ((color >> 0) & 255) / 255.0f;
-	float a = (((color >> 24) & 255) ^ 255) / 255.0f;
-	for (int i=0; i<count; i++) {
-		*buf++ = r;
-		*buf++ = g;
-		*buf++ = b;
-		*buf++ = a;
-	}
-}
-
-class GLFillRectItem : public GLSceneItem, public CRGLSupport {
+class GLFillRectItem : public GLSceneItem {
 public:
 	int x0;
 	int y0;
@@ -653,7 +597,7 @@ public:
         LVGLFillColor(color3, colors + 4*4, 1);
         LVGLFillColor(color2, colors + 4*5, 1);
 
-        drawSolidFillRect(NULL, vertices, colors);
+        CRGL->drawSolidFillRect(NULL, vertices, colors);
 
     }
 };
@@ -823,7 +767,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 	}
 }
 
-class GLDrawTextureItem : public GLSceneItem, public CRGLSupport {
+class GLDrawTextureItem : public GLSceneItem {
 	int textureId;
 	int dstx0;
 	int dsty0;
@@ -845,85 +789,13 @@ public:
       color(_color),
       linear(_linear)
 	{
-#if QT_GL
-        initializeOpenGLFunctions();
-#endif
     }
     virtual void draw() {
     	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
     	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-        float colors[6*4];
-        LVGLFillColor(color, colors, 6);
-        //GLfloat colors[6 * 4];
-    	//LVGLFillColor(color, colors, 6);
-//    	glEnable(GL_BLEND);
-//    	glDisable(GL_ALPHA_TEST);
-//    	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    	//LVGLSetColor(0xFFFFFF);
-//        float alpha = 1.0f - ((color >> 24) & 255)/ 255.0f;
-//        glColor4f(1,1,1,alpha);
-//    	glActiveTexture(GL_TEXTURE0);
-//        checkError("glActiveTexture");
-//        glBindTexture(GL_TEXTURE_2D, textureId);
-//        checkError("glBindTexture");
-//        glEnable(GL_TEXTURE_2D);
-
-        drawColorAndTextureRect(NULL, vertices, texcoords, colors, textureId);
-
-//        int flt = linear ? GL_LINEAR : GL_NEAREST;
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, flt);
-//        checkError("texParameter");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flt);
-//        checkError("texParameter");
-
-
-//        checkError("glEnable(GL_TEXTURE_2D)");
-//        glEnableClientState(GL_VERTEX_ARRAY);
-//        checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-//        //glEnableClientState(GL_COLOR_ARRAY);
-//    	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-//        checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
-//        glVertexPointer(3, GL_FLOAT, 0, vertices);
-//        checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-//        //glColorPointer(4, GL_FLOAT, 0, colors);
-//    	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-//        checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
-
-//    	glDrawArrays(GL_TRIANGLES, 0, 6);
-//        checkError("glDrawArrays");
-
-//    	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-//    	//glDisableClientState(GL_COLOR_ARRAY);
-//    	glDisableClientState(GL_VERTEX_ARRAY);
-//    	glDisable(GL_TEXTURE_2D);
-//    	checkError("glDisable(GL_TEXTURE_2D)");
-
-//    	glDisable(GL_ALPHA_TEST);
-//    	glDisable(GL_BLEND);
+        CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
     }
 };
-
-//void LVGLDrawTexture(int textureId, int dstx0, int dsty0, int dstx1, int dsty1, float srcx0, float srcy0, float srcx1, float srcy1, lUInt32 color) {
-//	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-//	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-//	GLfloat colors[6 * 4];
-//	LVGLFillColor(color, colors, 6);
-//	glActiveTexture(GL_TEXTURE0);
-//	glEnable(GL_TEXTURE_2D);
-//	glEnableClientState(GL_VERTEX_ARRAY);
-//	//glEnableClientState(GL_COLOR_ARRAY);
-//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-//	glVertexPointer(3, GL_FLOAT, 0, vertices);
-//	//glColorPointer(4, GL_FLOAT, 0, colors);
-//	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-//
-//	glDrawArrays(GL_TRIANGLES, 0, 6);
-//
-//	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-//	//glDisableClientState(GL_COLOR_ARRAY);
-//	glDisableClientState(GL_VERTEX_ARRAY);
-//	glDisable(GL_TEXTURE_2D);
-//}
 
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
@@ -1013,66 +885,14 @@ lUInt8 * GLDrawBuf::GetScanLine( int y )
 void GLDrawBuf::createFramebuffer()
 {
 	if (_textureBuf) {
-		// generate IDs
-		//CRLog::debug("GLDrawBuf::createFramebuffer %dx%d", _tdx, _tdy);
         CRGL->createFramebuffer(_textureId, _framebufferId, _tdx, _tdy);
-//		glGenTextures(1, &_textureId);
-//		if (checkError("createFramebuffer glGenTextures")) return;
-//		glGenFramebuffersOES(1, &_framebufferId);
-//		if (checkError("createFramebuffer glGenFramebuffersOES")) return;
-//		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
-//		if (checkError("createFramebuffer glBindFramebuffer")) return;
-
-//		glBindTexture(GL_TEXTURE_2D, _textureId);
-//        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _tdx, _tdy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-//		checkError("glTexImage2D");
-
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//        checkError("texParameter");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//        checkError("texParameter");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//        checkError("texParameter");
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//        checkError("texParameter");
-
-//		glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, _textureId, 0);
-//		checkError("glFramebufferTexture2DOES");
-//		// Always check that our framebuffer is ok
-//		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-//			CRLog::error("glFramebufferTexture2DOES failed");
-//		}
-//        checkError("glCheckFramebufferStatusOES");
-//        //glClearColor(0.5f, 0, 0, 1);
-//        glClearColor(0, 0, 0, 0);
-//        checkError("glClearColor");
-//        glClear(GL_COLOR_BUFFER_BIT);
-//        checkError("glClear");
     }
 }
 
 void GLDrawBuf::deleteFramebuffer()
 {
 	if (_textureBuf) {
-		//CRLog::debug("GLDrawBuf::deleteFramebuffer");
         CRGL->deleteFramebuffer(_textureId, _framebufferId);
-//		if (_textureId != 0) {
-//            if (glIsTexture(_textureId) != GL_TRUE) {
-//                CRLog::error("Invalid texture %d", _textureId);
-//                return;
-//            }
-//            glDeleteTextures(1, &_textureId);
-//			checkError("deleteFramebuffer - glDeleteTextures");
-//		}
-//		if (_framebufferId != 0) {
-//			glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
-//            checkError("deleteFramebuffer - glBindFramebufferOES");
-//            glDeleteFramebuffersOES(1, &_framebufferId);
-//			checkError("deleteFramebuffer - glDeleteFramebuffer");
-//		}
-//		_textureId = 0;
-//		_framebufferId = 0;
 	}
 }
 
