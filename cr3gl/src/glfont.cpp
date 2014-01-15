@@ -47,7 +47,9 @@ class GLFont;
 static GLGlyphCache * _glGlyphCache = NULL;
 
 #define GL_GLYPH_CACHE_PAGE_SIZE 1024
-class GLGlyphCachePage : public CRGLSupport {
+class GLGlyphCachePage
+        //: public CRGLSupport
+{
 	GLGlyphCache * cache;
 	LVGrayDrawBuf * drawbuf;
 	int currentLine;
@@ -63,9 +65,9 @@ public:
 		//drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
 		// init free lines
 		currentLine = nextLine = x = 0;
-#if QT_GL
-        initializeOpenGLFunctions();
-#endif
+//#if QT_GL
+//        initializeOpenGLFunctions();
+//#endif
     }
 	virtual ~GLGlyphCachePage() {
 		if (drawbuf)
@@ -132,10 +134,8 @@ public:
 			}
 	    	GLfloat vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
 	    	GLfloat texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-            float colors[6*4];
-            LVGLFillColor(color, colors, 6);
 
-            drawColorAndTextureRect(NULL, vertices, texcoords, colors, textureId);
+            CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
 
 //        	glEnable(GL_BLEND);
 //        	glDisable(GL_ALPHA_TEST);
