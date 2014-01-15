@@ -1137,7 +1137,7 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
         speed = _pos.height() / 2;
         break;
     default:
-        return _docview->doCommand((LVDocCmd)cmd, param);
+        return _docview->doCommand((LVDocCmd)cmd, param) != 0;
     }
     if (_viewMode == DVM_PAGES) {
         if (page != newpage && newpage >= 0 && newpage < _docview->getPageCount() + _docview->getVisiblePageCount() - 1) {
@@ -2607,7 +2607,7 @@ float solve_cosa_plus_a_eq_n(float n) {
 void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int xx, int diam, int x) {
     bool twoPages = numPages > 1;
     float m_pi_2 = (float)M_PI / 2;
-    float fdiam = diam;
+    float fdiam = (float)diam;
     float fradius = fdiam / 2;
     float halfc = m_pi_2 * fdiam;
     float quarterc = halfc / 2;

@@ -784,9 +784,11 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (_textureBuf && _textureId != 0) {
-            int alpha = ((options >> 16) & 255);
-			if (glbuf->_scene)
-                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
+            //int alpha = ((options >> 16) & 255);
+            if (glbuf->_scene) {
+                //glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
+                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF)));
+            }
 		} else {
 			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
 		}

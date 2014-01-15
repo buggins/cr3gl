@@ -92,9 +92,9 @@ public:
     CRGLSupportImpl();
     ~CRGLSupportImpl();
 
-    void drawSolidFillRect(float * matrix, float vertices[], float color);
+    void drawSolidFillRect(float * matrix, float vertices[], lUInt32 color);
     void drawSolidFillRect(float * matrix, float vertices[], float colors[]);
-    void drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], float color, lUInt32 textureId);
+    void drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId);
     void drawColorAndTextureRect(float * matrix, float vertices[], float txcoords[], float colors[], lUInt32 textureId);
 
     lUInt32 genTexture();
@@ -157,7 +157,7 @@ QGLShaderProgram *CRGLSupportImpl::program_solid = NULL;
 #define PROGRAM_TEXCOORD_ATTRIBUTE 2
 #endif
 
-void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], float color) {
+void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], lUInt32 color) {
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     drawSolidFillRect(matrixPtr, vertices, colors);
@@ -169,6 +169,7 @@ void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], flo
     program_solid->setUniformValue("matrix", m);
 #else
     CR_UNUSED(matrixPtr);
+    glColor4f(1,1,1,1);
     glEnable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -192,7 +193,7 @@ void CRGLSupportImpl::drawSolidFillRect(float * matrixPtr, float vertices[], flo
 #endif
 }
 
-void CRGLSupportImpl::drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], float color, lUInt32 textureId) {
+void CRGLSupportImpl::drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) {
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     drawColorAndTextureRect(matrixPtr, vertices, texcoords, colors, textureId);
@@ -204,6 +205,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float * matrixPtr, float vertices[
     program_solid->setUniformValue("matrix", m);
 #else
     CR_UNUSED(matrixPtr);
+    glColor4f(1,1,1,1);
     glEnable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

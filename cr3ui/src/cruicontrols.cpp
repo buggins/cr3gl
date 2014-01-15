@@ -287,7 +287,7 @@ void CRUIProgressWidget::draw(LVDrawBuf * buf) {
 
 
 void CRUISpinnerWidget::animate(lUInt64 millisPassed) {
-    _angle += millisPassed * _speed;
+    _angle += (int)(millisPassed * _speed);
     _angle = _angle % 360000;
 }
 
