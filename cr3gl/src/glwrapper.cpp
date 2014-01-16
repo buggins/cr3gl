@@ -174,6 +174,8 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     QMatrix4x4 matrix(m);
     if (!program_texture->bind())
         CRLog::error("error while binding texture program");
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     program_solid->setUniformValue("matrix", matrix);
     program_solid->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program_solid->enableAttributeArray(PROGRAM_COLOR_ATTRIBUTE);
@@ -234,15 +236,16 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
 
 #ifdef QT_OPENGL_ES_2
 
-    int maxt = 0;
-    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxt);
-    CRLog::trace("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS=%d, GL_TEXTURE0=%d", maxt, GL_TEXTURE0);
+    glEnable(GL_BLEND);
+    checkError("glEnable(GL_BLEND)");
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
 
-    //glActiveTexture(GL_TEXTURE0);
-//    glActiveTexture(0);
-//    checkError("glActiveTexture 0");
+//    int maxt = 0;
+//    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxt);
+//    CRLog::trace("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS=%d, GL_TEXTURE0=%d", maxt, GL_TEXTURE0);
+
     glActiveTexture(GL_TEXTURE0);
-    //glActiveTexture(GL_TEXTURE0);
     checkError("glActiveTexture GL_TEXTURE0");
     glBindTexture(GL_TEXTURE_2D, textureId);
     checkError("glBindTexture");
@@ -606,8 +609,15 @@ void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top
 }
 
 void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
-    myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
+    //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
+    myGlOrtho(0, dx, 0, dy, 0.01f, 5.0f);
+
 #ifdef QT_OPENGL_ES_2
+    //QMatrix4x4 matrix(m);
+    QMatrix4x4 matrix2;
+    matrix2.ortho(0, dx, 0, dy, -1.0f, 5.0f);
+    //float r[16];
+    matrix2.copyDataTo(m);
 #else
 
     glMatrixMode(GL_PROJECTION);
