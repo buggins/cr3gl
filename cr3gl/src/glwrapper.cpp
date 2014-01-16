@@ -169,6 +169,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], lUInt32 color) {
 }
 
 void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
+    checkError("before CRGLSupportImpl::drawSolidFillRect");
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(m);
     if (!program_texture->bind())
@@ -212,6 +213,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
 #endif
+    checkError("after CRGLSupportImpl::drawSolidFillRect");
 }
 
 void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) {
@@ -221,6 +223,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
 }
 
 void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId) {
+    checkError("before CRGLSupportImpl::drawColorAndTextureRect");
 
     if (!glIsTexture(textureId)) {
         CRLog::error("invalid texture passed to CRGLSupportImpl::drawColorAndTextureRect");
@@ -305,9 +308,9 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     glDisableClientState(GL_COLOR_ARRAY);
     glDisable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
-#endif
-
     glDisable(GL_TEXTURE_2D);
+#endif
+    checkError("after CRGLSupportImpl::drawColorAndTextureRect");
 }
 
 void CRGLSupportImpl::init() {
@@ -448,6 +451,7 @@ void CRGLSupportImpl::deleteTexture(lUInt32 textureId) {
 }
 
 bool CRGLSupportImpl::setTextureImage(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
+    checkError("before setTextureImage");
     glActiveTexture(GL_TEXTURE0);
     checkError("updateTexture - glActiveTexture");
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -475,10 +479,12 @@ bool CRGLSupportImpl::setTextureImage(lUInt32 textureId, int dx, int dy, lUInt8 
         CRLog::error("Cannot set image for texture");
         return false;
     }
+    checkError("after setTextureImage");
     return true;
 }
 
 bool CRGLSupportImpl::setTextureImageAlpha(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
+    checkError("before setTextureImageAlpha");
     glActiveTexture(GL_TEXTURE0);
     checkError("updateTexture - glActiveTexture");
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -505,11 +511,13 @@ bool CRGLSupportImpl::setTextureImageAlpha(lUInt32 textureId, int dx, int dy, lU
         CRLog::error("Cannot set image for texture");
         return false;
     }
+    checkError("after setTextureImageAlpha");
     return true;
 }
 
 /// returns texture ID for buffer, 0 if failed
 bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy) {
+    checkError("before createFramebuffer");
     bool res = true;
     textureId = framebufferId = 0;
     textureId = genTexture();
@@ -549,6 +557,7 @@ bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
     checkError("glClearColor");
     glClear(GL_COLOR_BUFFER_BIT);
     checkError("glClear");
+    checkError("after createFramebuffer");
     return res;
 }
 
@@ -566,11 +575,12 @@ void CRGLSupportImpl::deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
     }
     textureId = 0;
     framebufferId = 0;
+    checkError("after deleteFramebuffer");
 }
 
 bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
-    return !checkError("beforeDrawing glBindFramebufferOES");
+    return !checkError("glBindFramebufferOES");
 }
 
 void CRGLSupportImpl::flush() {
@@ -606,13 +616,13 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     glLoadIdentity();
     glLoadMatrixf(m);
     //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-    checkError("glViewport");
     glMatrixMode(GL_MODELVIEW);
     //glPushMatrix();
     checkError("glPushMatrix");
     glLoadIdentity();
 #endif
     glViewport(0,0,dx,dy);
+    checkError("glViewport");
 }
 
 void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
