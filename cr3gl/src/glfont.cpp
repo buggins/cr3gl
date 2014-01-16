@@ -111,7 +111,7 @@ public:
             float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
             float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
 
-            CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
+            CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
 		}
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {

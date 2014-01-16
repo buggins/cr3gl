@@ -8,10 +8,10 @@ class CRGLSupport
 public:
     CRGLSupport() {}
     ~CRGLSupport() {}
-    virtual void drawSolidFillRect(float * matrix, float vertices[], lUInt32 color) = 0;
-    virtual void drawSolidFillRect(float * matrix, float vertices[], float colors[]) = 0;
-    virtual void drawColorAndTextureRect(float * matrixPtr, float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) = 0;
-    virtual void drawColorAndTextureRect(float * matrix, float vertices[], float txcoords[], float colors[], lUInt32 textureId) = 0;
+    virtual void drawSolidFillRect(float vertices[], lUInt32 color) = 0;
+    virtual void drawSolidFillRect(float vertices[], float colors[]) = 0;
+    virtual void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) = 0;
+    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId) = 0;
 
     virtual lUInt32 genTexture() = 0;
     virtual bool isTexture(lUInt32 textureId) = 0;

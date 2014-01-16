@@ -260,7 +260,7 @@ public:
                 CRGL->setRotation(x, y, rotationAngle);
             }
 
-            CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, _textureId);
+            CRGL->drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
                 CRGL->setRotation(x, y, -rotationAngle);
@@ -576,7 +576,7 @@ public:
         LVGLFillColor(color3, colors + 4*4, 1);
         LVGLFillColor(color2, colors + 4*5, 1);
 
-        CRGL->drawSolidFillRect(NULL, vertices, colors);
+        CRGL->drawSolidFillRect(vertices, colors);
 
     }
 };
@@ -772,7 +772,7 @@ public:
     virtual void draw() {
         float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
         float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-        CRGL->drawColorAndTextureRect(NULL, vertices, texcoords, color, textureId);
+        CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
     }
 };
 
