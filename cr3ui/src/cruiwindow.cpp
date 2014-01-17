@@ -62,7 +62,7 @@ static bool isBetterDistance(int bestd, int newd) {
 
 static bool smallDist(int n1, int n2) {
     int d = n1 - n2;
-    return (d <= MIN_ITEM_PX / 10 || d >= - MIN_ITEM_PX / 10);
+    return (d <= MIN_ITEM_PX / 10 && d >= - MIN_ITEM_PX / 10);
 }
 
 static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & bestpos, lvRect & newpos) {
@@ -75,7 +75,8 @@ static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & b
     case FOCUS_LEFT:
         if (smallDist(dy, bdy)) {
             // on the same line
-            return isBetterDistance(-bdx, -dx);
+            bool back = dy < 0;
+            return isBetterDistance(-bdx, -dx) ^ back;
         } else {
             // different lines
             return isBetterDistance(-(bdx + bdy * 1000), -(dx + dy * 1000));
@@ -84,7 +85,8 @@ static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & b
     case FOCUS_RIGHT:
         if (smallDist(dy, bdy)) {
             // on the same line
-            return isBetterDistance(bdx, dx);
+            bool back = dy < 0;
+            return isBetterDistance(bdx, dx) ^ back;
         } else {
             // different lines
             return isBetterDistance((bdx + bdy * 1000), (dx + dy * 1000));
@@ -92,7 +94,8 @@ static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & b
     case FOCUS_UP:
         if (smallDist(dx, bdx)) {
             // on the same line
-            return isBetterDistance(-bdy, -dy);
+            bool back = dx < 0;
+            return isBetterDistance(-bdy, -dy) ^ back;
         } else {
             // different lines
             return isBetterDistance(-(bdy + bdx * 1000), -(dy + dx * 1000));
@@ -100,7 +103,8 @@ static bool isBetterFocusPosition(CRUI_FOCUS_OP op, lvRect & currpos, lvRect & b
     case FOCUS_DOWN:
         if (smallDist(dx, bdx)) {
             // on the same line
-            return isBetterDistance(bdy, dy);
+            bool back = dx < 0;
+            return isBetterDistance(bdy, dy) ^ back;
         } else {
             // different lines
             return isBetterDistance((bdy + bdx * 1000), (dy + dx * 1000));

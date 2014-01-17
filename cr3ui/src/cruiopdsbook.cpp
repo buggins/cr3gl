@@ -497,6 +497,7 @@ void CRUIOpdsBookWidget::cancelDownloads() {
 }
 
 void CRUIOpdsBookWidget::afterNavigationTo() {
+    CRUIWindowWidget::afterNavigationTo();
     _downloadFolder = bookDB->getDownloadsDir();
     if (_downloadFolder.empty()) {
         CRLog::warn("Download folder is not specified! Downloads disabled.");
@@ -728,7 +729,7 @@ bool CRUIOpdsBookWidget::onKeyEvent(const CRUIKeyEvent * event) {
             return true;
         }
     }
-    return false;
+    return CRUIWindowWidget::onKeyEvent(event);
 }
 
 void CRUIOpdsBookWidget::beforeNavigationFrom() {

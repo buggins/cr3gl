@@ -927,8 +927,8 @@ void CRUIMainWidget::stopAnimation() {
         delete _animation.newimage;
         _animation.newimage = NULL;
     }
-    afterNavigation(_history[_animation.oldpos], _history[_animation.newpos]);
     _history.setPos(_animation.newpos);
+    afterNavigation(_history[_animation.oldpos], _history[_animation.newpos]);
     requestLayout();
     update(true);
 }

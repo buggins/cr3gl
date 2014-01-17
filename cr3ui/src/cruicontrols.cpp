@@ -621,6 +621,7 @@ CRUIEditWidget::CRUIEditWidget() : _cursorPos(0), _scrollx(0), _lastEnteredCharP
     //_text = "Editor test sample";
     //_cursorPos = 3;
     setStyle("EDITBOX");
+    setFocusable(true);
 }
 
 lString16 CRUIEditWidget::getTextToShow() {
@@ -986,5 +987,5 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             return true;
         }
     }
-    return true;
+    return false;
 }

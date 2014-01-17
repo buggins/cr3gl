@@ -38,6 +38,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
     // add edit boxes
     CRUITextWidget * label = new CRUITextWidget(STR_OPDS_CATALOG_NAME);
     _edTitle = new CRUIEditWidget();
+    _edTitle->setId("TITLE");
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
     _edTitle->setText(Utf8ToUnicode(_catalog->name.c_str()));
     _edTitle->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
@@ -53,6 +54,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
     label = new CRUITextWidget(STR_OPDS_CATALOG_LOGIN);
     label->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
     _edLogin = new CRUIEditWidget();
+    _edLogin->setId("LOGIN");
     _edLogin->setText(Utf8ToUnicode(_catalog->login.c_str()));
     _edLogin->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     layout->addChild(label);
@@ -81,6 +83,7 @@ CRUIOpdsPropsWidget::CRUIOpdsPropsWidget(CRUIMainWidget * main, LVClonePtr<BookD
     _scroll->addChild(layout);
     _body->addChild(_scroll);
     //_body->setStyle("SETTINGS_ITEM_LIST");
+    setDefaultWidget(_edTitle);
 }
 
 bool CRUIOpdsPropsWidget::onClick(CRUIWidget * widget) {
@@ -182,7 +185,7 @@ bool CRUIOpdsPropsWidget::onKeyEvent(const CRUIKeyEvent * event) {
             return true;
         }
     }
-    return false;
+    return CRUIWindowWidget::onKeyEvent(event);
 }
 
 void CRUIOpdsPropsWidget::save() {
