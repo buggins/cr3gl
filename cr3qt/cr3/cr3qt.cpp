@@ -148,6 +148,7 @@ static int translateKeyCode(int key) {
     case Qt::Key_Backspace: return CR_KEY_BACKSPACE;
     case Qt::Key_Back: return CR_KEY_BACK;
     case Qt::Key_Tab: return CR_KEY_TAB;
+    case Qt::Key_Backtab: return CR_KEY_TAB;
     default:
         return 0;
     }
@@ -178,6 +179,7 @@ void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     bool autorepeat = event->isAutoRepeat();
     int count = event->count();
     lUInt32 modifiers = translateModifiers(event->modifiers());
+    CRLog::trace("QKeyEvent type=%d srckey=%08x key=%04x srcmodifiers=%08x modifiers=%04x", type, event->key(), key, event->modifiers(), modifiers);
     CRUIKeyEvent * ev = new CRUIKeyEvent(type, key, autorepeat, count, modifiers);
     if (s.length()) {
         lString16 txt = Utf8ToUnicode(s.toUtf8().constData());

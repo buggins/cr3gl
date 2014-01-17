@@ -76,7 +76,10 @@
 #endif
 
 
+#ifdef QT_OPENGL_ES_2
 QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
+#endif
+
 class CRGLSupportImpl :
 #if QT_GL
         public QObject,
