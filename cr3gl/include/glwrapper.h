@@ -15,7 +15,7 @@ public:
 
     virtual lUInt32 genTexture() = 0;
     virtual bool isTexture(lUInt32 textureId) = 0;
-    virtual void deleteTexture(lUInt32 textureId) = 0;
+    virtual void deleteTexture(lUInt32 & textureId) = 0;
     /// set texture image in RGBA format, returns false if failed
     virtual bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels) = 0;
     /// sets texture image as ALPHA only, returns false if failed
@@ -23,7 +23,7 @@ public:
     /// returns texture ID for buffer, 0 if failed
     virtual bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy) = 0;
 
-    virtual void deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId) = 0;
+    virtual void deleteFramebuffer(lUInt32 &framebufferId) = 0;
 
     virtual bool bindFramebuffer(lUInt32 framebufferId) = 0;
     virtual void setOrthoProjection(int dx, int dy) = 0;

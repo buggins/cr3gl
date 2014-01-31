@@ -94,6 +94,7 @@ class CRGLSupportImpl :
     QGLShaderProgram *program_solid;
 #endif
     float m[4 * 4];
+    lUInt32 currentFramebufferId;
     void init();
     void uninit();
     void myGlOrtho(float left, float right, float bottom, float top,
@@ -109,7 +110,7 @@ public:
 
     lUInt32 genTexture();
     bool isTexture(lUInt32 textureId);
-    void deleteTexture(lUInt32 textureId);
+    void deleteTexture(lUInt32 & textureId);
     /// set texture image in RGBA format, returns false if failed
     bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
     /// sets texture image as ALPHA only, returns false if failed
@@ -117,7 +118,7 @@ public:
     /// returns texture ID for buffer, 0 if failed
     bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy);
 
-    void deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId);
+    void deleteFramebuffer(lUInt32 &framebufferId);
 
     bool bindFramebuffer(lUInt32 framebufferId);
     void setOrthoProjection(int dx, int dy);
@@ -138,7 +139,7 @@ CRGLSupport * CRGLSupport::instance() {
 
 
 
-CRGLSupportImpl::CRGLSupportImpl() {
+CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0) {
     init();
 }
 
@@ -172,6 +173,21 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], lUInt32 color) {
 }
 
 void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
+    CRLog::trace("CRGLSupportImpl::drawSolidFillRect(fb=%d\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
+            , currentFramebufferId
+            , vertices[0], vertices[1], vertices[2]
+            , vertices[3], vertices[4], vertices[5]
+            , vertices[6], vertices[7], vertices[8]
+            , vertices[9], vertices[10], vertices[11]
+            , vertices[12], vertices[13], vertices[14]
+            , vertices[15], vertices[16], vertices[17]
+            , colors[0], colors[1], colors[2], colors[3]
+            , colors[4], colors[5], colors[6], colors[7]
+            , colors[8], colors[9], colors[10], colors[11]
+            , colors[12], colors[13], colors[14], colors[15]
+            , colors[16], colors[17], colors[18], colors[19]
+            , colors[20], colors[21], colors[22], colors[23]
+            );
     checkError("before CRGLSupportImpl::drawSolidFillRect");
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(m);
@@ -228,6 +244,28 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
 }
 
 void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId) {
+    CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
+            , currentFramebufferId
+            , textureId
+            , vertices[0], vertices[1], vertices[2]
+            , vertices[3], vertices[4], vertices[5]
+            , vertices[6], vertices[7], vertices[8]
+            , vertices[9], vertices[10], vertices[11]
+            , vertices[12], vertices[13], vertices[14]
+            , vertices[15], vertices[16], vertices[17]
+            , texcoords[0], texcoords[1]
+            , texcoords[2], texcoords[3]
+            , texcoords[4], texcoords[5]
+            , texcoords[6], texcoords[7]
+            , texcoords[8], texcoords[9]
+            , texcoords[10], texcoords[11]
+            , colors[0], colors[1], colors[2], colors[3]
+            , colors[4], colors[5], colors[6], colors[7]
+            , colors[8], colors[9], colors[10], colors[11]
+            , colors[12], colors[13], colors[14], colors[15]
+            , colors[16], colors[17], colors[18], colors[19]
+            , colors[20], colors[21], colors[22], colors[23]
+            );
     checkError("before CRGLSupportImpl::drawColorAndTextureRect");
 
     if (!glIsTexture(textureId)) {
@@ -444,7 +482,7 @@ lUInt32 CRGLSupportImpl::genTexture() {
     return textureId;
 }
 
-void CRGLSupportImpl::deleteTexture(lUInt32 textureId) {
+void CRGLSupportImpl::deleteTexture(lUInt32 & textureId) {
     if (!textureId)
         return;
     if (glIsTexture(textureId) != GL_TRUE) {
@@ -454,6 +492,7 @@ void CRGLSupportImpl::deleteTexture(lUInt32 textureId) {
     GLuint id = textureId;
     glDeleteTextures(1, &id);
     checkError("~GLImageCachePage - glDeleteTextures");
+    textureId = 0;
 }
 
 bool CRGLSupportImpl::setTextureImage(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
@@ -559,19 +598,18 @@ bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
     }
     checkError("glCheckFramebufferStatusOES");
     //glClearColor(0.5f, 0, 0, 1);
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     checkError("glClearColor");
     glClear(GL_COLOR_BUFFER_BIT);
     checkError("glClear");
     checkError("after createFramebuffer");
+    CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
+    currentFramebufferId = framebufferId;
     return res;
 }
 
-void CRGLSupportImpl::deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId) {
+void CRGLSupportImpl::deleteFramebuffer(lUInt32 &framebufferId) {
     //CRLog::debug("GLDrawBuf::deleteFramebuffer");
-    if (textureId != 0) {
-        deleteTexture(textureId);
-    }
     if (framebufferId != 0) {
         glBindFramebufferOES( GL_FRAMEBUFFER_OES, 0);
         checkError("deleteFramebuffer - glBindFramebufferOES");
@@ -579,19 +617,23 @@ void CRGLSupportImpl::deleteFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
         glDeleteFramebuffersOES(1, &fid);
         checkError("deleteFramebuffer - glDeleteFramebuffer");
     }
-    textureId = 0;
+    CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
     framebufferId = 0;
     checkError("after deleteFramebuffer");
+    currentFramebufferId = 0;
 }
 
 bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
+    CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
+    currentFramebufferId = framebufferId;
     return !checkError("glBindFramebufferOES");
 }
 
 void CRGLSupportImpl::flush() {
     glFlush();
     checkError("glFlush");
+    CRLog::trace("CRGLSupportImpl::flush()");
 }
 
 void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top,
@@ -642,6 +684,7 @@ void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
     if (!rotationAngle)
         return;
 #ifdef QT_OPENGL_ES_2
+    CR_UNUSED2(x,y);
 #else
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();

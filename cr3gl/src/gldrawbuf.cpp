@@ -13,6 +13,487 @@
 #include <lvarray.h>
 
 
+void TiledGLDrawBuf::init(int dx, int dy) {
+    if (_tiles)
+        cleanup();
+    _dx = dx;
+    _dy = dy;
+    _xtiles = ((dx + _tiledx - 1) / _tiledx);
+    _ytiles = ((dy + _tiledy - 1) / _tiledy);
+    _tiles = new GLDrawBuf * [_xtiles * _ytiles];
+    for (int y = 0; y < _ytiles; y++)
+        for (int x = 0; x < _xtiles; x++) {
+            lvRect rc;
+            getTileRect(rc, x, y);
+            _tiles[y * _xtiles + x] = new GLDrawBuf(rc.width(), rc.height(), _bpp, true);
+        }
+}
+
+void TiledGLDrawBuf::cleanup() {
+    for (int y = 0; y < _ytiles; y++)
+        for (int x = 0; x < _xtiles; x++)
+            delete _tiles[y * _xtiles + x];
+    delete[] _tiles;
+    _tiles = NULL;
+    _dx = _dy = 0;
+}
+
+void TiledGLDrawBuf::setAlpha(int alpha) {
+    _alpha = alpha;
+    for (int y = 0; y < _ytiles; y++)
+        for (int x = 0; x < _xtiles; x++)
+            _tiles[y * _xtiles + x]->setAlpha(alpha);
+}
+
+/// returns scanline pointer
+lUInt8 * TiledGLDrawBuf::GetScanLine( int y ) {
+    CR_UNUSED(y);
+    return NULL;
+}
+
+/// create drawing texture of specified size
+TiledGLDrawBuf::TiledGLDrawBuf(int width, int height, int bpp, int tilex, int tiley)
+    : _dx(width)
+    , _dy(height)
+    , _tiledx(tilex)
+    , _tiledy(tiley)
+    , _xtiles((width + tilex - 1) / tilex)
+    , _ytiles((height + tiley - 1) / tiley)
+    , _bpp(bpp)
+    , _tiles(NULL)
+    , _hidePartialGlyphs(true)
+    , _textColor(0x000000)
+    , _backgroundColor(0xFFFFFF)
+    , _alpha(0)
+{
+    init(width, height);
+}
+
+/// virtual destructor
+TiledGLDrawBuf::~TiledGLDrawBuf() {
+    cleanup();
+}
+
+void TiledGLDrawBuf::beforeDrawing() {
+    for (int y = 0; y < _ytiles; y++)
+        for (int x = 0; x < _xtiles; x++)
+            _tiles[y * _xtiles + x]->beforeDrawing();
+}
+
+void TiledGLDrawBuf::afterDrawing() {
+    for (int y = _ytiles - 1; y >= 0; y--)
+        for (int x = _xtiles - 1; x >= 0; x--)
+            _tiles[y * _xtiles + x]->afterDrawing();
+}
+
+lUInt32 TiledGLDrawBuf::applyAlpha(lUInt32 cl) {
+    if (!_alpha)
+        return cl;
+    int clalpha = cl >> 24;
+    if (!clalpha)
+        return (_alpha << 24) | cl;
+    int a = 255 - ((((255 - _alpha) * (255 - clalpha)) >> 8) & 255);
+    return (a << 24) | (cl & 0xFFFFFF);
+}
+
+/// rotates buffer contents by specified angle
+void TiledGLDrawBuf::Rotate( cr_rotate_angle_t angle ) {
+    CR_UNUSED(angle);
+    CRLog::error("GLDrawBuf::Rotate() is not implemented");
+}
+
+/// returns white pixel value
+lUInt32 TiledGLDrawBuf::GetWhiteColor()
+{
+    return 0xFFFFFF;
+}
+
+/// returns black pixel value
+lUInt32 TiledGLDrawBuf::GetBlackColor()
+{
+    return 0x000000;
+}
+
+/// returns current background color
+lUInt32 TiledGLDrawBuf::GetBackgroundColor()
+{
+    return _backgroundColor;
+}
+
+/// sets current background color
+void TiledGLDrawBuf::SetBackgroundColor( lUInt32 cl )
+{
+    _backgroundColor = cl;
+}
+
+/// returns current text color
+lUInt32 TiledGLDrawBuf::GetTextColor()
+{
+    return _textColor;
+}
+
+/// sets current text color
+void TiledGLDrawBuf::SetTextColor( lUInt32 cl )
+{
+    _textColor = cl;
+}
+/// gets clip rect
+void TiledGLDrawBuf::GetClipRect( lvRect * clipRect )
+{
+    *clipRect = _clipRect;
+}
+
+void TiledGLDrawBuf::getTileRect(lvRect & rc, int x, int y)
+{
+    rc.left = x * _tiledx;
+    rc.top = y * _tiledy;
+    rc.right = rc.left + _tiledx;
+    rc.bottom = rc.top + _tiledy;
+    if (rc.right > _dx)
+        rc.right = _dx;
+    if (rc.bottom > _dy)
+        rc.bottom = _dy;
+}
+
+/// returns tile drawbuf for tiled image, returns this for non tiled draw buffer
+LVDrawBuf * TiledGLDrawBuf::getTile(int x, int y) {
+    return _tiles[y * _xtiles + x];
+}
+
+/// sets clip rect
+void TiledGLDrawBuf::SetClipRect( const lvRect * clipRect )
+{
+    if (clipRect) {
+        if (_clipRect != *clipRect) {
+            _clipRect = *clipRect;
+            for (int y = 0; y < _ytiles; y++)
+                for (int x = 0; x < _xtiles; x++) {
+                    GLDrawBuf * tile = _tiles[y * _xtiles + x];
+                    lvRect tilerc;
+                    getTileRect(tilerc, x, y);
+                    lvRect rc = *clipRect;
+                    rc.left -= tilerc.left;
+                    rc.right -= tilerc.left;
+                    rc.top -= tilerc.top;
+                    rc.bottom -= tilerc.top;
+                    tile->SetClipRect(&rc);
+                }
+        }
+    } else {
+        if (_clipRect.left != 0 || _clipRect.top != 0 || _clipRect.right != _dx || _clipRect.bottom != _dy) {
+            _clipRect.left = 0;
+            _clipRect.top = 0;
+            _clipRect.right = _dx;
+            _clipRect.bottom = _dy;
+            for (int y = 0; y < _ytiles; y++)
+                for (int x = 0; x < _xtiles; x++) {
+                    GLDrawBuf * tile = _tiles[y * _xtiles + x];
+                    tile->SetClipRect(NULL);
+                }
+        }
+    }
+}
+/// set to true for drawing in Paged mode, false for Scroll mode
+void TiledGLDrawBuf::setHidePartialGlyphs( bool hide )
+{
+    _hidePartialGlyphs = hide;
+}
+/// invert image
+void  TiledGLDrawBuf::Invert() {
+    CRLog::error("GLDrawBuf::Invert() is not implemented");
+    // not supported
+}
+/// get buffer width, pixels
+int  TiledGLDrawBuf::GetWidth() {
+    return _dx;
+}
+/// get buffer height, pixels
+int  TiledGLDrawBuf::GetHeight() {
+    return _dy;
+}
+/// get buffer bits per pixel
+int  TiledGLDrawBuf::GetBitsPerPixel()
+{
+    return _bpp;
+}
+
+/// fills buffer with specified color
+int  TiledGLDrawBuf::GetRowSize()
+{
+    return _dx * _bpp / 8;
+}
+
+/// fills buffer with specified color
+void TiledGLDrawBuf::Clear( lUInt32 color )
+{
+    FillRect(0, 0, _dx, _dy, color);
+}
+
+/// get pixel value
+lUInt32 TiledGLDrawBuf::GetPixel( int x, int y )
+{
+    CR_UNUSED2(x, y);
+    CRLog::error("GLDrawBuf::GetPixel() is not implemented");
+    return 0;
+}
+
+/// get average pixel value for area (coordinates are fixed floating points *16)
+lUInt32 TiledGLDrawBuf::GetAvgColor(lvRect & rc16)
+{
+    CR_UNUSED(rc16);
+    CRLog::error("GLDrawBuf::GetAvgColor() is not implemented");
+    return 0;
+}
+
+/// get linearly interpolated pixel value (coordinates are fixed floating points *16)
+lUInt32 TiledGLDrawBuf::GetInterpolatedColor(int x16, int y16)
+{
+    CR_UNUSED2(x16, y16);
+    CRLog::error("GLDrawBuf::GetInterpolatedColor() is not implemented");
+    return 0;
+}
+
+/// fills rectangle with specified color
+void TiledGLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color ) {
+    CRLog::trace("TiledGLDrawBuf::FillRect(%d,%d,%d,%d) %08x", x0, y0, x1, y1, color);
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            CRLog::trace("-- tilerect for %d,%d: {%d,%d,%d,%d}", x, y, tilerc.left, tilerc.top, tilerc.right, tilerc.bottom, color);
+            lvRect rc(x0, y0, x1, y1);
+            if (rc.intersect(tilerc)) {
+                CRLog::trace("-- intersect for %d,%d: {%d,%d,%d,%d}", x, y, rc.left, rc.top, rc.right, rc.bottom, color);
+                rc.left -= tilerc.left;
+                rc.right -= tilerc.left;
+                rc.top -= tilerc.top;
+                rc.bottom -= tilerc.top;
+                if (rc.right >= 0 && rc.bottom >= 0 && rc.left <= _tiledx && rc.right <= _tiledy) {
+                    CRLog::trace("-- for tile %d,%d: {%d,%d,%d,%d} %08x", x, y, rc.left, rc.top, rc.right, rc.bottom, color);
+                    tile->FillRect(rc.left, rc.top, rc.right, rc.bottom, color);
+                }
+            }
+        }
+    }
+}
+
+lUInt32 blendRGB(lUInt32 cl1, lUInt32 cl2, int n1, int n2, int n) {
+    if (n <= n1)
+        return cl1;
+    if (n >= n2)
+        return cl2;
+    if (n1 >= n2)
+        return cl1;
+    lUInt32 d1 = (lUInt32)((n - n1) * 256 / (n2 - n1));
+    lUInt32 d2 = 255 - d1;
+    lUInt32 a1 = (cl1 >> 24) & 0xFF;
+    lUInt32 r1 = (cl1 >> 16) & 0xFF;
+    lUInt32 g1 = (cl1 >> 8) & 0xFF;
+    lUInt32 b1 = (cl1 >> 0) & 0xFF;
+    lUInt32 a2 = (cl2 >> 24) & 0xFF;
+    lUInt32 r2 = (cl2 >> 16) & 0xFF;
+    lUInt32 g2 = (cl2 >> 8) & 0xFF;
+    lUInt32 b2 = (cl2 >> 0) & 0xFF;
+    lUInt32 a = ((a1 * d2 + a2 * d1) >> 8) & 0xFF;
+    lUInt32 r = ((r1 * d2 + r2 * d1) >> 8) & 0xFF;
+    lUInt32 g = ((g1 * d2 + g2 * d1) >> 8) & 0xFF;
+    lUInt32 b = ((b1 * d2 + b2 * d1) >> 8) & 0xFF;
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+/// draw gradient filled rectangle with colors for top-left, top-right, bottom-right, bottom-left
+void TiledGLDrawBuf::GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) {
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            lvRect rc(x0, y0, x1, y1);
+            if (rc.intersects(tilerc)) {
+                lUInt32 cl1 = color1;
+                lUInt32 cl2 = color2;
+                lUInt32 cl3 = color3;
+                lUInt32 cl4 = color4;
+                if (rc.left < tilerc.left) {
+                    cl1 = blendRGB(color1, color2, rc.left, rc.right, tilerc.left);
+                    cl4 = blendRGB(color4, color3, rc.left, rc.right, tilerc.left);
+                }
+                if (rc.right > tilerc.right) {
+                    cl2 = blendRGB(color1, color2, rc.left, rc.right, tilerc.right);
+                    cl3 = blendRGB(color4, color3, rc.left, rc.right, tilerc.right);
+                }
+                lUInt32 cl12 = cl1;
+                lUInt32 cl22 = cl2;
+                lUInt32 cl32 = cl3;
+                lUInt32 cl42 = cl4;
+                if (rc.top < tilerc.top) {
+                    cl12 = blendRGB(cl1, cl2, rc.top, rc.bottom, tilerc.top);
+                    cl42 = blendRGB(cl4, cl3, rc.top, rc.bottom, tilerc.top);
+                }
+                if (rc.bottom > tilerc.bottom) {
+                    cl22 = blendRGB(cl1, cl2, rc.top, rc.bottom, tilerc.bottom);
+                    cl32 = blendRGB(cl4, cl3, rc.top, rc.bottom, tilerc.bottom);
+                }
+                if (rc.intersect(tilerc)) {
+                    rc.left -= tilerc.left;
+                    rc.right -= tilerc.left;
+                    rc.top -= tilerc.top;
+                    rc.bottom -= tilerc.top;
+                    if (!rc.isEmpty() && rc.right > 0 && rc.bottom > 0 && rc.left < _tiledx && rc.right < _tiledy) {
+                        tile->GradientRect(rc.left, rc.top, rc.right, rc.bottom, cl12, cl22, cl32, cl42);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// draws rounded rectangle with specified line width, rounding radius, and color
+void TiledGLDrawBuf::RoundRect(int x0, int y0, int x1, int y1, int borderWidth, int radius, lUInt32 color, int cornerFlags) {
+    CR_UNUSED8(x0, y0, x1, y1, borderWidth, radius, color, cornerFlags);
+    CRLog::error("TiledGLDrawBuf::RoundRect() is not implemented");
+}
+
+/// fills rectangle with pattern
+void TiledGLDrawBuf::FillRectPattern( int x0, int y0, int x1, int y1, lUInt32 color0, lUInt32 color1, lUInt8 * pattern )
+{
+    CR_UNUSED7(x0, y0, x1, y1, color0, color1, pattern);
+    CRLog::error("GLDrawBuf::FillRectPattern() is not implemented");
+}
+
+/// inverts image in specified rectangle
+void TiledGLDrawBuf::InvertRect(int x0, int y0, int x1, int y1)
+{
+    CR_UNUSED4(x0, y0, x1, y1);
+    CRLog::error("GLDrawBuf::InvertRect() is not implemented");
+}
+
+/// sets new size
+void TiledGLDrawBuf::Resize( int dx, int dy )
+{
+    init(dx, dy);
+}
+
+/// draws bitmap (1 byte per pixel) using specified palette
+void TiledGLDrawBuf::Draw( int x, int y, const lUInt8 * bitmap, int width, int height, lUInt32 * palette ) {
+    CR_UNUSED6(x, y, bitmap, width, height, palette);
+    CRLog::error("GLDrawBuf::Draw(bitmap) is not implemented");
+}
+
+/// draws image
+void TiledGLDrawBuf::Draw( LVImageSourceRef img, int xx, int yy, int width, int height, bool dither) {
+    lvRect rc(xx, yy, xx + width, yy + height);
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            if (tilerc.intersects(rc)) {
+                tile->Draw(img, xx - tilerc.left, yy - tilerc.top, width, height, dither);
+            }
+        }
+    }
+}
+
+/// for GL buf only - rotated drawing
+void TiledGLDrawBuf::DrawRotated( LVImageSourceRef img, int xx, int yy, int width, int height, int rotationAngle) {
+    lvRect rc(xx, yy, xx + width, yy + height);
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            if (tilerc.intersects(rc)) {
+                tile->DrawRotated(img, xx - tilerc.left, yy - tilerc.top, width, height, rotationAngle);
+            }
+        }
+    }
+}
+
+/// draws buffer content to another buffer doing color conversion if necessary
+void TiledGLDrawBuf::DrawTo( LVDrawBuf * buf, int xx, int yy, int options, lUInt32 * palette ) {
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            tile->DrawTo(buf, xx + tilerc.left, yy + tilerc.top, options, palette);
+        }
+    }
+}
+
+/// draws rescaled buffer content to another buffer doing color conversion if necessary
+void TiledGLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int options) {
+    DrawFragment(src, 0, 0, src->GetWidth(), src->GetHeight(), x, y, dx, dy, options);
+}
+
+static bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
+    int dleft = 0;
+    int dtop = 0;
+    int dright = 0;
+    int dbottom = 0;
+    if (dstrc.left < dstcrop.left)
+        dleft = (dstcrop.left - dstrc.left) * 10000 / dstrc.width();
+    if (dstcrop.right < dstrc.right)
+        dright = (dstrc.right - dstcrop.right) * 10000 / dstrc.width();
+    if (dstrc.top < dstcrop.top)
+        dtop = (dstcrop.top - dstrc.top) * 10000 / dstrc.height();
+    if (dstcrop.bottom < dstrc.bottom)
+        dbottom = (dstrc.bottom - dstcrop.bottom) * 10000 / dstrc.height();
+    if (dleft) {
+        srcrc.left += (dleft * srcrc.width() + srcrc.width() - 1) / 10000;
+        dstrc.left += (dleft * dstrc.width() + dstrc.width() - 1) / 10000;
+    }
+    if (dright) {
+        srcrc.right -= (dright * srcrc.width() + srcrc.width() - 1) / 10000;
+        dstrc.right -= (dright * dstrc.width() + dstrc.width() - 1) / 10000;
+    }
+    if (dtop) {
+        srcrc.top += (dtop * srcrc.height() + srcrc.height() - 1) / 10000;
+        dstrc.top += (dtop * dstrc.height() + dstrc.height() - 1) / 10000;
+    }
+    if (dbottom) {
+        srcrc.bottom -= (dbottom * srcrc.height() + srcrc.height() - 1) / 10000;
+        dstrc.bottom -= (dbottom * dstrc.height() + dstrc.height() - 1) / 10000;
+    }
+    return true;
+}
+
+/// draws rescaled buffer content to another buffer doing color conversion if necessary
+void TiledGLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, int options) {
+    for (int y = 0; y < _ytiles; y++) {
+        for (int x = 0; x < _xtiles; x++) {
+            lvRect srcrc(srcx, srcy, srcx + srcdx, srcy + srcdy);
+            lvRect dstrc(xx, yy, xx + dx, yy + dy);
+            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+            lvRect tilerc;
+            getTileRect(tilerc, x, y);
+            if (tilerc.intersects(dstrc)) {
+                if (translateRect(srcrc, dstrc, tilerc))
+                    tile->DrawFragment(src, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left - tilerc.left, dstrc.top - tilerc.top, dstrc.width(), dstrc.height(), options);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class GLImageCachePage;
 
 class GLImageCacheItem {
@@ -51,7 +532,7 @@ extern GLImageCache * glImageCache;
 #define MIN_TEX_SIZE 64
 #define MAX_TEX_SIZE 4096
 static int nearestPOT(int n) {
-	for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i++) {
+    for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i *= 2) {
 		if (n <= i)
 			return i;
 	}
@@ -214,7 +695,7 @@ public:
 	}
     void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip, int rotationAngle) {
         CR_UNUSED(options);
-        //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
+        CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
 		if (_textureId != 0) {
@@ -233,7 +714,7 @@ public:
 			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
 			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
 			if (clip) {
-                //CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
+                CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
 				// correct clipping
                 float xscale = (srcx1-srcx0) / (dstx1 - dstx0);
                 float yscale =  (srcy1-srcy0) / (dsty1 - dsty0);
@@ -784,6 +1265,7 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (_textureBuf && _textureId != 0) {
+            CRLog::trace("GLDrawBuf::DrawTo GLBuf(%d,%d)", x, y);
             //int alpha = ((options >> 16) & 255);
             if (glbuf->_scene) {
                 //glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
@@ -792,8 +1274,23 @@ void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * pa
 		} else {
 			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
 		}
-	} else {
-		CRLog::error("GLDrawBuf::DrawTo() is not implemented for non-GL draw buffer targets");
+    } else if (buf->isTiled()) {
+        CRLog::trace("GLDrawBuf::DrawTo tiled(%d,%d)", x, y);
+        // tiled source
+        lvRect srcrc(x, y, x + _dx, y + _dy);
+        for (int ty = 0; ty < buf->getYtiles(); ty++) {
+            for (int tx = 0; tx < buf->getXtiles(); tx++) {
+                LVDrawBuf * tile = buf->getTile(tx, ty);
+                lvRect tilerc;
+                buf->getTileRect(tilerc, tx, ty);
+                if (tilerc.intersects(srcrc)) {
+                    CRLog::trace("GLDrawBuf::DrawTo tile: (%d,%d)", x - tilerc.left, y - tilerc.top);
+                    DrawTo(tile, x - tilerc.left, y - tilerc.top, options, palette);
+                }
+            }
+        }
+    } else {
+        CRLog::error("GLDrawBuf::DrawTo() is not implemented for non-GL draw buffer targets");
 	}
 }
 
@@ -824,7 +1321,22 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
-	} else {
+    } else if (src->isTiled()) {
+        // tiled source
+        for (int ty = 0; ty < src->getYtiles(); ty++) {
+            for (int tx = 0; tx < src->getXtiles(); tx++) {
+                lvRect srcrc(srcx, srcy, srcx + srcdx, srcy + srcdy);
+                lvRect dstrc(x, y, x + dx, y + dy);
+                LVDrawBuf * tile = src->getTile(tx, ty);
+                lvRect tilerc;
+                src->getTileRect(tilerc, tx, ty);
+                if (tilerc.intersects(dstrc)) {
+                    if (translateRect(dstrc, srcrc, tilerc)) // opposite order - trim based on source
+                        DrawFragment(tile, srcrc.left - tilerc.left, srcrc.top - tilerc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), options);
+                }
+            }
+        }
+    } else {
         GLImageCacheItem * item = glImageCache->get(src);
         if (item == NULL)
             item = glImageCache->set(src);
@@ -872,8 +1384,8 @@ void GLDrawBuf::createFramebuffer()
 
 void GLDrawBuf::deleteFramebuffer()
 {
-	if (_textureBuf) {
-        CRGL->deleteFramebuffer(_textureId, _framebufferId);
+    if (_textureBuf && _framebufferId) {
+        CRGL->deleteFramebuffer(_framebufferId);
 	}
 }
 
@@ -882,17 +1394,17 @@ void GLDrawBuf::beforeDrawing()
 {
 	if (_prepareStage++ == 0) {
     	//CRLog::trace("beforeDrawing");
-		if (_textureBuf) {
-			if (_textureId == 0 || _framebufferId == 0) {
-				createFramebuffer();
-			}
+//		if (_textureBuf) {
+//			if (_textureId == 0 || _framebufferId == 0) {
+//				createFramebuffer();
+//			}
 			//CRLog::debug("Setting render to texture");
             //glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebufferId);
-            CRGL->bindFramebuffer(_framebufferId);
+            //CRGL->bindFramebuffer(_framebufferId);
             //if (checkError("beforeDrawing glBindFramebufferOES")) return;
-		}
+//		}
         _scene = LVGLPushScene(new GLScene());
-        CRGL->setOrthoProjection(_dx, _dy);
+        //CRGL->setOrthoProjection(_dx, _dy);
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
     }
@@ -903,7 +1415,14 @@ void GLDrawBuf::afterDrawing()
     if (--_prepareStage == 0) {
     	//CRLog::trace("afterDrawing");
 		if (_scene) {
-			_scene->draw();
+            if (_textureBuf) {
+                if (_textureId == 0 || _framebufferId == 0) {
+                    createFramebuffer();
+                }
+                CRGL->bindFramebuffer(_framebufferId);
+            }
+            CRGL->setOrthoProjection(_dx, _dy);
+            _scene->draw();
 			_scene->clear();
             GLScene * s = LVGLPopScene();
             if (s != _scene) {
@@ -919,6 +1438,7 @@ void GLDrawBuf::afterDrawing()
 			//bind the base framebuffer
             CRGL->bindFramebuffer(0);
             CRGL->flush();
+            deleteFramebuffer();
 		}
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
@@ -952,5 +1472,7 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
 GLDrawBuf::~GLDrawBuf()
 {
     deleteFramebuffer();
+    if (_textureId)
+        CRGL->deleteTexture(_textureId);
 }
 

@@ -1,45 +1,4 @@
 #include "cr3mainwindow.h"
-
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the documentation of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include <QtCore/QCoreApplication>
 
 #include <QtGui/QOpenGLContext>
@@ -84,8 +43,6 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
 OpenGLWindow::~OpenGLWindow()
 {
-
-
     delete _eventAdapter;
     delete _eventManager;
     delete _downloadManager;
@@ -97,9 +54,7 @@ OpenGLWindow::~OpenGLWindow()
 //! [2]
 void OpenGLWindow::render(QPainter *painter)
 {
-    //Q_UNUSED(painter);
-    //painter->setBrush(QBrush());
-    painter->drawEllipse(1,1,100,100);
+    CR_UNUSED(painter);
 }
 
 void OpenGLWindow::initialize()
@@ -195,6 +150,22 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
+#if 1
+    buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
+    TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
+    //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
+    //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+    tiled.beforeDrawing();
+    tiled.FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
+    tiled.FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
+    //tiled.FillRect(14, 14, 16, 16, 0x0000FF);
+    //tiled.FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
+    tiled.afterDrawing();
+    tiled.DrawTo(&buf, 0, 0, 0, NULL);
+    buf.FillRect(256, 0, 257, 512, 0x80808080);
+    buf.FillRect(512, 0, 513, 512, 0x80808080);
+    buf.FillRect(0, 256, 1024, 257, 0x80808080);
+#else
     bool needLayout, needDraw, animating;
     //CRLog::trace("Checking if draw is required");
     CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
@@ -211,6 +182,7 @@ void OpenGLWindow::render()
         _widget->draw(&buf);
         //CRLog::trace("done draw");
     }
+#endif
     //CRLog::trace("Calling buf.afterDrawing");
     buf.afterDrawing();
     //CRLog::trace("Finished buf.afterDrawing");

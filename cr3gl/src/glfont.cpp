@@ -467,7 +467,7 @@ public:
     	if (glbuf) {
     		// use specific rendering for GL buffer
         	GLGlyphCache * cache = _fontMan->getCache();
-        	GLScene * scene = LVGLPeekScene();
+            GLScene * scene = glbuf->getScene();// {LVGLPeekScene();
         	if (!scene) {
         		CRLog::error("DrawTextString - no current scene");
         		return;
