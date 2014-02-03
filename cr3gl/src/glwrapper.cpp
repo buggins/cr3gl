@@ -312,6 +312,11 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     program_texture->disableAttributeArray(PROGRAM_COLOR_ATTRIBUTE);
     program_texture->disableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
     program_texture->release();
+
+    //glFlush();
+    //checkError("glFlush");
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("glBindTexture");
 #else
 
     glActiveTexture(GL_TEXTURE0);
@@ -556,6 +561,8 @@ bool CRGLSupportImpl::setTextureImageAlpha(lUInt32 textureId, int dx, int dy, lU
         CRLog::error("Cannot set image for texture");
         return false;
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("updateTexture - glBindTexture(0)");
     checkError("after setTextureImageAlpha");
     return true;
 }
@@ -605,6 +612,12 @@ bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
     checkError("after createFramebuffer");
     CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
     currentFramebufferId = framebufferId;
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("createFramebuffer - glBindTexture(0)");
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
+    checkError("createFramebuffer - glBindFramebufferOES(0)");
+
     return res;
 }
 

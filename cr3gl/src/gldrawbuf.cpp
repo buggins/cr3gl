@@ -75,15 +75,17 @@ TiledGLDrawBuf::~TiledGLDrawBuf() {
 }
 
 void TiledGLDrawBuf::beforeDrawing() {
-    for (int y = 0; y < _ytiles; y++)
-        for (int x = 0; x < _xtiles; x++)
-            _tiles[y * _xtiles + x]->beforeDrawing();
+//    for (int y = 0; y < _ytiles; y++)
+//        for (int x = 0; x < _xtiles; x++)
+//            _tiles[y * _xtiles + x]->beforeDrawing();
 }
 
 void TiledGLDrawBuf::afterDrawing() {
     for (int y = _ytiles - 1; y >= 0; y--)
-        for (int x = _xtiles - 1; x >= 0; x--)
+        for (int x = _xtiles - 1; x >= 0; x--) {
+            _tiles[y * _xtiles + x]->beforeDrawing();
             _tiles[y * _xtiles + x]->afterDrawing();
+        }
 }
 
 lUInt32 TiledGLDrawBuf::applyAlpha(lUInt32 cl) {
@@ -1119,6 +1121,7 @@ void GLDrawBuf::Resize( int dx, int dy )
 	_tdx = nearestPOT(dx);
 	_tdy = nearestPOT(dy);
 	_prepareStage = 0;
+    createFramebuffer();
 }
 
 /// draws bitmap (1 byte per pixel) using specified palette
@@ -1377,14 +1380,14 @@ lUInt8 * GLDrawBuf::GetScanLine( int y )
 
 void GLDrawBuf::createFramebuffer()
 {
-	if (_textureBuf) {
+    if (_textureBuf && _textureId == 0 && _framebufferId == 0) {
         CRGL->createFramebuffer(_textureId, _framebufferId, _tdx, _tdy);
     }
 }
 
 void GLDrawBuf::deleteFramebuffer()
 {
-    if (_textureBuf && _framebufferId) {
+    if (_textureBuf && _framebufferId != 0) {
         CRGL->deleteFramebuffer(_framebufferId);
 	}
 }
@@ -1393,7 +1396,19 @@ void GLDrawBuf::deleteFramebuffer()
 void GLDrawBuf::beforeDrawing()
 {
 	if (_prepareStage++ == 0) {
-    	//CRLog::trace("beforeDrawing");
+        if (_textureBuf) {
+//            if (_textureBuf) {
+//                if (_textureId == 0 || _framebufferId == 0) {
+//                    createFramebuffer();
+//                }
+//                CRGL->bindFramebuffer(_framebufferId);
+//            }
+//            if (_textureId == 0 || _framebufferId == 0) {
+//                createFramebuffer();
+//            }
+//            CRGL->bindFramebuffer(_framebufferId);
+        }
+        //CRLog::trace("beforeDrawing");
 //		if (_textureBuf) {
 //			if (_textureId == 0 || _framebufferId == 0) {
 //				createFramebuffer();
@@ -1403,7 +1418,11 @@ void GLDrawBuf::beforeDrawing()
             //CRGL->bindFramebuffer(_framebufferId);
             //if (checkError("beforeDrawing glBindFramebufferOES")) return;
 //		}
-        _scene = LVGLPushScene(new GLScene());
+        if (!_scene) {
+            _scene = new GLScene();
+            CRLog::error("Creating GLScene");
+        }
+        _scene = LVGLPushScene(_scene);
         //CRGL->setOrthoProjection(_dx, _dy);
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
@@ -1413,14 +1432,17 @@ void GLDrawBuf::beforeDrawing()
 void GLDrawBuf::afterDrawing()
 {
     if (--_prepareStage == 0) {
-    	//CRLog::trace("afterDrawing");
-		if (_scene) {
-            if (_textureBuf) {
-                if (_textureId == 0 || _framebufferId == 0) {
-                    createFramebuffer();
-                }
-                CRGL->bindFramebuffer(_framebufferId);
+        CRLog::trace("afterDrawing");
+        if (_textureBuf) {
+            if (_textureId == 0 || _framebufferId == 0) {
+                createFramebuffer();
             }
+            CRGL->bindFramebuffer(_framebufferId);
+        }
+//        if (_textureBuf && _framebufferId) {
+//            CRGL->bindFramebuffer(_framebufferId);
+//        }
+        if (_scene) {
             CRGL->setOrthoProjection(_dx, _dy);
             _scene->draw();
 			_scene->clear();
@@ -1433,12 +1455,14 @@ void GLDrawBuf::afterDrawing()
             if (!LVGLPeekScene()) {
                 glImageCache->removeDeletedItems();
             }
+        } else {
+            CRLog::error("GLDrawBuf::afterDrawing() -- No scene!!!");
         }
-		if (_textureBuf) {
+        CRGL->flush();
+        if (_textureBuf) {
 			//bind the base framebuffer
             CRGL->bindFramebuffer(0);
-            CRGL->flush();
-            deleteFramebuffer();
+            //deleteFramebuffer();
 		}
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
@@ -1466,11 +1490,14 @@ GLDrawBuf::GLDrawBuf(int width, int height, int bpp, bool useTexture)
         _scene(NULL),
         _alpha(0)
 {
+    _scene = new GLScene();
 }
 
 /// destructor
 GLDrawBuf::~GLDrawBuf()
 {
+    if (_prepareStage > 0)
+        CRLog::error("GLDrawBuf::~GLDrawBuf() -- scene is unfinished: _prepareStage > 0");
     deleteFramebuffer();
     if (_textureId)
         CRGL->deleteTexture(_textureId);

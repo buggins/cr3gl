@@ -150,18 +150,27 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
-#if 1
+#if 0
     buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
-    TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
-    //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
-    //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
-    tiled.beforeDrawing();
-    tiled.FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
-    tiled.FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
-    //tiled.FillRect(14, 14, 16, 16, 0x0000FF);
-    //tiled.FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
-    tiled.afterDrawing();
-    tiled.DrawTo(&buf, 0, 0, 0, NULL);
+    //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
+    GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+    //{
+        //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
+        //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+//        LVImageSourceRef icon1 = resourceResolver->getImageSource("add_file");
+//        LVImageSourceRef icon2 = resourceResolver->getImageSource("add_folder");
+        tiled.beforeDrawing();
+        tiled.FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
+        //tiled.FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
+        //tiled.FillRect(14, 14, 16, 16, 0x0000FF);
+        //tiled.FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
+
+        //tiled.Draw(icon1, 20, 20, icon1->GetWidth(), icon1->GetHeight(), false);
+
+        //tiled.Draw(icon2, 120, 120, 64, 64, false);
+        tiled.afterDrawing();
+        tiled.DrawTo(&buf, 5, 5, 0, NULL);
+    //}
     buf.FillRect(256, 0, 257, 512, 0x80808080);
     buf.FillRect(512, 0, 513, 512, 0x80808080);
     buf.FillRect(0, 256, 1024, 257, 0x80808080);
