@@ -59,6 +59,15 @@ public:
     virtual LVDrawBuf * getTile(int x, int y);
     /// returns tile rectangle
     virtual void getTileRect(lvRect & rc, int x, int y);
+    /// returns number of tiles in row
+    virtual int getXtiles() {
+        return _xtiles;
+    }
+    /// returns number of tiles in column
+    virtual int getYtiles() {
+        return _ytiles;
+    }
+
 
     // general DrawBuf methods
 

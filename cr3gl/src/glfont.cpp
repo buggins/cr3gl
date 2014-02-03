@@ -560,7 +560,21 @@ public:
 					buf->FillRect( x0, liney, x, liney+h, cl );
 				}
 			}
-    	} else {
+        } else if (buf->isTiled()) {
+            for (int ty = 0; ty < buf->getYtiles(); ty++) {
+                for (int tx = 0; tx < buf->getXtiles(); tx++) {
+                    LVDrawBuf * tile = buf->getTile(tx, ty);
+                    lvRect tilerc;
+                    buf->getTileRect(tilerc, tx, ty);
+                    if (x > tilerc.right || y > tilerc.bottom || y < tilerc.top - getHeight())
+                        continue;
+                    DrawTextString(tile, x - tilerc.left, y - tilerc.top,
+                                   text, len,
+                                   def_char, palette, addHyphen,
+                                   flags, letter_spacing);
+                }
+            }
+        } else {
     		// use base font rendering for non-GL buffers
     		_base->DrawTextString(buf, x, y, text, len, def_char, palette, addHyphen, flags, letter_spacing);
     	}

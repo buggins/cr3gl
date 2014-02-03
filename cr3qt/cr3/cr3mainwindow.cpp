@@ -164,6 +164,8 @@ void OpenGLWindow::render()
         tiled.FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
         tiled.FillRect(14, 14, 16, 16, 0x0000FF);
         tiled.FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
+        LVFontRef font = currentTheme->getFont();
+        font->DrawTextString(&tiled, 240 + 256, 245, L"Test", 4, '?');
 
 //        GLDrawBuf img0(100, 100, 32, true);
 //        img0.beforeDrawing();
