@@ -14,6 +14,7 @@
 
 
 void TiledGLDrawBuf::init(int dx, int dy) {
+    CRGL;
     if (_tiles)
         cleanup();
     _dx = dx;
@@ -1183,7 +1184,7 @@ void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int 
         if (!rc.intersects(cliprect))
             return; // out of bounds
         lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-        LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x + 1, GetHeight() - y - 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
+        _scene->add(new GLDrawImageSceneItem(img.get(), x + 1, GetHeight() - y - 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
     }
 }
 
@@ -1209,7 +1210,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
 		if (!ninePatch) {
 			lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
 		} else {
 			lvRect srcitems[9];
 			lvRect dstitems[9];
@@ -1224,7 +1225,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
                 //CRLog::trace("nine-patch[%d] (%d, %d, %d, %d) -> (%d, %d, %d, %d)", i, srcitems[i].left, srcitems[i].top, srcitems[i].right, srcitems[i].bottom, dstitems[i].left, dstitems[i].top, dstitems[i].right, dstitems[i].bottom);
 				// visible
 				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
-                LVGLAddSceneItem(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
+                _scene->add(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
 			}
 		}
 	}
@@ -1354,7 +1355,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
             if (!rc.intersects(cliprect))
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            LVGLAddSceneItem(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
         }
 	}
 }

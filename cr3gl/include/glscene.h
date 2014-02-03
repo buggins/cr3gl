@@ -30,7 +30,7 @@ public:
 	virtual ~GLScene();
 };
 
-void LVGLAddSceneItem(GLSceneItem * item);
+//void LVGLAddSceneItem(GLSceneItem * item);
 
 typedef void (*last_scene_callback_t)();
 

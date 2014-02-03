@@ -63,10 +63,10 @@ GLScene * LVGLPeekScene() {
 	return currentGLScene;
 }
 
-void LVGLAddSceneItem(GLSceneItem * item) {
-	if (currentGLScene)
-		currentGLScene->add(item);
-    else
-        CRLog::error("LVGLAddSceneItem : no current scene");
-}
+//void LVGLAddSceneItem(GLSceneItem * item) {
+//	if (currentGLScene)
+//		currentGLScene->add(item);
+//    else
+//        CRLog::error("LVGLAddSceneItem : no current scene");
+//}
 

@@ -194,6 +194,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     if (!program_texture->bind())
         CRLog::error("error while binding texture program");
     glEnable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     program_solid->setUniformValue("matrix", matrix);
     program_solid->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
@@ -213,6 +214,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     program_solid->release();
 #else
     glColor4f(1,1,1,1);
+    glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -278,6 +280,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
 #ifdef QT_OPENGL_ES_2
 
     glEnable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
     checkError("glEnable(GL_BLEND)");
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
@@ -319,6 +322,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     checkError("glBindTexture");
 #else
 
+    glDisable(GL_CULL_FACE);
     glActiveTexture(GL_TEXTURE0);
     checkError("glActiveTexture");
     glEnable(GL_TEXTURE_2D);
@@ -668,7 +672,7 @@ void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top
 
 void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
-    myGlOrtho(0, dx, 0, dy, 0.01f, 5.0f);
+    myGlOrtho(0, dx, 0, dy, -0.01f, 5.0f);
 
 #ifdef QT_OPENGL_ES_2
     //QMatrix4x4 matrix(m);
@@ -681,12 +685,12 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();
     checkError("glPushMatrix");
-    glLoadIdentity();
+    //glLoadIdentity();
     glLoadMatrixf(m);
     //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
     //glPushMatrix();
-    checkError("glPushMatrix");
+    //checkError("glPushMatrix");
     glLoadIdentity();
 #endif
     glViewport(0,0,dx,dy);
