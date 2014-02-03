@@ -28,6 +28,7 @@ void TiledGLDrawBuf::init(int dx, int dy) {
             getTileRect(rc, x, y);
             _tiles[y * _xtiles + x] = new GLDrawBuf(rc.width(), rc.height(), _bpp, true);
         }
+    SetClipRect(NULL);
 }
 
 void TiledGLDrawBuf::cleanup() {
@@ -436,6 +437,10 @@ static bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
     int dtop = 0;
     int dright = 0;
     int dbottom = 0;
+    int srcw = srcrc.width();
+    int srch = srcrc.height();
+    int dstw = dstrc.width();
+    int dsth = dstrc.height();
     if (dstrc.left < dstcrop.left)
         dleft = (dstcrop.left - dstrc.left) * 10000 / dstrc.width();
     if (dstcrop.right < dstrc.right)
@@ -445,20 +450,20 @@ static bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
     if (dstcrop.bottom < dstrc.bottom)
         dbottom = (dstrc.bottom - dstcrop.bottom) * 10000 / dstrc.height();
     if (dleft) {
-        srcrc.left += (dleft * srcrc.width() + srcrc.width() - 1) / 10000;
-        dstrc.left += (dleft * dstrc.width() + dstrc.width() - 1) / 10000;
+        srcrc.left += (dleft * srcw + srcw - 1) / 10000;
+        dstrc.left += (dleft * dstw + dstw - 1) / 10000;
     }
     if (dright) {
-        srcrc.right -= (dright * srcrc.width() + srcrc.width() - 1) / 10000;
-        dstrc.right -= (dright * dstrc.width() + dstrc.width() - 1) / 10000;
+        srcrc.right -= (dright * srcw + srcw - 1) / 10000;
+        dstrc.right -= (dright * dstw + dstw - 1) / 10000;
     }
     if (dtop) {
-        srcrc.top += (dtop * srcrc.height() + srcrc.height() - 1) / 10000;
-        dstrc.top += (dtop * dstrc.height() + dstrc.height() - 1) / 10000;
+        srcrc.top += (dtop * srch + srch - 1) / 10000;
+        dstrc.top += (dtop * dsth + dsth - 1) / 10000;
     }
     if (dbottom) {
-        srcrc.bottom -= (dbottom * srcrc.height() + srcrc.height() - 1) / 10000;
-        dstrc.bottom -= (dbottom * dstrc.height() + dstrc.height() - 1) / 10000;
+        srcrc.bottom -= (dbottom * srch + srch - 1) / 10000;
+        dstrc.bottom -= (dbottom * dsth + dsth - 1) / 10000;
     }
     return true;
 }
@@ -1355,7 +1360,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
             if (!rc.intersects(cliprect))
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            _scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, 0, 0, src->GetWidth(), src->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
         }
 	}
 }

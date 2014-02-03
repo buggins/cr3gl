@@ -9,7 +9,8 @@ using namespace CRUI;
 #include "cruisettings.h"
 #include "cruisettingswidget.h"
 
-#define WINDOW_ANIMATION_DELAY 250
+#define WINDOW_ANIMATION_DELAY 1750
+//#define WINDOW_ANIMATION_DELAY 250
 //#define WINDOW_ANIMATION_DELAY 750
 #define SLOW_OPERATION_POPUP_DELAY 100
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000

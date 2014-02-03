@@ -2841,7 +2841,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
     CR_UNUSED2(direction, progress);
     //CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
     // workaround for no-rtti builds
-    GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
+    LVDrawBuf * glbuf = dst; //dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
         int diam = (numPages == 1 ? 50 : 25) * dx / 100;
         int xx = 0;
