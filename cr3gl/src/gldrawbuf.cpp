@@ -433,7 +433,7 @@ void TiledGLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy,
     DrawFragment(src, 0, 0, src->GetWidth(), src->GetHeight(), x, y, dx, dy, options);
 }
 
-static bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
+bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
     int dleft = 0;
     int dtop = 0;
     int dright = 0;
@@ -713,48 +713,56 @@ public:
                 CRLog::error("Invalid texture %d", _textureId);
                 return;
             }
-            float dstx0 = x;
-			float dsty0 = y;
-			float dstx1 = x + dx;
-			float dsty1 = y - dy;
-			float txppx = 1 / (float)_tdx;
-			float txppy = 1 / (float)_tdy;
-			float srcx0 = (item->_x0 + srcx) * txppx;
-			float srcy0 = (item->_y0 + srcy) * txppy;
-			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
-			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
-			if (clip) {
-                CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
-				// correct clipping
-                float xscale = (srcx1-srcx0) / (dstx1 - dstx0);
-                float yscale =  (srcy1-srcy0) / (dsty1 - dsty0);
+//            float dstx0 = x;
+//			float dsty0 = y;
+//			float dstx1 = x + dx;
+//			float dsty1 = y - dy;
+//			float txppx = 1 / (float)_tdx;
+//			float txppy = 1 / (float)_tdy;
+//			float srcx0 = (item->_x0 + srcx) * txppx;
+//			float srcy0 = (item->_y0 + srcy) * txppy;
+//			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
+//			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
+//			if (clip) {
+//                translateRect(srcrc, dstrc, *clip);
+//                CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
+//				// correct clipping
+//                float xscale = (srcx1-srcx0) / (dstx1 - dstx0);
+//                float yscale =  (srcy1-srcy0) / (dsty1 - dsty0);
 
-                srcx0 += clip->left * xscale;
-                srcx1 -= clip->right * xscale;
-                dstx0 += clip->left;
-				dstx1 -= clip->right;
+//                srcx0 += clip->left * xscale;
+//                srcx1 -= clip->right * xscale;
+//                dstx0 += clip->left;
+//				dstx1 -= clip->right;
 
-                srcy0 -= clip->top * yscale;
-                srcy1 += clip->bottom * yscale;
-                dsty0 -= clip->top;
-                dsty1 += clip->bottom;
+//                srcy0 -= clip->top * yscale;
+//                srcy1 += clip->bottom * yscale;
+//                dsty0 -= clip->top;
+//                dsty1 += clip->bottom;
 
-                //CRLog::trace("after clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
-            }
-            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+//                //CRLog::trace("after clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
+//            }
+//            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+//            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
             //rotationAngle = 0;
-            int x = (dstx0 + dstx1) / 2;
-            int y = (dsty0 + dsty1) / 2;
+            int rx = x + dx / 2;
+            int ry = y + dy / 2;
             if (rotationAngle) {
                 //rotationAngle = 0;
-                CRGL->setRotation(x, y, rotationAngle);
+                CRGL->setRotation(rx, ry, rotationAngle);
             }
 
-            CRGL->drawColorAndTextureRect(vertices, texcoords, color, _textureId);
+            lvRect srcrc(item->_x0 + srcx, item->_y0 + srcy, item->_x0 + srcx+srcdx, item->_y0 + srcy+srcdy);
+            lvRect dstrc(x, y, x+dx, y+dy);
+            if (clip) {
+                translateRect(srcrc, dstrc, *clip);
+            }
+            if (!dstrc.isEmpty())
+                CRGL->drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+            //CRGL->drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
-                CRGL->setRotation(x, y, -rotationAngle);
+                CRGL->setRotation(rx, ry, -rotationAngle);
 //                glMatrixMode(GL_PROJECTION);
 //                glPopMatrix();
 //                checkError("pop matrix");
@@ -1052,22 +1060,24 @@ public:
     GLFillRectItem(int _x0, int _y0, int _x1, int _y1, lUInt32 _color1, lUInt32 _color2, lUInt32 _color3, lUInt32 _color4) : x0(_x0), y0(_y0), x1(_x1), y1(_y1)
       , color1(_color1), color2(_color2) , color3(_color3) , color4(_color4) { }
     virtual void draw() {
-        float vertices[] = {
-                (float)x0,(float)y0,0,
-                (float)x0,(float)y1,0,
-                (float)x1,(float)y1,0,
-                (float)x0,(float)y0,0,
-                (float)x1,(float)y1,0,
-                (float)x1,(float)y0,0};
-        float colors[6 * 4];
-        LVGLFillColor(color1, colors + 4*0, 1);
-        LVGLFillColor(color4, colors + 4*1, 1);
-        LVGLFillColor(color3, colors + 4*2, 1);
-        LVGLFillColor(color1, colors + 4*3, 1);
-        LVGLFillColor(color3, colors + 4*4, 1);
-        LVGLFillColor(color2, colors + 4*5, 1);
+//        float vertices[] = {
+//                (float)x0,(float)y0,0,
+//                (float)x0,(float)y1,0,
+//                (float)x1,(float)y1,0,
+//                (float)x0,(float)y0,0,
+//                (float)x1,(float)y1,0,
+//                (float)x1,(float)y0,0};
+//        float colors[6 * 4];
+//        LVGLFillColor(color1, colors + 4*0, 1);
+//        LVGLFillColor(color4, colors + 4*1, 1);
+//        LVGLFillColor(color3, colors + 4*2, 1);
+//        LVGLFillColor(color1, colors + 4*3, 1);
+//        LVGLFillColor(color3, colors + 4*4, 1);
+//        LVGLFillColor(color2, colors + 4*5, 1);
 
-        CRGL->drawSolidFillRect(vertices, colors);
+        lvRect rc(x0, y0, x1, y1);
+        CRGL->drawSolidFillRect(rc, color1, color2, color3, color4);
+        //CRGL->drawSolidFillRect(vertices, colors);
 
     }
 };
@@ -1080,7 +1090,8 @@ void GLDrawBuf::GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1, lUI
         lvRect clip;
         GetClipRect(&clip);
         if (rc.intersect(clip)) {
-            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color1, color2, color3, color4));
+            //_scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color1, color2, color3, color4));
+            _scene->add(new GLFillRectItem(rc.left, rc.top, rc.right, rc.bottom, color1, color2, color3, color4));
         }
     }
 }
@@ -1094,7 +1105,8 @@ void GLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color )
         lvRect clip;
         GetClipRect(&clip);
         if (rc.intersect(clip)) {
-            _scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color, color, color, color));
+            //_scene->add(new GLFillRectItem(rc.left, _dy - rc.top, rc.right, _dy - rc.bottom, color, color, color, color));
+            _scene->add(new GLFillRectItem(rc.left, rc.top, rc.right, rc.bottom, color, color, color, color));
         }
 	}
 }
@@ -1191,7 +1203,8 @@ void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int 
         if (!rc.intersects(cliprect))
             return; // out of bounds
         lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-        _scene->add(new GLDrawImageSceneItem(img.get(), x + 1, GetHeight() - y - 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
+        //_scene->add(new GLDrawImageSceneItem(img.get(), x + 1, GetHeight() - y - 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
+        _scene->add(new GLDrawImageSceneItem(img.get(), x + 1, y + 1, width - 2, height - 2, 1, 1, img->GetWidth() - 2, img->GetHeight() - 2, 0xFFFFFF, 0, clip, rotationAngle));
     }
 }
 
@@ -1217,8 +1230,9 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 		const CR9PatchInfo * ninePatch = img->GetNinePatchInfo();
 		if (!ninePatch) {
 			lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            _scene->add(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
-		} else {
+            //_scene->add(new GLDrawImageSceneItem(img.get(), x, GetHeight() - y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(img.get(), x, y, width, height, 0, 0, img->GetWidth(), img->GetHeight(), applyAlpha(0xFFFFFF), 0, clip, 0));
+        } else {
 			lvRect srcitems[9];
 			lvRect dstitems[9];
 			lvRect src(1, 1, img->GetWidth()-1, img->GetHeight() - 1);
@@ -1232,41 +1246,80 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
                 //CRLog::trace("nine-patch[%d] (%d, %d, %d, %d) -> (%d, %d, %d, %d)", i, srcitems[i].left, srcitems[i].top, srcitems[i].right, srcitems[i].bottom, dstitems[i].left, dstitems[i].top, dstitems[i].right, dstitems[i].bottom);
 				// visible
 				lvRect * clip = dstitems[i].clipBy(cliprect); // probably, should be clipped
-                _scene->add(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
-			}
+                //_scene->add(new GLDrawImageSceneItem(img.get(), dstitems[i].left, GetHeight() - dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
+                _scene->add(new GLDrawImageSceneItem(img.get(), dstitems[i].left, dstitems[i].top, dstitems[i].width(), dstitems[i].height(), srcitems[i].left, srcitems[i].top, srcitems[i].width(), srcitems[i].height(), applyAlpha(0xFFFFFF), 0, clip, 0));
+            }
 		}
 	}
 }
 
-class GLDrawTextureItem : public GLSceneItem {
-	int textureId;
-	int dstx0;
-	int dsty0;
-	int dstx1;
-	int dsty1;
-	float srcx0;
-	float srcy0;
-	float srcx1;
-	float srcy1;
-	lUInt32 color;
+//lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color
+
+class GLDrawTextureItemInt : public GLSceneItem {
+    lUInt32 textureId;
+    int tdx;
+    int tdy;
+    int srcx;
+    int srcy;
+    int srcdx;
+    int srcdy;
+    int xx;
+    int yy;
+    int dx;
+    int dy;
+    lUInt32 color;
     bool linear;
 public:
-    GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color, bool _linear = false)
-	: textureId(_textureId),
-	  dstx0(_dstx0), dsty0(_dsty0),
-	  dstx1(_dstx1), dsty1(_dsty1),
-	  srcx0(_srcx0), srcy0(_srcy0),
-	  srcx1(_srcx1), srcy1(_srcy1),
-      color(_color),
-      linear(_linear)
-	{
+    GLDrawTextureItemInt(lUInt32 _textureId, int _tdx, int _tdy, int _srcx, int _srcy, int _srcdx, int _srcdy, int _xx, int _yy, int _dx, int _dy, lUInt32 _color, bool _linear)
+        : textureId(_textureId)
+        , tdx(_tdx)
+        , tdy(_tdy)
+        , srcx(_srcx)
+        , srcy(_srcy)
+        , srcdx(_srcdx)
+        , srcdy(_srcdy)
+        , xx(_xx)
+        , yy(_yy)
+        , dx(_dx)
+        , dy(_dy)
+        , color(_color)
+        , linear(_linear)
+    {
     }
     virtual void draw() {
-        float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-        float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-        CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
+        CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcx, srcy, srcdx, srcdy, xx, yy, dx, dy, color, linear);
     }
 };
+
+//class GLDrawTextureItem : public GLSceneItem {
+//	int textureId;
+//	int dstx0;
+//	int dsty0;
+//	int dstx1;
+//	int dsty1;
+//	float srcx0;
+//	float srcy0;
+//	float srcx1;
+//	float srcy1;
+//	lUInt32 color;
+//    bool linear;
+//public:
+//    GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color, bool _linear = false)
+//	: textureId(_textureId),
+//	  dstx0(_dstx0), dsty0(_dsty0),
+//	  dstx1(_dstx1), dsty1(_dsty1),
+//	  srcx0(_srcx0), srcy0(_srcy0),
+//	  srcx1(_srcx1), srcy1(_srcy1),
+//      color(_color),
+//      linear(_linear)
+//	{
+//    }
+//    virtual void draw() {
+//        float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+//        float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+//        CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
+//    }
+//};
 
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
@@ -1323,14 +1376,17 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
 			if (_scene)
-                _scene->add(new GLDrawTextureItem(glbuf->_textureId,
-                                                  x, _dy - y - dy, x + dx, _dy - y,
-                                                  srcx / (float)glbuf->_tdx,
-                                                  srcy / (float)glbuf->_tdy,
-                                                  (srcx + srcdx) / (float)glbuf->_tdx,
-                                                  (srcy + srcdy) / (float)glbuf->_tdy,
-                                                  applyAlpha(0xFFFFFF),
-                                                  srcdx != dx || srcdy != dy));
+                _scene->add(new GLDrawTextureItemInt(
+                                glbuf->_textureId, glbuf->_tdx, glbuf->_tdy, srcx, srcy, srcdx, srcdy, x, y, dx, dy, applyAlpha(0xFFFFFF),
+                                    srcdx != dx || srcdy != dy));
+//                                (glbuf->_textureId,
+//                                                  x, _dy - y - dy, x + dx, _dy - y,
+//                                                  srcx / (float)glbuf->_tdx,
+//                                                  srcy / (float)glbuf->_tdy,
+//                                                  (srcx + srcdx) / (float)glbuf->_tdx,
+//                                                  (srcy + srcdy) / (float)glbuf->_tdy,
+//                                                  applyAlpha(0xFFFFFF),
+//                                                  srcdx != dx || srcdy != dy));
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
@@ -1364,7 +1420,8 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
             if (!rc.intersects(cliprect))
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
-            _scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
+            //_scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(src, x, y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
         }
 	}
 }

@@ -154,7 +154,7 @@ void OpenGLWindow::render()
     TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
     GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
-#if 0
+#if 1
     buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
     //{
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
@@ -207,7 +207,7 @@ void OpenGLWindow::render()
     tiled2.afterDrawing();
     //buf.DrawFragment(&tiled2, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
     //tiled2.DrawTo(&buf, 0, 0, 0, NULL);
-    tiled2.DrawTo(&buf, 0, 0, 0, NULL);
+    tiled.DrawTo(&buf, 0, 0, 0, NULL);
 //}
     buf.FillRect(256, 0, 257, 512, 0x80FF8080);
     buf.FillRect(512, 0, 513, 512, 0x80FF8080);

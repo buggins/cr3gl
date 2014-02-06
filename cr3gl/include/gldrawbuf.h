@@ -358,4 +358,6 @@ void LVGLCreateImageCache();
 /// clears OpenGL based image cache on GL context destroy
 void LVGLClearImageCache();
 
+bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop);
+
 #endif /* GLDRAWBUF_H_ */

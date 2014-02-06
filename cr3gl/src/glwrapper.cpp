@@ -95,18 +95,24 @@ class CRGLSupportImpl :
 #endif
     float m[4 * 4];
     lUInt32 currentFramebufferId;
+    int bufferDx;
+    int bufferDy;
     void init();
     void uninit();
     void myGlOrtho(float left, float right, float bottom, float top,
                                              float zNearPlane, float zFarPlane);
+protected:
+    //void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId);
+    void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear);
+    void drawSolidFillRect(float vertices[], lUInt32 color);
+    void drawSolidFillRect(float vertices[], float colors[]);
 public:
     CRGLSupportImpl();
     ~CRGLSupportImpl();
 
-    void drawSolidFillRect(float vertices[], lUInt32 color);
-    void drawSolidFillRect(float vertices[], float colors[]);
-    void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId);
-    void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId);
+    void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
+    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
+    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear);
 
     lUInt32 genTexture();
     bool isTexture(lUInt32 textureId);
@@ -139,7 +145,7 @@ CRGLSupport * CRGLSupport::instance() {
 
 
 
-CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0) {
+CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0), bufferDx(0), bufferDy(0) {
     init();
 }
 
@@ -165,6 +171,24 @@ static bool _checkError(const char *srcfile, int line, const char * context) {
 #define PROGRAM_COLOR_ATTRIBUTE 1
 #define PROGRAM_TEXCOORD_ATTRIBUTE 2
 #endif
+
+void CRGLSupportImpl::drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) {
+    float colors[6 * 4];
+    LVGLFillColor(color1, colors + 4*0, 1);
+    LVGLFillColor(color4, colors + 4*1, 1);
+    LVGLFillColor(color3, colors + 4*2, 1);
+    LVGLFillColor(color1, colors + 4*3, 1);
+    LVGLFillColor(color3, colors + 4*4, 1);
+    LVGLFillColor(color2, colors + 4*5, 1);
+    float vertices[] = {
+            (float)rc.left,(float)bufferDy - rc.top,0,
+            (float)rc.left,(float)bufferDy - rc.bottom,0,
+            (float)rc.right,(float)bufferDy - rc.bottom,0,
+            (float)rc.left,(float)bufferDy - rc.top,0,
+            (float)rc.right,(float)bufferDy - rc.bottom,0,
+            (float)rc.right,(float)bufferDy - rc.top,0};
+    drawSolidFillRect(vertices, colors);
+}
 
 void CRGLSupportImpl::drawSolidFillRect(float vertices[], lUInt32 color) {
     float colors[6*4];
@@ -239,13 +263,39 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     checkError("after CRGLSupportImpl::drawSolidFillRect");
 }
 
-void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) {
-    float colors[6*4];
-    LVGLFillColor(color, colors, 6);
-    drawColorAndTextureRect(vertices, texcoords, colors, textureId);
+//void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) {
+//    float colors[6*4];
+//    LVGLFillColor(color, colors, 6);
+//    drawColorAndTextureRect(vertices, texcoords, colors, textureId);
+//}
+
+void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear) {
+    drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
 }
 
-void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId) {
+void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) {
+    float colors[6*4];
+    LVGLFillColor(color, colors, 6);
+    float dstx0 = xx;
+    float dsty1 = bufferDy - yy - dy;
+    float dstx1 = xx + dx;
+    float dsty0 = bufferDy - yy;
+    float srcx0 = srcx / (float)tdx;
+    float srcy0 = srcy / (float)tdy;
+    float srcx1 = (srcx + srcdx) / (float)tdx;
+    float srcy1 = (srcy + srcdy) / (float)tdy;
+    float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+    float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
+    drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
+//    x, _dy - y - dy, x + dx, _dy - y,
+//    srcx / (float)glbuf->_tdx,
+//    srcy / (float)glbuf->_tdy,
+//    (srcx + srcdx) / (float)glbuf->_tdx,
+//    (srcy + srcdy) / (float)glbuf->_tdy,
+
+}
+
+void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear) {
     CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
             , currentFramebufferId
             , textureId
@@ -672,6 +722,8 @@ void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top
 
 void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
+    bufferDx = dx;
+    bufferDy = dy;
     myGlOrtho(0, dx, 0, dy, -0.01f, 5.0f);
 
 #ifdef QT_OPENGL_ES_2
