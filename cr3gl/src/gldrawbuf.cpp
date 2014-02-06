@@ -417,14 +417,15 @@ void TiledGLDrawBuf::DrawRotated( LVImageSourceRef img, int xx, int yy, int widt
 
 /// draws buffer content to another buffer doing color conversion if necessary
 void TiledGLDrawBuf::DrawTo( LVDrawBuf * buf, int xx, int yy, int options, lUInt32 * palette ) {
-    for (int y = 0; y < _ytiles; y++) {
-        for (int x = 0; x < _xtiles; x++) {
-            GLDrawBuf * tile = _tiles[y * _xtiles + x];
-            lvRect tilerc;
-            getTileRect(tilerc, x, y);
-            tile->DrawTo(buf, xx + tilerc.left, yy + tilerc.top, options, palette);
-        }
-    }
+    buf->DrawFragment(this, 0, 0, GetWidth(), GetHeight(), xx, yy, GetWidth(), GetHeight(), 0);
+//    for (int y = 0; y < _ytiles; y++) {
+//        for (int x = 0; x < _xtiles; x++) {
+//            GLDrawBuf * tile = _tiles[y * _xtiles + x];
+//            lvRect tilerc;
+//            getTileRect(tilerc, x, y);
+//            tile->DrawTo(buf, xx + tilerc.left, yy + tilerc.top, options, palette);
+//        }
+//    }
 }
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
@@ -470,6 +471,7 @@ static bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
 void TiledGLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, int options) {
+    CRLog::trace("TiledGLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, xx, yy, dx, dy);
     for (int y = 0; y < _ytiles; y++) {
         for (int x = 0; x < _xtiles; x++) {
             lvRect srcrc(srcx, srcy, srcx + srcdx, srcy + srcdy);
@@ -1270,37 +1272,38 @@ public:
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
 {
     CR_UNUSED2(options, palette);
-    // workaround for no-rtti builds
-	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
-	if (glbuf) {
-		if (_textureBuf && _textureId != 0) {
-            CRLog::trace("GLDrawBuf::DrawTo GLBuf(%d,%d)", x, y);
-            //int alpha = ((options >> 16) & 255);
-            if (glbuf->_scene) {
-                //glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
-                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF)));
-            }
-		} else {
-			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
-		}
-    } else if (buf->isTiled()) {
-        CRLog::trace("GLDrawBuf::DrawTo tiled(%d,%d)", x, y);
-        // tiled source
-        lvRect srcrc(x, y, x + _dx, y + _dy);
-        for (int ty = 0; ty < buf->getYtiles(); ty++) {
-            for (int tx = 0; tx < buf->getXtiles(); tx++) {
-                LVDrawBuf * tile = buf->getTile(tx, ty);
-                lvRect tilerc;
-                buf->getTileRect(tilerc, tx, ty);
-                if (tilerc.intersects(srcrc)) {
-                    CRLog::trace("GLDrawBuf::DrawTo tile: (%d,%d)", x - tilerc.left, y - tilerc.top);
-                    DrawTo(tile, x - tilerc.left, y - tilerc.top, options, palette);
-                }
-            }
-        }
-    } else {
-        CRLog::error("GLDrawBuf::DrawTo() is not implemented for non-GL draw buffer targets");
-	}
+    buf->DrawFragment(this, 0, 0, GetWidth(), GetHeight(), x, y, GetWidth(), GetHeight(), 0);
+//    // workaround for no-rtti builds
+//	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
+//	if (glbuf) {
+//		if (_textureBuf && _textureId != 0) {
+//            CRLog::trace("GLDrawBuf::DrawTo GLBuf(%d,%d)", x, y);
+//            //int alpha = ((options >> 16) & 255);
+//            if (glbuf->_scene) {
+//                //glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
+//                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF)));
+//            }
+//		} else {
+//			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
+//		}
+//    } else if (buf->isTiled()) {
+//        CRLog::trace("GLDrawBuf::DrawTo tiled(%d,%d)", x, y);
+//        // tiled source
+//        lvRect srcrc(x, y, x + _dx, y + _dy);
+//        for (int ty = 0; ty < buf->getYtiles(); ty++) {
+//            for (int tx = 0; tx < buf->getXtiles(); tx++) {
+//                LVDrawBuf * tile = buf->getTile(tx, ty);
+//                lvRect tilerc;
+//                buf->getTileRect(tilerc, tx, ty);
+//                if (tilerc.intersects(srcrc)) {
+//                    CRLog::trace("GLDrawBuf::DrawTo tile: (%d,%d)", x - tilerc.left, y - tilerc.top);
+//                    DrawTo(tile, x - tilerc.left, y - tilerc.top, options, palette);
+//                }
+//            }
+//        }
+//    } else {
+//        CRLog::error("GLDrawBuf::DrawTo() is not implemented for non-GL draw buffer targets");
+//	}
 }
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
@@ -1314,6 +1317,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
     CR_UNUSED(options);
     if (dx <= 0 || dy <= 0 || !src)
         return;
+    CRLog::trace("GLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, x, y, dx, dy);
     // workaround for no-rtti builds
 	GLDrawBuf * glbuf = src->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {

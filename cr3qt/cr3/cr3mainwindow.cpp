@@ -151,8 +151,9 @@ void OpenGLWindow::render()
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
 #if 1
-    //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
-    TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
+    TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
+    //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
+    GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
 #if 0
     buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
     //{
@@ -199,11 +200,18 @@ void OpenGLWindow::render()
     }
 #endif
     tiled.afterDrawing();
-    tiled.DrawTo(&buf, 0, 0, 0, NULL);
+    tiled2.beforeDrawing();
+//    for (int x = 0; x < buf.GetWidth(); x += 64)
+//        tiled2.DrawFragment(&tiled, x, 0, 64, buf.GetHeight(), x, 0, 64, buf.GetHeight(), 0);
+    tiled2.DrawFragment(&tiled, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
+    tiled2.afterDrawing();
+    //buf.DrawFragment(&tiled2, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
+    //tiled2.DrawTo(&buf, 0, 0, 0, NULL);
+    tiled2.DrawTo(&buf, 0, 0, 0, NULL);
 //}
-    buf.FillRect(256, 0, 257, 512, 0x80808080);
-    buf.FillRect(512, 0, 513, 512, 0x80808080);
-    buf.FillRect(0, 256, 1024, 257, 0x80808080);
+    buf.FillRect(256, 0, 257, 512, 0x80FF8080);
+    buf.FillRect(512, 0, 513, 512, 0x80FF8080);
+    buf.FillRect(0, 256, 1024, 257, 0x80FF8080);
 #else
     bool needLayout, needDraw, animating;
     //CRLog::trace("Checking if draw is required");
