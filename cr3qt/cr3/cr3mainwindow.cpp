@@ -150,25 +150,29 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
-#if 0
+#if 1
     //TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
     GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
-    //#define tiled buf
+
+    //LVDrawBuf * p = &buf;
+    LVDrawBuf * p = &tiled;
+    if (p != &buf)
+        p->beforeDrawing();
 #if 1
-    buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
+    buf.FillRect(0, 0, sz.width(), sz.height(), 0x80F080);
+    buf.FillRect(2, 2, sz.width()-2, sz.height()-2, 0x8080FF);
     //{
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
     //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
     LVImageSourceRef icon1 = resourceResolver->getImageSource("add_file");
     LVImageSourceRef icon2 = resourceResolver->getImageSource("add_folder");
-    tiled.beforeDrawing();
-    tiled.FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
-    tiled.FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
-    tiled.FillRect(14, 14, 16, 16, 0x0000FF);
-    tiled.FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
+    p->FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
+    p->FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
+    p->FillRect(14, 14, 16, 16, 0x0000FF);
+    p->FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
     LVFontRef font = currentTheme->getFont();
-    font->DrawTextString(&tiled, 240 + 256, 245, L"Test", 4, '?');
+    font->DrawTextString(p, 240 + 256, 245, L"Test", 4, '?');
 
 //        GLDrawBuf img0(100, 100, 32, true);
 //        img0.beforeDrawing();
@@ -176,13 +180,12 @@ void OpenGLWindow::render()
 //        img0.afterDrawing();
 //        img0.DrawTo(&tiled, 0, 0, 0, NULL);
 
-    tiled.Draw(icon1, 20, 20, icon1->GetWidth(), icon1->GetHeight(), false);
+    p->Draw(icon1, 20, 20, icon1->GetWidth(), icon1->GetHeight(), false);
 
-    tiled.Draw(icon2, 240, 240, 64, 64, false);
+    p->Draw(icon2, 240, 240, icon1->GetWidth() * 2, icon1->GetHeight() * 2, false);
 
     //buf.Draw(icon2, 240 + 256, 240, 64, 64, false);
 #else
-    tiled.beforeDrawing();
     bool needLayout, needDraw, animating;
     //CRLog::trace("Checking if draw is required");
     CRUICheckUpdateOptions(_widget, needLayout, needDraw, animating);
@@ -196,19 +199,21 @@ void OpenGLWindow::render()
     needDraw = true;
     if (needDraw) {
         //CRLog::trace("need draw");
-        _widget->draw(&tiled);
+        _widget->draw(p);
         //CRLog::trace("done draw");
     }
 #endif
-    tiled.afterDrawing();
+    if (p != &buf)
+        p->afterDrawing();
 //    tiled2.beforeDrawing();
 ////    for (int x = 0; x < buf.GetWidth(); x += 64)
 ////        tiled2.DrawFragment(&tiled, x, 0, 64, buf.GetHeight(), x, 0, 64, buf.GetHeight(), 0);
 //    tiled2.DrawFragment(&tiled, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
 //    tiled2.afterDrawing();
-    //buf.DrawFragment(&tiled2, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
+    if (p != &buf)
+        buf.DrawFragment(p, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
     //tiled2.DrawTo(&buf, 0, 0, 0, NULL);
-    tiled.DrawTo(&buf, 0, 0, 0, NULL);
+    //tiled.DrawTo(&buf, 0, 0, 0, NULL);
 //}
     buf.FillRect(256, 0, 257, 512, 0x80FF8080);
     buf.FillRect(512, 0, 513, 512, 0x80FF8080);

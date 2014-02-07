@@ -167,11 +167,57 @@ static bool _checkError(const char *srcfile, int line, const char * context) {
 
 #ifdef QT_OPENGL_ES_2
 #include <QtOpenGL/QGLShaderProgram>
+
+static const char * vsrc_TEXTURE =
+    "attribute highp vec4 vertex;\n"
+    "attribute lowp vec4 colAttr;\n"
+    "attribute mediump vec4 texCoord;\n"
+    "varying lowp vec4 col;\n"
+    "varying mediump vec4 texc;\n"
+    "uniform mediump mat4 matrix;\n"
+    "void main(void)\n"
+    "{\n"
+    "    gl_Position = matrix * vertex;\n"
+    "    col = colAttr;\n"
+    "    texc = texCoord;\n"
+    "}\n";
+
+const char *fsrc_TEXTURE =
+    "uniform sampler2D texture;\n"
+    "varying lowp vec4 col;\n"
+    "varying mediump vec4 texc;\n"
+    "void main(void)\n"
+    "{\n"
+    "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
+    "}\n";
+
+const char *vsrc_SOLID =
+    "attribute highp vec4 vertex;\n"
+    "attribute lowp vec4 colAttr;\n"
+    "varying lowp vec4 col;\n"
+    "uniform mediump mat4 matrix;\n"
+    "void main(void)\n"
+    "{\n"
+    "    gl_Position = matrix * vertex;\n"
+    "    col = colAttr;\n"
+    "}\n";
+
+const char *fsrc_SOLID =
+    "uniform sampler2D texture;\n"
+    "varying lowp vec4 col;\n"
+    "void main(void)\n"
+    "{\n"
+    "    gl_FragColor = col;\n"
+    "}\n";
+
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_COLOR_ATTRIBUTE 1
 #define PROGRAM_TEXCOORD_ATTRIBUTE 2
+#define PROGRAM_VERTEX_ATTRIBUTE_SOLID 0
+#define PROGRAM_COLOR_ATTRIBUTE_SOLID 1
 #endif
 
+#define Z_2D -1.0f
 void CRGLSupportImpl::drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) {
     float colors[6 * 4];
     LVGLFillColor(color1, colors + 4*0, 1);
@@ -180,17 +226,17 @@ void CRGLSupportImpl::drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 col
     LVGLFillColor(color1, colors + 4*3, 1);
     LVGLFillColor(color3, colors + 4*4, 1);
     LVGLFillColor(color2, colors + 4*5, 1);
-    float y0 = (float)bufferDy-rc.top; // (float)bufferDy-
-    float y1 = (float)bufferDy-rc.bottom;
-//    float y0 = rc.top; // (float)bufferDy-
-//    float y1 = rc.bottom;
+    float x0 = (float)(rc.left);
+    float y0 = (float)(bufferDy-rc.top);
+    float x1 = (float)(rc.right);
+    float y1 = (float)(bufferDy-rc.bottom);
     float vertices[] = {
-            (float)rc.left,y0,0,
-            (float)rc.left,y1,0,
-            (float)rc.right,y1,0,
-            (float)rc.left,y0,0,
-            (float)rc.right,y1,0,
-            (float)rc.right,y0,0};
+            x0,y0,Z_2D,
+            x0,y1,Z_2D,
+            x1,y1,Z_2D,
+            x0,y0,Z_2D,
+            x1,y1,Z_2D,
+            x1,y0,Z_2D};
     drawSolidFillRect(vertices, colors);
 }
 
@@ -219,26 +265,25 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     checkError("before CRGLSupportImpl::drawSolidFillRect");
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(m);
-    if (!program_texture->bind())
+    if (!program_solid->bind())
         CRLog::error("error while binding texture program");
-    glEnable(GL_BLEND);
     glDisable(GL_CULL_FACE);
+    //glDisable(GL_ALPHA_TEST);
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     program_solid->setUniformValue("matrix", matrix);
-    program_solid->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-    program_solid->enableAttributeArray(PROGRAM_COLOR_ATTRIBUTE);
-    //program_solid->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+    program_solid->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE_SOLID);
+    program_solid->enableAttributeArray(PROGRAM_COLOR_ATTRIBUTE_SOLID);
     program_solid->setAttributeArray
-        (PROGRAM_VERTEX_ATTRIBUTE, vertices, 3);
+        (PROGRAM_VERTEX_ATTRIBUTE_SOLID, vertices, 3);
     program_solid->setAttributeArray
-        (PROGRAM_COLOR_ATTRIBUTE, colors, 4);
+        (PROGRAM_COLOR_ATTRIBUTE_SOLID, colors, 4);
 //    program_solid->setAttributeArray
 //        (PROGRAM_TEXCOORD_ATTRIBUTE, texcoords);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkError("glDrawArrays");
-    program_solid->disableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-    program_solid->disableAttributeArray(PROGRAM_COLOR_ATTRIBUTE);
-    //program_solid->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+    program_solid->disableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE_SOLID);
+    program_solid->disableAttributeArray(PROGRAM_COLOR_ATTRIBUTE_SOLID);
     program_solid->release();
 #else
     glColor4f(1,1,1,1);
@@ -280,17 +325,21 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
 void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) {
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
-    float dstx0 = xx;
-    float dsty0 = bufferDy - yy - dy;
-    //float dsty0 = yy;
-    float dstx1 = xx + dx;
-    float dsty1 = bufferDy - yy;
-    //float dsty1 = yy + dy;
+    float dstx0 = (float)xx;
+    float dsty0 = (float)(bufferDy - (yy));
+    float dstx1 = (float)(xx + dx);
+    float dsty1 = (float)(bufferDy - (yy + dy));
+
     float srcx0 = srcx / (float)tdx;
     float srcy0 = srcy / (float)tdy;
     float srcx1 = (srcx + srcdx) / (float)tdx;
     float srcy1 = (srcy + srcdy) / (float)tdy;
-    float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
+    float vertices[] = {dstx0,dsty0,Z_2D,
+                        dstx0,dsty1,Z_2D,
+                        dstx1,dsty1,Z_2D,
+                        dstx0,dsty0,Z_2D,
+                        dstx1,dsty1,Z_2D,
+                        dstx1,dsty0,Z_2D};
     float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
     drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
 //    x, _dy - y - dy, x + dx, _dy - y,
@@ -349,6 +398,10 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     checkError("glActiveTexture GL_TEXTURE0");
     glBindTexture(GL_TEXTURE_2D, textureId);
     checkError("glBindTexture");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    checkError("drawColorAndTextureRect - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    checkError("drawColorAndTextureRect - glTexParameteri");
 
 
     QMatrix4x4 matrix(m);
@@ -385,16 +438,17 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     checkError("glEnable(GL_TEXTURE_2D)");
     glBindTexture(GL_TEXTURE_2D, textureId);
     checkError("glBindTexture");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    checkError("drawColorAndTextureRect - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    checkError("drawColorAndTextureRect - glTexParameteri");
 
     glColor4f(1,1,1,1);
     glDisable(GL_ALPHA_TEST);
 
     glEnable(GL_BLEND);
-    //GL_SRC_ALPHA
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glEnableClientState(GL_COLOR_ARRAY);
     checkError("glEnableClientState(GL_COLOR_ARRAY)");
@@ -438,33 +492,12 @@ void CRGLSupportImpl::init() {
     // texture + color
     {
         QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
-        const char *vsrc =
-            "attribute highp vec4 vertex;\n"
-            "attribute lowp vec4 colAttr;\n"
-            "attribute mediump vec4 texCoord;\n"
-            "varying lowp vec4 col;\n"
-            "varying mediump vec4 texc;\n"
-            "uniform mediump mat4 matrix;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_Position = matrix * vertex;\n"
-            "    col = colAttr;\n"
-            "    texc = texCoord;\n"
-            "}\n";
-        if (!vshader->compileSourceCode(vsrc))
-            CRLog::error("error while compiling shader %s", vsrc);
+        if (!vshader->compileSourceCode(vsrc_TEXTURE))
+            CRLog::error("error while compiling shader %s", vsrc_TEXTURE);
 
         QGLShader *fshader = new QGLShader(QGLShader::Fragment, this);
-        const char *fsrc =
-            "uniform sampler2D texture;\n"
-            "varying lowp vec4 col;\n"
-            "varying mediump vec4 texc;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
-            "}\n";
-        if (!fshader->compileSourceCode(fsrc))
-            CRLog::error("error while compiling shader %s", fsrc);
+        if (!fshader->compileSourceCode(fsrc_TEXTURE))
+            CRLog::error("error while compiling shader %s", fsrc_TEXTURE);
 
         program_texture = new QGLShaderProgram(this);
         program_texture->addShader(vshader);
@@ -482,35 +515,18 @@ void CRGLSupportImpl::init() {
     // solid
     {
         QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
-        const char *vsrc =
-            "attribute highp vec4 vertex;\n"
-            "attribute lowp vec4 colAttr;\n"
-            "varying lowp vec4 col;\n"
-            "uniform mediump mat4 matrix;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_Position = matrix * vertex;\n"
-            "    col = colAttr;\n"
-            "}\n";
-        if (!vshader->compileSourceCode(vsrc))
-            CRLog::error("error while compiling shader %s", vsrc);
+        if (!vshader->compileSourceCode(vsrc_SOLID))
+            CRLog::error("error while compiling shader %s", vsrc_SOLID);
 
         QGLShader *fshader = new QGLShader(QGLShader::Fragment, this);
-        const char *fsrc =
-            "uniform sampler2D texture;\n"
-            "varying lowp vec4 col;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_FragColor = col;\n"
-            "}\n";
-        if (!fshader->compileSourceCode(fsrc))
-            CRLog::error("error while compiling shader %s", fsrc);
+        if (!fshader->compileSourceCode(fsrc_SOLID))
+            CRLog::error("error while compiling shader %s", fsrc_SOLID);
 
         program_solid = new QGLShaderProgram(this);
         program_solid->addShader(vshader);
         program_solid->addShader(fshader);
-        program_solid->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-        program_solid->bindAttributeLocation("colAttr", PROGRAM_COLOR_ATTRIBUTE);
+        program_solid->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE_SOLID);
+        program_solid->bindAttributeLocation("colAttr", PROGRAM_COLOR_ATTRIBUTE_SOLID);
         if (!program_solid->link())
             CRLog::error("error while linking solid program");
         if (!program_solid->bind())
@@ -730,13 +746,12 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
     bufferDx = dx;
     bufferDy = dy;
-    myGlOrtho(0, dx, 0, dy, -0.01f, 5.0f);
+    //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
+    myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
 #ifdef QT_OPENGL_ES_2
-    //QMatrix4x4 matrix(m);
     QMatrix4x4 matrix2;
-    matrix2.ortho(0, dx, 0, dy, -1.0f, 5.0f);
-    //float r[16];
+    matrix2.ortho(0, dx, 0, dy, 0.5f, 5.0f);
     matrix2.copyDataTo(m);
 #else
 

@@ -417,6 +417,7 @@ void TiledGLDrawBuf::DrawRotated( LVImageSourceRef img, int xx, int yy, int widt
 
 /// draws buffer content to another buffer doing color conversion if necessary
 void TiledGLDrawBuf::DrawTo( LVDrawBuf * buf, int xx, int yy, int options, lUInt32 * palette ) {
+    CR_UNUSED2(options, palette);
     buf->DrawFragment(this, 0, 0, GetWidth(), GetHeight(), xx, yy, GetWidth(), GetHeight(), 0);
 //    for (int y = 0; y < _ytiles; y++) {
 //        for (int x = 0; x < _xtiles; x++) {
@@ -758,7 +759,7 @@ public:
                 translateRect(srcrc, dstrc, *clip);
             }
             if (!dstrc.isEmpty())
-                CRGL->drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                CRGL->drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
             //CRGL->drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
@@ -1255,7 +1256,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
 
 //lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color
 
-class GLDrawTextureItemInt : public GLSceneItem {
+class GLDrawTextureItem : public GLSceneItem {
     lUInt32 textureId;
     int tdx;
     int tdy;
@@ -1270,7 +1271,7 @@ class GLDrawTextureItemInt : public GLSceneItem {
     lUInt32 color;
     bool linear;
 public:
-    GLDrawTextureItemInt(lUInt32 _textureId, int _tdx, int _tdy, int _srcx, int _srcy, int _srcdx, int _srcdy, int _xx, int _yy, int _dx, int _dy, lUInt32 _color, bool _linear)
+    GLDrawTextureItem(lUInt32 _textureId, int _tdx, int _tdy, int _srcx, int _srcy, int _srcdx, int _srcdy, int _xx, int _yy, int _dx, int _dy, lUInt32 _color, bool _linear)
         : textureId(_textureId)
         , tdx(_tdx)
         , tdy(_tdy)
@@ -1291,72 +1292,11 @@ public:
     }
 };
 
-//class GLDrawTextureItem : public GLSceneItem {
-//	int textureId;
-//	int dstx0;
-//	int dsty0;
-//	int dstx1;
-//	int dsty1;
-//	float srcx0;
-//	float srcy0;
-//	float srcx1;
-//	float srcy1;
-//	lUInt32 color;
-//    bool linear;
-//public:
-//    GLDrawTextureItem(int _textureId, int _dstx0, int _dsty0, int _dstx1, int _dsty1, float _srcx0, float _srcy0, float _srcx1, float _srcy1, lUInt32 _color, bool _linear = false)
-//	: textureId(_textureId),
-//	  dstx0(_dstx0), dsty0(_dsty0),
-//	  dstx1(_dstx1), dsty1(_dsty1),
-//	  srcx0(_srcx0), srcy0(_srcy0),
-//	  srcx1(_srcx1), srcy1(_srcy1),
-//      color(_color),
-//      linear(_linear)
-//	{
-//    }
-//    virtual void draw() {
-//        float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-//        float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-//        CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
-//    }
-//};
-
 /// draws buffer content to another buffer doing color conversion if necessary
 void GLDrawBuf::DrawTo( LVDrawBuf * buf, int x, int y, int options, lUInt32 * palette )
 {
     CR_UNUSED2(options, palette);
     buf->DrawFragment(this, 0, 0, GetWidth(), GetHeight(), x, y, GetWidth(), GetHeight(), 0);
-//    // workaround for no-rtti builds
-//	GLDrawBuf * glbuf = buf->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
-//	if (glbuf) {
-//		if (_textureBuf && _textureId != 0) {
-//            CRLog::trace("GLDrawBuf::DrawTo GLBuf(%d,%d)", x, y);
-//            //int alpha = ((options >> 16) & 255);
-//            if (glbuf->_scene) {
-//                //glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF | (alpha << 24))));
-//                glbuf->_scene->add(new GLDrawTextureItem(_textureId, x, glbuf->_dy - y - _dy, x + _dx, glbuf->_dy - y, 0, 0, _dx / (float)_tdx, _dy / (float)_tdy, applyAlpha(0xFFFFFF)));
-//            }
-//		} else {
-//			CRLog::error("GLDrawBuf::DrawTo() - no texture buffer!");
-//		}
-//    } else if (buf->isTiled()) {
-//        CRLog::trace("GLDrawBuf::DrawTo tiled(%d,%d)", x, y);
-//        // tiled source
-//        lvRect srcrc(x, y, x + _dx, y + _dy);
-//        for (int ty = 0; ty < buf->getYtiles(); ty++) {
-//            for (int tx = 0; tx < buf->getXtiles(); tx++) {
-//                LVDrawBuf * tile = buf->getTile(tx, ty);
-//                lvRect tilerc;
-//                buf->getTileRect(tilerc, tx, ty);
-//                if (tilerc.intersects(srcrc)) {
-//                    CRLog::trace("GLDrawBuf::DrawTo tile: (%d,%d)", x - tilerc.left, y - tilerc.top);
-//                    DrawTo(tile, x - tilerc.left, y - tilerc.top, options, palette);
-//                }
-//            }
-//        }
-//    } else {
-//        CRLog::error("GLDrawBuf::DrawTo() is not implemented for non-GL draw buffer targets");
-//	}
 }
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
@@ -1376,17 +1316,13 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
 			if (_scene)
-                _scene->add(new GLDrawTextureItemInt(
-                                glbuf->_textureId, glbuf->_tdx, glbuf->_tdy, srcx, srcy, srcdx, srcdy, x, y, dx, dy, applyAlpha(0xFFFFFF),
-                                    srcdx != dx || srcdy != dy));
-//                                (glbuf->_textureId,
-//                                                  x, _dy - y - dy, x + dx, _dy - y,
-//                                                  srcx / (float)glbuf->_tdx,
-//                                                  srcy / (float)glbuf->_tdy,
-//                                                  (srcx + srcdx) / (float)glbuf->_tdx,
-//                                                  (srcy + srcdy) / (float)glbuf->_tdy,
-//                                                  applyAlpha(0xFFFFFF),
-//                                                  srcdx != dx || srcdy != dy));
+                _scene->add(new GLDrawTextureItem(
+                                glbuf->_textureId, glbuf->_tdx, glbuf->_tdy,
+                                srcx, srcy, srcdx, srcdy,
+                                x, y, dx, dy,
+                                applyAlpha(0xFFFFFF),
+                                srcdx != dx || srcdy != dy)
+                );
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}

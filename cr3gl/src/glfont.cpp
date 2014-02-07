@@ -88,33 +88,15 @@ public:
 			updateTexture();
 		if (textureId != 0) {
 			//CRLog::trace("drawing character at %d,%d", x, y);
-//			float dstx0 = x;
-//			float dsty0 = y;
-//			float dstx1 = x + (item->dx);
-//			float dsty1 = y - (item->dy);
-//			float srcx0 = item->x0;
-//			float srcy0 = item->y0;
-//			float srcx1 = item->x1;
-//			float srcy1 = item->y1;
-//			if (clip) {
-//				// correct clipping
-//				float txpp = 1 / 1024.0f; // texture coordinates per pixel
-//				dstx0 += clip->left;
-//				srcx0 += clip->left * txpp;
-//				dstx1 -= clip->right;
-//				srcx1 -= clip->right * txpp;
-//				dsty0 -= clip->top;
-//				srcy0 += clip->top * txpp;
-//				dsty1 += clip->bottom;
-//				srcy1 -= clip->bottom * txpp;
-//			}
-//            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-//            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
-
-//            CRGL->drawColorAndTextureRect(vertices, texcoords, color, textureId);
-
-            lvRect srcrc(item->x0 * GL_GLYPH_CACHE_PAGE_SIZE, item->y0 * GL_GLYPH_CACHE_PAGE_SIZE, item->x1 * GL_GLYPH_CACHE_PAGE_SIZE, item->y1 * GL_GLYPH_CACHE_PAGE_SIZE);
-            lvRect dstrc(x, y, x + item->dx, y + item->dy);
+            lvRect srcrc((int)(item->x0 * GL_GLYPH_CACHE_PAGE_SIZE),
+                         (int)(item->y0 * GL_GLYPH_CACHE_PAGE_SIZE),
+                         (int)(item->x1 * GL_GLYPH_CACHE_PAGE_SIZE),
+                         (int)(item->y1 * GL_GLYPH_CACHE_PAGE_SIZE));
+            lvRect dstrc(x,
+                         y,
+                         (int)(x + item->dx),
+                         (int)(y + item->dy)
+                         );
             if (clip) {
                 translateRect(srcrc, dstrc, *clip);
             }
