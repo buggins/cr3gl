@@ -61,6 +61,8 @@ struct CRUIConfig {
     int defFontSize;
 
     bool touchMode;
+    bool enableOpenGl;
+    bool einkMode;
 
     /// font directories to register all files from
     lString8Collection fontDirs;

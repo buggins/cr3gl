@@ -13,6 +13,7 @@ protected:
 public:
     CRGLSupport() {}
     ~CRGLSupport() {}
+    virtual int getMaxTextureSize() = 0;
     virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) = 0;
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear) = 0;
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) = 0;

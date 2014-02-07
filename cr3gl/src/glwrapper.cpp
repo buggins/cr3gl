@@ -80,6 +80,7 @@ class CRGLSupportImpl :
     lUInt32 currentFramebufferId;
     int bufferDx;
     int bufferDy;
+    int maxTextureSize;
     void init();
     void uninit();
     void myGlOrtho(float left, float right, float bottom, float top,
@@ -96,6 +97,8 @@ public:
     void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear);
+
+    virtual int getMaxTextureSize();
 
     lUInt32 genTexture();
     bool isTexture(lUInt32 textureId);
@@ -128,7 +131,7 @@ CRGLSupport * CRGLSupport::instance() {
 
 
 
-CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0), bufferDx(0), bufferDy(0) {
+CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0), bufferDx(0), bufferDy(0), maxTextureSize(0) {
     init();
 }
 
@@ -550,6 +553,24 @@ void CRGLSupportImpl::uninit() {
 
 bool CRGLSupportImpl::isTexture(lUInt32 textureId) {
     return glIsTexture(textureId) == GL_TRUE;
+}
+
+int CRGLSupportImpl::getMaxTextureSize() {
+    if (maxTextureSize)
+        return maxTextureSize;
+    GLint _maxTextureSize[1];
+    GLint _maxFramebufferSize[2];
+    _maxTextureSize[0] = 1024;
+    _maxFramebufferSize[0] = 1024;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, _maxTextureSize);
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, _maxFramebufferSize);
+    maxTextureSize = _maxTextureSize[0];
+    if (maxTextureSize > _maxFramebufferSize[0])
+        maxTextureSize = _maxFramebufferSize[0];
+    if (maxTextureSize > _maxFramebufferSize[1])
+        maxTextureSize = _maxFramebufferSize[1];
+    CRLog::info("Max OpenGL texture size: %d", maxTextureSize);
+    return maxTextureSize;
 }
 
 lUInt32 CRGLSupportImpl::genTexture() {

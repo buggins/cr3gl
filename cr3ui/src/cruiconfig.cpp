@@ -24,6 +24,9 @@ CRUIConfig::CRUIConfig() {
     coverRenderCacheMaxBytes = 16 * 1024 * 1024;
     uiFontFace = "Arial";
     touchMode = true;
+    enableOpenGl = true;
+    einkMode = false;
+
 }
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {

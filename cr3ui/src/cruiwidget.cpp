@@ -9,6 +9,30 @@
 
 using namespace CRUI;
 
+#define CRUI_USE_OPENGL 1
+
+#if CRUI_USE_OPENGL == 1
+#include "gldrawbuf.h"
+#endif
+#include "cruiconfig.h"
+
+LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp) {
+#if CRUI_USE_OPENGL == 1
+    if (crconfig.enableOpenGl) {
+        int maxTextureSize = CRGL->getMaxTextureSize();
+        if (dx <= maxTextureSize && dy <= maxTextureSize)
+            return new GLDrawBuf(dx, dy, bpp, true);
+        return new TiledGLDrawBuf(dx, dy, bpp, maxTextureSize, maxTextureSize);
+    } else {
+#endif
+        if (crconfig.einkMode)
+            return new LVGrayDrawBuf(dx, dy, bpp > 16 ? 16 : bpp);
+        else
+            return new LVColorDrawBuf(dx, dy, bpp);
+#if CRUI_USE_OPENGL == 1
+    }
+#endif
+}
 
 CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED),
 		_padding(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED),

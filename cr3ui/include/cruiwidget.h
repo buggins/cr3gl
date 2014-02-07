@@ -285,4 +285,7 @@ public:
 /// will set needLayout to true if any widget in tree starting from specified requires layout, set needRedraw if any widget is invalidated
 void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating);
 
+/// creates backbuffer for rendering in
+LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp);
+
 #endif /* CRUIWIDGET_H_ */
