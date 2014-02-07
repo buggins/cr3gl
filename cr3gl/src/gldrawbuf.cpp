@@ -259,16 +259,16 @@ lUInt32 TiledGLDrawBuf::GetInterpolatedColor(int x16, int y16)
 
 /// fills rectangle with specified color
 void TiledGLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color ) {
-    CRLog::trace("TiledGLDrawBuf::FillRect(%d,%d,%d,%d) %08x", x0, y0, x1, y1, color);
+    //CRLog::trace("TiledGLDrawBuf::FillRect(%d,%d,%d,%d) %08x", x0, y0, x1, y1, color);
     for (int y = 0; y < _ytiles; y++) {
         for (int x = 0; x < _xtiles; x++) {
             GLDrawBuf * tile = _tiles[y * _xtiles + x];
             lvRect tilerc;
             getTileRect(tilerc, x, y);
-            CRLog::trace("-- tilerect for %d,%d: {%d,%d,%d,%d}", x, y, tilerc.left, tilerc.top, tilerc.right, tilerc.bottom, color);
+            //CRLog::trace("-- tilerect for %d,%d: {%d,%d,%d,%d}", x, y, tilerc.left, tilerc.top, tilerc.right, tilerc.bottom, color);
             lvRect rc(x0, y0, x1, y1);
             if (rc.intersect(tilerc)) {
-                CRLog::trace("-- intersect for %d,%d: {%d,%d,%d,%d}", x, y, rc.left, rc.top, rc.right, rc.bottom, color);
+                //CRLog::trace("-- intersect for %d,%d: {%d,%d,%d,%d}", x, y, rc.left, rc.top, rc.right, rc.bottom, color);
                 rc.left -= tilerc.left;
                 rc.right -= tilerc.left;
                 rc.top -= tilerc.top;
@@ -472,7 +472,7 @@ bool translateRect(lvRect & srcrc, lvRect & dstrc, lvRect & dstcrop) {
 
 /// draws rescaled buffer content to another buffer doing color conversion if necessary
 void TiledGLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, int options) {
-    CRLog::trace("TiledGLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, xx, yy, dx, dy);
+    //CRLog::trace("TiledGLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, xx, yy, dx, dy);
     for (int y = 0; y < _ytiles; y++) {
         for (int x = 0; x < _xtiles; x++) {
             lvRect srcrc(srcx, srcy, srcx + srcdx, srcy + srcdy);
@@ -706,7 +706,7 @@ public:
 	}
     void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip, int rotationAngle) {
         CR_UNUSED(options);
-        CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
+        //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
 		if (_textureId != 0) {
@@ -714,37 +714,6 @@ public:
                 CRLog::error("Invalid texture %d", _textureId);
                 return;
             }
-//            float dstx0 = x;
-//			float dsty0 = y;
-//			float dstx1 = x + dx;
-//			float dsty1 = y - dy;
-//			float txppx = 1 / (float)_tdx;
-//			float txppy = 1 / (float)_tdy;
-//			float srcx0 = (item->_x0 + srcx) * txppx;
-//			float srcy0 = (item->_y0 + srcy) * txppy;
-//			float srcx1 = (item->_x0 + srcx + srcdx) * txppx;
-//			float srcy1 = (item->_y0 + srcy + srcdy) * txppy;
-//			if (clip) {
-//                translateRect(srcrc, dstrc, *clip);
-//                CRLog::trace("before clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
-//				// correct clipping
-//                float xscale = (srcx1-srcx0) / (dstx1 - dstx0);
-//                float yscale =  (srcy1-srcy0) / (dsty1 - dsty0);
-
-//                srcx0 += clip->left * xscale;
-//                srcx1 -= clip->right * xscale;
-//                dstx0 += clip->left;
-//				dstx1 -= clip->right;
-
-//                srcy0 -= clip->top * yscale;
-//                srcy1 += clip->bottom * yscale;
-//                dsty0 -= clip->top;
-//                dsty1 += clip->bottom;
-
-//                //CRLog::trace("after clipping dst (%d,%d,%d,%d) src (%f,%f,%f,%f)", (int)dstx0, (int)dsty0, (int)dstx1, (int)dsty1, srcx0, srcy0, srcx1, srcy1);
-//            }
-//            float vertices[] = {dstx0,dsty0,0, dstx0,dsty1,0, dstx1,dsty1,0, dstx0,dsty0,0, dstx1,dsty1,0, dstx1,dsty0,0};
-//            float texcoords[] = {srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0};
             //rotationAngle = 0;
             int rx = x + dx / 2;
             int ry = y + dy / 2;
@@ -1478,7 +1447,7 @@ void GLDrawBuf::afterDrawing()
         if (_textureBuf) {
 			//bind the base framebuffer
             CRGL->bindFramebuffer(0);
-            //deleteFramebuffer();
+            deleteFramebuffer();
 		}
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");

@@ -9,26 +9,9 @@
 #endif
 
 
-//#include <QtGui/qopengl.h>
-//#include <QtGui/qopenglext.h>
-//#include <QtGui/qopenglfunctions.h>
-//#include <QtGui/QOpenGLFunctions>
-//#include <QtOpenGL/QtOpenGLDepends>
-//#include <QOpenGLFunctions>
-//#include <QtOpenGL/QtOpenGL>
-//#include <QGLFunctions>
 #include <QtGui/QOpenGLFunctions>
 #include <QtOpenGLExtensions/QOpenGLExtensions>
 
-//#include <GL/gl.h>
-
-//extern QOpenGLFunctions * _qtgl;
-//#include <QtGui/QOpenGLFunctions_ES2>
-//#include <QtGui/qopengles2ext.h>
-//#include <QtGui/qopenglext.h>
-//#include <QtGui/qopengl.h>
-//#include <QtOpenGL/QtOpenGL>
-//#include <QtOpenGLExtensions/QOpenGLExtensions>
 
 //#define glActiveTexture glActiveTexture
 #define glGenFramebuffersOES glGenFramebuffers
@@ -254,21 +237,21 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], lUInt32 color) {
 }
 
 void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
-    CRLog::trace("CRGLSupportImpl::drawSolidFillRect(fb=%d\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
-            , currentFramebufferId
-            , vertices[0], vertices[1], vertices[2]
-            , vertices[3], vertices[4], vertices[5]
-            , vertices[6], vertices[7], vertices[8]
-            , vertices[9], vertices[10], vertices[11]
-            , vertices[12], vertices[13], vertices[14]
-            , vertices[15], vertices[16], vertices[17]
-            , colors[0], colors[1], colors[2], colors[3]
-            , colors[4], colors[5], colors[6], colors[7]
-            , colors[8], colors[9], colors[10], colors[11]
-            , colors[12], colors[13], colors[14], colors[15]
-            , colors[16], colors[17], colors[18], colors[19]
-            , colors[20], colors[21], colors[22], colors[23]
-            );
+//    CRLog::trace("CRGLSupportImpl::drawSolidFillRect(fb=%d\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
+//            , currentFramebufferId
+//            , vertices[0], vertices[1], vertices[2]
+//            , vertices[3], vertices[4], vertices[5]
+//            , vertices[6], vertices[7], vertices[8]
+//            , vertices[9], vertices[10], vertices[11]
+//            , vertices[12], vertices[13], vertices[14]
+//            , vertices[15], vertices[16], vertices[17]
+//            , colors[0], colors[1], colors[2], colors[3]
+//            , colors[4], colors[5], colors[6], colors[7]
+//            , colors[8], colors[9], colors[10], colors[11]
+//            , colors[12], colors[13], colors[14], colors[15]
+//            , colors[16], colors[17], colors[18], colors[19]
+//            , colors[20], colors[21], colors[22], colors[23]
+//            );
     checkError("before CRGLSupportImpl::drawSolidFillRect");
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix(m);
@@ -364,28 +347,28 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
 }
 
 void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear) {
-    CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
-            , currentFramebufferId
-            , textureId
-            , vertices[0], vertices[1], vertices[2]
-            , vertices[3], vertices[4], vertices[5]
-            , vertices[6], vertices[7], vertices[8]
-            , vertices[9], vertices[10], vertices[11]
-            , vertices[12], vertices[13], vertices[14]
-            , vertices[15], vertices[16], vertices[17]
-            , texcoords[0], texcoords[1]
-            , texcoords[2], texcoords[3]
-            , texcoords[4], texcoords[5]
-            , texcoords[6], texcoords[7]
-            , texcoords[8], texcoords[9]
-            , texcoords[10], texcoords[11]
-            , colors[0], colors[1], colors[2], colors[3]
-            , colors[4], colors[5], colors[6], colors[7]
-            , colors[8], colors[9], colors[10], colors[11]
-            , colors[12], colors[13], colors[14], colors[15]
-            , colors[16], colors[17], colors[18], colors[19]
-            , colors[20], colors[21], colors[22], colors[23]
-            );
+//    CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
+//            , currentFramebufferId
+//            , textureId
+//            , vertices[0], vertices[1], vertices[2]
+//            , vertices[3], vertices[4], vertices[5]
+//            , vertices[6], vertices[7], vertices[8]
+//            , vertices[9], vertices[10], vertices[11]
+//            , vertices[12], vertices[13], vertices[14]
+//            , vertices[15], vertices[16], vertices[17]
+//            , texcoords[0], texcoords[1]
+//            , texcoords[2], texcoords[3]
+//            , texcoords[4], texcoords[5]
+//            , texcoords[6], texcoords[7]
+//            , texcoords[8], texcoords[9]
+//            , texcoords[10], texcoords[11]
+//            , colors[0], colors[1], colors[2], colors[3]
+//            , colors[4], colors[5], colors[6], colors[7]
+//            , colors[8], colors[9], colors[10], colors[11]
+//            , colors[12], colors[13], colors[14], colors[15]
+//            , colors[16], colors[17], colors[18], colors[19]
+//            , colors[20], colors[21], colors[22], colors[23]
+//            );
     checkError("before CRGLSupportImpl::drawColorAndTextureRect");
 
     if (!glIsTexture(textureId)) {

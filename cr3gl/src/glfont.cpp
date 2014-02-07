@@ -66,7 +66,7 @@ public:
 		if (drawbuf == NULL)
 			return; // no draw buffer!!!
 	    if (textureId == 0) {
-	    	CRLog::debug("GLGlyphCache updateTexture - new texture");
+            //CRLog::debug("GLGlyphCache updateTexture - new texture");
             textureId = CRGL->genTexture();
             if (!textureId)
                 return;
