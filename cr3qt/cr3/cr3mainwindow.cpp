@@ -152,27 +152,30 @@ void OpenGLWindow::render()
     buf.beforeDrawing();
 #if 1
     //TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
-    //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
-    GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+    TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
+    //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
 
     //LVDrawBuf * p = &buf;
     LVDrawBuf * p = &tiled;
     if (p != &buf)
         p->beforeDrawing();
-#if 1
-    buf.FillRect(0, 0, sz.width(), sz.height(), 0x80F080);
-    buf.FillRect(2, 2, sz.width()-2, sz.height()-2, 0x8080FF);
+#if 0
+//    buf.FillRect(0, 0, sz.width(), sz.height(), 0x80F080);
+//    buf.FillRect(2, 2, sz.width()-2, sz.height()-2, 0x8080FF);
     //{
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 1024, 1024);
     //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+
+      p->GradientRect(0, 0, sz.width(), sz.height(), 0xFF0000, 0x00FF00, 0x0000FF, 0xFF00FF);
+
     LVImageSourceRef icon1 = resourceResolver->getImageSource("add_file");
     LVImageSourceRef icon2 = resourceResolver->getImageSource("add_folder");
-    p->FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
-    p->FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
-    p->FillRect(14, 14, 16, 16, 0x0000FF);
-    p->FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
-    LVFontRef font = currentTheme->getFont();
-    font->DrawTextString(p, 240 + 256, 245, L"Test", 4, '?');
+//    p->FillRect(10, 10, sz.width() - 10, sz.height() - 10, 0xFF0000);
+//    p->FillRect(12, 12, sz.width() - 12, sz.height() - 12, 0x00FF00);
+      p->FillRect(14, 14, 16, 16, 0x0000FF);
+      p->FillRect(sz.width() / 4, sz.height() * 1 / 4, sz.width() * 3 / 4, sz.height() * 3 / 4,0x80FF80);
+      LVFontRef font = currentTheme->getFont();
+      font->DrawTextString(p, 240 + 256, 245, L"Test", 4, '?');
 
 //        GLDrawBuf img0(100, 100, 32, true);
 //        img0.beforeDrawing();
@@ -181,6 +184,7 @@ void OpenGLWindow::render()
 //        img0.DrawTo(&tiled, 0, 0, 0, NULL);
 
     p->Draw(icon1, 20, 20, icon1->GetWidth(), icon1->GetHeight(), false);
+    p->Draw(icon1, 240, 20, icon1->GetWidth(), icon1->GetHeight(), false);
 
     p->Draw(icon2, 240, 240, icon1->GetWidth() * 2, icon1->GetHeight() * 2, false);
 

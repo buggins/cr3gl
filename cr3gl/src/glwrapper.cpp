@@ -230,6 +230,13 @@ void CRGLSupportImpl::drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 col
     float y0 = (float)(bufferDy-rc.top);
     float x1 = (float)(rc.right);
     float y1 = (float)(bufferDy-rc.bottom);
+
+    // don't flip for framebuffer
+    if (currentFramebufferId) {
+        y0 = (float)(rc.top);
+        y1 = (float)(rc.bottom);
+    }
+
     float vertices[] = {
             x0,y0,Z_2D,
             x0,y1,Z_2D,
@@ -329,6 +336,12 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
     float dsty0 = (float)(bufferDy - (yy));
     float dstx1 = (float)(xx + dx);
     float dsty1 = (float)(bufferDy - (yy + dy));
+
+    // don't flip for framebuffer
+    if (currentFramebufferId) {
+        dsty0 = (float)((yy));
+        dsty1 = (float)((yy + dy));
+    }
 
     float srcx0 = srcx / (float)tdx;
     float srcy0 = srcy / (float)tdy;

@@ -283,13 +283,13 @@ void TiledGLDrawBuf::FillRect( int x0, int y0, int x1, int y1, lUInt32 color ) {
 }
 
 lUInt32 blendRGB(lUInt32 cl1, lUInt32 cl2, int n1, int n2, int n) {
+    if (n1 >= n2)
+        return cl1;
     if (n <= n1)
         return cl1;
     if (n >= n2)
         return cl2;
-    if (n1 >= n2)
-        return cl1;
-    lUInt32 d1 = (lUInt32)((n - n1) * 256 / (n2 - n1));
+    lUInt32 d1 = (lUInt32)(((n - n1) * 256 / (n2 - n1)) & 0xFF);
     lUInt32 d2 = 255 - d1;
     lUInt32 a1 = (cl1 >> 24) & 0xFF;
     lUInt32 r1 = (cl1 >> 16) & 0xFF;
@@ -332,22 +332,22 @@ void TiledGLDrawBuf::GradientRect(int x0, int y0, int x1, int y1, lUInt32 color1
                 lUInt32 cl32 = cl3;
                 lUInt32 cl42 = cl4;
                 if (rc.top < tilerc.top) {
-                    cl12 = blendRGB(cl1, cl2, rc.top, rc.bottom, tilerc.top);
-                    cl42 = blendRGB(cl4, cl3, rc.top, rc.bottom, tilerc.top);
+                    cl12 = blendRGB(cl1, cl4, rc.top, rc.bottom, tilerc.top);
+                    cl22 = blendRGB(cl2, cl3, rc.top, rc.bottom, tilerc.top);
                 }
                 if (rc.bottom > tilerc.bottom) {
-                    cl22 = blendRGB(cl1, cl2, rc.top, rc.bottom, tilerc.bottom);
-                    cl32 = blendRGB(cl4, cl3, rc.top, rc.bottom, tilerc.bottom);
+                    cl32 = blendRGB(cl2, cl3, rc.top, rc.bottom, tilerc.bottom);
+                    cl42 = blendRGB(cl1, cl4, rc.top, rc.bottom, tilerc.bottom);
                 }
-                if (rc.intersect(tilerc)) {
-                    rc.left -= tilerc.left;
-                    rc.right -= tilerc.left;
-                    rc.top -= tilerc.top;
-                    rc.bottom -= tilerc.top;
-                    if (!rc.isEmpty() && rc.right > 0 && rc.bottom > 0 && rc.left < _tiledx && rc.right < _tiledy) {
-                        tile->GradientRect(rc.left, rc.top, rc.right, rc.bottom, cl12, cl22, cl32, cl42);
-                    }
-                }
+
+                rc.intersect(tilerc);
+
+                rc.left -= tilerc.left;
+                rc.right -= tilerc.left;
+                rc.top -= tilerc.top;
+                rc.bottom -= tilerc.top;
+
+                tile->GradientRect(rc.left, rc.top, rc.right, rc.bottom, cl12, cl22, cl32, cl42);
             }
         }
     }
@@ -756,7 +756,22 @@ public:
             lvRect srcrc(item->_x0 + srcx, item->_y0 + srcy, item->_x0 + srcx+srcdx, item->_y0 + srcy+srcdy);
             lvRect dstrc(x, y, x+dx, y+dy);
             if (clip) {
-                translateRect(srcrc, dstrc, *clip);
+                int srcw = srcrc.width();
+                int srch = srcrc.height();
+                int dstw = dstrc.width();
+                int dsth = dstrc.height();
+                if (dstw) {
+                    srcrc.left += clip->left * srcw / dstw;
+                    srcrc.right -= clip->right * srcw / dstw;
+                }
+                if (dsth) {
+                    srcrc.top += clip->top * srch / dsth;
+                    srcrc.bottom -= clip->bottom * srch / dsth;
+                }
+                dstrc.left += clip->left;
+                dstrc.right -= clip->right;
+                dstrc.top += clip->top;
+                dstrc.bottom -= clip->bottom;
             }
             if (!dstrc.isEmpty())
                 CRGL->drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
@@ -1260,35 +1275,23 @@ class GLDrawTextureItem : public GLSceneItem {
     lUInt32 textureId;
     int tdx;
     int tdy;
-    int srcx;
-    int srcy;
-    int srcdx;
-    int srcdy;
-    int xx;
-    int yy;
-    int dx;
-    int dy;
+    lvRect srcrc;
+    lvRect dstrc;
     lUInt32 color;
     bool linear;
 public:
-    GLDrawTextureItem(lUInt32 _textureId, int _tdx, int _tdy, int _srcx, int _srcy, int _srcdx, int _srcdy, int _xx, int _yy, int _dx, int _dy, lUInt32 _color, bool _linear)
+    GLDrawTextureItem(lUInt32 _textureId, int _tdx, int _tdy, lvRect & _srcrc, lvRect & _dstrc, lUInt32 _color, bool _linear)
         : textureId(_textureId)
         , tdx(_tdx)
         , tdy(_tdy)
-        , srcx(_srcx)
-        , srcy(_srcy)
-        , srcdx(_srcdx)
-        , srcdy(_srcdy)
-        , xx(_xx)
-        , yy(_yy)
-        , dx(_dx)
-        , dy(_dy)
+        , srcrc(_srcrc)
+        , dstrc(_dstrc)
         , color(_color)
         , linear(_linear)
     {
     }
     virtual void draw() {
-        CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcx, srcy, srcdx, srcdy, xx, yy, dx, dy, color, linear);
+        CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcrc, dstrc, color, linear);
     }
 };
 
@@ -1312,17 +1315,25 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
         return;
     CRLog::trace("GLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, x, y, dx, dy);
     // workaround for no-rtti builds
-	GLDrawBuf * glbuf = src->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
+    lvRect clip;
+    GetClipRect( &clip );
+    GLDrawBuf * glbuf = src->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
 	if (glbuf) {
 		if (glbuf->_textureBuf && glbuf->_textureId != 0) {
-			if (_scene)
+            if (_scene) {
+                lvRect srcrc(srcx, srcy, srcx + srcdx, srcy + srcdy);
+                lvRect dstrc(x, y, x + dx, y + dy);
+                if (!clip.isRectInside(dstrc)) {
+                    translateRect(srcrc, dstrc, clip);
+                }
                 _scene->add(new GLDrawTextureItem(
                                 glbuf->_textureId, glbuf->_tdx, glbuf->_tdy,
-                                srcx, srcy, srcdx, srcdy,
-                                x, y, dx, dy,
+                                srcrc,
+                                dstrc,
                                 applyAlpha(0xFFFFFF),
                                 srcdx != dx || srcdy != dy)
                 );
+            }
 		} else {
 			CRLog::error("GLDrawBuf::DrawRescaled() - no texture buffer!");
 		}
@@ -1335,9 +1346,11 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
                 LVDrawBuf * tile = src->getTile(tx, ty);
                 lvRect tilerc;
                 src->getTileRect(tilerc, tx, ty);
-                if (tilerc.intersects(dstrc)) {
-                    if (translateRect(dstrc, srcrc, tilerc)) // opposite order - trim based on source
+                if (tilerc.intersects(dstrc) && tilerc.intersects(clip)) {
+                    if (translateRect(dstrc, srcrc, tilerc)) { // opposite order - trim based on source
+                        //translateRect(dstrc, srcrc, clip);
                         DrawFragment(tile, srcrc.left - tilerc.left, srcrc.top - tilerc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), options);
+                    }
                 }
             }
         }
