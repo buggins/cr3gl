@@ -888,8 +888,8 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     oldWidget->measure(_pos.width(), _pos.height());
     oldWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     if (_history[oldpos]->getMode() != MODE_READ) {
-        //_animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
-        _animation.oldimage = new TiledGLDrawBuf(_pos.width(), _pos.height(), 32, 128, 128);
+        _animation.oldimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+        //_animation.oldimage = new TiledGLDrawBuf(_pos.width(), _pos.height(), 32, 128, 128);
         _animation.oldimage->beforeDrawing();
         oldWidget->draw(_animation.oldimage);
         _animation.oldimage->afterDrawing();
@@ -897,8 +897,8 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     newWidget->measure(_pos.width(), _pos.height());
     newWidget->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     if (_history[newpos]->getMode() != MODE_READ) {
-        //_animation.newimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
-        _animation.newimage = new TiledGLDrawBuf(_pos.width(), _pos.height(), 32, 128, 128);
+        _animation.newimage = new GLDrawBuf(_pos.width(), _pos.height(), 32, true);
+        //_animation.newimage = new TiledGLDrawBuf(_pos.width(), _pos.height(), 32, 128, 128);
         _animation.newimage->beforeDrawing();
         newWidget->draw(_animation.newimage);
         _animation.newimage->afterDrawing();

@@ -150,10 +150,11 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
-#if 1
-    TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
+#if 0
+    //TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
     //TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
     GLDrawBuf tiled(sz.width(), sz.height(), 32, true);
+    //#define tiled buf
 #if 1
     buf.FillRect(0, 0, sz.width(), sz.height(), 0x8080F080);
     //{
@@ -200,11 +201,11 @@ void OpenGLWindow::render()
     }
 #endif
     tiled.afterDrawing();
-    tiled2.beforeDrawing();
-//    for (int x = 0; x < buf.GetWidth(); x += 64)
-//        tiled2.DrawFragment(&tiled, x, 0, 64, buf.GetHeight(), x, 0, 64, buf.GetHeight(), 0);
-    tiled2.DrawFragment(&tiled, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
-    tiled2.afterDrawing();
+//    tiled2.beforeDrawing();
+////    for (int x = 0; x < buf.GetWidth(); x += 64)
+////        tiled2.DrawFragment(&tiled, x, 0, 64, buf.GetHeight(), x, 0, 64, buf.GetHeight(), 0);
+//    tiled2.DrawFragment(&tiled, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
+//    tiled2.afterDrawing();
     //buf.DrawFragment(&tiled2, 0, 0, buf.GetWidth(), buf.GetHeight(), 0, 0, buf.GetWidth(), buf.GetHeight(), 0);
     //tiled2.DrawTo(&buf, 0, 0, 0, NULL);
     tiled.DrawTo(&buf, 0, 0, 0, NULL);

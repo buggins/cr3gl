@@ -180,13 +180,17 @@ void CRGLSupportImpl::drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 col
     LVGLFillColor(color1, colors + 4*3, 1);
     LVGLFillColor(color3, colors + 4*4, 1);
     LVGLFillColor(color2, colors + 4*5, 1);
+    float y0 = (float)bufferDy-rc.top; // (float)bufferDy-
+    float y1 = (float)bufferDy-rc.bottom;
+//    float y0 = rc.top; // (float)bufferDy-
+//    float y1 = rc.bottom;
     float vertices[] = {
-            (float)rc.left,(float)bufferDy - rc.top,0,
-            (float)rc.left,(float)bufferDy - rc.bottom,0,
-            (float)rc.right,(float)bufferDy - rc.bottom,0,
-            (float)rc.left,(float)bufferDy - rc.top,0,
-            (float)rc.right,(float)bufferDy - rc.bottom,0,
-            (float)rc.right,(float)bufferDy - rc.top,0};
+            (float)rc.left,y0,0,
+            (float)rc.left,y1,0,
+            (float)rc.right,y1,0,
+            (float)rc.left,y0,0,
+            (float)rc.right,y1,0,
+            (float)rc.right,y0,0};
     drawSolidFillRect(vertices, colors);
 }
 
@@ -277,9 +281,11 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     float dstx0 = xx;
-    float dsty1 = bufferDy - yy - dy;
+    float dsty0 = bufferDy - yy - dy;
+    //float dsty0 = yy;
     float dstx1 = xx + dx;
-    float dsty0 = bufferDy - yy;
+    float dsty1 = bufferDy - yy;
+    //float dsty1 = yy + dy;
     float srcx0 = srcx / (float)tdx;
     float srcy0 = srcy / (float)tdy;
     float srcx1 = (srcx + srcdx) / (float)tdx;
