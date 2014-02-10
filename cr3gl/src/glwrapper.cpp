@@ -81,6 +81,9 @@ class CRGLSupportImpl :
     int bufferDx;
     int bufferDy;
     int maxTextureSize;
+    int rotationX;
+    int rotationY;
+    int rotationAngle;
     void init();
     void uninit();
     void myGlOrtho(float left, float right, float bottom, float top,
@@ -131,7 +134,9 @@ CRGLSupport * CRGLSupport::instance() {
 
 
 
-CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0), bufferDx(0), bufferDy(0), maxTextureSize(0) {
+CRGLSupportImpl::CRGLSupportImpl() : currentFramebufferId(0), bufferDx(0), bufferDy(0), maxTextureSize(0),
+    rotationX(0), rotationY(0), rotationAngle(0)
+{
     init();
 }
 
@@ -764,13 +769,13 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     bufferDx = dx;
     bufferDy = dy;
     //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
-    myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix2;
     matrix2.ortho(0, dx, 0, dy, 0.5f, 5.0f);
     matrix2.copyDataTo(m);
 #else
+    myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();
@@ -788,18 +793,29 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
 }
 
 void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
+    this->rotationAngle = rotationAngle;
+    rotationX = x;
+    rotationY = y;
     if (!rotationAngle)
         return;
 #ifdef QT_OPENGL_ES_2
-    CR_UNUSED2(x,y);
+    QMatrix4x4 matrix2;
+    matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
+    matrix2.translate(rotationX, rotationY, 0);
+    matrix2.rotate(rotationAngle, 0, 0, 1);
+    matrix2.translate(rotationX, rotationY, 0);
+    matrix2.copyDataTo(m);
 #else
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();
     //checkError("push matrix");
     checkError("matrix mode");
-    glTranslatef(x, y, 0);
-    glRotatef(rotationAngle, 0, 0, 1);
-    glTranslatef(-x, -y, 0);
+    glLoadMatrixf(m);
+    if (rotationAngle) {
+        glTranslatef(rotationX, rotationY, 0);
+        glRotatef(rotationAngle, 0, 0, 1);
+        glTranslatef(-rotatinoX, -rotationY, 0);
+    }
 #endif
 }
 
