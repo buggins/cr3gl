@@ -100,7 +100,7 @@ lUInt32 TiledGLDrawBuf::applyAlpha(lUInt32 cl) {
     return (a << 24) | (cl & 0xFFFFFF);
 }
 
-/// rotates buffer contents by specified angle
+/// rotates buffer contents by specified angles
 void TiledGLDrawBuf::Rotate( cr_rotate_angle_t angle ) {
     CR_UNUSED(angle);
     CRLog::error("GLDrawBuf::Rotate() is not implemented");
@@ -1283,7 +1283,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
     CR_UNUSED(options);
     if (dx <= 0 || dy <= 0 || !src)
         return;
-    CRLog::trace("GLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, x, y, dx, dy);
+    //CRLog::trace("GLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, x, y, dx, dy);
     // workaround for no-rtti builds
     lvRect clip;
     GetClipRect( &clip );
@@ -1418,7 +1418,7 @@ void GLDrawBuf::beforeDrawing()
 void GLDrawBuf::afterDrawing()
 {
     if (--_prepareStage == 0) {
-        CRLog::trace("afterDrawing");
+        //CRLog::trace("afterDrawing");
         if (_textureBuf) {
             if (_textureId == 0 || _framebufferId == 0) {
                 createFramebuffer();

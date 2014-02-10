@@ -744,7 +744,7 @@ bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
 void CRGLSupportImpl::flush() {
     glFlush();
     checkError("glFlush");
-    CRLog::trace("CRGLSupportImpl::flush()");
+    //CRLog::trace("CRGLSupportImpl::flush()");
 }
 
 void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top,

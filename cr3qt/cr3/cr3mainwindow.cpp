@@ -150,7 +150,7 @@ void OpenGLWindow::render()
     GLDrawBuf buf(sz.width(), sz.height(), 32, false);
     //CRLog::trace("Calling buf.beforeDrawing");
     buf.beforeDrawing();
-#if 1
+#if 0
     //TiledGLDrawBuf tiled2(sz.width(), sz.height(), 32, 256, 256);
     TiledGLDrawBuf tiled(sz.width(), sz.height(), 32, 256, 256);
     //GLDrawBuf tiled(sz.width(), sz.height(), 32, true);

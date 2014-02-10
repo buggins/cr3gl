@@ -2281,7 +2281,7 @@ static int nearestPOT(int n) {
 }
 
 LVDrawBuf * CRUIReadWidget::ScrollModePageCache::createBuf() {
-    return new GLDrawBuf(dx, tdy, 32, true);
+    return CRUICreateDrawBuf(dx, tdy, 32);
 }
 
 void CRUIReadWidget::ScrollModePageCache::setSize(int _dx, int _dy) {
@@ -2358,7 +2358,7 @@ void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos
 void CRUIReadWidget::ScrollModePageCache::draw(LVDrawBuf * dst, int pos, int x, int y) {
 	CRLog::trace("ScrollModePageCache::draw()");
     // workaround for no-rtti builds
-	GLDrawBuf * glbuf = dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
+    LVDrawBuf * glbuf = dst; //->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
         //glbuf->beforeDrawing();
         for (int k = pages.length() - 1; k >= 0; k--) {
@@ -2392,7 +2392,7 @@ void CRUIReadWidget::PagedModePageCache::clear() {
 }
 
 LVDrawBuf * CRUIReadWidget::PagedModePageCache::createBuf() {
-    return new GLDrawBuf(dx, tdy, 32, true);
+    return CRUICreateDrawBuf(dx, tdy, 32);
 }
 
 void CRUIReadWidget::PagedModePageCache::setSize(int _dx, int _dy, int _numPages, int _pageCount) {
