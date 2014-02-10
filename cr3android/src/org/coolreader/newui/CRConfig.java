@@ -3,6 +3,7 @@ package org.coolreader.newui;
 import android.content.res.AssetManager;
 
 public class CRConfig {
+	public int apiLevel = android.os.Build.VERSION.SDK_INT;
 	public int screenX;
 	public int screenY;
 	public int screenDPI;

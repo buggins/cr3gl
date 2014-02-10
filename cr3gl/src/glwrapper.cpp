@@ -814,7 +814,7 @@ void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
     if (rotationAngle) {
         glTranslatef(rotationX, rotationY, 0);
         glRotatef(rotationAngle, 0, 0, 1);
-        glTranslatef(-rotatinoX, -rotationY, 0);
+        glTranslatef(-rotationX, -rotationY, 0);
     }
 #endif
 }

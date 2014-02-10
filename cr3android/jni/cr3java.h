@@ -9,6 +9,7 @@
 #include <android/log.h>
 #include "cruievent.h"
 #include "lvstring.h"
+#include "cruiconfig.h"
 
 #define  LOG_TAG    "cr3eng"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -163,11 +164,18 @@ class CRMethodAccessor {
 protected:
 	CRObjectAccessor & objacc;
 	jmethodID methodid;
+	int apiLevel;
 public:
-	CRMethodAccessor( CRObjectAccessor & acc, const char * methodName, const char * signature )
-	: objacc(acc)
+	CRMethodAccessor( CRObjectAccessor & acc, const char * methodName, const char * signature, int _apiLevel = 0 )
+	: objacc(acc), apiLevel(_apiLevel)
 	{
-		methodid = objacc->GetMethodID( objacc.getClass(), methodName, signature );
+		if (supported())
+			methodid = objacc->GetMethodID( objacc.getClass(), methodName, signature );
+		else
+			methodid = 0;
+	}
+	bool supported() {
+		return crconfig.apiLevel >= apiLevel;
 	}
 	jobject callObj()
 	{
@@ -389,10 +397,10 @@ class CRKeyEventWrapper {
 public:
 	CRKeyEventWrapper(JNIEnv * jni, jobject obj)
 	: event(jni, obj)
-	, getCharactersMethod(event, "getCharacters", "()Ljava/lang/String;")
-	, getActionMethod(event, "getAction", "()I")
-	, getKeyCodeMethod(event, "getKeyCode", "()I")
-	, getModifiersMethod(event, "getModifiers", "()I")
+	, getCharactersMethod(event, "getCharacters", "()Ljava/lang/String;", 3)  // API 3
+	, getActionMethod(event, "getAction", "()I", 1) // API 1
+	, getKeyCodeMethod(event, "getKeyCode", "()I", 1) // API 1
+	, getModifiersMethod(event, "getModifiers", "()I", 13) // API 13 Android 3.2
 	{
 
 	}
@@ -403,7 +411,9 @@ public:
 		return getKeyCodeMethod.callInt();
 	}
 	int getModifiers() {
-		return getModifiersMethod.callInt();
+		if (getModifiersMethod.supported())
+			return getModifiersMethod.callInt();
+		return 0;
 	}
 	lString16 getCharacters() {
 		jstring s = (jstring)getCharactersMethod.callObj();
@@ -429,16 +439,16 @@ class CRTouchEventWrapper {
 public:
 	CRTouchEventWrapper(JNIEnv * _env, jobject obj)
 	: event(_env, obj)
-	, getPointerCountMethod(event, "getPointerCount", "()I")
-	, getXMethod(event, "getX", "(I)F")
-	, getYMethod(event, "getY", "(I)F")
-	, getPointerIdMethod(event, "getPointerId", "(I)I")
-	, getToolTypeMethod(event, "getToolType", "(I)I")
-	, getButtonStateMethod(event, "getButtonState", "()I")
-	, getActionMethod(event, "getAction", "()I")
-	, getActionMaskedMethod(event, "getActionMasked", "()I")
-	, getActionIndexMethod(event, "getActionIndex", "()I")
-	, getEventTimeMethod(event, "getEventTime", "()J")
+	, getPointerCountMethod(event, "getPointerCount", "()I", 5) // API 5  Android 2.0
+	, getXMethod(event, "getX", "(I)F", 5) // API 5  Android 2.0
+	, getYMethod(event, "getY", "(I)F", 5) // API 5  Android 2.0
+	, getPointerIdMethod(event, "getPointerId", "(I)I", 5) // API 5  Android 2.0
+	, getToolTypeMethod(event, "getToolType", "(I)I", 14)   // API 14 Android 4.0
+	, getButtonStateMethod(event, "getButtonState", "()I", 14) // API 14 14 Android 4.0
+	, getActionMethod(event, "getAction", "()I", 1) // API 1
+	, getActionMaskedMethod(event, "getActionMasked", "()I", 8) // API 8  Android 2.2
+	, getActionIndexMethod(event, "getActionIndex", "()I", 8)   // API 8  Android 2.2
+	, getEventTimeMethod(event, "getEventTime", "()J", 16)  // API 16  Android 4.1
 	{
 
 	}
@@ -455,25 +465,37 @@ public:
 		return getPointerIdMethod.callInt(index);
 	}
 	int getToolType(jint index) {
-		return getToolTypeMethod.callInt(index);
+		if (getToolTypeMethod.supported())
+			return getToolTypeMethod.callInt(index);
+		return 1; // TOOL_TYPE_FINGER
 	}
 	int getAction() {
 		return getActionMethod.callInt();
 	}
 	int getActionMasked() {
-		return getActionMaskedMethod.callInt();
+		if (getActionMaskedMethod.supported())
+			return getActionMaskedMethod.callInt();
+		// TODO:
+		return 0;
 	}
 	int getActionIndex() {
-		return getActionIndexMethod.callInt();
+		if (getActionIndexMethod.supported())
+			return getActionIndexMethod.callInt();
+		// TODO
+		return 0;
 	}
 	lUInt64 getEventTime() {
 		// convert uptime to system time
-		jlong ts = getEventTimeMethod.callLong();
-		CRClassAccessor systemClockClass(event.env(), "android/os/SystemClock");
-		CRStaticMethodAccessor uptimeMillisMethod(systemClockClass, "uptimeMillis", "()J");
-		jlong currentUptimeMillis = uptimeMillisMethod.callLong();
-		jlong currentTimeMillis = GetCurrentTimeMillis();
-		return (lUInt64)(currentTimeMillis - (currentUptimeMillis - ts));
+		if (getEventTimeMethod.supported()) {
+			jlong ts = getEventTimeMethod.callLong();
+			CRClassAccessor systemClockClass(event.env(), "android/os/SystemClock");
+			CRStaticMethodAccessor uptimeMillisMethod(systemClockClass, "uptimeMillis", "()J");
+			jlong currentUptimeMillis = uptimeMillisMethod.callLong();
+			jlong currentTimeMillis = GetCurrentTimeMillis();
+			return (lUInt64)(currentTimeMillis - (currentUptimeMillis - ts));
+		} else {
+			return GetCurrentTimeMillis();
+		}
 	}
 };
 

@@ -898,6 +898,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     int screenDPI = CRIntField(cfg,"screenDPI").get();
     deviceInfo.setScreenDimensions(screenX, screenY, screenDPI);
 
+    crconfig.apiLevel = CRIntField(cfg,"apiLevel").get();
+
     crconfig.coverCacheDir = CRStringField(cfg,"coverCacheDir").get8();
     crconfig.cssDir = CRStringField(cfg,"cssDir").get8();
     crconfig.dbFile = CRStringField(cfg,"dbFile").get8();

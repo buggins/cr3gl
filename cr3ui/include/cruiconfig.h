@@ -60,6 +60,8 @@ struct CRUIConfig {
     int maxFontSize;
     int defFontSize;
 
+    int apiLevel;
+
     bool touchMode;
     bool enableOpenGl;
     bool einkMode;

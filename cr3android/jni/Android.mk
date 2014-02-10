@@ -66,7 +66,6 @@ CRENGINE_SRC_FILES := \
     cr3/crengine/src/lvtextfm.cpp \
     cr3/crengine/src/lvrend.cpp \
     cr3/crengine/src/wolutil.cpp \
-    cr3/crengine/src/crgl.cpp \
     cr3/crengine/src/hist.cpp
 #    cr3/crengine/src/cri18n.cpp
 #    cr3/crengine/src/crgui.cpp \
@@ -234,6 +233,7 @@ NEWUI_FILES += \
     cr3/cr3db/src/cr3db.cpp \
     cr3/cr3db/src/fileinfo.cpp \
     cr3/cr3gl/src/gldrawbuf.cpp \
+    cr3/cr3gl/src/glwrapper.cpp \
     cr3/cr3gl/src/glfont.cpp \
     cr3/cr3gl/src/glscene.cpp \
     cr3/cr3ui/src/cruimain.cpp \
