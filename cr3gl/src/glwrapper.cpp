@@ -708,7 +708,7 @@ bool CRGLSupportImpl::createFramebuffer(lUInt32 &textureId, lUInt32 &framebuffer
     glClear(GL_COLOR_BUFFER_BIT);
     checkError("glClear");
     checkError("after createFramebuffer");
-    CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
+    //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
     currentFramebufferId = framebufferId;
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -728,14 +728,14 @@ void CRGLSupportImpl::deleteFramebuffer(lUInt32 &framebufferId) {
         glDeleteFramebuffersOES(1, &fid);
         checkError("deleteFramebuffer - glDeleteFramebuffer");
     }
-    CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
+    //CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
     framebufferId = 0;
     checkError("after deleteFramebuffer");
     currentFramebufferId = 0;
 }
 
 bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
-    CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
+    //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     currentFramebufferId = framebufferId;
     return !checkError("glBindFramebufferOES");

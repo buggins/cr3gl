@@ -288,6 +288,8 @@ public:
     bool restorePosition();
     /// save current book position to DB
     void updatePosition();
+    /// cancel update position
+    void cancelPositionUpdateTimer();
 
     const lString8 & getPathName() { return _fileItem ? _fileItem->getPathName() : lString8::empty_str; }
 

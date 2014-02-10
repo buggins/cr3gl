@@ -635,11 +635,12 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 
 void CRUIReadWidget::prepareScroll(int direction) {
     if (renderIfNecessary()) {
-        CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+        //CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
         if (_viewMode == DVM_PAGES)
             _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, true, _pageAnimation);
         else
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
+        //CRLog::trace("CRUIReadWidget::prepareScroll(%d) - done", direction);
     }
 }
 
@@ -685,8 +686,11 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
                 startx = _dragStart.x;
                 currx = _dragPos.x;
             }
+            //CRLog::trace("preparing");
             _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, false, _pageAnimation);
+            //CRLog::trace("drawing");
             _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _pos.left, startx, currx);
+            //CRLog::trace("drawing done");
         } else {
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
             _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
@@ -843,9 +847,12 @@ void CRUIReadWidget::beforeNavigationFrom() {
     updatePosition();
 }
 
+void CRUIReadWidget::cancelPositionUpdateTimer() {
+    CRUIEventManager::cancelTimer(SAVE_POSITION_TIMER_ID);
+}
 
 void CRUIReadWidget::updatePosition() {
-    CRUIEventManager::cancelTimer(SAVE_POSITION_TIMER_ID);
+    cancelPositionUpdateTimer();
     concurrencyProvider->executeGui(NULL, 0);
     CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
@@ -999,7 +1006,7 @@ CRUIWidget * CRUIReadWidget::getChild(int index) {
 
 void CRUIReadWidget::onScrollAnimationStop() {
     if (_viewMode == DVM_PAGES && !_scroll.isCancelled()) {
-        CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
+        //CRLog::trace("flip stopped, old page: %d, new page: %d", _docview->getCurPage(), _pagedCache.getNewPage());
         _docview->goToPage(_pagedCache.getNewPage(), true);
 //            if (_scroll.dir() > 0)
 //                _docview->doCommand(DCMD_PAGEDOWN, 1);
@@ -1016,11 +1023,18 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
         return;
     }
     bool scrollWasActive = _scroll.isActive();
-    CRUIWidget::animate(millisPassed);
-    bool changed = _scroll.animate(millisPassed);
+    CRUIWindowWidget::animate(millisPassed);
+//    if (_viewMode == DVM_PAGES && scrollWasActive) {
+//        if (_scroll.pos() >= _pos.width() - 1) {
+//            CRLog::trace("Stopping page animation: stop position reached");
+//            _scroll.stop();
+//        }
+//    }
+    bool changed = scrollWasActive && _scroll.animate(millisPassed);
     if (changed) {
         if (_viewMode == DVM_PAGES) {
             if (_scroll.pos() >= _pos.width() - 1) {
+                //CRLog::trace("Stopping page animation: stop position reached");
                 _scroll.stop();
             }
         } else {
@@ -1049,6 +1063,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
 //};
 
 void CRUIReadWidget::postUpdatePosition(int delay) {
+    CRLog::trace("CRUIReadWidget::postUpdatePosition(%d)", delay);
     CRUIEventManager::setTimer(SAVE_POSITION_TIMER_ID, this, delay, false);
     //concurrencyProvider->executeGui(new UpdatePositionEvent(this), delay);
 }
@@ -1694,6 +1709,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 //        return true;
     switch (action) {
     case ACTION_DOWN:
+        cancelPositionUpdateTimer();
         if (_scroll.isActive()) {
             _scroll.stop();
             onScrollAnimationStop();
@@ -1726,6 +1742,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         break;
     case ACTION_UP:
         {
+            cancelPositionUpdateTimer();
             invalidate();
             if (!_selection.selecting)
                 cancelSelection();
@@ -1751,6 +1768,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
                     if (spd < w)
                         spd = w;
                     int pmin = 0;
+                    cancelPositionUpdateTimer();
                     _scroll.start(pmin, w, spd, SCROLL_FRICTION);
                     _scroll.setPos(progress);
                     // cancel if UP event occured during moving in opposite direction
@@ -2505,11 +2523,11 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
     if (numPages == 2)
     	thisPage = thisPage & ~1;
     int nextPage = -1;
-    if (direction > 0) {
+    if (_direction > 0) {
     	nextPage = thisPage + numPages;
         if (nextPage >= pageCount + numPages - 1)
     		nextPage = -1;
-    } else if (direction < 0) {
+    } else if (_direction < 0) {
     	nextPage = thisPage - numPages;
     	if (nextPage < 0)
     		nextPage = -1; // no page
@@ -2518,13 +2536,19 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
         newPage = nextPage;
     if (findPage(thisPage) && (nextPage == -1 || findPage(nextPage)))
     	return; // already prepared
+    //CRLog::trace("clearExcept(%d, %d) dir = %d", thisPage, nextPage, _direction);
     clearExcept(thisPage, nextPage);
+    //CRLog::trace("preparePage(_docview, thisPage)");
     preparePage(_docview, thisPage);
-    preparePage(_docview, nextPage);
+    if (nextPage != -1) {
+        //CRLog::trace("preparePage(_docview, nextPage)");
+        preparePage(_docview, nextPage);
+    }
     if (pageAnimation == PAGE_ANIMATION_3D && direction > 0 && numPages == 1)
         preparePage(_docview, thisPage, true);
-    if (pageAnimation == PAGE_ANIMATION_3D && direction < 0 && numPages == 1)
+    if (pageAnimation == PAGE_ANIMATION_3D && direction < 0 && numPages == 1 && nextPage != -1)
         preparePage(_docview, nextPage, true);
+    //CRLog::trace("prepare done");
 }
 
 void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2) {
