@@ -747,7 +747,8 @@ public:
             //CRGL->drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
-                CRGL->setRotation(rx, ry, -rotationAngle);
+                // unset rotation
+                CRGL->setRotation(rx, ry, 0);
 //                glMatrixMode(GL_PROJECTION);
 //                glPopMatrix();
 //                checkError("pop matrix");
