@@ -237,6 +237,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _copyToClipboardMethod;
     CRMethodAccessor _showVirtualKeyboardMethod;
     CRMethodAccessor _hideVirtualKeyboardMethod;
+    CRMethodAccessor _isFullscreenMethod;
+    CRMethodAccessor _setFullscreenMethod;
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
@@ -385,6 +387,16 @@ public:
     		return;
     	_virtualKeyboardShown = false;
     	_hideVirtualKeyboardMethod.callVoid();
+    }
+
+    virtual bool supportsFullscreen() {
+    	return true;
+    }
+    virtual bool isFullscreen() {
+    	return _isFullscreenMethod.callBool();
+    }
+    virtual void setFullscreen(bool fullscreen) {
+    	return _setFullscreenMethod.callVoidBool(fullscreen);
     }
 
     void setBatteryLevel(int level) {
@@ -683,6 +695,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
 	, _showVirtualKeyboardMethod(_obj, "showVirtualKeyboard", "()V")
 	, _hideVirtualKeyboardMethod(_obj, "hideVirtualKeyboard", "()V")
+	, _isFullscreenMethod(_obj, "isFullscreen", "()Z")
+	, _setFullscreenMethod(_obj, "setFullscreen", "(Z)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)

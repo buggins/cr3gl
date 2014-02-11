@@ -237,6 +237,10 @@ public:
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, p1, p2 );
 	}
+	void callVoidBool(jboolean p1)
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid, p1);
+	}
 	void callVoidLongLong(jlong p1, jlong p2)
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, p1, p2 );

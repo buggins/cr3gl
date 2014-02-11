@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +14,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,6 +32,9 @@ import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 public class CoolReader extends Activity {
@@ -220,6 +227,217 @@ public class CoolReader extends Activity {
 		return true;
 	}
 
+	private boolean fullscreen = false; 
+	public boolean isFullScreen() {
+		return fullscreen;
+	}
+	
+	public void setFullscreen(boolean fullscreen) {
+		if (this.fullscreen = fullscreen) {
+			this.fullscreen = fullscreen;
+			Window wnd = getWindow();
+			if ( fullscreen ) {
+				//mActivity.getWindow().requestFeature(Window.)
+				wnd.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+				        WindowManager.LayoutParams.FLAG_FULLSCREEN );
+			} else {
+				wnd.setFlags(0, 
+				        WindowManager.LayoutParams.FLAG_FULLSCREEN );
+			}
+			//setSystemUiVisibility();
+		}
+	}
+	
+	final int sdkLevel = android.os.Build.VERSION.SDK_INT;
+//	public boolean setSystemUiVisibility() {
+//		if (sdkLevel >= HONEYCOMB) {
+//			int flags = 0;
+//			if (getKeyBacklight() == 0)
+//				flags |= SYSTEM_UI_FLAG_LOW_PROFILE;
+////			if (isFullscreen() && wantHideNavbarInFullscreen() && isSmartphone())
+////				flags |= SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+//			setSystemUiVisibility(flags);
+////			if (isFullscreen() && DeviceInfo.getSDKLevel() >= DeviceInfo.ICE_CREAM_SANDWICH)
+////				simulateTouch();
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	private int lastSystemUiVisibility = -1;
+//	private final static int SYSTEM_UI_FLAG_LOW_PROFILE = 1;
+//	//private boolean systemUiVisibilityListenerIsSet = false;
+//	@TargetApi(11)
+//	@SuppressLint("NewApi")
+//	private boolean setSystemUiVisibility(int value) {
+//		if (sdkLevel >= HONEYCOMB) {
+////			if (!systemUiVisibilityListenerIsSet && contentView != null) {
+////				contentView.setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
+////					@Override
+////					public void onSystemUiVisibilityChange(int visibility) {
+////						lastSystemUiVisibility = visibility;
+////					}
+////				});
+////			}
+//			boolean a4 = sdkLevel >= ICE_CREAM_SANDWICH;
+//			if (!a4)
+//				value &= SYSTEM_UI_FLAG_LOW_PROFILE;
+//			if (value == lastSystemUiVisibility && value != SYSTEM_UI_FLAG_LOW_PROFILE)// && a4)
+//				return false;
+//			lastSystemUiVisibility = value;
+//
+//			View view;
+//			//if (a4)
+//				view = getWindow().getDecorView(); // getReaderView();
+//			//else
+//			//	view = mActivity.getContentView(); // getReaderView();
+//			
+//			if (view == null)
+//				return false;
+//			Method m;
+//			try {
+//				m = view.getClass().getMethod("setSystemUiVisibility", int.class);
+//				m.invoke(view, value);
+//				return true;
+//			} catch (SecurityException e) {
+//				// ignore
+//			} catch (NoSuchMethodException e) {
+//				// ignore
+//			} catch (IllegalArgumentException e) {
+//				// ignore
+//			} catch (IllegalAccessException e) {
+//				// ignore
+//			} catch (InvocationTargetException e) {
+//				// ignore
+//			}
+//		}
+//		return false;
+//	}
+//	
+//	private int currentKeyBacklightLevel = 1;
+//	public int getKeyBacklight() {
+//		return currentKeyBacklightLevel;
+//	}
+//	public boolean setKeyBacklight(int value) {
+//		currentKeyBacklightLevel = value;
+//		// Try ICS way
+//		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
+//			setSystemUiVisibility();
+//		}
+//		// thread safe
+//		return Engine.getInstance(this).setKeyBacklight(value);
+//	}
+//	
+//
+//
+//    private boolean keyBacklightOff = true;
+//    public boolean isKeyBacklightDisabled() {
+//    	return keyBacklightOff;
+//    }
+//    
+//    public void setKeyBacklightDisabled(boolean disabled) {
+//    	keyBacklightOff = disabled;
+//    	onUserActivity();
+//    }
+//    
+//    public void setScreenBacklightLevel( int percent )
+//    {
+//    	if ( percent<-1 )
+//    		percent = -1;
+//    	else if ( percent>100 )
+//    		percent = -1;
+//    	screenBacklightBrightness = percent;
+//    	onUserActivity();
+//    }
+//    
+//    private int screenBacklightBrightness = -1; // use default
+//    //private boolean brightnessHackError = false;
+//    private boolean brightnessHackError = DeviceInfo.SAMSUNG_BUTTONS_HIGHLIGHT_PATCH;
+//
+//    private void turnOffKeyBacklight() {
+//    	if (!isStarted())
+//    		return;
+//		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
+//			setKeyBacklight(0);
+//		}
+//    	// repeat again in short interval
+//    	if (!Engine.getInstance(this).setKeyBacklight(0)) {
+//    		//log.w("Cannot control key backlight directly");
+//    		return;
+//    	}
+//    	// repeat again in short interval
+//    	Runnable task = new Runnable() {
+//			@Override
+//			public void run() {
+//		    	if (!isStarted())
+//		    		return;
+//		    	if (!Engine.getInstance(BaseActivity.this).setKeyBacklight(0)) {
+//		    		//log.w("Cannot control key backlight directly (delayed)");
+//		    	}
+//			}
+//		};
+//		BackgroundThread.instance().postGUI(task, 1);
+//		//BackgroundThread.instance().postGUI(task, 10);
+//    }
+//    
+//    private void updateBacklightBrightness(float b) {
+//        Window wnd = getWindow();
+//        if (wnd != null) {
+//	    	LayoutParams attrs =  wnd.getAttributes();
+//	    	boolean changed = false;
+//	    	if (b < 0 && b > -0.99999f) {
+//	    		//log.d("dimming screen by " + (int)((1 + b)*100) + "%");
+//	    		b = -b * attrs.screenBrightness;
+//	    		if (b < 0.15)
+//	    			return;
+//	    	}
+//	    	float delta = attrs.screenBrightness - b;
+//	    	if (delta < 0)
+//	    		delta = -delta;
+//	    	if (delta > 0.01) {
+//	    		attrs.screenBrightness = b;
+//	    		changed = true;
+//	    	}
+//	    	if ( changed ) {
+//	    		log.d("Window attribute changed: " + attrs);
+//	    		wnd.setAttributes(attrs);
+//	    	}
+//        }
+//    }
+//
+//    private void updateButtonsBrightness(float buttonBrightness) {
+//        Window wnd = getWindow();
+//        if (wnd != null) {
+//	    	LayoutParams attrs =  wnd.getAttributes();
+//	    	boolean changed = false;
+//	    	// hack to set buttonBrightness field
+//	    	//float buttonBrightness = keyBacklightOff ? 0.0f : -1.0f;
+//	    	if (!brightnessHackError)
+//	    	try {
+//	        	Field bb = attrs.getClass().getField("buttonBrightness");
+//	        	if (bb != null) {
+//	        		Float oldValue = (Float)bb.get(attrs);
+//	        		if (oldValue == null || oldValue.floatValue() != buttonBrightness) {
+//	        			bb.set(attrs, buttonBrightness);
+//		        		changed = true;
+//	        		}
+//	        	}
+//	    	} catch ( Exception e ) {
+//	    		log.e("WindowManager.LayoutParams.buttonBrightness field is not found, cannot turn buttons backlight off");
+//	    		brightnessHackError = true;
+//	    	}
+//	    	//attrs.buttonBrightness = 0;
+//	    	if (changed) {
+//	    		log.d("Window attribute changed: " + attrs);
+//	    		wnd.setAttributes(attrs);
+//	    	}
+//	    	if (keyBacklightOff)
+//	    		turnOffKeyBacklight();
+//        }
+//    }
+//
+//    private final static int MIN_BACKLIGHT_LEVEL_PERCENT = DeviceInfo.MIN_SCREEN_BRIGHTNESS_PERCENT;
+ 	
 	@Override
 	protected void onNewIntent(Intent intent) {
 		log.i("onNewIntent : " + intent);

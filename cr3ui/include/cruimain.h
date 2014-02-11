@@ -56,6 +56,10 @@ public:
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard() {}
 
+    virtual bool supportsFullscreen() { return false; }
+    virtual bool isFullscreen() { return false; }
+    virtual void setFullscreen(bool fullscreen) { CR_UNUSED(fullscreen); }
+
     /// returns 0 if not supported, task ID if download task is started
     virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
         CR_UNUSED5(url, method, login, password, saveAs);

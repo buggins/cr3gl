@@ -376,6 +376,22 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		});
 	}
 
+	private boolean fullscreen = false;
+	private boolean isFullScreen() {
+		return fullscreen;
+	}
+	
+	private void setFullscreen(final boolean fullscreen) {
+		if (this.fullscreen != fullscreen) {
+			this.fullscreen = fullscreen;
+			post(new Runnable() {
+				public void run() {
+					activity.setFullscreen(fullscreen);
+				}
+			});
+		}
+	}
+	
 	private final InputStream openResourceStream(String path) {
 		try {
 			return mAssetManager.open(path, AssetManager.ACCESS_RANDOM);
