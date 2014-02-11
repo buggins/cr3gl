@@ -1160,20 +1160,19 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
 /*
  * Class:     org_coolreader_newui_CRView
  * Method:    onDownloadResult
- * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[B)V
  */
 JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
-  (JNIEnv * _env, jobject _this, jint downloadTaskId, jstring _url, jint result, jstring _resultMessage, jstring _mimeType, jint size, jbyteArray data, jstring _file)
+  (JNIEnv * _env, jobject _this, jint downloadTaskId, jstring _url, jint result, jstring _resultMessage, jstring _mimeType, jint size, jbyteArray data)
 {
     CRJNIEnv env(_env);
 	DocViewNative * native = getNative(_env, _this);
 	lString8 url = UnicodeToUtf8(env.fromJavaString(_url));
 	lString8 resultMessage = UnicodeToUtf8(env.fromJavaString(_resultMessage));
 	lString8 mimeType = UnicodeToUtf8(env.fromJavaString(_mimeType));
-	lString8 file = UnicodeToUtf8(env.fromJavaString(_file));
 	LVStreamRef stream;
 	if (data) {
-		// TODO: put data to memory stream
+		stream = env.jbyteArrayToStream(data);
 	}
 	native->onDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
 }
@@ -1213,7 +1212,7 @@ static JNINativeMethod sCRViewMethods[] =
 	{"handleTouchEventInternal", "(Landroid/view/MotionEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleTouchEventInternal},
 	{"loadBookInternal", "(Ljava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_loadBookInternal},
 	{"setBatteryLevelInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_setBatteryLevelInternal},
-	{"onDownloadResult", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_onDownloadResult},
+	{"onDownloadResult", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[B)V", (void*)Java_org_coolreader_newui_CRView_onDownloadResult},
 	{"onDownloadProgress", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V", (void*)Java_org_coolreader_newui_CRView_onDownloadProgress}
 };
 

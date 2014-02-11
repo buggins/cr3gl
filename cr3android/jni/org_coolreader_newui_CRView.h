@@ -98,10 +98,10 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
 /*
  * Class:     org_coolreader_newui_CRView
  * Method:    onDownloadResult
- * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[B)V
  */
 JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
-  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jint, jbyteArray, jstring);
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jint, jbyteArray);
 
 /*
  * Class:     org_coolreader_newui_CRView

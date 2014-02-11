@@ -395,7 +395,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
     }
 
     /// pass download result to window
-    public native void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data, String file);
+    public native void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data);
 
     /// download progress
     public native void onDownloadProgress(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, int sizeDownloaded);

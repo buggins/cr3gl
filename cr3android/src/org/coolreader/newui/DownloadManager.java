@@ -6,7 +6,7 @@ public class DownloadManager {
 	
 	public interface DownloadManagerCallback {
 	    /// pass download result to window
-	    void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data, String file);
+	    void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data);
 
 	    /// download progress
 	    void onDownloadProgress(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, int sizeDownloaded);
