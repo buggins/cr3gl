@@ -1072,3 +1072,91 @@ CRUIImageRef CRUIBackgroundTextureSetting::getValueIcon(CRPropRef props) const {
     lString8 id = UnicodeToUtf8(props->getStringDef(PROP_BACKGROUND_IMAGE));
     return resourceResolver->getBackgroundImage(id);
 }
+
+class CRUISettingsActionListItemWidget : public CRUISettingsListItemWidgetBase {
+public:
+    CRUISettingsActionListItemWidget() : CRUISettingsListItemWidgetBase()
+    {
+        setVertical(true);
+        _title->setAlign(ALIGN_HCENTER);
+        _righticon->setAlign(ALIGN_HCENTER);
+        _description->setVisibility(CRUI::GONE);
+        setBackground("home_frame.9");
+        setMargin(PT_TO_PX(3));
+    }
+
+    virtual void setSetting(CRUISettingsItem * settings, CRPropRef props) {
+        CR_UNUSED(props);
+        _settings = settings;
+        lString8 actionName = settings->getValue(props);
+        const CRUIAction * action = CRUIActionByName(actionName.c_str());
+        if (!action)
+            action = ACTION_NO_ACTION;
+        _title->setText(action->getName());
+        if (!action->icon_res.empty())
+            _righticon->setImage(resourceResolver->getIcon(action->icon_res.c_str()));
+        else
+            _righticon->setImage(CRUIImageRef());
+    }
+};
+
+CRUISettingsTapZoneListEditor::CRUISettingsTapZoneListEditor(CRPropRef props, CRUISettingsItem * setting)
+    : CRUISettingsListWidget(props, setting)
+{
+    _list->setColCount(3);
+    _actionItem = new CRUISettingsActionListItemWidget();
+}
+
+CRUISettingsTapZoneListEditor::~CRUISettingsTapZoneListEditor() {
+    delete _actionItem;
+}
+
+CRUIWidget * CRUISettingsTapZoneListEditor::getItemWidget(CRUIListWidget * list, int index) {
+    CR_UNUSED(list);
+    CRUISettingsItem * item = _settings->getChild(index);
+    _actionItem->setSetting(item, _props);
+    return _actionItem;
+}
+
+CRUIActionOptionItem::CRUIActionOptionItem(const char * name, const CRUIAction * action) : CRUIOptionItem(name, action->name_res.c_str())
+{
+
+}
+
+CRUIImageRef CRUIActionOptionItem::getRightImage() const {
+    const CRUIAction * action = CRUIActionByName(_value.c_str());
+    if (!action)
+        CRUIImageRef();
+    return resourceResolver->getIcon(action->icon_res.c_str());
+}
+
+CRUITapZoneSettingsList::CRUITapZoneSettingsList(const char * nameRes, const char * descriptionRes, int _modifier)
+    : CRUISettingsList(nameRes, descriptionRes, "TAP_ZONE"), modifier(_modifier)
+{
+    lString8Collection actions;
+    actions.add("NO_ACTION");
+    actions.add("MENU");
+    actions.add("SETTINGS");
+    actions.add("PAGE_UP");
+    actions.add("PAGE_DOWN");
+    actions.add("TOC");
+    for (int i = 1; i <= 9; i++) {
+        lString8 s(modifier == 0 ? PROP_APP_TAP_ZONE_ACTION_NORMAL : PROP_APP_TAP_ZONE_ACTION_DOUBLE);
+        s += lString8::itoa(i);
+        CRUISettingsOptionList * options = new CRUISettingsOptionList("tap_zone", NULL, s.c_str());
+        for (int a = 0; a < actions.length(); a++) {
+            const CRUIAction * action = CRUIActionByName(actions[a].c_str());
+            if (!action) {
+                CRLog::error("Unknown action for tap zone: %s", actions[a].c_str());
+                continue;
+            }
+            CRUIActionOptionItem * option = new CRUIActionOptionItem(actions[a].c_str(), action);
+            options->addOption(option);
+        }
+        addChild(options);
+    }
+}
+/// create editor widget based on option type
+CRUISettingsEditor * CRUITapZoneSettingsList::createEditor(CRPropRef props) {
+    return new CRUISettingsTapZoneListEditor(props, this);
+}

@@ -498,6 +498,13 @@ void CRUIMainWidget::createReaderSettings() {
     interfaceSettings->addChild(themes);
     _readerSettings.addChild(interfaceSettings);
 
+    CRUISettingsList * controls = new CRUISettingsList(STR_SETTINGS_CONTROLS, STR_SETTINGS_CONTROLS_DESCRIPTION, SETTINGS_PATH_CONTROLS);
+    CRUITapZoneSettingsList * tznormal = new CRUITapZoneSettingsList(STR_SETTINGS_CONTROLS_TAP_ZONES_NORMAL, STR_SETTINGS_CONTROLS_TAP_ZONES_NORMAL_DESCRIPTION, TAPZONE_MODIFIER_NONE);
+    CRUITapZoneSettingsList * tzdouble = new CRUITapZoneSettingsList(STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE, STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE_DESCRIPTION, TAPZONE_MODIFIER_TWOFINGER);
+    controls->addChild(tznormal);
+    controls->addChild(tzdouble);
+    _readerSettings.addChild(controls);
+
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
     pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
     pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));

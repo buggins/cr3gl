@@ -11,6 +11,9 @@
 #define SETTINGS_PATH_READER_TEXTFORMATTING "reader/fontrendering"
 #define SETTINGS_PATH_READER_PAGELAYOUT "reader/fontrendering"
 #define SETTINGS_PATH_READER_INTERFACE "reader/interface"
+#define SETTINGS_PATH_CONTROLS "reader/controls"
+#define SETTINGS_PATH_TAP_ZONES_NORMAL "reader/controls/tapzonesnormal"
+#define SETTINGS_PATH_TAP_ZONES_DOUBLE "reader/controls/tapzonesdouble"
 
 // properties
 #define PROP_APP_THEME "app.ui.theme"

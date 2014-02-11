@@ -66,6 +66,19 @@ public:
     virtual CRUISettingsEditor * createEditor(CRPropRef props);
 };
 
+enum {
+    TAPZONE_MODIFIER_NONE = 0,
+    TAPZONE_MODIFIER_TWOFINGER = 1
+};
+
+class CRUITapZoneSettingsList : public CRUISettingsList {
+    int modifier;
+public:
+    CRUITapZoneSettingsList(const char * nameRes, const char * descriptionRes, int modifier);
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+};
+
 class CRUISettingsCheckbox : public CRUISettingsItem {
 protected:
     lString8 _checkedDescriptionRes;
@@ -374,6 +387,22 @@ public:
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
     virtual ~CRUISettingsListWidget() {}
+};
+
+/// option item for option list setting
+class CRUIActionOptionItem : public CRUIOptionItem {
+public:
+    CRUIActionOptionItem(const char * name, const CRUIAction * action);
+    virtual CRUIImageRef getRightImage() const;
+};
+
+class CRUISettingsActionListItemWidget;
+class CRUISettingsTapZoneListEditor : public CRUISettingsListWidget {
+    CRUISettingsActionListItemWidget * _actionItem;
+public:
+    CRUISettingsTapZoneListEditor (CRPropRef props, CRUISettingsItem * setting);
+    virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
+    virtual ~CRUISettingsTapZoneListEditor();
 };
 
 class CRUISettingsWidget : public CRUIWindowWidget, public CRUIOnClickListener, public CRUIOnLongClickListener, public CRUISettingsEditorCallback {
