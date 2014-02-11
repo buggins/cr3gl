@@ -47,6 +47,12 @@ public class CoolReader extends Activity {
 	private ClipboardManager clipboardManager;
 	private InputMethodManager inputMethodManager;
 	BroadcastReceiver intentReceiver;
+	
+	private DownloadManager downloadManager;
+	
+	public DownloadManager getDownloadManager() {
+		return downloadManager;
+	}
 
 	@SuppressWarnings("deprecation")
 	public final void copyToClipboard(String s) {
@@ -175,6 +181,8 @@ public class CoolReader extends Activity {
 		setContentView(crview);
 		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		downloadManager = new DownloadManager();
+		downloadManager.start();
 		
     	// Battery state listener
 		intentReceiver = new BroadcastReceiver() {
@@ -212,6 +220,7 @@ public class CoolReader extends Activity {
 	@Override
 	protected void onDestroy() {
 		log.i("CoolReader.onDestroy() is called");
+		downloadManager.stop();
 		crview.uninit();
 		if ( intentReceiver!=null ) {
 			unregisterReceiver(intentReceiver);

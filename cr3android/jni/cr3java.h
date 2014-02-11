@@ -209,6 +209,10 @@ public:
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid, v );
 	}
+	jint callInt(jobject p1, jobject p2, jobject p3, jobject p4, jobject p5)
+	{
+		return objacc->CallIntMethod( objacc.getObject(), methodid, p1, p2, p3, p4, p5);
+	}
 	jfloat callFloat()
 	{
 		return objacc->CallFloatMethod( objacc.getObject(), methodid);
@@ -246,6 +250,10 @@ public:
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, p1, p2 );
 	}
 	void callVoid(jlong v)
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid, v);
+	}
+	void callVoidInt(jint v)
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, v);
 	}

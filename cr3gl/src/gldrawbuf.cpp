@@ -716,7 +716,7 @@ public:
             }
             //rotationAngle = 0;
             int rx = x + dx / 2;
-            int ry = y + dy / 2;
+            int ry = (y + dy / 2);
             if (rotationAngle) {
                 //rotationAngle = 0;
                 CRGL->setRotation(rx, ry, rotationAngle);

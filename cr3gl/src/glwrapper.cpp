@@ -95,7 +95,7 @@ protected:
     void drawSolidFillRect(float vertices[], float colors[]);
 public:
     CRGLSupportImpl();
-    ~CRGLSupportImpl();
+    virtual ~CRGLSupportImpl();
 
     void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
@@ -779,7 +779,7 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
 
     glMatrixMode(GL_PROJECTION);
     //glPushMatrix();
-    checkError("glPushMatrix");
+    //checkError("glPushMatrix");
     //glLoadIdentity();
     glLoadMatrixf(m);
     //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
@@ -796,25 +796,34 @@ void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
     this->rotationAngle = rotationAngle;
     rotationX = x;
     rotationY = y;
-    if (!rotationAngle)
-        return;
+    if (!currentFramebufferId) {
+        rotationY = bufferDy - rotationY;
+    }
+
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix2;
     matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
-    matrix2.translate(rotationX, rotationY, 0);
-    matrix2.rotate(rotationAngle, 0, 0, 1);
-    matrix2.translate(-rotationX, -rotationY, 0);
+    if (rotationAngle) {
+		matrix2.translate(rotationX, rotationY, 0);
+		matrix2.rotate(rotationAngle, 0, 0, 1);
+		matrix2.translate(-rotationX, -rotationY, 0);
+    }
     matrix2.copyDataTo(m);
 #else
     glMatrixMode(GL_PROJECTION);
+    //glMatrixMode(GL_MODELVIEW);
+    //glLoadIdentity();
     //glPushMatrix();
     //checkError("push matrix");
-    checkError("matrix mode");
+    //checkError("matrix mode");
     glLoadMatrixf(m);
     if (rotationAngle) {
+    	//CRLog::trace("set rotation %d", rotationAngle);
         glTranslatef(rotationX, rotationY, 0);
         glRotatef(rotationAngle, 0, 0, 1);
         glTranslatef(-rotationX, -rotationY, 0);
+    } else {
+    	//CRLog::trace("unset rotation");
     }
 #endif
 }

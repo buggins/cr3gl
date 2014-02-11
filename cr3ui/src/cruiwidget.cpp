@@ -18,6 +18,9 @@ using namespace CRUI;
 
 LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp) {
 #if CRUI_USE_OPENGL == 1
+    if (!crconfig.enableOpenGl) {
+        CRLog::warn("OpenGL is disabled");
+    }
     if (crconfig.enableOpenGl) {
         int maxTextureSize = CRGL->getMaxTextureSize();
         if (dx <= maxTextureSize && dy <= maxTextureSize)

@@ -239,6 +239,9 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _hideVirtualKeyboardMethod;
     CRMethodAccessor _isFullscreenMethod;
     CRMethodAccessor _setFullscreenMethod;
+    CRMethodAccessor _openUrlMethod;
+    CRMethodAccessor _cancelDownloadMethod;
+
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
@@ -410,6 +413,37 @@ public:
     		CRLog::error("DocViewNative::loadDocument() called w/o create");
     		_fileToOpen = UnicodeToUtf8(path);
     	}
+    }
+
+    /// returns 0 if not supported, task ID if download task is started
+    virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
+    	jstring _url = _env.toJavaString(Utf8ToUnicode(url));
+    	jstring _method = _env.toJavaString(Utf8ToUnicode(method));
+    	jstring _login = _env.toJavaString(Utf8ToUnicode(login));
+    	jstring _password = _env.toJavaString(Utf8ToUnicode(password));
+    	jstring _saveAs = _env.toJavaString(Utf8ToUnicode(saveAs));
+    	int res = _openUrlMethod.callInt(_url, _method, _login, _password, _saveAs);
+    	_env->DeleteLocalRef(_url);
+    	_env->DeleteLocalRef(_method);
+    	_env->DeleteLocalRef(_login);
+    	_env->DeleteLocalRef(_password);
+    	_env->DeleteLocalRef(_saveAs);
+        return res;
+    }
+
+    /// cancel specified download task
+    virtual void cancelDownload(int downloadTaskId) {
+    	_cancelDownloadMethod.callVoidInt(downloadTaskId);
+    }
+
+    /// pass download result to window
+    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) {
+    	_eventManager.dispatchDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+    }
+
+    /// download progress
+    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) {
+    	_eventManager.dispatchDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
     }
 
 	~DocViewNative() {
@@ -697,6 +731,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _hideVirtualKeyboardMethod(_obj, "hideVirtualKeyboard", "()V")
 	, _isFullscreenMethod(_obj, "isFullscreen", "()Z")
 	, _setFullscreenMethod(_obj, "setFullscreen", "(Z)V")
+	, _openUrlMethod(_obj, "openUrl", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I")
+	, _cancelDownloadMethod(_obj, "cancelDownload", "(I)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)

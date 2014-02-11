@@ -861,9 +861,12 @@ void CRUIOpdsBrowserWidget::afterNavigationTo() {
     if (_dir && !_catalog.isNull() && _dir->itemCount() == 0) {
         //getMain()->showMessage(lString16("Opening ") + Utf8ToUnicode(_dir->getURL()), 1000);
         _requestId = getMain()->openUrl(this, _dir->getURL(), lString8("GET"), lString8(_catalog->login.c_str()), lString8(_catalog->password.c_str()), lString8());
-        _fileList->setProgressItemVisible(true);
+        _fileList->setProgressItemVisible(_requestId != 0);
         requestLayout();
         _main->update(true);
+        if (!_requestId) {
+            _main->showMessage(lString16("Network is not available"), 2000);
+        }
     }
     requestLayout();
 }

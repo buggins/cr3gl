@@ -82,7 +82,11 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		super.onPause();
 	}
 	
+	int lastBatteryLevel = 100;
 	public void setBatteryLevel(final int level) {
+		if (level == lastBatteryLevel)
+			return;
+		lastBatteryLevel = level;
 		log.i("CRView.setBatteryLevel " + level);
 		queueEvent(new Runnable() {
 			@Override
@@ -294,7 +298,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
 	 */
 	private final void runInGLThread(long crRunnablePtr) {
-		log.d("runInGLThread - in Java");
+		//log.d("runInGLThread - in Java");
 		queueEvent(new CRRunnable(crRunnablePtr));
 	}
 
@@ -376,6 +380,18 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		});
 	}
 
+    /// returns 0 if not supported, task ID if download task is started
+    private int openUrl(String url, String method, String login, String password, String saveAs) {
+		log.i("openUrl " + url);
+        return activity.getDownloadManager().openUrl(url, method, login, password, saveAs);
+    }
+    
+    /// cancel specified download task
+    private void cancelDownload(int downloadTaskId) { 
+		log.i("cancelDownload " + downloadTaskId);
+		activity.getDownloadManager().cancelDownload(downloadTaskId);
+    }
+    
 	private boolean fullscreen = false;
 	private boolean isFullscreen() {
 		return fullscreen;
