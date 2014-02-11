@@ -2,7 +2,7 @@
 #define CRACTION_UI(id,icon) CRACTION(id,0,0,ACTION_ ## id, icon)
 #define CRACTION_DCMD(id,dcmd,param,icon) CRACTION(id,dcmd,param,ACTION_ ## id, icon)
 
-CRACTION_UI(NO_ACTION, "no_action")
+CRACTION_UI(NO_ACTION, "delete")
 CRACTION_UI(EXIT, "close_window")
 CRACTION_UI(MENU, "menu_more")
 CRACTION_UI(SETTINGS, "fantasy")

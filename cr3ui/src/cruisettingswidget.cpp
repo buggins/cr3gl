@@ -1130,32 +1130,46 @@ CRUIImageRef CRUIActionOptionItem::getRightImage() const {
     return resourceResolver->getIcon(action->icon_res.c_str());
 }
 
+static const char * TAP_ZONE_ACTION_LIST[] = {
+    "NO_ACTION",
+    "PAGE_UP",
+    "PAGE_DOWN",
+    "MENU",
+    "SETTINGS",
+    "TOC",
+    "BACK",
+    "LINK_BACK",
+    "LINK_FORWARD",
+    "BOOKMARKS",
+    "FIND_TEXT",
+    "HELP",
+    "TOGGLE_NIGHT_MODE",
+    "READER_HOME",
+    "SHOW_FOLDER",
+    "GOTO_PERCENT",
+    NULL
+};
+
 CRUITapZoneSettingsList::CRUITapZoneSettingsList(const char * nameRes, const char * descriptionRes, int _modifier)
     : CRUISettingsList(nameRes, descriptionRes, "TAP_ZONE"), modifier(_modifier)
 {
-    lString8Collection actions;
-    actions.add("NO_ACTION");
-    actions.add("MENU");
-    actions.add("SETTINGS");
-    actions.add("PAGE_UP");
-    actions.add("PAGE_DOWN");
-    actions.add("TOC");
     for (int i = 1; i <= 9; i++) {
         lString8 s(modifier == 0 ? PROP_APP_TAP_ZONE_ACTION_NORMAL : PROP_APP_TAP_ZONE_ACTION_DOUBLE);
         s += lString8::itoa(i);
         CRUISettingsOptionList * options = new CRUISettingsOptionList("tap_zone", NULL, s.c_str());
-        for (int a = 0; a < actions.length(); a++) {
-            const CRUIAction * action = CRUIActionByName(actions[a].c_str());
+        for (int a = 0; TAP_ZONE_ACTION_LIST[a]; a++) {
+            const CRUIAction * action = CRUIActionByName(TAP_ZONE_ACTION_LIST[a]);
             if (!action) {
-                CRLog::error("Unknown action for tap zone: %s", actions[a].c_str());
+                CRLog::error("Unknown action for tap zone: %s", TAP_ZONE_ACTION_LIST[a]);
                 continue;
             }
-            CRUIActionOptionItem * option = new CRUIActionOptionItem(actions[a].c_str(), action);
+            CRUIActionOptionItem * option = new CRUIActionOptionItem(TAP_ZONE_ACTION_LIST[a], action);
             options->addOption(option);
         }
         addChild(options);
     }
 }
+
 /// create editor widget based on option type
 CRUISettingsEditor * CRUITapZoneSettingsList::createEditor(CRPropRef props) {
     return new CRUISettingsTapZoneListEditor(props, this);
