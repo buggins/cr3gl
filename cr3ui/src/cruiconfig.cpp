@@ -27,7 +27,8 @@ CRUIConfig::CRUIConfig() {
     enableOpenGl = true;
     einkMode = false;
     apiLevel = 0; // for Android only
-
+    hasBattery = false;
+    batteryLevel = 100;
 }
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {

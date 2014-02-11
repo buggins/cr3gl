@@ -388,6 +388,7 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 }
 
 void CRUIMainWidget::openBookFromFile(lString8 filename) {
+	CRLog::trace("CRUIMainWidget::openBookFromFile %s", filename.c_str());
     lString8 arcname;
     lString8 fn;
     lString8 folder;
@@ -788,6 +789,11 @@ void CRUIMainWidget::update(bool force) {
     if (needDraw || animating)
         setScreenUpdateMode(needDraw, animating ? 30 : 0);
 
+}
+
+void CRUIMainWidget::setBatteryLevel(int level) {
+	CRLog::info("CRUIMainWidget::setBatteryLevel %d", level);
+	crconfig.batteryLevel = level;
 }
 
 // apply changed settings

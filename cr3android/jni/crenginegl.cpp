@@ -244,6 +244,7 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
 	bool _virtualKeyboardShown;
 	int _dx;
 	int _dy;
+	lString8 _fileToOpen;
 public:
     DocViewNative(jobject obj);
 
@@ -253,6 +254,8 @@ public:
     	_eventManager.setRootWidget(_widget);
     	_widget->setScreenUpdater(this);
     	_widget->setPlatform(this);
+    	if (!_fileToOpen.empty())
+        	_widget->openBookFromFile(_fileToOpen);
     	return true;
     }
 
@@ -384,7 +387,18 @@ public:
     	_hideVirtualKeyboardMethod.callVoid();
     }
 
+    void setBatteryLevel(int level) {
+    	// TODO
+    }
 
+    void loadDocument(lString16 path) {
+    	if (_widget) {
+        	_widget->openBookFromFile(UnicodeToUtf8(path));
+    	} else {
+    		CRLog::error("DocViewNative::loadDocument() called w/o create");
+    		_fileToOpen = UnicodeToUtf8(path);
+    	}
+    }
 
 	~DocViewNative() {
     	delete _widget;
@@ -1065,6 +1079,32 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInte
     return res;
 }
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    loadBookInternal
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_loadBookInternal
+  (JNIEnv * _env, jobject _this, jstring _path)
+{
+    CRJNIEnv env(_env);
+	DocViewNative * native = getNative(_env, _this);
+	lString16 path = env.fromJavaString(_path);
+	native->loadDocument(path);
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    setBatteryLevelInternal
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
+  (JNIEnv * _env, jobject _this, jint level)
+{
+	DocViewNative * native = getNative(_env, _this);
+	native->setBatteryLevel(level);
+}
+
 
 //============================================================================================================
 // register JNI methods
@@ -1080,7 +1120,9 @@ static JNINativeMethod sCRViewMethods[] =
 	{"surfaceChangedInternal", "(II)V",                    (void*)Java_org_coolreader_newui_CRView_surfaceChangedInternal},
 	{"surfaceDestroyedInternal", "()V",                    (void*)Java_org_coolreader_newui_CRView_surfaceDestroyedInternal},
 	{"handleKeyEventInternal", "(Landroid/view/KeyEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleKeyEventInternal},
-	{"handleTouchEventInternal", "(Landroid/view/MotionEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleTouchEventInternal}
+	{"handleTouchEventInternal", "(Landroid/view/MotionEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleTouchEventInternal},
+	{"loadBookInternal", "(Ljava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_loadBookInternal},
+	{"setBatteryLevelInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_setBatteryLevelInternal}
 };
 
 /*

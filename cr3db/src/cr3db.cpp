@@ -419,6 +419,7 @@ void CRBookDB::addFolderBookmark(lString8 path) {
     bookmark = new BookDBFolderBookmark();
     bookmark->name = s;
     bookmark->lastUsage = GetCurrentTimeMillis();
+    bookmark->type = DIR_TYPE_NORMAL;
     saveFolderBookmark(bookmark);
     delete bookmark;
 }

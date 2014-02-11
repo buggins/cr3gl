@@ -13,10 +13,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.ClipboardManager;
@@ -34,6 +39,7 @@ public class CoolReader extends Activity {
 	@SuppressWarnings("deprecation")
 	private ClipboardManager clipboardManager;
 	private InputMethodManager inputMethodManager;
+	BroadcastReceiver intentReceiver;
 
 	@SuppressWarnings("deprecation")
 	public final void copyToClipboard(String s) {
@@ -88,7 +94,16 @@ public class CoolReader extends Activity {
 
 		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
+		// internal storage
 		cfg.internalStorageDir = externalStorageDir;
+		// sd card
+		for (File f : mountedRootsList) {
+			String path = f.getAbsolutePath();
+			if (path.equals(externalStorageDir)) {
+				cfg.sdcardDir = path;
+				break;
+			}
+		}
 		
 		cfg.coverCacheDir = externalFilesDir + "/coverpages";
 		cfg.cssDir = "@css";
@@ -153,7 +168,25 @@ public class CoolReader extends Activity {
 		setContentView(crview);
 		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		
+    	// Battery state listener
+		intentReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				int level = intent.getIntExtra("level", 0);
+				if (crview != null)
+					crview.setBatteryLevel(level);
+				else
+					initialBatteryLevel = level;
+			}
+			
+		};
+		registerReceiver(intentReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        
+		setVolumeControlStream(AudioManager.STREAM_MUSIC);		
 	}
+	int initialBatteryLevel = 100;
 
     @Override
     protected void onPause() {
@@ -173,6 +206,10 @@ public class CoolReader extends Activity {
 	protected void onDestroy() {
 		log.i("CoolReader.onDestroy() is called");
 		crview.uninit();
+		if ( intentReceiver!=null ) {
+			unregisterReceiver(intentReceiver);
+			intentReceiver = null;
+		}
 		super.onDestroy();
 	}
 
@@ -182,6 +219,76 @@ public class CoolReader extends Activity {
 		//getMenuInflater().inflate(R.menu.cool_reader, menu);
 		return true;
 	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		log.i("onNewIntent : " + intent);
+//		if ( mDestroyed ) {
+//			log.e("engine is already destroyed");
+//			return;
+//		}
+		processIntent(intent);
+//		String fileToOpen = null;
+//		if ( Intent.ACTION_VIEW.equals(intent.getAction()) ) {
+//			Uri uri = intent.getData();
+//			if ( uri!=null ) {
+//				fileToOpen = extractFileName(uri);
+//			}
+//			intent.setData(null);
+//		}
+//		log.v("onNewIntent, fileToOpen=" + fileToOpen);
+//		if ( fileToOpen!=null ) {
+//			// load document
+//			final String fn = fileToOpen;
+//			BackgroundThread.instance().postGUI(new Runnable() {
+//				@Override
+//				public void run() {
+//					loadDocument(fn, new Runnable() {
+//						public void run() {
+//							log.v("onNewIntent, loadDocument error handler called");
+//							showToast("Error occured while loading " + fn);
+//							Services.getEngine().hideProgress();
+//						}
+//					});
+//				}
+//			}, 100);
+//		}
+	}
+
+	public static final String OPEN_FILE_PARAM = "FILE_TO_OPEN";
+	private boolean processIntent(Intent intent) {
+		log.d("intent=" + intent);
+		if (intent == null)
+			return false;
+		String fileToOpen = null;
+		if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+			Uri uri = intent.getData();
+			intent.setData(null);
+			if (uri != null) {
+				fileToOpen = uri.getPath();
+//				if (fileToOpen.startsWith("file://"))
+//					fileToOpen = fileToOpen.substring("file://".length());
+			}
+		}
+		if (fileToOpen == null && intent.getExtras() != null) {
+			log.d("extras=" + intent.getExtras());
+			fileToOpen = intent.getExtras().getString(OPEN_FILE_PARAM);
+		}
+		if (fileToOpen != null) {
+			// patch for opening of books from ReLaunch (under Nook Simple Touch) 
+			while (fileToOpen.indexOf("%2F") >= 0) {
+				fileToOpen = fileToOpen.replace("%2F", "/");
+			}
+			log.d("FILE_TO_OPEN = " + fileToOpen);
+			if (crview != null)
+				crview.loadBook(fileToOpen);
+			return true;
+		} else {
+			log.d("No file to open");
+			return false;
+		}
+	}
+
 
 	
 	
@@ -247,8 +354,11 @@ public class CoolReader extends Activity {
 	public static File[] getStorageDirectories(boolean writableOnly) {
 		Collection<File> res = new HashSet<File>(2);
 		for (File dir : mountedRootsList) {
-			if (dir.isDirectory() && (!writableOnly || dir.canWrite()))
-				res.add(dir);
+			if (dir.isDirectory() && (!writableOnly || dir.canWrite())) {
+				String[] items = dir.list();
+				if (items != null && items.length > 0)
+					res.add(dir);
+			}
 		}
 		return res.toArray(new File[res.size()]);
 	}
@@ -307,11 +417,12 @@ public class CoolReader extends Activity {
 		try {
 			File dir = new File(path);
 			if (dir.isDirectory()) {
-//				String[] d = dir.list();
-//				if ((d!=null && d.length>0) || dir.canWrite()) {
+				String[] d = dir.list();
+				if ((d!=null && d.length>0) || dir.canWrite()) {
 					log.i("Adding FS root: " + path + " " + name);
 					list.put(path, name);
-//					return true;
+					return true;
+				}
 //				} else {
 //					log.i("Skipping mount point " + path + " : no files or directories found here, and writing is disabled");
 //				}

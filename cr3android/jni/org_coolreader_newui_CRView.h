@@ -73,6 +73,22 @@ JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    loadBookInternal
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_loadBookInternal
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    setBatteryLevelInternal
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    callCRRunnableInternal
  * Signature: (J)V
  */

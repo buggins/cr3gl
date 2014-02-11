@@ -349,6 +349,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
 
+    void setBatteryLevel(int level);
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings
     CRPropRef getNewSettings() { return _newSettings; } // to be edited by Settings editors
     CRPropRef initNewSettings() { _newSettings = LVClonePropsContainer(_currentSettings); return _newSettings; } // to be edited by Settings editors

@@ -81,7 +81,27 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		});
 		super.onPause();
 	}
-
+	
+	public void setBatteryLevel(final int level) {
+		log.i("CRView.setBatteryLevel " + level);
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				setBatteryLevelInternal(level);
+			}
+		});
+	}
+	
+	public void loadBook(final String pathName) {
+		log.i("CRView.loadBook " + pathName);
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				loadBookInternal(pathName);
+			}
+		});
+	}
+	
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -244,6 +264,10 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	native private boolean handleKeyEventInternal(KeyEvent event);
 
 	native private boolean handleTouchEventInternal(MotionEvent event);
+
+	native private void loadBookInternal(String pathName);
+	
+	native private void setBatteryLevelInternal(int level);
 
 	
 	// accessible from Java JNI calls

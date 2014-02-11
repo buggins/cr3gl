@@ -61,6 +61,8 @@ struct CRUIConfig {
     int defFontSize;
 
     int apiLevel;
+    bool hasBattery;
+    int batteryLevel;
 
     bool touchMode;
     bool enableOpenGl;
