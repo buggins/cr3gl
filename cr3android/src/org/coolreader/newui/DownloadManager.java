@@ -6,10 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.LinkedList;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 
 public class DownloadManager {
 	
@@ -58,6 +63,24 @@ public class DownloadManager {
 	        try {
 	            URL url = new URL(this.url);
 	            connection = (HttpURLConnection) url.openConnection();
+	            if (connection instanceof HttpsURLConnection) {
+	            	HttpsURLConnection https = (HttpsURLConnection)connection;
+	            	// TODO: implement https stuff
+	            	https.setHostnameVerifier(new HostnameVerifier() {
+						@Override
+						public boolean verify(String arg0, SSLSession arg1) {
+							return true;
+						}
+					});
+	            }
+	            connection.setInstanceFollowRedirects(true);
+	            connection.setUseCaches(false);
+	            if (login != null && login.length() > 0) {
+	            	Authenticator.setDefault(new Authenticator(){
+	            	    protected PasswordAuthentication getPasswordAuthentication() {
+	            	        return new PasswordAuthentication(login, password.toCharArray());
+	            	    }});	            	
+	            }
 	            connection.connect();
 
 	            // expect HTTP 200 OK, so we don't mistakenly save error report
