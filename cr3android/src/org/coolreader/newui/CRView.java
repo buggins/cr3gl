@@ -377,7 +377,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 	}
 
 	private boolean fullscreen = false;
-	private boolean isFullScreen() {
+	private boolean isFullscreen() {
 		return fullscreen;
 	}
 	
