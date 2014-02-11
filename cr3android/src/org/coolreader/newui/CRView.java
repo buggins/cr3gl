@@ -9,6 +9,8 @@ import java.util.concurrent.FutureTask;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.coolreader.newui.DownloadManager.DownloadManagerCallback;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
@@ -22,7 +24,7 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
+public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, DownloadManagerCallback {
 
 	public static final String TAG = "cr3v";
 	public static final Logger log = L.create(TAG);
@@ -391,6 +393,12 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer {
 		log.i("cancelDownload " + downloadTaskId);
 		activity.getDownloadManager().cancelDownload(downloadTaskId);
     }
+
+    /// pass download result to window
+    public native void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data, String file);
+
+    /// download progress
+    public native void onDownloadProgress(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, int sizeDownloaded);
     
 	private boolean fullscreen = false;
 	private boolean isFullscreen() {

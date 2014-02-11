@@ -1155,6 +1155,46 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
 	native->setBatteryLevel(level);
 }
 
+// void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data, String file);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onDownloadResult
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
+  (JNIEnv * _env, jobject _this, jint downloadTaskId, jstring _url, jint result, jstring _resultMessage, jstring _mimeType, jint size, jbyteArray data, jstring _file)
+{
+    CRJNIEnv env(_env);
+	DocViewNative * native = getNative(_env, _this);
+	lString8 url = UnicodeToUtf8(env.fromJavaString(_url));
+	lString8 resultMessage = UnicodeToUtf8(env.fromJavaString(_resultMessage));
+	lString8 mimeType = UnicodeToUtf8(env.fromJavaString(_mimeType));
+	lString8 file = UnicodeToUtf8(env.fromJavaString(_file));
+	LVStreamRef stream;
+	if (data) {
+		// TODO: put data to memory stream
+	}
+	native->onDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+}
+
+// void onDownloadProgress(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, int sizeDownloaded);
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onDownloadProgress
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadProgress
+  (JNIEnv * _env, jobject _this, jint downloadTaskId, jstring _url, jint result, jstring _resultMessage, jstring _mimeType, jint size, jint sizeDownloaded)
+{
+    CRJNIEnv env(_env);
+	DocViewNative * native = getNative(_env, _this);
+	lString8 url = UnicodeToUtf8(env.fromJavaString(_url));
+	lString8 resultMessage = UnicodeToUtf8(env.fromJavaString(_resultMessage));
+	lString8 mimeType = UnicodeToUtf8(env.fromJavaString(_mimeType));
+	native->onDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+}
+
 
 //============================================================================================================
 // register JNI methods
@@ -1172,7 +1212,9 @@ static JNINativeMethod sCRViewMethods[] =
 	{"handleKeyEventInternal", "(Landroid/view/KeyEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleKeyEventInternal},
 	{"handleTouchEventInternal", "(Landroid/view/MotionEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleTouchEventInternal},
 	{"loadBookInternal", "(Ljava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_loadBookInternal},
-	{"setBatteryLevelInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_setBatteryLevelInternal}
+	{"setBatteryLevelInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_setBatteryLevelInternal},
+	{"onDownloadResult", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_onDownloadResult},
+	{"onDownloadProgress", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V", (void*)Java_org_coolreader_newui_CRView_onDownloadProgress}
 };
 
 /*

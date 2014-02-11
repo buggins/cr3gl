@@ -182,6 +182,7 @@ public class CoolReader extends Activity {
 		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 		downloadManager = new DownloadManager();
+		downloadManager.setCallback(crview);
 		downloadManager.start();
 		
     	// Battery state listener

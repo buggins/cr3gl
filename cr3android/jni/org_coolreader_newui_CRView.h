@@ -65,14 +65,6 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInte
 
 /*
  * Class:     org_coolreader_newui_CRView
- * Method:    isLink
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
-  (JNIEnv *, jclass, jstring);
-
-/*
- * Class:     org_coolreader_newui_CRView
  * Method:    loadBookInternal
  * Signature: (Ljava/lang/String;)V
  */
@@ -89,11 +81,35 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    isLink
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_coolreader_newui_CRView_isLink
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    callCRRunnableInternal
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
   (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onDownloadResult
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jint, jbyteArray, jstring);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onDownloadProgress
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadProgress
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jint, jint);
 
 #ifdef __cplusplus
 }
