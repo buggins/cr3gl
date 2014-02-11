@@ -16,6 +16,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
+import android.util.Base64;
+
 public class DownloadManager {
 	
 	public interface DownloadManagerCallback {
@@ -63,6 +65,7 @@ public class DownloadManager {
 	        try {
 	            URL url = new URL(this.url);
 	            connection = (HttpURLConnection) url.openConnection();
+	            
 	            if (connection instanceof HttpsURLConnection) {
 	            	HttpsURLConnection https = (HttpsURLConnection)connection;
 	            	// TODO: implement https stuff
@@ -76,6 +79,7 @@ public class DownloadManager {
 	            connection.setInstanceFollowRedirects(true);
 	            connection.setUseCaches(false);
 	            if (login != null && login.length() > 0) {
+	            	connection.setRequestProperty("Authorization", "Basic " + Base64.encodeToString((login + ":" + password).getBytes(), Base64.NO_WRAP));
 	            	Authenticator.setDefault(new Authenticator(){
 	            	    protected PasswordAuthentication getPasswordAuthentication() {
 	            	        return new PasswordAuthentication(login, password.toCharArray());
