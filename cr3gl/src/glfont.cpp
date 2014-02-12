@@ -104,7 +104,22 @@ public:
                          (int)(y + item->dy)
                          );
             if (clip) {
-                translateRect(srcrc, dstrc, *clip);
+                int srcw = srcrc.width();
+                int srch = srcrc.height();
+                int dstw = dstrc.width();
+                int dsth = dstrc.height();
+                if (dstw) {
+                    srcrc.left += clip->left * srcw / dstw;
+                    srcrc.right -= clip->right * srcw / dstw;
+                }
+                if (dsth) {
+                    srcrc.top += clip->top * srch / dsth;
+                    srcrc.bottom -= clip->bottom * srch / dsth;
+                }
+                dstrc.left += clip->left;
+                dstrc.right -= clip->right;
+                dstrc.top += clip->top;
+                dstrc.bottom -= clip->bottom;
             }
             if (!dstrc.isEmpty())
                 CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcrc, dstrc, color, false);
@@ -477,7 +492,7 @@ public:
 			int _size = _base->getSize();
 			int _baseline = _base->getBaseline();
 			lUInt32 color = glbuf->GetTextColor();
-			if ( y + _height < clip.top || y >= clip.bottom )
+            if ( y + _height < clip.top || y >= clip.bottom || x >= clip.right)
 				return;
 
 	#if (ALLOW_KERNING==1)
