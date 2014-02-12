@@ -97,28 +97,28 @@ public:
     CRGLSupportImpl();
     virtual ~CRGLSupportImpl();
 
-    void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
+    virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear);
 
     virtual int getMaxTextureSize();
 
-    lUInt32 genTexture();
-    bool isTexture(lUInt32 textureId);
-    void deleteTexture(lUInt32 & textureId);
+    virtual lUInt32 genTexture();
+    virtual bool isTexture(lUInt32 textureId);
+    virtual void deleteTexture(lUInt32 & textureId);
     /// set texture image in RGBA format, returns false if failed
-    bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
+    virtual bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
     /// sets texture image as ALPHA only, returns false if failed
-    bool setTextureImageAlpha(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
+    virtual bool setTextureImageAlpha(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
     /// returns texture ID for buffer, 0 if failed
-    bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy);
+    virtual bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy);
 
-    void deleteFramebuffer(lUInt32 &framebufferId);
+    virtual void deleteFramebuffer(lUInt32 &framebufferId);
 
-    bool bindFramebuffer(lUInt32 framebufferId);
-    void setOrthoProjection(int dx, int dy);
-    void setRotation(int x, int y, int rotationAngle);
-    void flush();
+    virtual bool bindFramebuffer(lUInt32 framebufferId);
+    virtual void setOrthoProjection(int dx, int dy);
+    virtual void setRotation(int x, int y, int rotationAngle);
+    virtual void flush();
 
     static CRGLSupport * instance();
 };

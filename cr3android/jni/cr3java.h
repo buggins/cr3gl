@@ -389,6 +389,16 @@ public:
 	void set(int v) { objacc->SetIntField(objacc.getObject(), fieldid, v); } 
 };
 
+class CRBoolField : public CRFieldAccessor {
+public:
+	CRBoolField( CRObjectAccessor & acc, const char * fieldName )
+	: CRFieldAccessor( acc, fieldName, "Z" )
+	{
+	}
+	bool get() { return objacc->GetBooleanField(objacc.getObject(), fieldid); }
+	void set(bool v) { objacc->SetBooleanField(objacc.getObject(), fieldid, v); }
+};
+
 class CRLongField : public CRFieldAccessor {
 public:
 	CRLongField( CRObjectAccessor & acc, const char * fieldName )

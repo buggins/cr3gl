@@ -443,18 +443,20 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
 }
 
 void CRUIMainWidget::createBrowserSettings() {
-    CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+    if (!crconfig.einkMode) {
+        CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+        _browserSettings.addChild(themes);
+    }
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
-    _browserSettings.addChild(themes);
     _browserSettings.addChild(uilangs);
     _browserSettings.addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
 }
@@ -473,13 +475,15 @@ void CRUIMainWidget::createReaderSettings() {
     fontsAndColors->addChild(fontRendering);
 
     //fontsAndColors->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_ANTIALIASING, NULL, PROP_FONT_ANTIALIASING, STR_SETTINGS_FONT_ANTIALIASING_VALUE_ON, STR_SETTINGS_FONT_ANTIALIASING_VALUE_OFF));
-    fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_FONT_COLOR, NULL, PROP_FONT_COLOR));
-    fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_BACKGROUND_COLOR, NULL, PROP_BACKGROUND_COLOR));
-    CRUIBackgroundTextureSetting * textures = new CRUIBackgroundTextureSetting(STR_SETTINGS_BACKGROUND_TEXTURE, NULL, PROP_BACKGROUND_IMAGE);
-    for (int i = 0; i < resourceResolver->backgroundCount(); i++) {
-        textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
+    if (!crconfig.einkMode) {
+        fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_FONT_COLOR, NULL, PROP_FONT_COLOR));
+        fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_BACKGROUND_COLOR, NULL, PROP_BACKGROUND_COLOR));
+        CRUIBackgroundTextureSetting * textures = new CRUIBackgroundTextureSetting(STR_SETTINGS_BACKGROUND_TEXTURE, NULL, PROP_BACKGROUND_IMAGE);
+        for (int i = 0; i < resourceResolver->backgroundCount(); i++) {
+            textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
+        }
+        fontsAndColors->addChild(textures);
     }
-    fontsAndColors->addChild(textures);
 
     _readerSettings.addChild(fontsAndColors);
 
@@ -492,13 +496,16 @@ void CRUIMainWidget::createReaderSettings() {
     }
     interfaceSettings->addChild(uilangs);
 
-    CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
-    themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
-    //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
-    interfaceSettings->addChild(themes);
+    if (!crconfig.einkMode) {
+        CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_DARK, STR_SETTINGS_THEME_VALUE_DARK));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
+        themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
+        //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
+        interfaceSettings->addChild(themes);
+    }
+
     _readerSettings.addChild(interfaceSettings);
 
     CRUISettingsList * controls = new CRUISettingsList(STR_SETTINGS_CONTROLS, STR_SETTINGS_CONTROLS_DESCRIPTION, SETTINGS_PATH_CONTROLS);
@@ -512,17 +519,21 @@ void CRUIMainWidget::createReaderSettings() {
     pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
     pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));
     CRUISettingsOptionList * viewmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_MODE, STR_SETTINGS_VIEW_MODE_DESCRIPTION, PROP_PAGE_VIEW_MODE);
-    viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_SCROLL, STR_SETTINGS_VIEW_MODE_VALUE_SCROLL));
+    if (!crconfig.einkMode) {
+        viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_SCROLL, STR_SETTINGS_VIEW_MODE_VALUE_SCROLL));
+    }
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_1PAGE, STR_SETTINGS_VIEW_MODE_VALUE_1PAGE));
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_2PAGES, STR_SETTINGS_VIEW_MODE_VALUE_2PAGES));
     pageLayout->addChild(viewmode);
-    CRUISettingsOptionList * animationmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_PAGE_ANIMATION, STR_SETTINGS_VIEW_PAGE_ANIMATION_DESCRIPTION, PROP_PAGE_VIEW_ANIMATION);
-    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_NONE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_NONE));
-    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE1));
-    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE2, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE2));
-    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_FADE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_FADE));
-    animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_3D, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_3D));
-    pageLayout->addChild(animationmode);
+    if (!crconfig.einkMode) {
+        CRUISettingsOptionList * animationmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_PAGE_ANIMATION, STR_SETTINGS_VIEW_PAGE_ANIMATION_DESCRIPTION, PROP_PAGE_VIEW_ANIMATION);
+        animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_NONE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_NONE));
+        animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE1, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE1));
+        animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_SLIDE2, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_SLIDE2));
+        animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_FADE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_FADE));
+        animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_3D, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_3D));
+        pageLayout->addChild(animationmode);
+    }
     _readerSettings.addChild(pageLayout);
 
     CRUISettingsList * formattingOptions = new CRUISettingsList(STR_SETTINGS_TEXT_FORMATTING, STR_SETTINGS_TEXT_FORMATTING_DESCRIPTION, SETTINGS_PATH_READER_TEXTFORMATTING);
@@ -548,7 +559,7 @@ void CRUIMainWidget::showVirtualKeyboard(int mode, lString16 text, bool multilin
         if (_platform->isVirtualKeyboardShown())
             return;
         _platform->showVirtualKeyboard(mode, text, multiline);
-    }else {
+    } else {
         _keyboard = new CRUIVirtualKeyboard();
         requestLayout();
     }
@@ -601,9 +612,15 @@ CRUIMainWidget::CRUIMainWidget()
     int oldPropCount = _currentSettings->getCount();
     _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_HYPHENATION_DICT, "en");
-    _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
-    _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
-    _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);
+    if (!crconfig.einkMode) {
+        _currentSettings->setStringDef(PROP_APP_THEME, PROP_APP_THEME_VALUE_LIGHT);
+        _currentSettings->setStringDef(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_LIGHT);
+        _currentSettings->setStringDef(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_DARK);
+    } else {
+        _currentSettings->setString(PROP_APP_THEME, PROP_APP_THEME_VALUE_WHITE);
+        _currentSettings->setString(PROP_APP_THEME_DAY, PROP_APP_THEME_VALUE_WHITE);
+        _currentSettings->setString(PROP_APP_THEME_NIGHT, PROP_APP_THEME_VALUE_WHITE);
+    }
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "1", "LINK_BACK");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "2", "TOGGLE_NIGHT_MODE");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "3", "TOC");
@@ -621,19 +638,37 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "9", "PAGE_DOWN");
 
     _currentSettings->setStringDef(PROP_PAGE_VIEW_MODE, PROP_PAGE_VIEW_MODE_VALUE_2PAGES);
-    _currentSettings->setStringDef(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_3D);
+    if (!crconfig.einkMode) {
+        _currentSettings->setStringDef(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_3D);
+    } else {
+        _currentSettings->setString(PROP_PAGE_VIEW_ANIMATION, PROP_PAGE_VIEW_ANIMATION_VALUE_NONE);
+    }
 
     _currentSettings->setStringDef(PROP_FONT_FACE, crconfig.uiFontFace.c_str());
     _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
-    _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
-    _currentSettings->setColorDef(PROP_FONT_COLOR_DAY, 0x000000);
-    _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0xE6D577);
-    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR, 0xFFFFFF);
-    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
-    _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_NIGHT, 0x000000);
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED, "1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
+    if (!crconfig.einkMode) {
+        _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
+        _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
+        _currentSettings->setColorDef(PROP_FONT_COLOR_DAY, 0x000000);
+        _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0xE6D577);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_NIGHT, 0x000000);
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED, "1");
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "1");
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
+    } else {
+        _currentSettings->setString(PROP_NIGHT_MODE, "0");
+        _currentSettings->setColor(PROP_FONT_COLOR, 0x000000);
+        _currentSettings->setColor(PROP_FONT_COLOR_DAY, 0x000000);
+        _currentSettings->setColor(PROP_FONT_COLOR_NIGHT, 0x000000);
+        _currentSettings->setColor(PROP_BACKGROUND_COLOR, 0xFFFFFF);
+        _currentSettings->setColor(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
+        _currentSettings->setColor(PROP_BACKGROUND_COLOR_NIGHT, 0xFFFFFF);
+        _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED, "0");
+        _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "0");
+        _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "0");
+    }
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_DAY, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_NIGHT, 0x454543);
@@ -641,9 +676,11 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_DAY, COLOR_TRANSFORM_CONTRAST_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST_NIGHT, COLOR_TRANSFORM_CONTRAST_NONE);
 
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "@sand1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@sand1");
-    _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@sand1_dark");
+    if (!crconfig.einkMode) {
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE, "@sand1");
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_DAY, "@sand1");
+        _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_NIGHT, "@sand1_dark");
+    }
     _currentSettings->setStringDef(PROP_FONT_ANTIALIASING, "1");
     _currentSettings->setStringDef(PROP_FONT_HINTING, "0");
     _currentSettings->setStringDef(PROP_FONT_KERNING_ENABLED, "1");
@@ -654,7 +691,11 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_FONT_GAMMA_INDEX_NIGHT, "15");
     _currentSettings->setIntDef(PROP_INTERLINE_SPACE, 120);
     _currentSettings->setIntDef(PROP_PAGE_MARGINS, 500);
-    _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
+    if (!crconfig.einkMode) {
+        _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
+    } else {
+        _currentSettings->setString(PROP_NIGHT_MODE, "0");
+    }
     _currentSettings->setStringDef(PROP_APP_FULLSCREEN, "0");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
@@ -888,6 +929,14 @@ void CRUIMainWidget::startAnimation(int newpos, int duration, const CRUIMotionEv
     else
         direction = +1;
     CRLog::trace("starting animation %d -> %d", oldpos, newpos);
+
+    if (crconfig.einkMode) {
+        _history.setPos(newpos);
+        afterNavigation(_history[oldpos], _history[newpos]);
+        requestLayout();
+        update(true);
+        return;
+    }
 
     if (event) {
         // manual

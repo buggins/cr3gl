@@ -13,7 +13,7 @@ CRFLAGS = -DLINUX=1 -D_LINUX=1 -DFOR_ANDROID=1 -DCR3_PATCH -DFT2_BUILD_LIBRARY=1
      -DMAX_IMAGE_SCALE_MUL=2 \
      -DCR_EMULATE_GETTEXT=1 \
      -DGL_GLEXT_PROTOTYPES=1 \
-     -DDEBUG
+     -DNDEBUG -D_NDEBUG
 
 CR3_ROOT = $(LOCAL_PATH)/cr3
 
@@ -225,10 +225,10 @@ ANTIWORD_SRC_FILES := \
     cr3/thirdparty/antiword/xmalloc.c
 
 
-SQLITE_FILES += \
+SQLITE_FILES := \
     cr3/thirdparty/sqlite/sqlite3.c
 
-NEWUI_FILES += \
+NEWUI_FILES := \
     cr3/cr3db/src/basedb.cpp \
     cr3/cr3db/src/cr3db.cpp \
     cr3/cr3db/src/fileinfo.cpp \

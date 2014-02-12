@@ -259,6 +259,7 @@ public:
     	_eventManager.setRootWidget(_widget);
     	_widget->setScreenUpdater(this);
     	_widget->setPlatform(this);
+    	setFullscreen(_widget->getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false));
     	if (!_fileToOpen.empty())
         	_widget->openBookFromFile(_fileToOpen);
     	return true;
@@ -991,6 +992,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.coverDirMaxSize = CRIntField(cfg,"coverDirMaxSize").get();
     crconfig.coverRenderCacheMaxItems = CRIntField(cfg,"coverRenderCacheMaxItems").get();
     crconfig.coverRenderCacheMaxBytes = CRIntField(cfg,"coverRenderCacheMaxBytes").get();
+    crconfig.einkMode = CRBoolField(cfg,"einkMode").get();
     lString16Collection fonts;
     CRStringArrayField fontFilesField(cfg, "fontFiles");
     for (int i = 0; i < fontFilesField.length(); i++) {

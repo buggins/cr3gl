@@ -330,8 +330,8 @@ public:
                 handled = _body->onTouchEvent(event);
             }
             if (event->getAction() == ACTION_UP && !handled) {
-                _control->animateClose();
                 invalidate();
+                _control->animateClose();
                 return true;
             }
         }
@@ -361,6 +361,10 @@ void CRUIWindowWidget::draw(LVDrawBuf * buf) {
 void PopupControl::animateClose() {
     if (!popup || closing)
         return;
+    if (crconfig.einkMode) {
+        close();
+        return;
+    }
     startTs = GetCurrentTimeMillis();
     endTs = startTs + POPUP_ANIMATION_DURATION;
     progress = 0;
@@ -480,6 +484,8 @@ void PopupControl::getRect(lvRect & rc) {
 
 void CRUIWindowWidget::preparePopup(CRUIWidget * body, int location, const lvRect & margins, int backgroundAlpha, bool showHandle, bool wantsTouchEventsOutside) {
     //CRLog::trace("preparing popup: it's %s", _popupControl.popup ? "already exist" : "not yet created");
+    if (crconfig.einkMode)
+        backgroundAlpha = 0;
     int handleLocation = 0;
     if (location == ALIGN_TOP)
         handleLocation = ALIGN_BOTTOM;
@@ -502,9 +508,9 @@ void CRUIWindowWidget::preparePopup(CRUIWidget * body, int location, const lvRec
     _popupControl.layout(_pos);
     _popupControl.startTs = GetCurrentTimeMillis();
     _popupControl.endTs = _popupControl.startTs + POPUP_ANIMATION_DURATION;
-    _popupControl.progress = 0;
+    _popupControl.progress = crconfig.einkMode ? 10000 : 0;
     _popupControl.closing = false;
-    _popupControl.outerColor = COLOR_MENU_POPUP_FADE;
+    _popupControl.outerColor = crconfig.einkMode ? 0xFFFFFFFF : COLOR_MENU_POPUP_FADE;
     //CRLog::trace("prepared popup");
     invalidate();
 }

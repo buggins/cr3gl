@@ -33,6 +33,7 @@ public class CRConfig {
     public int coverDirMaxSize;
     public int coverRenderCacheMaxItems;
     public int coverRenderCacheMaxBytes;
+    public boolean einkMode;
 
     /// font directories to register all files from
     public String[] fontDirs;

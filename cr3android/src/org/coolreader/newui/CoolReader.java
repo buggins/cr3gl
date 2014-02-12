@@ -86,6 +86,7 @@ public class CoolReader extends Activity {
 		cfg.screenDPI = (int)(metrics.density * 160);
 		cfg.screenX = metrics.widthPixels;
 		cfg.screenY = metrics.heightPixels;
+		cfg.einkMode = DeviceInfo.EINK_SCREEN;
 		
 		initMountRoots();
 		
@@ -637,7 +638,13 @@ public class CoolReader extends Activity {
 		if (list.containsKey(path))
 			return false;
 		for (String key : list.keySet()) {
-			if (path.equals(key)) { // path.startsWith(key + "/")
+			String link = CRView.isLink(key);
+			if (link != null&& link.length() > 0)
+				key = link;
+			String p = CRView.isLink(path);
+			if (p == null || p.length() == 0)
+				p = path;
+			if (p.equals(key)) { // path.startsWith(key + "/")
 				log.w("Skipping duplicate path " + path + " == " + key);
 				return false; // duplicate subpath
 			}

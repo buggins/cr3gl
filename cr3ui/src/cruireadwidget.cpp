@@ -111,6 +111,11 @@ void CRUIDocView::drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offs
 //        CRUIImageRef backgroundScrollLeft = resourceResolver->getIcon("scroll-edge-left", true);
 //        CRUIImageRef backgroundScrollRight = resourceResolver->getIcon("scroll-edge-right", true);
     lvRect rc(0, 0, drawbuf.GetWidth(), drawbuf.GetHeight());
+    if (crconfig.einkMode) {
+        drawbuf.FillRect(rc, 0xFFFFFF);
+        return;
+    }
+
     LVDrawStateSaver s(drawbuf);
     drawbuf.setAlpha(alpha);
     background->draw(&drawbuf, rc, offsetX, offsetY);
@@ -551,7 +556,10 @@ static bool isDocViewProp(const lString8 & key) {
             || key == PROP_FONT_COLOR
             || key == PROP_FONT_WEIGHT_EMBOLDEN
             || key == PROP_FONT_SIZE
+            || key == PROP_STATUS_FONT_SIZE
             || key == PROP_FONT_FACE
+            || key == PROP_STATUS_FONT_FACE
+            || key == PROP_STATUS_FONT_COLOR
             || key == PROP_BACKGROUND_COLOR
             || key == PROP_INTERLINE_SPACE
             || key == PROP_HIGHLIGHT_COMMENT_BOOKMARKS
@@ -1262,7 +1270,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
 //            invalidate();
 //            return true;
         case CR_KEY_MENU:
-        case CR_KEY_RETURN:
+        //case CR_KEY_RETURN:
         case CR_KEY_F9:
             return true;
         default:
@@ -1936,6 +1944,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         		int ddx1 = myAbs(event->getX(0) - event->getX(1));
         		int ddy1 = myAbs(event->getY(0) - event->getY(1));
         		int op0, op1;
+        		op0 = -1;
+        		op1 = -2;
         		if (ddx0 > ddy0 / 2)
         			op0 = PINCH_OP_HORIZONTAL;
         		else if (ddy0 > ddx0 / 2)
@@ -2068,10 +2078,12 @@ void CRUIReadWidget::showReaderMenu() {
     if (_docview->canGoForward())
         actions.add(ACTION_LINK_FORWARD);
     actions.add(ACTION_SETTINGS);
-    if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
-        actions.add(ACTION_DAY_MODE);
-    else
-        actions.add(ACTION_NIGHT_MODE);
+    if (!crconfig.einkMode) {
+        if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
+            actions.add(ACTION_DAY_MODE);
+        else
+            actions.add(ACTION_NIGHT_MODE);
+    }
     //actions.add(ACTION_GOTO_PERCENT);
     CRLog::trace("checking TOC");
     //if (hasTOC())
@@ -2158,7 +2170,12 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             docviewprops->setString(key.c_str(), value.c_str());
             if (key == PROP_FONT_COLOR) {
                 _docview->setTextColor(changed->getColorDef(PROP_FONT_COLOR, 0));
+                docviewprops->setString(PROP_STATUS_FONT_COLOR, value.c_str());
                 //needClearCache = true;
+            }
+            if (key == PROP_FONT_SIZE) {
+                int sz = changed->getIntDef(PROP_FONT_SIZE, 22);
+                docviewprops->setInt(PROP_STATUS_FONT_SIZE, sz * 75 / 100);
             }
         }
         if (key == PROP_BACKGROUND_COLOR
@@ -2485,14 +2502,16 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         _docview->drawPageBackground(*buf, 0, 0, 0x60); // semitransparent background above page image
     if (oldPage != pageNumber)
         _docview->goToPage(oldPage);
-    int sdx = dx / 10 / _docview->getVisiblePageCount();
-    lUInt32 cl1 = 0xE0000000;
-    lUInt32 cl2 = 0xFF000000;
-    buf->GradientRect(0, 0, sdx, dy, cl1, cl2, cl2, cl1);
-    buf->GradientRect(dx - sdx, 0, dx, dy, cl2, cl1, cl1, cl2);
-    if (_docview->getVisiblePageCount() == 2) {
-        buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
-        buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
+    if (!crconfig.einkMode) {
+        int sdx = dx / 10 / _docview->getVisiblePageCount();
+        lUInt32 cl1 = 0xE0000000;
+        lUInt32 cl2 = 0xFF000000;
+        buf->GradientRect(0, 0, sdx, dy, cl1, cl2, cl2, cl1);
+        buf->GradientRect(dx - sdx, 0, dx, dy, cl2, cl1, cl1, cl2);
+        if (_docview->getVisiblePageCount() == 2) {
+            buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
+            buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
+        }
     }
     if (_docview->getVisiblePageCount() == 2) {
         lvRect rc1 = rc;
