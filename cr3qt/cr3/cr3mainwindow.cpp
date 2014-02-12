@@ -384,13 +384,14 @@ void OpenGLWindow::setFullscreen(bool fullscreen) {
     crconfig.clearGraphicsCaches();
 //    if (m_context)
 //        delete m_context;
-    m_context = NULL;
+//    m_context = NULL;
     if (_fullscreen) {
         CRLog::trace("OpenGLWindow::setFullscreen - showing fullscreen");
-        showFullScreen();
+        setWindowState(Qt::WindowFullScreen); // windowState() ^ (Qt::WindowStats)Qt::WindowFullScreen );
     } else {
         CRLog::trace("OpenGLWindow::setFullscreen - showing windowed");
-        show();
+        setWindowState(Qt::WindowNoState);
+        //setWindowState( windowState() ^ (Qt::WindowState)Qt::WindowFullScreen );
     }
 }
 

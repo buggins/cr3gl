@@ -303,7 +303,9 @@ void CRUIConfig::clearGraphicsCaches() {
 	resourceResolver->clearImageCache();
 	LVGLClearImageCache();
 	fontMan->clearGlyphCache();
-    //CRGLSupport::close();
+//#ifdef _WIN32
+//    CRGLSupport::close();
+//#endif
 }
 
 void CRUIConfig::startBackgroundThreads() {
