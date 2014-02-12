@@ -39,6 +39,9 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
     _downloadManager = new CRUIHttpTaskManagerQt(_eventManager);
+    CRLog::info("Pausing coverpage manager on start");
+    CRPauseCoverpageManager();
+    m_coverpageManagerPaused = true;
 }
 //! [1]
 
@@ -312,7 +315,7 @@ void OpenGLWindow::renderNow()
     if (m_animating)
         renderLater();
     if (m_coverpageManagerPaused) {
-        CRLog::trace("coverpage manager is paused. Resuming...");
+        CRLog::info("Resuming coverpage manager after draw");
         CRResumeCoverpageManager();
         m_coverpageManagerPaused = false;
     }
