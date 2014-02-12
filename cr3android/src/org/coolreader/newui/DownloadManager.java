@@ -10,11 +10,15 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import android.util.Base64;
 
@@ -68,7 +72,22 @@ public class DownloadManager {
 	            
 	            if (connection instanceof HttpsURLConnection) {
 	            	HttpsURLConnection https = (HttpsURLConnection)connection;
-	            	// TODO: implement https stuff
+
+	                // Create a trust manager that does not validate certificate chains
+	                TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+	                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+	                        return null;
+	                    }
+	                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+	                    }
+	                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+	                    }
+	                } };
+	                // Install the all-trusting trust manager
+	                final SSLContext sc = SSLContext.getInstance("SSL");
+	                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+	                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+	                
 	            	https.setHostnameVerifier(new HostnameVerifier() {
 						@Override
 						public boolean verify(String arg0, SSLSession arg1) {
