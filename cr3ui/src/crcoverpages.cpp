@@ -841,6 +841,11 @@ void CRCoverPageManager::run() {
             CRGuard guard(_monitor);
             if (_stopped)
                 break;
+            if (_paused) {
+                CRLog::trace("CRCoverPageManager::run :: paused. Waiting...");
+                _monitor->wait();
+                continue;
+            }
             //CRLog::trace("CRCoverPageManager::run :: lock acquired");
             if (_queue.length() <= 0) {
                 allTasksFinished();
@@ -1046,7 +1051,7 @@ void CRCoverPageManager::cancel(CRDirEntry * _book, int dx, int dy)
     }
 }
 
-CRCoverPageManager::CRCoverPageManager() : _stopped(false), _allTasksFinishedCallback(NULL), _taskIsRunning(false) {
+CRCoverPageManager::CRCoverPageManager() : _stopped(false), _allTasksFinishedCallback(NULL), _taskIsRunning(false), _paused(false) {
     _monitor = concurrencyProvider->createMonitor();
     _thread = concurrencyProvider->createThread(this);
 }
@@ -1066,6 +1071,41 @@ void CRCoverPageManager::start() {
     _thread->start();
 }
 
+/// pause thread
+void CRCoverPageManager::pause() {
+    {
+        CRGuard guard(_monitor);
+        CR_UNUSED(guard);
+        if (_paused)
+            return;
+        CRLog::trace("CRCoverPageManager::pause()");
+        _paused = true;
+    }
+    while (true) {
+        {
+            CRGuard guard(_monitor);
+            CR_UNUSED(guard);
+            if (!_taskIsRunning || _stopped) {
+                CRLog::trace("No active coverpage task");
+                break;
+            }
+            CRLog::trace("Waiting for current coverpage task completion");
+        }
+        concurrencyProvider->sleepMs(100);
+    }
+}
+
+/// resume thread
+void CRCoverPageManager::resume() {
+    CRGuard guard(_monitor);
+    CR_UNUSED(guard);
+    if (!_paused)
+        return;
+    CRLog::trace("CRCoverPageManager::resume()");
+    _paused = false;
+    _monitor->notify();
+}
+
 CRCoverPageManager * coverPageManager = NULL;
 
 void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles, int maxsize, int maxRenderCacheItems, int maxRenderCacheBytes) {
@@ -1074,6 +1114,18 @@ void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems, int maxfiles
     coverCache->open();
     coverImageCache = new CRCoverImageCache(maxRenderCacheItems, maxRenderCacheBytes);
     coverPageManager = new CRCoverPageManager();
+}
+
+void CRPauseCoverpageManager() {
+    if (coverPageManager) {
+        coverPageManager->pause();
+    }
+}
+
+void CRResumeCoverpageManager() {
+    if (coverPageManager) {
+        coverPageManager->resume();
+    }
 }
 
 void CRStartCoverpageManager() {

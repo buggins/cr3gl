@@ -1367,7 +1367,8 @@ lUInt8 * GLDrawBuf::GetScanLine( int y )
 void GLDrawBuf::createFramebuffer()
 {
     if (_textureBuf && _textureId == 0 && _framebufferId == 0) {
-        CRGL->createFramebuffer(_textureId, _framebufferId, _tdx, _tdy);
+        CRGLSupport * crgl = CRGL;
+        crgl->createFramebuffer(_textureId, _framebufferId, _tdx, _tdy);
     }
 }
 

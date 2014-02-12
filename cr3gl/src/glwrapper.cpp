@@ -127,10 +127,18 @@ static CRGLSupport * _crGLSupportInstance = NULL;
 CRGLSupport * CRGLSupport::instance() {
     if (_crGLSupportInstance)
         return _crGLSupportInstance;
+    CRLog::trace("Creating CRGLSupport instance");
     _crGLSupportInstance = new CRGLSupportImpl();
     return _crGLSupportInstance;
 }
 
+void CRGLSupport::close() {
+    if (_crGLSupportInstance) {
+        CRLog::trace("Deleting CRGLSupport instance");
+        delete _crGLSupportInstance;
+        _crGLSupportInstance = NULL;
+    }
+}
 
 
 
@@ -599,7 +607,7 @@ void CRGLSupportImpl::deleteTexture(lUInt32 & textureId) {
 }
 
 bool CRGLSupportImpl::setTextureImage(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
-    checkError("before setTextureImage");
+    //checkError("before setTextureImage");
     glActiveTexture(GL_TEXTURE0);
     checkError("updateTexture - glActiveTexture");
     glBindTexture(GL_TEXTURE_2D, 0);

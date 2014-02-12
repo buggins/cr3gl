@@ -890,7 +890,7 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
         _main->showSettings(lString8("@settings/browser"));
         return true;
     }
-    return false;
+    return CRUIWindowWidget::onAction(action);
 }
 bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "MENU") {

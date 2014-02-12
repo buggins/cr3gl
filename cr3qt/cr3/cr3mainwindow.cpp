@@ -19,6 +19,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
     , m_update_pending(false)
     , m_animating(false)
+    , m_coverpageManagerPaused(false)
     , m_context(0)
     , m_device(0)
 {
@@ -285,6 +286,8 @@ void OpenGLWindow::renderNow()
     if (!isExposed())
         return;
 
+    CRLog::trace("OpenGLWindow::renderNow()");
+
     bool needsInitialize = false;
 
     if (!m_context) {
@@ -308,6 +311,11 @@ void OpenGLWindow::renderNow()
 
     if (m_animating)
         renderLater();
+    if (m_coverpageManagerPaused) {
+        CRLog::trace("coverpage manager is paused. Resuming...");
+        CRResumeCoverpageManager();
+        m_coverpageManagerPaused = false;
+    }
 }
 //! [4]
 
@@ -353,6 +361,33 @@ void OpenGLWindow::copyToClipboard(lString16 text) {
     QClipboard *clipboard = QApplication::clipboard();
     QString txt(UnicodeToUtf8(text).c_str());
     clipboard->setText(txt);
+}
+
+
+bool OpenGLWindow::isFullscreen() {
+    return _fullscreen;
+}
+
+void OpenGLWindow::setFullscreen(bool fullscreen) {
+    if (_fullscreen == fullscreen)
+        return;
+    _fullscreen = fullscreen;
+    CRLog::trace("OpenGLWindow::setFullscreen(%s)", fullscreen ? "true" : "false");
+    //CRLog::trace("OpenGLWindow::setFullscreen - hiding");
+    //hide();
+    CRPauseCoverpageManager();
+    m_coverpageManagerPaused = true;
+    crconfig.clearGraphicsCaches();
+//    if (m_context)
+//        delete m_context;
+    m_context = NULL;
+    if (_fullscreen) {
+        CRLog::trace("OpenGLWindow::setFullscreen - showing fullscreen");
+        showFullScreen();
+    } else {
+        CRLog::trace("OpenGLWindow::setFullscreen - showing windowed");
+        show();
+    }
 }
 
 

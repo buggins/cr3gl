@@ -695,18 +695,18 @@ bool CRUIOpdsBookWidget::onAction(const CRUIAction * action) {
         _main->back();
         return true;
     case CMD_MENU:
-    {
-//        CRUIActionList actions;
-//        actions.add(ACTION_OPDS_CATALOG_OPEN);
-//        actions.add(ACTION_OPDS_CATALOG_REMOVE);
-//        actions.add(ACTION_OPDS_CATALOG_CANCEL_CHANGES);
-//        lvRect margins;
-//        //margins.right = MIN_ITEM_PX * 120 / 100;
-//        showMenu(actions, ALIGN_TOP, margins, false);
-        return true;
+        {
+    //        CRUIActionList actions;
+    //        actions.add(ACTION_OPDS_CATALOG_OPEN);
+    //        actions.add(ACTION_OPDS_CATALOG_REMOVE);
+    //        actions.add(ACTION_OPDS_CATALOG_CANCEL_CHANGES);
+    //        lvRect margins;
+    //        //margins.right = MIN_ITEM_PX * 120 / 100;
+    //        showMenu(actions, ALIGN_TOP, margins, false);
+            return true;
+        }
     }
-    }
-    return false;
+    return CRUIWindowWidget::onAction(action);
 }
 
 CRUIOpdsBookWidget::~CRUIOpdsBookWidget()

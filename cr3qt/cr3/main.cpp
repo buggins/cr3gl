@@ -15,8 +15,11 @@ int main(int argc, char *argv[])
         InitCREngine(exePath);
         QApplication a(argc, argv);
         OpenGLWindow w;
-        w.show();
-
+        bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
+        if (fullscreen)
+            w.showFullScreen();
+        else
+            w.show();
         res = a.exec();
     }
     crconfig.uninitEngine();

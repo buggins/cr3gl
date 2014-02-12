@@ -456,6 +456,7 @@ void CRUIMainWidget::createBrowserSettings() {
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(themes);
     _browserSettings.addChild(uilangs);
+    _browserSettings.addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
 }
 
 void CRUIMainWidget::createReaderSettings() {
@@ -483,6 +484,7 @@ void CRUIMainWidget::createReaderSettings() {
     _readerSettings.addChild(fontsAndColors);
 
     CRUISettingsList * interfaceSettings = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
+    interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
@@ -605,6 +607,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "1", "LINK_BACK");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "2", "TOGGLE_NIGHT_MODE");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "3", "TOC");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "4", "TOGGLE_FULLSCREEN");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "SETTINGS");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "7", "GOTO_PERCENT");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "1", "PAGE_UP");
@@ -652,6 +655,7 @@ CRUIMainWidget::CRUIMainWidget()
     _currentSettings->setIntDef(PROP_INTERLINE_SPACE, 120);
     _currentSettings->setIntDef(PROP_PAGE_MARGINS, 500);
     _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
+    _currentSettings->setStringDef(PROP_APP_FULLSCREEN, "0");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
@@ -831,6 +835,10 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             crconfig.setTheme(UnicodeToUtf8(newValue));
             crconfig.setupResourcesForScreenSize();
             themeChanged = true;
+        }
+        if (key == PROP_APP_FULLSCREEN) {
+            if (getPlatform())
+                getPlatform()->setFullscreen(changed->getBoolDef(PROP_APP_FULLSCREEN, false));
         }
     }
     _currentSettings->set(LVClonePropsContainer(newSettings));
@@ -1130,6 +1138,13 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     if (!action)
         return NULL;
     switch (action->id) {
+    case CMD_TOGGLE_FULLSCREEN:
+        {
+            CRPropRef props = initNewSettings();
+            props->setBool(PROP_APP_FULLSCREEN, !props->getBoolDef(PROP_APP_FULLSCREEN, false));
+            applySettings();
+        }
+        return true;
     case CMD_EXIT:
         if (getPlatform() != NULL)
             getPlatform()->exitApp();

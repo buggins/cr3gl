@@ -406,6 +406,7 @@ public:
         \return glyph pointer if glyph was found, NULL otherwise
     */
     virtual LVFontGlyphCacheItem * getGlyph(lUInt16 ch, lChar16 def_char=0) {
+        FONT_GUARD
     	return _base->getGlyph(ch, def_char);
     }
     /// returns font baseline offset

@@ -12,7 +12,7 @@ protected:
     virtual void drawSolidFillRect(float vertices[], float colors[]) = 0;
 public:
     CRGLSupport() {}
-    ~CRGLSupport() {}
+    virtual ~CRGLSupport() {}
     virtual int getMaxTextureSize() = 0;
     virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) = 0;
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear) = 0;
@@ -36,6 +36,7 @@ public:
     virtual void flush() = 0;
 
     static CRGLSupport * instance();
+    static void close();
 };
 
 

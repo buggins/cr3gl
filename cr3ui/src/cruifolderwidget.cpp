@@ -479,7 +479,7 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         _main->showSettings(lString8("@settings/browser"));
         return true;
     }
-    return false;
+    return CRUIWindowWidget::onAction(action);
 }
 
 bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {

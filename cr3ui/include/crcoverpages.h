@@ -53,6 +53,7 @@ class CRCoverPageManager : public CRRunnable {
     lvRect _bookImageClientRect; // where cover image should be placed inside book image
     lvRect _bookImageNeutralRect; // rect where color is neutral - and should not be corrected
     BookImageCache _bookImageCache;
+    volatile bool _paused;
 
 
     void allTasksFinished();
@@ -65,6 +66,10 @@ public:
     void stop();
     /// start thread
     void start();
+    /// pause thread
+    void pause();
+    /// resume thread
+    void resume();
     /// thread function, don't call
     virtual void run();
 
@@ -99,6 +104,9 @@ public:
 void CRSetupCoverpageManager(lString16 coverCacheDir, int maxitems = 1000, int maxfiles = 200, int maxsize = 16*1024*1024, int maxRenderCacheItems = 1000, int maxRenderCacheBytes = 16 * 1024 * 1024);
 void CRStartCoverpageManager();
 void CRStopCoverpageManager();
+void CRPauseCoverpageManager();
+void CRResumeCoverpageManager();
+
 
 extern CRCoverPageManager * coverPageManager;
 

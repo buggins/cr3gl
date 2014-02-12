@@ -109,7 +109,9 @@ protected:
     CRUIEventManager * _eventManager;
     CRUIEventAdapter * _eventAdapter;
     CRUIHttpTaskManagerQt * _downloadManager;
+    bool _fullscreen;
 public:
+    CRPropRef getSettings() { return _widget->getSettings(); }
     explicit OpenGLWindow(QWindow *parent = 0);
     ~OpenGLWindow();
 
@@ -149,6 +151,12 @@ public:
     /// return true if device has hardware keyboard connected
     virtual bool hasHardwareKeyboard() { return true; }
 
+    // fullscreen methods
+    virtual bool supportsFullscreen() { return true; }
+    virtual bool isFullscreen();
+    virtual void setFullscreen(bool fullscreen);
+
+
 public slots:
     void renderLater();
     void renderNow();
@@ -161,6 +169,7 @@ protected:
 private:
     bool m_update_pending;
     bool m_animating;
+    bool m_coverpageManagerPaused;
 
     QOpenGLContext *m_context;
     QOpenGLPaintDevice *m_device;

@@ -27,6 +27,7 @@
 #define PROP_NIGHT_MODE "crengine.night.mode"
 #define PROP_APP_INTERFACE_LANGUAGE "app.ui.lang"
 #define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
+#define PROP_APP_FULLSCREEN "app.fullscreen"
 
 #define PROP_PAGE_VIEW_MODE_VALUE_SCROLL "0"
 #define PROP_PAGE_VIEW_MODE_VALUE_1PAGE "1"

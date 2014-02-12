@@ -163,7 +163,7 @@ bool CRUIOpdsPropsWidget::onAction(const CRUIAction * action) {
         _main->back();
         return true;
     }
-    return false;
+    return CRUIWindowWidget::onAction(action);
 }
 
 CRUIOpdsPropsWidget::~CRUIOpdsPropsWidget()

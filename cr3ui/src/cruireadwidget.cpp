@@ -2080,6 +2080,8 @@ void CRUIReadWidget::showReaderMenu() {
     actions.add(ACTION_BOOKMARKS);
     actions.add(ACTION_FIND_TEXT);
     actions.add(ACTION_HELP);
+    if (_main->getPlatform()->supportsFullscreen())
+        actions.add(ACTION_TOGGLE_FULLSCREEN);
     actions.add(ACTION_EXIT);
     lvRect margins;
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
@@ -2137,7 +2139,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         _main->showSettings(lString8("@settings/reader"));
         return true;
     default:
-        return _main->onAction(action);
+        return CRUIWindowWidget::onAction(action);
     }
     return false;
 }

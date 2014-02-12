@@ -204,6 +204,10 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
     	return true;
     }
     if (event->getType() == KEY_ACTION_PRESS) {
+        if (key == CR_KEY_RETURN && (event->modifiers() & CR_KEY_MODIFIER_ALT) != 0) {
+            onAction(ACTION_TOGGLE_FULLSCREEN);
+            return true;
+        }
         if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
             return true;
         }
@@ -215,6 +219,8 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
             return true;
         }
     } else if (event->getType() == KEY_ACTION_RELEASE) {
+        if (key == CR_KEY_RETURN && (event->modifiers() & CR_KEY_MODIFIER_ALT) != 0)
+            return true;
         if (key == CR_KEY_ESC || key == CR_KEY_BACK) {
         	if (_popupControl.popup) {
         		_popupControl.close();

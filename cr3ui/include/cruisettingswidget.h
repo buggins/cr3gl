@@ -400,7 +400,7 @@ class CRUISettingsActionListItemWidget;
 class CRUISettingsTapZoneListEditor : public CRUISettingsListWidget {
     CRUISettingsActionListItemWidget * _actionItem;
 public:
-    CRUISettingsTapZoneListEditor (CRPropRef props, CRUISettingsItem * setting);
+    CRUISettingsTapZoneListEditor(CRPropRef props, CRUISettingsItem * setting);
     virtual CRUIWidget * getItemWidget(CRUIListWidget * list, int index);
     virtual ~CRUISettingsTapZoneListEditor();
 };

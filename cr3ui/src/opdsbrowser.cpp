@@ -1000,7 +1000,7 @@ bool CRUIOpdsBrowserWidget::onAction(const CRUIAction * action) {
         _main->showSettings(lString8("@settings/browser"));
         return true;
     }
-    return false;
+    return CRUIWindowWidget::onAction(action);
 }
 
 class CRUISearchOpdsPopup : public CRUIHorizontalLayout, public CRUIOnClickListener, public CRUIOnReturnPressListener {
