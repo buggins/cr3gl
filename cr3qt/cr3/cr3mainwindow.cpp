@@ -42,6 +42,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     CRLog::info("Pausing coverpage manager on start");
     CRPauseCoverpageManager();
     m_coverpageManagerPaused = true;
+    _fullscreen = false;
 }
 //! [1]
 

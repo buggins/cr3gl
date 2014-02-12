@@ -303,7 +303,7 @@ void CRUIConfig::clearGraphicsCaches() {
 	resourceResolver->clearImageCache();
 	LVGLClearImageCache();
 	fontMan->clearGlyphCache();
-    CRGLSupport::close();
+    //CRGLSupport::close();
 }
 
 void CRUIConfig::startBackgroundThreads() {
