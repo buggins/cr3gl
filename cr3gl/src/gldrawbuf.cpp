@@ -63,7 +63,7 @@ TiledGLDrawBuf::TiledGLDrawBuf(int width, int height, int bpp, int tilex, int ti
     , _ytiles((height + tiley - 1) / tiley)
     , _bpp(bpp)
     , _tiles(NULL)
-    , _hidePartialGlyphs(true)
+    , _hidePartialGlyphs(false)
     , _textColor(0x000000)
     , _backgroundColor(0xFFFFFF)
     , _alpha(0)
@@ -525,7 +525,10 @@ class GLImageCache : public CacheObjectListener {
     LVHashTable<CacheableObject*,GLImageCacheItem*> _map;
     LVPtrVector<GLImageCachePage> _pages;
     GLImageCachePage * _activePage;
+    int tdx;
+    int tdy;
     void removePage(GLImageCachePage * page);
+    void updateTextureSize();
 public:
     GLImageCache();
     virtual ~GLImageCache();
@@ -767,20 +770,21 @@ public:
 //=======================================================================
 // GLImageCache
 
-#define GL_IMAGE_CACHE_PAGE_SIZE 1024
+//#define GL_IMAGE_CACHE_PAGE_SIZE 1024
 GLImageCacheItem * GLImageCache::get(CacheableObject * obj) {
 	GLImageCacheItem * res = _map.get(obj);
 	return res;
 }
 
 GLImageCacheItem * GLImageCache::set(LVImageSourceRef img) {
+    updateTextureSize();
 	GLImageCacheItem * res = NULL;
-	if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() <= GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+    if (img->GetWidth() <= tdx / 3 && img->GetHeight() <= tdy / 3) {
 		// trying to reuse common page for small images
 		if (_activePage)
 			res = _activePage->addItem(img);
 		if (!res) {
-			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+            _activePage = new GLImageCachePage(this, tdx, tdy);
 			_pages.add(_activePage);
 			res = _activePage->addItem(img);
 		}
@@ -796,16 +800,17 @@ GLImageCacheItem * GLImageCache::set(LVImageSourceRef img) {
 }
 
 GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
+    updateTextureSize();
 	GLImageCacheItem * res = NULL;
-	if (img->GetWidth() <= GL_IMAGE_CACHE_PAGE_SIZE / 3 && img->GetHeight() < GL_IMAGE_CACHE_PAGE_SIZE / 3) {
+    if (img->GetWidth() <= tdx / 3 && img->GetHeight() < tdy / 3) {
 		// trying to reuse common page for small images
 		if (_activePage == NULL) {
-			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+            _activePage = new GLImageCachePage(this, tdx, tdy);
 			_pages.add(_activePage);
 		}
 		res = _activePage->addItem(img);
 		if (!res) {
-			_activePage = new GLImageCachePage(this, GL_IMAGE_CACHE_PAGE_SIZE, GL_IMAGE_CACHE_PAGE_SIZE);
+            _activePage = new GLImageCachePage(this, tdx, tdy);
 			_pages.add(_activePage);
 			res = _activePage->addItem(img);
 		}
@@ -828,10 +833,20 @@ void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy,
 	}
 }
 
+void GLImageCache::updateTextureSize() {
+    if (!tdx) {
+        tdx = tdy = CRGL->getMaxTextureSize();
+        if (tdx > 1024)
+            tdx = tdy = 1024;
+    }
+}
+
 GLImageCache::GLImageCache() : _map(1024), _activePage(NULL)
 {
+    tdx = tdy = 0;
 	glImageCache = this;
 }
+
 GLImageCache::~GLImageCache() {
 	clear();
 	glImageCache = NULL;

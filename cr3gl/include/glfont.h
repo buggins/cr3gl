@@ -26,11 +26,15 @@ struct GLGlyphCacheItem {
 	lInt8   dy;          ///< height of glyph
 	lUInt8  width;       ///< full width of glyph (advance)
 	// texture coordinates
-	float x0;
-	float y0;
-	float x1;
-	float y1;
-	GLFont * font;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+//    float x0;
+//	float y0;
+//	float x1;
+//	float y1;
+    GLFont * font;
 	GLGlyphCachePage * page;
 	void draw(int x, int y, lUInt32 color, lvRect * clip);
 };

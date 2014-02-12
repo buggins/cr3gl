@@ -38,7 +38,7 @@ class GLFont;
 
 static GLGlyphCache * _glGlyphCache = NULL;
 
-#define GL_GLYPH_CACHE_PAGE_SIZE 1024
+//#define GL_GLYPH_CACHE_PAGE_SIZE 1024
 class GLGlyphCachePage
 {
 	GLGlyphCache * cache;
@@ -48,12 +48,18 @@ class GLGlyphCachePage
 	int x;
 	bool closed;
 	bool needUpdateTexture;
+    int tdx;
+    int tdy;
     lUInt32 textureId;
 public:
 	GLGlyphCache * getCache() { return cache; }
 	GLGlyphCachePage(GLGlyphCache * pcache) : cache(pcache), drawbuf(NULL), closed(false), needUpdateTexture(false), textureId(0) {
 		// init free lines
 		currentLine = nextLine = x = 0;
+        tdx = tdy = CRGL->getMaxTextureSize();
+        if (tdx > 1024) {
+            tdx = tdy = 1024;
+        }
     }
 	virtual ~GLGlyphCachePage() {
 		if (drawbuf)
@@ -88,10 +94,10 @@ public:
 			updateTexture();
 		if (textureId != 0) {
 			//CRLog::trace("drawing character at %d,%d", x, y);
-            lvRect srcrc((int)(item->x0 * GL_GLYPH_CACHE_PAGE_SIZE),
-                         (int)(item->y0 * GL_GLYPH_CACHE_PAGE_SIZE),
-                         (int)(item->x1 * GL_GLYPH_CACHE_PAGE_SIZE),
-                         (int)(item->y1 * GL_GLYPH_CACHE_PAGE_SIZE));
+            lvRect srcrc((int)(item->x0),
+                         (int)(item->y0),
+                         (int)(item->x1),
+                         (int)(item->y1));
             lvRect dstrc(x,
                          y,
                          (int)(x + item->dx),
@@ -101,29 +107,29 @@ public:
                 translateRect(srcrc, dstrc, *clip);
             }
             if (!dstrc.isEmpty())
-                CRGL->drawColorAndTextureRect(textureId, GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, srcrc, dstrc, color, false);
+                CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcrc, dstrc, color, false);
         }
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {
 		if (closed)
 			return NULL;
 		// next line if necessary
-		if (x + glyph->bmp_width > GL_GLYPH_CACHE_PAGE_SIZE) {
+        if (x + glyph->bmp_width > tdx) {
 			// move to next line
 			currentLine = nextLine;
 			x = 0;
 		}
 		// check if no room left for glyph height
-		if (currentLine + glyph->bmp_height > GL_GLYPH_CACHE_PAGE_SIZE) {
+        if (currentLine + glyph->bmp_height > tdy) {
 			closed = true;
 			updateTexture();
 			return NULL;
 		}
 		GLGlyphCacheItem * cacheItem = new GLGlyphCacheItem();
-		cacheItem->x0 = x / (float)GL_GLYPH_CACHE_PAGE_SIZE;
-		cacheItem->y0 = currentLine / (float)GL_GLYPH_CACHE_PAGE_SIZE;
-		cacheItem->x1 = (x + glyph->bmp_width) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
-		cacheItem->y1 = (currentLine + glyph->bmp_height) / (float)GL_GLYPH_CACHE_PAGE_SIZE;
+        cacheItem->x0 = x;
+        cacheItem->y0 = currentLine;
+        cacheItem->x1 = (x + glyph->bmp_width);
+        cacheItem->y1 = (currentLine + glyph->bmp_height);
 		cacheItem->dx = glyph->bmp_width;
 		cacheItem->dy = glyph->bmp_height;
 		cacheItem->originX = glyph->origin_x;
@@ -137,7 +143,7 @@ public:
 			if (nextLine < currentLine + glyph->bmp_height)
 				nextLine = currentLine + glyph->bmp_height;
 			if (!drawbuf) {
-				drawbuf = new LVGrayDrawBuf(GL_GLYPH_CACHE_PAGE_SIZE, GL_GLYPH_CACHE_PAGE_SIZE, 8, NULL);
+                drawbuf = new LVGrayDrawBuf(tdx, tdy, 8, NULL);
 				drawbuf->SetBackgroundColor(0x000000);
 				drawbuf->SetTextColor(0xFFFFFF);
 				drawbuf->Clear(0x000000);

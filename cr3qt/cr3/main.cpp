@@ -5,15 +5,32 @@
 
 using namespace CRUI;
 
+//class MyApplication : public QApplication {
+
+//};
 
 int main(int argc, char *argv[])
 {
     int res = 0;
     {
+
+//        QString serverName = "CoolReader3";
+//        QLocalSocket socket;
+//        socket.connectToServer(serverName);
+//        if (socket.waitForConnected(200))
+//            return; // Exit already a process running
+
+//        QLocalServer m_localServer(&a);
+//        connect(&m_localServer, SIGNAL(newConnection()), &a, SLOT(newLocalSocketConnection()));
+//        m_localServer->listen(serverName);
+
+
         lString16 exePath = LVExtractPath(Utf8ToUnicode(argv[0]));
         LVAppendPathDelimiter(exePath);
         InitCREngine(exePath);
         QApplication a(argc, argv);
+
+
         OpenGLWindow w;
         bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
         if (fullscreen)
