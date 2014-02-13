@@ -309,7 +309,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	 * @param crRunnablePtr is value of C pointer to CRRunnable object 
 	 */
 	private final void runInGLThreadDelayed(final long crRunnablePtr, long delayMillis) {
-		log.d("runInGLThreadDelayed - in Java");
+		//log.d("runInGLThreadDelayed - in Java");
 		postDelayed(new Runnable() {
 			public void run() {
 				if (surfaceOk)

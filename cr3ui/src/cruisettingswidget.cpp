@@ -1147,6 +1147,7 @@ static const char * TAP_ZONE_ACTION_LIST[] = {
     "READER_HOME",
     "SHOW_FOLDER",
     "GOTO_PERCENT",
+    "EXIT",
     NULL
 };
 

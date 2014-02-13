@@ -75,11 +75,11 @@ code, pre {
     $pre.all
 }
 
-body[name="notes"] { $footnote.all }
+body[name="notes"] { font-size: 80%; $footnote.all  }
 body[name="notes"] section title { display: run-in; text-align: left; $footnote-title.all page-break-before: auto; page-break-inside: auto; page-break-after: auto; }
 body[name="notes"] section title p { display: inline }
 
-body[name="comments"] { $footnote.all }
+body[name="comments"] { font-size: 80%; $footnote.all }
 body[name="comments"] section title { display: run-in; text-align: left; $footnote-title.all page-break-before: auto; page-break-inside: auto; page-break-after: auto; }
 body[name="comments"] section title p { display: inline }
 

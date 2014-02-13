@@ -80,6 +80,12 @@ public class CoolReader extends Activity {
 		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getApplicationWindowToken(), 0);
 	}
 	
+	static class OldApiHelper {
+		static private String getExtFilesDir(Activity activity) {
+			return activity.getExternalFilesDir(null).getAbsolutePath();
+		}
+	}
+	
 	private CRConfig createConfig() {
 		CRConfig cfg = new CRConfig();
 		DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -87,6 +93,7 @@ public class CoolReader extends Activity {
 		cfg.screenX = metrics.widthPixels;
 		cfg.screenY = metrics.heightPixels;
 		cfg.einkMode = DeviceInfo.EINK_SCREEN;
+		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 		
 		initMountRoots();
 		
@@ -96,9 +103,9 @@ public class CoolReader extends Activity {
 	    String externalFilesDir = null;
 	    if (DeviceInfo.getSDKLevel() < 8) {
 	    	log.i("Due to old sdk version, getExternalFilesDir is not available, using getFilesDir");
-	    	externalFilesDir = getFilesDir().getAbsolutePath();
+	    	externalFilesDir = externalStorageDir + "/.cr3";
 	    } else
-	    	externalFilesDir = getExternalFilesDir(null).getAbsolutePath();
+	    	externalFilesDir = OldApiHelper.getExtFilesDir(this);
 		try {
 		    PackageInfo p = m.getPackageInfo(s, 0);
 		    
@@ -111,7 +118,6 @@ public class CoolReader extends Activity {
 		
 		cfg.assetManager = getAssets();
 
-		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
 		// internal storage
 		cfg.internalStorageDir = externalStorageDir;

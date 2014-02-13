@@ -497,14 +497,12 @@ public:
 	int getActionMasked() {
 		if (getActionMaskedMethod.supported())
 			return getActionMaskedMethod.callInt();
-		// TODO:
 		return 0;
 	}
 	int getActionIndex() {
 		if (getActionIndexMethod.supported())
 			return getActionIndexMethod.callInt();
-		// TODO
-		return 0;
+		return getAction();
 	}
 	lUInt64 getEventTime() {
 		// convert uptime to system time
