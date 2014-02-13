@@ -158,6 +158,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     public:
         void setSize(int _dx, int _dy);
         ScrollModePageCache();
+        int getLastDirection() { return 1; }
         /// ensure images are prepared
         void prepare(LVDocView * docview, int pos, int dx, int dy, int direction, bool force);
         /// draw
@@ -207,6 +208,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         PagedModePageCache();
         /// ensure images are prepared
         void prepare(LVDocView * docview, int page, int dx, int dy, int direction, bool force, int pageAnimation);
+        int getLastDirection() { return direction; }
         void calcDragPositionProgress(int startx, int currx, int direction, int & progress, int & xx);
         /// draw
         void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int startx = -1, int currx = -1);
@@ -288,8 +290,6 @@ public:
     bool restorePosition();
     /// save current book position to DB
     void updatePosition();
-    /// cancel update position
-    void cancelPositionUpdateTimer();
 
     const lString8 & getPathName() { return _fileItem ? _fileItem->getPathName() : lString8::empty_str; }
 
@@ -315,7 +315,15 @@ public:
 
     virtual void animate(lUInt64 millisPassed);
     virtual bool isAnimating();
+
+    /// schedule saving of current position
     void postUpdatePosition(int delay = 1000);
+    /// cancel update position
+    void cancelPositionUpdateTimer();
+
+    /// prepare next image for fast page flip
+    void prepareNextPage();
+
     void onScrollAnimationStop();
 
     /// overriden to treat popup as first child

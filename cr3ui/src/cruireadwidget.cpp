@@ -859,6 +859,21 @@ void CRUIReadWidget::cancelPositionUpdateTimer() {
     CRUIEventManager::cancelTimer(SAVE_POSITION_TIMER_ID);
 }
 
+/// prepare next image for fast page flip
+void CRUIReadWidget::prepareNextPage() {
+    if (renderIfNecessary()) {
+        //CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+        if (_viewMode == DVM_PAGES) {
+            int dir = _pagedCache.getLastDirection();
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, dir, true, _pageAnimation);
+        } else {
+            int dir = _scrollCache.getLastDirection();
+            _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, dir, true);
+        }
+        //CRLog::trace("CRUIReadWidget::prepareScroll(%d) - done", direction);
+    }
+}
+
 void CRUIReadWidget::updatePosition() {
     cancelPositionUpdateTimer();
     concurrencyProvider->executeGui(NULL, 0);
@@ -901,6 +916,7 @@ void CRUIReadWidget::updatePosition() {
     _lastPosition->commentText = UnicodeToUtf8(bm.getCommentText()).c_str();
     _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
     dirCache->saveLastPosition(_fileItem->getBook(), _lastPosition);
+    prepareNextPage();
 }
 
 lString8 lastBookLang;

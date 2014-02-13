@@ -748,7 +748,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _dy(320)
 {
 	LVSetAssetContainerFactory(this);
-	m_coverpageManagerPaused = false;
+	m_coverpageManagerPaused = true;
 }
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
@@ -1013,7 +1013,6 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     CRLog::info("Done initEngine");
 
     CRPauseCoverpageManager();
-    m_coverpageManagerPaused = true;
     //obj->create(); // will be called on first draw
 
     return JNI_TRUE;
