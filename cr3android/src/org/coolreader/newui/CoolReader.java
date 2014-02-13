@@ -93,7 +93,12 @@ public class CoolReader extends Activity {
 		String dataDir = null;
 		PackageManager m = getPackageManager();
 		String s = getPackageName();
-	    String externalFilesDir = getExternalFilesDir(null).getAbsolutePath();
+	    String externalFilesDir = null;
+	    if (DeviceInfo.getSDKLevel() < 8) {
+	    	log.i("Due to old sdk version, getExternalFilesDir is not available, using getFilesDir");
+	    	externalFilesDir = getFilesDir().getAbsolutePath();
+	    } else
+	    	externalFilesDir = getExternalFilesDir(null).getAbsolutePath();
 		try {
 		    PackageInfo p = m.getPackageInfo(s, 0);
 		    

@@ -250,6 +250,7 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
 	int _dx;
 	int _dy;
 	lString8 _fileToOpen;
+	bool m_coverpageManagerPaused;
 public:
     DocViewNative(jobject obj);
 
@@ -326,6 +327,11 @@ public:
 		buf.beforeDrawing();
 		_widget->draw(&buf);
 		buf.afterDrawing();
+
+		if (m_coverpageManagerPaused) {
+		    CRResumeCoverpageManager();
+		    m_coverpageManagerPaused = false;
+		}
 	}
 
 	bool handleTouchEvent(CRTouchEventWrapper * event) {
@@ -742,6 +748,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _dy(320)
 {
 	LVSetAssetContainerFactory(this);
+	m_coverpageManagerPaused = false;
 }
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
@@ -1005,6 +1012,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.setupResources(crconfig.resourceDir);
     CRLog::info("Done initEngine");
 
+    CRPauseCoverpageManager();
+    m_coverpageManagerPaused = true;
     //obj->create(); // will be called on first draw
 
     return JNI_TRUE;

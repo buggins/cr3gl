@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.coolreader.newui"
     android:installLocation="auto"
-    android:versionCode="25"
-    android:versionName="3.3.25" >
+    android:versionCode="26"
+    android:versionName="3.3.26" >
 
     <uses-sdk
         android:minSdkVersion="7"

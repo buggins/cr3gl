@@ -25,7 +25,7 @@ CRUIConfig::CRUIConfig() {
     uiFontFace = "Arial";
     touchMode = true;
     enableOpenGl = true;
-    einkMode = true;
+    einkMode = false;
     apiLevel = 0; // for Android only
     hasBattery = false;
     batteryLevel = 100;
