@@ -4,6 +4,8 @@
 #include "epubfmt.h"
 #include "pdbfmt.h"
 #include "lvqueue.h"
+#include "cruiwidget.h"
+#include "cruiconfig.h"
 
 //#define USE_GL_COVERPAGE_CACHE 0 // no GL context under this thread anyway
 
@@ -121,6 +123,10 @@ public:
 void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, LVImageSourceRef image, int bpp)
 {
     //CRLog::debug("drawBookCover called");
+    if (crconfig.einkMode) {
+        drawbuf->SetBackgroundColor(0xFFFFFF);
+        drawbuf->FillRect(0, 0, drawbuf->GetWidth(), drawbuf->GetHeight(), 0xFFFFFF);
+    }
     lString16 title = book->getTitle();
     lString16 authors = book->getAuthorNames(false);
     lString16 seriesName = book->getSeriesNameOnly();
@@ -157,6 +163,7 @@ void CRDrawBookCover(LVDrawBuf * drawbuf, lString8 fontFace, CRDirEntry * book, 
             LVDrawBookCover(grayBuf, image, fontFace, title, authors, seriesName, seriesNumber);
             image.Clear();
             grayBuf.DrawTo(drawbuf2, 0, 0, 0, NULL);
+            //CRUIDrawTo(&grayBuf, drawbuf2, 0, 0);
         }
         if (factor > 1) {
             drawbuf->DrawRescaled(drawbuf2, 0, 0, drawbuf->GetWidth(), drawbuf->GetHeight(), 0);
@@ -663,18 +670,19 @@ CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager
         // has book template
         LVColorDrawBuf * buf = createDrawBuf(clientRect.width(), clientRect.height());
         buf->beforeDrawing();
-        CRDrawBookCover(buf, lString8("Arial"), _book, image, 32);
+        CRDrawBookCover(buf, lString8("Arial"), _book, image, crconfig.einkMode ? 4 : 32);
         buf->afterDrawing();
 
         lvRect rc(0, 0, buf->GetWidth(), buf->GetHeight());
         lUInt32 coverImageColor = getAvgColor(buf, rc, rc.width() / 10);
         correctColors(drawbuf, bookImageColor, coverImageColor, neutralColor);
 
+        //CRUIDrawTo(buf, drawbuf, clientRect.left, clientRect.top);
         buf->DrawTo(drawbuf, clientRect.left, clientRect.top, 0, NULL);
         delete buf;
     } else {
         // does not have book template
-        CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, 32);
+        CRDrawBookCover(drawbuf, lString8("Arial"), _book, image, crconfig.einkMode ? 4 : 32);
     }
 
     drawbuf->afterDrawing();

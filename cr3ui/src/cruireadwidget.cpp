@@ -2385,7 +2385,8 @@ void CRUIReadWidget::ScrollModePageCache::draw(LVDrawBuf * dst, int pos, int x, 
             if (pages[k]->intersects(pos, pos + dy)) {
                 // draw fragment
                 int y0 = pages[k]->pos - pos;
-                pages[k]->drawbuf->DrawTo(glbuf, x, y + y0, 0, NULL);
+                CRUIDrawTo(pages[k]->drawbuf, glbuf, x, y + y0);
+                //pages[k]->drawbuf->DrawTo(glbuf, x, y + y0, 0, NULL);
             }
         }
         //glbuf->afterDrawing();
@@ -2899,15 +2900,15 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    page->drawbuf->DrawTo(glbuf, x + 0 - ddx, 0, 0, NULL);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, 0);
                     glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    page2->drawbuf->DrawTo(glbuf, x + 0 + dx - ddx, 0, 0, NULL);
-                    page->drawbuf->DrawTo(glbuf, x + 0 - ddx, 0, 0, NULL);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 + dx - ddx, 0);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, 0);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0, alpha);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
                     CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(pageNumber) : page2;
                     if (!page_back)
@@ -2920,17 +2921,17 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             } else if (direction < 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, x + 0 - dx + ddx, 0, 0, NULL);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, 0);
                     if (ddx < shadowdx)
                         shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
                     glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    page->drawbuf->DrawTo(glbuf, x + 0 + ddx, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, x + 0 - dx + ddx, 0, 0, NULL);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 + ddx, 0);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, 0);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, alpha << 16, NULL);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0, alpha);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
                     CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(nextPage) : page;
                     if (!page_back)
@@ -2947,7 +2948,9 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             // no animation
             if (page) {
                 // simple draw current page
-                page->drawbuf->DrawTo(glbuf, x, 0, 0, NULL);
+                //page->drawbuf->DrawTo(glbuf, x, 0, 0, NULL);
+                CRUIDrawTo(page->drawbuf, glbuf, x, 0);
+                //CRUIDrawTo(page->drawbufglbuf->DrawFragment(, 0, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), x, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), 0);
             }
         }
         //glbuf->afterDrawing();

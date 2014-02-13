@@ -16,7 +16,11 @@ using namespace CRUI;
 #endif
 #include "cruiconfig.h"
 
+
 LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp) {
+    if (crconfig.einkMode) {
+        return new LVGrayDrawBuf(dx, dy, 4);
+    }
 #if CRUI_USE_OPENGL == 1
     if (!crconfig.enableOpenGl) {
         CRLog::warn("OpenGL is disabled");
@@ -28,13 +32,15 @@ LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp) {
         return new TiledGLDrawBuf(dx, dy, bpp, maxTextureSize, maxTextureSize);
     } else {
 #endif
-        if (crconfig.einkMode)
-            return new LVGrayDrawBuf(dx, dy, bpp > 16 ? 16 : bpp);
-        else
-            return new LVColorDrawBuf(dx, dy, bpp);
+        return new LVColorDrawBuf(dx, dy, bpp);
 #if CRUI_USE_OPENGL == 1
     }
 #endif
+}
+
+/// use dst->DrawFragment to implement DrawTo
+void CRUIDrawTo(LVDrawBuf * src, LVDrawBuf * dst, int x, int y, int alpha) {
+    dst->DrawFragment(src, 0, 0, src->GetWidth(), src->GetHeight(), x, y, src->GetWidth(), src->GetHeight(), alpha << 16);
 }
 
 CRUIWidget::CRUIWidget() : _state(0), _margin(UNSPECIFIED, UNSPECIFIED, UNSPECIFIED, UNSPECIFIED),
