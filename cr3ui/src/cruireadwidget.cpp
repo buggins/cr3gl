@@ -2492,20 +2492,28 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     buf->GradientRect(0, 0, sdx, dy, cl1, cl2, cl2, cl1);
     buf->GradientRect(dx - sdx, 0, dx, dy, cl2, cl1, cl1, cl2);
     if (_docview->getVisiblePageCount() == 2) {
-        buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
-        buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
+        if (!crconfig.einkMode) {
+            buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
+            buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
+        }
     }
     if (_docview->getVisiblePageCount() == 2) {
         lvRect rc1 = rc;
-        rc1.right = dx / 2;
-        buf->DrawFrame(rc1, 0xC0404040, 1);
-        rc1.shrink(1);
-        buf->DrawFrame(rc1, 0xE0404040, 1);
-        rc1 = rc;
-        rc1.left = dx / 2;
-        buf->DrawFrame(rc1, 0xC0404040, 1);
-        rc1.shrink(1);
-        buf->DrawFrame(rc1, 0xE0404040, 1);
+        if (crconfig.einkMode) {
+            rc1.left = dx / 2 + 1;
+            rc1.right = rc1.left + 1;
+            buf->FillRect(rc1, 0xAAAAAA);
+        } else {
+            rc1.right = dx / 2 + 1;
+            buf->DrawFrame(rc1, 0xC0404040, 1);
+            rc1.shrink(1);
+            buf->DrawFrame(rc1, 0xE0404040, 1);
+            rc1 = rc;
+            rc1.left = dx / 2;
+            buf->DrawFrame(rc1, 0xC0404040, 1);
+            rc1.shrink(1);
+            buf->DrawFrame(rc1, 0xE0404040, 1);
+        }
     } else {
         buf->DrawFrame(rc, 0xC0404040, 1);
         rc.shrink(1);

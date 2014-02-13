@@ -404,6 +404,9 @@ bool CRUITheme::loadFromFile(lString8 fileName) {
         return false;
     if ( !parser.Parse() )
         return false;
+    if (crconfig.einkMode) {
+
+    }
     return _substyles.length() > 0;
 }
 
