@@ -25,7 +25,7 @@ CRUIConfig::CRUIConfig() {
     uiFontFace = "Arial";
     touchMode = true;
     enableOpenGl = true;
-    einkMode = false;
+    einkMode = true;
     apiLevel = 0; // for Android only
     hasBattery = false;
     batteryLevel = 100;
@@ -288,7 +288,13 @@ void CRUIConfig::loadTheme() {
 #endif
     }
 
-    resourceResolver->setIconColorTransform(currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST));
+#define COLOR_TRANSFORM_BRIGHTNESS_EINK 0x808080
+#define COLOR_TRANSFORM_CONTRAST_EINK 0x707070
+    if (einkMode) {
+        resourceResolver->setIconColorTransform(COLOR_TRANSFORM_BRIGHTNESS_EINK, COLOR_TRANSFORM_CONTRAST_EINK);
+    } else {
+        resourceResolver->setIconColorTransform(currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_BRIGHTNESS), currentTheme->getColor(COLOR_ID_ICON_COLOR_TRANSFORM_CONTRAST));
+    }
 
     lvRect hardcoverClientRect(53, 29, 319, 378); // area where to place cover image
     lvRect hardcoverNeutralRect(60, 12, 300, 20); // area with neutral color

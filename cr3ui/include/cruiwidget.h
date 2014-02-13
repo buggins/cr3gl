@@ -287,5 +287,8 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
 
 /// creates backbuffer for rendering in
 LVDrawBuf * CRUICreateDrawBuf(int dx, int dy, int bpp);
+/// use dst->DrawFragment to implement DrawTo
+void CRUIDrawTo(LVDrawBuf * src, LVDrawBuf * dst, int x, int y, int alpha = 0);
+
 
 #endif /* CRUIWIDGET_H_ */

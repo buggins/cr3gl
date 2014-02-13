@@ -1076,16 +1076,20 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
         //_popupBackground->DrawTo(buf, 0, 0, 0, NULL);
     } else {
         if (_animation.active) {
-            if (_animation.oldimage)
-                _animation.oldimage->DrawTo(buf, _animation.oldimagex, _pos.top, 0, NULL);
-            else {
+            if (_animation.oldimage) {
+                //_animation.oldimage->DrawTo(buf, _animation.oldimagex, _pos.top, 0, NULL);
+                CRUIDrawTo(_animation.oldimage, buf, _animation.oldimagex, _pos.top);
+                //buf->DrawFragment(_animation.oldimage, 0, 0, _animation.oldimage->GetWidth(), _animation.oldimage->GetHeight(), _animation.oldimagex, _pos.top, _animation.oldimage->GetWidth(), _animation.oldimage->GetHeight(), 0);
+            } else {
                 CRUIWidget * oldWidget = _history[_animation.oldpos]->getWidget();
                 oldWidget->layout(_pos.left + _animation.oldimagex, _pos.top, _pos.right + _animation.oldimagex, _pos.bottom);
                 oldWidget->draw(buf);
             }
-            if (_animation.newimage)
-                _animation.newimage->DrawTo(buf, _animation.newimagex, _pos.top, 0, NULL);
-            else {
+            if (_animation.newimage) {
+                //_animation.newimage->DrawTo(buf, _animation.newimagex, _pos.top, 0, NULL);
+                CRUIDrawTo(_animation.newimage, buf, _animation.newimagex, _pos.top);
+                //buf->DrawFragment(_animation.newimage, 0, 0, _animation.newimage->GetWidth(), _animation.newimage->GetHeight(), _animation.newimagex, _pos.top, _animation.newimage->GetWidth(), _animation.newimage->GetHeight(), 0);
+            } else {
                 CRUIWidget * newWidget = _history[_animation.newpos]->getWidget();
                 newWidget->layout(_pos.left + _animation.newimagex, _pos.top, _pos.right + _animation.newimagex, _pos.bottom);
                 newWidget->draw(buf);
