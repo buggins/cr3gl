@@ -917,7 +917,11 @@ bool CRUIEditWidget::onFocusChange(bool focused) {
 bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
     invalidate();
     cancelScrollTimer();
-    if (event->getType() == KEY_ACTION_PRESS) {
+    lString16 eventText = event->text();
+    int action = event->getType();
+    int key = event->key();
+    CRLog::trace("CRUIEditWidget::onKeyEvent action=%d key=%d text=%s", action, key, LCSTR(eventText));
+    if (action == KEY_ACTION_PRESS) {
         switch(event->key()) {
         case CR_KEY_BACKSPACE:
             if (_cursorPos > 0) {
@@ -972,7 +976,7 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             break;
         }
     }
-    if (event->getType() == KEY_ACTION_RELEASE) {
+    if (action == KEY_ACTION_RELEASE) {
         switch(event->key()) {
         case CR_KEY_BACKSPACE:
             return true;
@@ -1004,10 +1008,9 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             break;
         }
     }
-    lString16 eventText = event->text();
     if (eventText.length()) {
         if (eventText[0] >= 32) {
-            if (event->getType() == KEY_ACTION_PRESS) {
+            if (action == KEY_ACTION_PRESS) {
                 _text.insert(_cursorPos, eventText);
                 _lastEnteredCharPos = _cursorPos + eventText.length();
                 updateCursor(_cursorPos + eventText.length());

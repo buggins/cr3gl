@@ -548,7 +548,8 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
                     if (!event->getWidget())
                         event->setWidget(child);
                 }
-            	_rootWidget->update(false);
+                CRLog::trace("Updating screen after key event");
+            	_rootWidget->update(true);
                 return true;
             }
         }
@@ -560,7 +561,8 @@ bool CRUIEventManager::dispatchKeyEvent(CRUIWidget * widget, CRUIKeyEvent * even
         if (!event->getWidget())
             event->setWidget(widget);
     }
-	_rootWidget->update(false);
+    CRLog::trace("Updating screen after key event");
+	_rootWidget->update(true);
     return res;
 }
 
