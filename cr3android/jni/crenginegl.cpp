@@ -74,7 +74,8 @@ public:
     	int actionPointerId = event->getPointerId(actionIndex);
     	lUInt64 ts = event->getEventTime();
 		CRUIMotionEventItem * actionItem = NULL;
-		//CRLog::trace("pointerCount = %d action = %d actionIndex = %d actionPointerId = %d", pointerCount, action, actionIndex, actionPointerId);
+		if (crconfig.einkMode)
+			CRLog::trace("pointerCount = %d action = %d actionIndex = %d actionPointerId = %d", pointerCount, action, actionIndex, actionPointerId);
     	for (int i = 0; i < pointerCount; i++) {
     		int x = event->getX(i) - x0;
     		int y = event->getY(i) - y0;
@@ -148,6 +149,16 @@ public:
     	AKEY_DPAD_CENTER = 23,
     	AKEY_ENTER = 66,
     	AKEY_ESCAPE = 111,
+    	AKEY_0 = 7,
+    	AKEY_1 = 8,
+    	AKEY_2 = 9,
+    	AKEY_3 = 10,
+    	AKEY_4 = 11,
+    	AKEY_5 = 12,
+    	AKEY_6 = 13,
+    	AKEY_7 = 14,
+    	AKEY_8 = 15,
+    	AKEY_9 = 16
     };
     static int translateKeyCode(int key) {
     	switch(key) {
@@ -163,6 +174,16 @@ public:
     	case AKEY_VOLUMEUP: return CR_KEY_VOLUME_UP;
     	case AKEY_VOLUMEDOWN: return CR_KEY_VOLUME_DOWN;
     	case AKEY_ESCAPE: return CR_KEY_ESC;
+    	case AKEY_0: return CR_KEY_0;
+    	case AKEY_1: return CR_KEY_1;
+    	case AKEY_2: return CR_KEY_2;
+    	case AKEY_3: return CR_KEY_3;
+    	case AKEY_4: return CR_KEY_4;
+    	case AKEY_5: return CR_KEY_5;
+    	case AKEY_6: return CR_KEY_6;
+    	case AKEY_7: return CR_KEY_7;
+    	case AKEY_8: return CR_KEY_8;
+    	case AKEY_9: return CR_KEY_9;
     	default:
     		return -1;
     	}
@@ -206,6 +227,7 @@ public:
     	int key = translateKeyCode(event->getKeyCode());
     	int mod = translateModifiers(event->getModifiers());
     	lString16 text = event->getCharacters();
+    	CRLog::trace("dispatchKeyEvent action=%d key=%d mod=%d text=%s", action, key, mod, LCSTR(text));
     	if (naction == AKEYACTION_MULTIPLE && !text.empty()) {
     		CRLog::trace("key action MULTIPLE: %s", LCSTR(text));
     		CRUIKeyEvent * crevent = new CRUIKeyEvent(KEY_ACTION_PRESS, 0, false, 0, mod);
@@ -219,6 +241,7 @@ public:
     	if (key < 0 || action == KEY_ACTION_UNKNOWN)
     		return false;
 		CRUIKeyEvent * crevent = new CRUIKeyEvent(action, key, false, 0, mod);
+		crevent->setText(text);
 		bool res = _eventManager->dispatchKeyEvent(crevent);
 		//delete crevent;
 		return res;
@@ -406,6 +429,7 @@ public:
     	_showVirtualKeyboardMethod.callVoid();
 
     }
+
     /// hide platform native virtual keyboard
     virtual void hideVirtualKeyboard() {
     	if (!_virtualKeyboardShown)

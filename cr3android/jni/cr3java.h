@@ -494,15 +494,17 @@ public:
 	int getAction() {
 		return getActionMethod.callInt();
 	}
+
 	int getActionMasked() {
 		if (getActionMaskedMethod.supported())
 			return getActionMaskedMethod.callInt();
-		return 0;
+		return getAction();
 	}
+
 	int getActionIndex() {
 		if (getActionIndexMethod.supported())
 			return getActionIndexMethod.callInt();
-		return getAction();
+		return 0;
 	}
 	lUInt64 getEventTime() {
 		// convert uptime to system time

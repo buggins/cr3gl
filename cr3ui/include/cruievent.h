@@ -149,7 +149,7 @@ enum CR_KEY_MODIFIER {
 #define CR_KEY_0 '0'
 #define CR_KEY_1 '1'
 #define CR_KEY_2 '2'
-#define CR_KEY_3 '0'
+#define CR_KEY_3 '3'
 #define CR_KEY_4 '4'
 #define CR_KEY_5 '5'
 #define CR_KEY_6 '6'

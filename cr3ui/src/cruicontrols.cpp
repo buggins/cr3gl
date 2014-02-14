@@ -948,6 +948,26 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             return true;
         case CR_KEY_RETURN:
             return true;
+        case CR_KEY_0:
+        case CR_KEY_1:
+        case CR_KEY_2:
+        case CR_KEY_3:
+        case CR_KEY_4:
+        case CR_KEY_5:
+        case CR_KEY_6:
+        case CR_KEY_7:
+        case CR_KEY_8:
+        case CR_KEY_9:
+			{
+				lString16 eventText = lString16::itoa(event->key() - CR_KEY_0);
+				_text.insert(_cursorPos, eventText);
+				_lastEnteredCharPos = _cursorPos + eventText.length();
+				updateCursor(_cursorPos + eventText.length());
+				if (_passwordChar)
+					CRUIEventManager::setTimer(EDIT_WIDGET_HIDE_PASSWORD_TIMER_ID, this, 500, false);
+				invalidate();
+				return true;
+			}
         default:
             break;
         }
@@ -969,6 +989,17 @@ bool CRUIEditWidget::onKeyEvent(const CRUIKeyEvent * event) {
             if (_onReturnPressedListener)
                 return _onReturnPressedListener->onReturnPressed(this);
             return true;
+        case CR_KEY_0:
+        case CR_KEY_1:
+        case CR_KEY_2:
+        case CR_KEY_3:
+        case CR_KEY_4:
+        case CR_KEY_5:
+        case CR_KEY_6:
+        case CR_KEY_7:
+        case CR_KEY_8:
+        case CR_KEY_9:
+        	return true;
         default:
             break;
         }
