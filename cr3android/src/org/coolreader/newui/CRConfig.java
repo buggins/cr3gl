@@ -18,6 +18,7 @@ public class CRConfig {
     public String i18nDir;
     public String themesDir;
     public String manualsDir;
+    public String manualFile;
     public String uiFontFace;
     public String fallbackFontFace;
     public String cssDir;

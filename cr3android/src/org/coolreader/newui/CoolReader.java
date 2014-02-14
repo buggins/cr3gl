@@ -170,6 +170,7 @@ public class CoolReader extends Activity {
 		cfg.resourceDir = "@"; // TODO
 		cfg.themesDir = "@themes";
 		cfg.manualsDir = "@manuals";
+		cfg.manualFile = externalFilesDir + "/cr3_manual.fb2";
 		
 		cfg.systemLanguage = "en"; // TODO
 		cfg.uiFontFace = getSDKLevel() >= ICE_CREAM_SANDWICH ? "Roboto" : "Droid Sans";

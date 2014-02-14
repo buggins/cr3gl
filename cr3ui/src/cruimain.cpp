@@ -1142,23 +1142,81 @@ bool CRUIMainWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return _history.currentWidget()->onTouchEvent(event);
 }
 
+lString8 getManualTemplateFileName(lString8 & lang) {
+    lString8 fn = crconfig.manualsDir + "manual_template_" + lang + ".fb2";
+    if (LVFileExists(fn))
+    	return fn;
+    if (lang.length() > 2) {
+    	lang = lang.substr(0, 2);
+        fn = crconfig.manualsDir + "manual_template_" + lang + ".fb2";
+        if (LVFileExists(fn))
+        	return fn;
+    }
+    return crconfig.manualsDir + "manual_template_en.fb2";
+}
+
+
 CRFileItem * CRUIMainWidget::createManualBook() {
-    lString8 fn = crconfig.manualsDir + "manual_template_en.fb2";
+	lString8 lang = UnicodeToUtf8(_currentSettings->getStringDef(PROP_APP_INTERFACE_LANGUAGE, crconfig.systemLanguage.c_str()));
+	lString8 fn = getManualTemplateFileName(lang);
+	lString8 txt;
+	{
+		LVStreamRef file = LVOpenFileStream(fn.c_str(), LVOM_READ);
+		if (file.isNull()) {
+			CRLog::error("Cannot open manual template file %s", fn.c_str());
+			return NULL;
+		}
+		txt = UnicodeToUtf8(LVReadTextFile(file));
+		CRLog::debug("Manual template size is %d", txt.length());
+	}
+	// convert file contents
+	// TODO
+	// check for changes
+	bool changed = true;
+	if (LVFileExists(crconfig.manualFile)) {
+		LVStreamRef file = LVOpenFileStream(fn.c_str(), LVOM_READ);
+		if (file.isNull())
+			return NULL;
+		lString8 txt2 = UnicodeToUtf8(LVReadTextFile(file));
+		if (txt2 == txt) {
+			changed = false;
+		} else {
+			CRLog::debug("Current manual file size is %d", txt2.length());
+			CRLog::debug("New manual file size is %d", txt.length());
+		}
+	}
+	if (changed) {
+		CRLog::trace("Writing new manual file contents to %s", crconfig.manualFile.c_str());
+		// write new file contents
+        LVStreamRef outfile = LVOpenFileStream(crconfig.manualFile.c_str(), LVOM_WRITE);
+        if (outfile.isNull()) {
+			CRLog::error("Cannot open manual file %s for writing", crconfig.manualFile.c_str());
+        	return NULL;
+        }
+		const char * bom = "\xEF\xBB\xBF";
+		outfile->Write(bom, 3, NULL);
+		outfile->Write(txt.c_str(), txt.length(), NULL);
+    }
+	fn = crconfig.manualFile;
+
+	// create/update file item
     CRFileItem * f = new CRFileItem(fn, false);
-    LVPtrVector<BookDBBook> books;
     BookDBBook * book = NULL;
     book = bookDB->loadBook(fn);
-    if (!book)
+    if (!book) {
+        LVPtrVector<BookDBBook> books;
         book = new BookDBBook();
-    book->pathname = DBString(fn.c_str());
-    book->filename = DBString(LVExtractFilename(fn).c_str());
-    book->title = DBString("Cool Reader Manual");
-    BookDBFolder * folder = new BookDBFolder();
-    folder->name = DBString(LVExtractPath(fn).c_str());
-    book->folder = folder;
-    books.add(book);
-    if (book->id == 0)
-        bookDB->saveBooks(books);
+        book->pathname = DBString(fn.c_str());
+        book->filename = DBString(LVExtractFilename(fn).c_str());
+        BookDBFolder * folder = new BookDBFolder();
+        folder->name = DBString(LVExtractPath(fn).c_str());
+        book->folder = folder;
+        book->title = DBString("Cool Reader Manual");
+        book->filesize = txt.length() + 3;
+        books.add(book);
+        if (book->id == 0)
+            bookDB->saveBooks(books);
+    }
     f->setBook(book->clone());
     return f;
 }

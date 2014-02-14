@@ -41,6 +41,7 @@ void CRUIConfig::setupUserDir(lString8 baseDir) {
 
     crconfig.dbFile = baseDir + "cr3db.sqlite";
     crconfig.iniFile = baseDir + "cr3.ini";
+    crconfig.manualFile = baseDir + "cr3_manual.fb2";
 }
 
 /// sets resourceDir, i18ndir, hyphdir

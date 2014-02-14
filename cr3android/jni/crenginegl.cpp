@@ -1040,6 +1040,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.resourceDir = CRStringField(cfg,"resourceDir").get8();
     crconfig.themesDir = CRStringField(cfg,"themesDir").get8();
     crconfig.manualsDir = CRStringField(cfg,"manualsDir").get8();
+    crconfig.manualFile = CRStringField(cfg,"manualFile").get8();
     crconfig.uiFontFace = CRStringField(cfg,"uiFontFace").get8();
     crconfig.fallbackFontFace = CRStringField(cfg,"fallbackFontFace").get8();
     crconfig.docCacheDir = CRStringField(cfg,"docCacheDir").get8();

@@ -40,6 +40,7 @@ struct CRUIConfig {
     lString8 i18nDir;
     lString8 themesDir;
     lString8 manualsDir;
+    lString8 manualFile;
     lString8 currentThemeDir;
     lString8 uiFontFace;
     lString8 fallbackFontFace;
