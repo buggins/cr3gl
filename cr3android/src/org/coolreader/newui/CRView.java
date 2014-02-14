@@ -1,5 +1,6 @@
 package org.coolreader.newui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -11,10 +12,13 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.coolreader.newui.DownloadManager.DownloadManagerCallback;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
+import android.os.Message;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -395,6 +399,58 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		activity.copyToClipboard(s);
 	}
 	
+	private static final String HTTPS = "https://";
+	private static final String HTTP = "http://";
+
+	public static void openBrowser(final Context context, String url) {
+
+		try {
+		     if (!url.startsWith(HTTP) && !url.startsWith(HTTPS)) {
+		            url = HTTP + url;
+		     }
+	
+		     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		     context.startActivity(Intent.createChooser(intent, "Chose browser"));
+		} catch (Exception e) {
+			log.e("Exception while trying to open URL", e);
+		}
+	}	
+    /// override to open URL in external browser; returns false if failed or feature not supported by platform
+    private boolean openLinkInExternalBrowser(final String url) { 
+    	log.i("openLinkInExternalBrowser " + url);
+		post(new Runnable() {
+			@Override
+			public void run() {
+				openBrowser(activity, url);
+			}
+		});
+    	return true; 
+    }
+
+    /// override to open file in external application; returns false if failed or feature not supported by platform
+    private boolean openFileInExternalApp(final String filename, final String mimeType) {
+    	log.i("openFileInExternalApp " + filename + " " + mimeType);
+		post(new Runnable() {
+			@Override
+			public void run() {
+		    	// Contruct the Intent
+		        File file = new File(filename);
+		        Intent i = new Intent(Intent.ACTION_VIEW);
+		        i.setDataAndType(Uri.fromFile(file), mimeType);
+		        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+		        // Try to start the intent activity. If no activity is found, tell the user via an alert.
+		        try {
+		             activity.startActivity(i);
+		        }
+		        catch (ActivityNotFoundException e) {
+		             log.e("Exception while trying to open file " + filename + " " + mimeType + " in external app", e);
+		        }
+			}
+		});
+        return true;
+    }
+    
 	private final void showVirtualKeyboard() {
 		post(new Runnable() {
 			public void run() {

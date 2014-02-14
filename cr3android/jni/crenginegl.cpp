@@ -258,6 +258,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _getTopMethod;
     CRMethodAccessor _updateScreenMethod;
     CRMethodAccessor _copyToClipboardMethod;
+    CRMethodAccessor _openLinkInExternalBrowserMethod;
+    CRMethodAccessor _openFileInExternalAppMethod;
     CRMethodAccessor _showVirtualKeyboardMethod;
     CRMethodAccessor _hideVirtualKeyboardMethod;
     CRMethodAccessor _isFullscreenMethod;
@@ -411,6 +413,23 @@ public:
     	_env->DeleteLocalRef(s);
     }
 
+    /// override to open URL in external browser; returns false if failed or feature not supported by platform
+    virtual bool openLinkInExternalBrowser(lString8 url) {
+    	jstring s = _env.toJavaString(Utf8ToUnicode(url));
+    	bool res = _openLinkInExternalBrowserMethod.callBool(s);
+    	_env->DeleteLocalRef(s);
+    	return res;
+    }
+
+    /// override to open file in external application; returns false if failed or feature not supported by platform
+    virtual bool openFileInExternalApp(lString8 filename, lString8 mimeType) {
+    	jstring s = _env.toJavaString(Utf8ToUnicode(filename));
+    	jstring s2 = _env.toJavaString(Utf8ToUnicode(mimeType));
+    	bool res = _openFileInExternalAppMethod.callBool(s, s2);
+    	_env->DeleteLocalRef(s);
+    	_env->DeleteLocalRef(s2);
+    	return res;
+    }
 
     /// return true if platform supports native virtual keyboard
     virtual bool supportsVirtualKeyboard() {
@@ -773,6 +792,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _getTopMethod(_obj, "getTop", "()I")
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
 	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
+	, _openLinkInExternalBrowserMethod(_obj, "openLinkInExternalBrowser", "(Ljava/lang/String;)Z")
+	, _openFileInExternalAppMethod(_obj, "openFileInExternalApp", "(Ljava/lang/String;Ljava/lang/String;)Z")
 	, _showVirtualKeyboardMethod(_obj, "showVirtualKeyboard", "()V")
 	, _hideVirtualKeyboardMethod(_obj, "hideVirtualKeyboard", "()V")
 	, _isFullscreenMethod(_obj, "isFullscreen", "()Z")

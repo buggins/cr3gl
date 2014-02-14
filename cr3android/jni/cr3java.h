@@ -201,6 +201,14 @@ public:
 	{
 		return objacc->CallBooleanMethod( objacc.getObject(), methodid ); 
 	}
+	jboolean callBool(jstring s)
+	{
+		return objacc->CallBooleanMethod( objacc.getObject(), methodid, s );
+	}
+	jboolean callBool(jstring s, jstring s2)
+	{
+		return objacc->CallBooleanMethod( objacc.getObject(), methodid, s, s2 );
+	}
 	jint callInt()
 	{
 		return objacc->CallIntMethod( objacc.getObject(), methodid ); 

@@ -562,8 +562,11 @@ static void onObjectDestroyedCallback(CacheObjectListener * pcache, CacheableObj
 }
 
 void LVGLCreateImageCache() {
-	if (glImageCache != NULL)
-		delete glImageCache;
+	if (glImageCache != NULL) {
+	   	CRLog::warn("Image cache is already initialized");
+		return;
+		//delete glImageCache;
+	}
 	glImageCache = new GLImageCache();
 }
 

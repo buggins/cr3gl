@@ -343,10 +343,14 @@ void CRUIConfig::initEngine(bool setLogger) {
     // Concurrency
     CRSetupEngineConcurrency();
 
-    InitFontManager(lString8());
-    LVInitGLFontManager(fontMan);
-    for (int i = 0; i<fontFiles.length(); i++) {
-        fontMan->RegisterFont(fontFiles[i]);
+    if (!fontMan) {
+    	InitFontManager(lString8());
+    	LVInitGLFontManager(fontMan);
+        for (int i = 0; i<fontFiles.length(); i++) {
+            fontMan->RegisterFont(fontFiles[i]);
+        }
+    } else {
+    	CRLog::warn("Font manager is already initialized");
     }
     lString8 fallbackFont = fallbackFontFace;
     bool configuredFallbackFontFound = false;
@@ -371,11 +375,20 @@ void CRUIConfig::initEngine(bool setLogger) {
     //dirs.add(UnicodeToUtf8(resourceDir));
     lString8Collection dirs;
     dirs.add(resourceDir + "screen-density-xhigh");
-    LVCreateResourceResolver(dirs);
+    if (!resourceResolver) {
+    	LVCreateResourceResolver(dirs);
+    } else {
+    	CRLog::warn("Resource resolver is already initialized");
+    }
+
     LVGLCreateImageCache();
 
-    // coverpage file cache
-    CRSetupCoverpageManager(Utf8ToUnicode(coverCacheDir), coverDirMaxItems, coverDirMaxFiles, coverDirMaxSize, coverRenderCacheMaxItems, coverRenderCacheMaxBytes);
+    if (!coverPageManager) {
+		// coverpage file cache
+		CRSetupCoverpageManager(Utf8ToUnicode(coverCacheDir), coverDirMaxItems, coverDirMaxFiles, coverDirMaxSize, coverRenderCacheMaxItems, coverRenderCacheMaxBytes);
+    } else {
+    	CRLog::warn("Coverpage manager is already initialized");
+    }
 
     // document cache
     ldomDocCache::init(Utf8ToUnicode(docCacheDir), docCacheMaxBytes);
@@ -389,17 +402,25 @@ void CRUIConfig::initEngine(bool setLogger) {
     HyphMan::initDictionaries(lString16(), true);
 
     CRLog::info("Opening Book DB");
-    bookDB = new CRBookDB();
-    if (bookDB->open(dbFile.c_str()))
-        CRLog::error("Error while opening DB file");
-    if (!bookDB->updateSchema())
-        CRLog::error("Error while updating DB schema");
-    if (!bookDB->fillCaches())
-        CRLog::error("Error while filling caches");
-    CRLog::info("Book DB opened");
+    if (!bookDB) {
+		bookDB = new CRBookDB();
+		if (bookDB->open(dbFile.c_str()))
+			CRLog::error("Error while opening DB file");
+		if (!bookDB->updateSchema())
+			CRLog::error("Error while updating DB schema");
+		if (!bookDB->fillCaches())
+			CRLog::error("Error while filling caches");
+		CRLog::info("Book DB opened");
+    } else {
+    	CRLog::warn("Book DB is already initialized");
+    }
 
     CRLog::info("Setting up dir cache manager");
-    CRSetupDirectoryCacheManager();
+    if (!dirCache) {
+    	CRSetupDirectoryCacheManager();
+    } else {
+    	CRLog::warn("Dir cache is already initialized");
+    }
 
     CRLog::info("Setting up resource resolver");
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@paper1"), lString8(STR_RESOURCE_BACKGROUND_NAME_PAPER2), lString8("tx_paper.jpg")));
