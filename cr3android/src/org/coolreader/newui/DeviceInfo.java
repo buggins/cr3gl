@@ -109,7 +109,7 @@ public class DeviceInfo {
 		//MANUFACTURER=Onyx, MODEL=C63ML, DEVICE=C63ML, PRODUCT=C63ML
 		EINK_ONYX = MANUFACTURER.toLowerCase().contentEquals("onyx") && MODEL.startsWith("C") && MODEL.endsWith("ML");
 		//MANUFACTURER -DNS, DEVICE -BK6004C, MODEL - DNS Airbook EGH602, PRODUCT - BK6004C
-		EINK_DNS = MANUFACTURER.toLowerCase().contentEquals("dns") && MODEL.startsWith("EGH60");
+		EINK_DNS = MANUFACTURER.toLowerCase().contentEquals("dns") && MODEL.startsWith("DNS Airbook EGH");
 		EINK_SCREEN = EINK_SONY || EINK_NOOK || EINK_ONYX || EINK_DNS; // TODO: set to true for eink devices like Nook Touch
 
 		POCKETBOOK = MODEL.toLowerCase().startsWith("pocketbook") || MODEL.toLowerCase().startsWith("obreey");
