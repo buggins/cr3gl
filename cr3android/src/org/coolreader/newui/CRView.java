@@ -77,11 +77,27 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 			@Override
 			public void run() {
 				// clear GL caches
-				log.i("CRView.onPause - calling surfaceDestroyedInternal()");
-				surfaceDestroyedInternal();
+				log.i("CRView.onPause - gl thread");
+				onPauseInternal();
+				//surfaceDestroyedInternal();
 			}
 		});
 		super.onPause();
+	}
+	
+	@Override
+	public void onResume() {
+		log.i("CRView.onResume() is called");
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				// clear GL caches
+				log.i("CRView.onResume - gl thread");
+				onResumeInternal();
+				//surfaceDestroyedInternal();
+			}
+		});
+		super.onResume();
 	}
 	
 	int lastBatteryLevel = 100;
@@ -108,13 +124,9 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		});
 	}
 	
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
-	
 	/// call when application is being closed
 	public void uninit() {
+		log.i("CRView.uninit() is called");
 		uninitInternal();
 	}
 
@@ -263,6 +275,10 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	native private void drawInternal();
 
+	native private void onPauseInternal();
+	
+	native private void onResumeInternal();
+	
 	native private void surfaceChangedInternal(int x, int y);
 	
 	native private void surfaceDestroyedInternal();

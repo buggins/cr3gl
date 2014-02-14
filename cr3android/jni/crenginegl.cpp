@@ -294,6 +294,21 @@ public:
 		_surfaceCreated = false;
 	}
 
+	virtual void onPause() {
+		if (!m_coverpageManagerPaused) {
+		    CRPauseCoverpageManager();
+		    m_coverpageManagerPaused = true;
+		}
+		clearImageCaches();
+	}
+
+	virtual void onResume() {
+//		if (m_coverpageManagerPaused) {
+//		    CRResumeCoverpageManager();
+//		    m_coverpageManagerPaused = false;
+//		}
+	}
+
 	virtual void onDraw() {
 
 		if (!_surfaceCreated) {
@@ -1089,6 +1104,32 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    onPauseInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onPauseInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRLog::trace("Java_org_coolreader_newui_CRView_onPauseInternal");
+	native->onPause();
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onResumeInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onResumeInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRLog::trace("Java_org_coolreader_newui_CRView_onResumeInternal");
+	native->onResume();
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    surfaceChangedInternal
  * Signature: (II)V
  */
@@ -1216,6 +1257,8 @@ static JNINativeMethod sCRViewMethods[] =
 	{"isLink", "(Ljava/lang/String;)Ljava/lang/String;",   (void*)Java_org_coolreader_newui_CRView_isLink},
 	{"callCRRunnableInternal", "(J)V",                     (void*)Java_org_coolreader_newui_CRView_callCRRunnableInternal},
 	{"drawInternal", "()V",                                (void*)Java_org_coolreader_newui_CRView_drawInternal},
+	{"onPauseInternal", "()V",                             (void*)Java_org_coolreader_newui_CRView_onPauseInternal},
+	{"onResumeInternal", "()V",                            (void*)Java_org_coolreader_newui_CRView_onResumeInternal},
 	{"surfaceChangedInternal", "(II)V",                    (void*)Java_org_coolreader_newui_CRView_surfaceChangedInternal},
 	{"surfaceDestroyedInternal", "()V",                    (void*)Java_org_coolreader_newui_CRView_surfaceDestroyedInternal},
 	{"handleKeyEventInternal", "(Landroid/view/KeyEvent;)Z", (void*)Java_org_coolreader_newui_CRView_handleKeyEventInternal},

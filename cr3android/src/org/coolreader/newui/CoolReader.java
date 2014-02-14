@@ -226,8 +226,8 @@ public class CoolReader extends Activity {
     @Override
     protected void onResume() {
 		log.i("CoolReader.onResume() is called");
-        super.onResume();
         crview.onResume();
+        super.onResume();
     }
     
 	@Override

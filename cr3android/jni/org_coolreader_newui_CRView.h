@@ -33,6 +33,22 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    onPauseInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onPauseInternal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onResumeInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onResumeInternal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    surfaceChangedInternal
  * Signature: (II)V
  */
