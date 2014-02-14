@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.ClipboardManager;
@@ -81,6 +82,7 @@ public class CoolReader extends Activity {
 	}
 	
 	static class OldApiHelper {
+		@TargetApi(Build.VERSION_CODES.FROYO)
 		static private String getExtFilesDir(Activity activity) {
 			return activity.getExternalFilesDir(null).getAbsolutePath();
 		}
@@ -122,11 +124,37 @@ public class CoolReader extends Activity {
 		// internal storage
 		cfg.internalStorageDir = externalStorageDir;
 		// sd card
+		int bestSdLocationRate = 0;
 		for (File f : mountedRootsList) {
 			String path = f.getAbsolutePath();
-			if (path.equals(externalStorageDir)) {
-				cfg.sdcardDir = path;
-				break;
+			if (!path.equals(externalStorageDir)) {
+				int rate = 1;
+				if (path.contains("external_sd"))
+					rate = 10;
+				else if (path.contains("extSdCard"))
+					rate = 9;
+				else if (path.contains("sdcard1"))
+					rate = 8;
+				else if (path.contains("emmc"))
+					rate = 7;
+				else if (path.contains("sdcard/sd"))
+					rate = 7;
+				else if (path.contains("ExternalSD"))
+					rate = 7;
+				else if (path.contains("sdcard-ext"))
+					rate = 7;
+				else if (path.contains("MicroSD"))
+					rate = 7;
+				else if (path.contains("external1"))
+					rate = 7;
+				else if (path.contains("sdcard0"))
+					rate = 7;
+				else if (path.contains("sdcard"))
+					rate = 6;
+				if (cfg.sdcardDir == null || rate > bestSdLocationRate) {
+					bestSdLocationRate = rate;
+					cfg.sdcardDir = path;
+				}
 			}
 		}
 		
@@ -664,7 +692,7 @@ public class CoolReader extends Activity {
 			File dir = new File(path);
 			if (dir.isDirectory()) {
 				String[] d = dir.list();
-				if ((d!=null && d.length>0) || dir.canWrite()) {
+				if ((d!=null && d.length>0)) {
 					log.i("Adding FS root: " + path + " " + name);
 					list.put(path, name);
 					return true;
