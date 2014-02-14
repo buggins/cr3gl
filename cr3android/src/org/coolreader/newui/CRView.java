@@ -166,17 +166,26 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
+		if (DeviceInfo.EINK_NOOK || DeviceInfo.EINK_NOOK_120 || DeviceInfo.EINK_SONY)
+			log.d("onTouchEvent: scheduling processing of " + event);
 		// process in GL thread
 		FutureTask<Boolean> f = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
+				if (DeviceInfo.EINK_NOOK || DeviceInfo.EINK_NOOK_120 || DeviceInfo.EINK_SONY)
+					log.d("onTouchEvent: calling handleTouchEventInternal in GL thread: " + event);
 				return handleTouchEventInternal(event);
 			}
 		});
 		queueEvent(f);
 		for (;;) {
 			try {
-				return f.get();
+				if (DeviceInfo.EINK_NOOK || DeviceInfo.EINK_NOOK_120 || DeviceInfo.EINK_SONY)
+					log.d("onTouchEvent: waiting while event is processed in GL thread: " + event);
+				boolean res = f.get();
+				if (DeviceInfo.EINK_NOOK || DeviceInfo.EINK_NOOK_120 || DeviceInfo.EINK_SONY)
+					log.d("onTouchEvent: result = " + res);
+				return res;
 			} catch (InterruptedException e) {
 				// retry
 			} catch (ExecutionException e) {
