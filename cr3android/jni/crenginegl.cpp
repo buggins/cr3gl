@@ -1049,6 +1049,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
 
     lString8 internalStorageDir = CRStringField(cfg,"internalStorageDir").get8();
     lString8 sdcardDir = CRStringField(cfg,"sdcardDir").get8();
+    deviceInfo.topDirs.clear();
     if (!internalStorageDir.empty())
     	deviceInfo.topDirs.addItem(DIR_TYPE_INTERNAL_STORAGE, internalStorageDir, 0);
     if (!sdcardDir.empty())

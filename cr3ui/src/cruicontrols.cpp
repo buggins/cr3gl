@@ -8,6 +8,7 @@
 #include "cruicontrols.h"
 #include "crui.h"
 #include "gldrawbuf.h"
+#include "cruiconfig.h"
 
 using namespace CRUI;
 
@@ -287,12 +288,15 @@ void CRUIProgressWidget::draw(LVDrawBuf * buf) {
 
 
 void CRUISpinnerWidget::animate(lUInt64 millisPassed) {
+    if (crconfig.einkMode)
+        return; // don't animate spinned in eink mode
     _angle += (int)(millisPassed * _speed);
     _angle = _angle % 360000;
 }
 
 bool CRUISpinnerWidget::isAnimating() {
-    return true;
+    // don't animate spinner in eink mode
+    return !crconfig.einkMode;
 }
 
 /// draws widget with its children to specified surface

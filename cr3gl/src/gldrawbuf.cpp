@@ -6,6 +6,7 @@
  */
 
 #include "gldrawbuf.h"
+#include "cruiconfig.h"
 
 
 
@@ -613,10 +614,56 @@ public:
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
         lUInt8 * pixels = _drawbuf->GetScanLine(0);
-        if (!CRGL->setTextureImage(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), pixels)) {
-            CRGL->deleteTexture(_textureId);
-            _textureId = 0;
-            return;
+        int format = crconfig.einkMode ? 1 : 0;
+        if (format == 0) {
+            // RGBA
+            if (!CRGL->setTextureImage(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), pixels)) {
+                CRGL->deleteTexture(_textureId);
+                _textureId = 0;
+                return;
+            }
+        } else if (format == 1) {
+            // LuminanceAlpha
+            int len = _tdx * _tdy;
+            lUInt8 * buf = new lUInt8[len * 2];
+            lUInt8 * p = pixels;
+            for (int i = 0; i < len; i++, p += 4) {
+                lUInt32 b = p[0];
+                lUInt32 g = p[1];
+                lUInt32 r = p[2];
+                lUInt8 a = p[3];
+                buf[i*2] = (lUInt8)((r + g + g + b) >> 2);
+                buf[i*2 + 1] = a;
+            }
+            if (!CRGL->setTextureImageLuminanceAlpha(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), buf)) {
+                delete[] buf;
+                CRGL->deleteTexture(_textureId);
+                _textureId = 0;
+                return;
+            }
+            delete[] buf;
+        } else {
+            // Luminance
+            int len = _tdx * _tdy;
+            lUInt8 * buf = new lUInt8[len];
+            lUInt8 * p = pixels;
+            for (int i = 0; i < len; i++, p += 4) {
+                lUInt32 b = p[0];
+                lUInt32 g = p[1];
+                lUInt32 r = p[2];
+                lUInt8 a = p[3];
+                if (a > 128)
+                    buf[i] = (lUInt8)((r + g + g + b) >> 2);
+                else
+                    buf[i] = 255;
+            }
+            if (!CRGL->setTextureImageGray(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), buf)) {
+                delete[] buf;
+                CRGL->deleteTexture(_textureId);
+                _textureId = 0;
+                return;
+            }
+            delete[] buf;
         }
 	    _needUpdateTexture = false;
 	    if (_closed) {

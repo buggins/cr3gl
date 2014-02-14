@@ -25,6 +25,10 @@ public:
     virtual bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels) = 0;
     /// sets texture image as ALPHA only, returns false if failed
     virtual bool setTextureImageAlpha(lUInt32 textureId, int dx, int dy, unsigned char * pixels) = 0;
+    /// sets texture image as Luminance + Alpha, returns false if failed
+    virtual bool setTextureImageLuminanceAlpha(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) = 0;
+    /// sets texture image as GRAY only, returns false if failed
+    virtual bool setTextureImageGray(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) = 0;
     /// returns texture ID for buffer, 0 if failed
     virtual bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy) = 0;
 

@@ -321,7 +321,7 @@ void InitCREngine(lString16 exePath) {
     }
 #endif
 
-    crconfig.touchMode = false;
+    crconfig.touchMode = true;
 
     // testing EINK mode
     crconfig.einkMode = true;

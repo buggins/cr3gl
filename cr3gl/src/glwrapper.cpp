@@ -110,6 +110,10 @@ public:
     virtual bool setTextureImage(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
     /// sets texture image as ALPHA only, returns false if failed
     virtual bool setTextureImageAlpha(lUInt32 textureId, int dx, int dy, unsigned char * pixels);
+    /// sets texture image as Luminance+Alpha, returns false if failed
+    virtual bool setTextureImageLuminanceAlpha(lUInt32 textureId, int dx, int dy, lUInt8 * pixels);
+    /// sets texture image as GRAY only, returns false if failed
+    virtual bool setTextureImageGray(lUInt32 textureId, int dx, int dy, lUInt8 * pixels);
     /// returns texture ID for buffer, 0 if failed
     virtual bool createFramebuffer(lUInt32 &textureId, lUInt32 &framebufferId, int dx, int dy);
 
@@ -662,6 +666,74 @@ bool CRGLSupportImpl::setTextureImageAlpha(lUInt32 textureId, int dx, int dy, lU
         CRLog::error("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
+    checkError("setTextureImageAlpha - glTexImage2D");
+    if (glGetError() != GL_NO_ERROR) {
+        CRLog::error("Cannot set image for texture");
+        return false;
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("updateTexture - glBindTexture(0)");
+    checkError("after setTextureImageAlpha");
+    return true;
+}
+
+bool CRGLSupportImpl::setTextureImageLuminanceAlpha(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
+    checkError("before setTextureImageAlpha");
+    glActiveTexture(GL_TEXTURE0);
+    checkError("updateTexture - glActiveTexture");
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("updateTexture - glBindTexture(0)");
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    checkError("setTextureImageAlpha - glBindTexture");
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    checkError("setTextureImageAlpha - glPixelStorei");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkError("setTextureImageAlpha - glTexParameteri");
+
+    if (!glIsTexture(textureId))
+        CRLog::error("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, dx, dy, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pixels);
+    checkError("setTextureImageAlpha - glTexImage2D");
+    if (glGetError() != GL_NO_ERROR) {
+        CRLog::error("Cannot set image for texture");
+        return false;
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("updateTexture - glBindTexture(0)");
+    checkError("after setTextureImageAlpha");
+    return true;
+}
+
+bool CRGLSupportImpl::setTextureImageGray(lUInt32 textureId, int dx, int dy, lUInt8 * pixels) {
+    checkError("before setTextureImageAlpha");
+    glActiveTexture(GL_TEXTURE0);
+    checkError("updateTexture - glActiveTexture");
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("updateTexture - glBindTexture(0)");
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    checkError("setTextureImageAlpha - glBindTexture");
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    checkError("setTextureImageAlpha - glPixelStorei");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkError("setTextureImageAlpha - glTexParameteri");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkError("setTextureImageAlpha - glTexParameteri");
+
+    if (!glIsTexture(textureId))
+        CRLog::error("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, dx, dy, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
     checkError("setTextureImageAlpha - glTexImage2D");
     if (glGetError() != GL_NO_ERROR) {
         CRLog::error("Cannot set image for texture");
