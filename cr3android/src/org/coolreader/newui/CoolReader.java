@@ -5,16 +5,14 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -33,7 +31,6 @@ import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -172,7 +169,11 @@ public class CoolReader extends Activity {
 		cfg.manualsDir = "@manuals";
 		cfg.manualFile = externalFilesDir + "/cr3_manual.fb2";
 		
-		cfg.systemLanguage = "en"; // TODO
+		Locale locale = getResources().getConfiguration().locale;
+		String langName = locale.getLanguage();
+		if (langName.length() > 2)
+			langName = langName.substring(0, 2);
+		cfg.systemLanguage = langName; //"en"; // TODO
 		cfg.uiFontFace = getSDKLevel() >= ICE_CREAM_SANDWICH ? "Roboto" : "Droid Sans";
 		cfg.fallbackFontFace = "Droid Sans Fallback";
 		cfg.fontFiles = findFonts();
