@@ -369,6 +369,7 @@ bool CRUIEventManager::dispatchTimerEvent() {
     for (int i = 0; i < reschedule.length(); i++) {
         updateTimerQueue(reschedule[i]);
     }
+    _rootWidget->update(false);
     if (_timers.length()) {
         // restart
         int interval = (int)(_timers[0]->nextTs - ts);

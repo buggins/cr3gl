@@ -29,6 +29,7 @@ CRUIConfig::CRUIConfig() {
     apiLevel = 0; // for Android only
     hasBattery = false;
     batteryLevel = 100;
+    textureFormat = TEXTURE_ALPHA;
 }
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {

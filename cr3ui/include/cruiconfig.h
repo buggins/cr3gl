@@ -29,6 +29,14 @@ struct CRUIHyphenationDictionary {
     }
 };
 
+typedef int TEXTURE_FORMAT;
+enum {
+    TEXTURE_RGBA = 0,
+    TEXTURE_LUMINANCE_ALPHA = 1,
+    TEXTURE_LUMINANCE = 2,
+    TEXTURE_ALPHA = 3
+};
+
 struct CRUIConfig {
     lString8 logFile;
     lString8 dbFile;
@@ -68,6 +76,8 @@ struct CRUIConfig {
     bool touchMode;
     bool enableOpenGl;
     bool einkMode;
+    TEXTURE_FORMAT textureFormat;
+    TEXTURE_FORMAT getTextureFormat() { return !einkMode ? TEXTURE_RGBA : TEXTURE_ALPHA; }
 
     /// font directories to register all files from
     lString8Collection fontDirs;

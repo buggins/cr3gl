@@ -1,5 +1,6 @@
 #include "glwrapper.h"
 #include <lvstring.h>
+#include "cruiconfig.h"
 
 
 #if QT_GL
@@ -333,6 +334,9 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
 }
 
 void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) {
+    if (crconfig.getTextureFormat() == TEXTURE_ALPHA) {
+        color = 0x000000;
+    }
     float colors[6*4];
     LVGLFillColor(color, colors, 6);
     float dstx0 = (float)xx;

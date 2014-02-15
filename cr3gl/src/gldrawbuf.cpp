@@ -614,15 +614,15 @@ public:
 	    }
     	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf->GetWidth(), _drawbuf->GetHeight());
         lUInt8 * pixels = _drawbuf->GetScanLine(0);
-        int format = crconfig.einkMode ? 1 : 0;
-        if (format == 0) {
+        TEXTURE_FORMAT format = crconfig.getTextureFormat();//TEXTURE_ALPHA;
+        if (format == TEXTURE_RGBA) {
             // RGBA
             if (!CRGL->setTextureImage(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), pixels)) {
                 CRGL->deleteTexture(_textureId);
                 _textureId = 0;
                 return;
             }
-        } else if (format == 1) {
+        } else if (format == TEXTURE_LUMINANCE_ALPHA) {
             // LuminanceAlpha
             int len = _tdx * _tdy;
             lUInt8 * buf = new lUInt8[len * 2];
@@ -643,7 +643,7 @@ public:
             }
             delete[] buf;
         } else {
-            // Luminance
+            // Luminance / alpha
             int len = _tdx * _tdy;
             lUInt8 * buf = new lUInt8[len];
             lUInt8 * p = pixels;
@@ -652,12 +652,18 @@ public:
                 lUInt32 g = p[1];
                 lUInt32 r = p[2];
                 lUInt8 a = p[3];
-                if (a > 128)
-                    buf[i] = (lUInt8)((r + g + g + b) >> 2);
-                else
-                    buf[i] = 255;
+                lUInt32 v = ((r + g + g + b) >> 2);
+                v = ((((255 ^ v) * a) >> 8) & 255) ^ 255;
+                if (format == TEXTURE_ALPHA)
+                    v = 255 - v;
+                buf[i] = (lUInt8)v;
             }
-            if (!CRGL->setTextureImageGray(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), buf)) {
+            bool res = false;
+            if (format == TEXTURE_LUMINANCE)
+                res = CRGL->setTextureImageGray(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), buf);
+            else
+                res = CRGL->setTextureImageAlpha(_textureId, _drawbuf->GetWidth(), _drawbuf->GetHeight(), buf);
+            if (!res) {
                 delete[] buf;
                 CRGL->deleteTexture(_textureId);
                 _textureId = 0;
@@ -1475,6 +1481,9 @@ void GLDrawBuf::beforeDrawing()
             CRLog::error("Creating GLScene");
         }
         _scene = LVGLPushScene(_scene);
+
+//        if (crconfig.einkMode)
+//            FillRect(0, 0, _dx, _dy, 0xFFFFFF);
         //CRGL->setOrthoProjection(_dx, _dy);
     } else {
         CRLog::warn("Duplicate beforeDrawing/afterDrawing");
