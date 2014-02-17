@@ -12,7 +12,7 @@ using namespace CRUI;
 //#define WINDOW_ANIMATION_DELAY 1750
 #define WINDOW_ANIMATION_DELAY 250
 //#define WINDOW_ANIMATION_DELAY 750
-#define SLOW_OPERATION_POPUP_DELAY 100
+#define SLOW_OPERATION_POPUP_DELAY 200
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 1000
 #define SLOW_OPERATION_DIM_COLOR 0xD0000000
 
@@ -279,7 +279,7 @@ void CRUIMainWidget::showSlowOperationPopup()
     _history.currentWidget()->draw(buf);
     buf->afterDrawing();
     _popupBackground = buf;
-    _popup = new CRUIPopupWindow(pleaseWait, SLOW_OPERATION_POPUP_DELAY, SLOW_OPERATION_POPUP_DIMMING_DURATION, SLOW_OPERATION_DIM_COLOR);
+    _popup = new CRUIPopupWindow(pleaseWait, crconfig.einkMode ? 500 : SLOW_OPERATION_POPUP_DELAY, crconfig.einkMode ? 0 : SLOW_OPERATION_POPUP_DIMMING_DURATION, crconfig.einkMode ? 0xFFFFFFFF : SLOW_OPERATION_DIM_COLOR);
     _popup->measure(_pos.width(), _pos.height());
     _popup->layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
     update(true);
@@ -749,6 +749,7 @@ public:
 /// forward screen update request to external code
 void CRUIMainWidget::setScreenUpdateMode(bool updateNow, int animationFps) {
     if (_screenUpdater) {
+		CRLog::trace("CRUIMainWidget::setScreenUpdateMode(%s, %s)", updateNow ? "updateNow" : "schedule", animationFps ? "animating" : "single frame");
         concurrencyProvider->executeGui(new CRUIUpdateEvent(_screenUpdater, updateNow, animationFps));
         //_screenUpdater->setScreenUpdateMode(updateNow, animationFps);
     }
@@ -825,14 +826,17 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
 
 /// draw now if force == true, layout/draw if necessary when force == false
 void CRUIMainWidget::update(bool force) {
+	if (crconfig.einkMode)
+		CRLog::trace("CRUIMainWidget::update(%s)", force ? "true" : "false");
     if (force)
         invalidate();
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
     if (force || animating)
         needDraw = true;
-    if (needDraw || animating)
+    if (needDraw || animating) {
         setScreenUpdateMode(needDraw, animating ? 30 : 0);
+    }
 
 }
 

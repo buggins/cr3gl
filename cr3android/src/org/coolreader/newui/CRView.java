@@ -370,6 +370,10 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	}
 	
 	private final void updateScreen(boolean updateNow, boolean animation) {
+		if (!animation)
+			setRenderMode(RENDERMODE_WHEN_DIRTY);
+		else
+			setRenderMode(RENDERMODE_CONTINUOUSLY);
 		if (updateNow) {
 			post(new Runnable() {
 				@Override
@@ -379,10 +383,6 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 			});
 			requestRender();
 		}
-		if (!animation)
-			setRenderMode(RENDERMODE_WHEN_DIRTY);
-		else
-			setRenderMode(RENDERMODE_CONTINUOUSLY);
 	}
 	
 	private final void exitApp() {

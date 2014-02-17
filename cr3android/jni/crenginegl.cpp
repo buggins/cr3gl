@@ -64,6 +64,7 @@ public:
 
     // touch event listener
     bool dispatchTouchEvent(CRTouchEventWrapper * event, int x0, int y0) {
+    	x0 = y0 = 0; // coords already relative to the view
     	int pointerCount = event->getPointerCount();
     	int action = translateTouchAction(event->getActionMasked());
     	if (action < 0) {

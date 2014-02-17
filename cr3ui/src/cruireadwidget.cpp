@@ -2040,7 +2040,7 @@ void CRUIReadWidget::moveByPage(int direction) {
         _scrollCache.prepare(_docview, _docview->GetPos(), _pos.width(), _pos.height(), 0, false);
     }
     invalidate();
-    _main->update(true);
+    //_main->update(true);
 }
 
 void CRUIReadWidget::goToPercent(int percent) {
