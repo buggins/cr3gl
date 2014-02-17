@@ -28,7 +28,7 @@ public class CRConfig {
 
     public String systemLanguage;
 
-    public int docCacheMaxBytes;
+    public int docCacheMaxBytes = 32 * 1024 * 1024;
     public int coverDirMaxItems;
     public int coverDirMaxFiles;
     public int coverDirMaxSize;
