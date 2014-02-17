@@ -75,8 +75,8 @@ public:
     	int actionPointerId = event->getPointerId(actionIndex);
     	lUInt64 ts = event->getEventTime();
 		CRUIMotionEventItem * actionItem = NULL;
-		if (crconfig.einkMode)
-			CRLog::trace("x0=%d y0=%d pointerCount = %d action = %d actionIndex = %d actionPointerId = %d x=%d y=%d", x0, y0, pointerCount, action, actionIndex, actionPointerId, event->getX(0) - x0, event->getY(0) - y0);
+//		if (crconfig.einkMode)
+//			CRLog::trace("x0=%d y0=%d pointerCount = %d action = %d actionIndex = %d actionPointerId = %d x=%d y=%d", x0, y0, pointerCount, action, actionIndex, actionPointerId, event->getX(0) - x0, event->getY(0) - y0);
     	for (int i = 0; i < pointerCount; i++) {
     		int x = event->getX(i) - x0;
     		int y = event->getY(i) - y0;
@@ -367,6 +367,9 @@ public:
 		GLDrawBuf buf(pos.width(), pos.height(), 32, false);
 		buf.beforeDrawing();
 		_widget->draw(&buf);
+//		static int updateTrigger = 0;
+//		updateTrigger++;
+//		buf.FillRect(10, 10, 20, 20, (updateTrigger & 1) ? 0x80800000 : 0x8000FFFF);
 		buf.afterDrawing();
 
 		if (m_coverpageManagerPaused) {
@@ -1047,6 +1050,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.docCacheDir = CRStringField(cfg,"docCacheDir").get8();
     crconfig.i18nDir = CRStringField(cfg,"i18nDir").get8();
     crconfig.systemLanguage = CRStringField(cfg,"systemLanguage").get8();
+    crconfig.updateScreenModeInCurrentThread = true;
 
     lString8 internalStorageDir = CRStringField(cfg,"internalStorageDir").get8();
     lString8 sdcardDir = CRStringField(cfg,"sdcardDir").get8();

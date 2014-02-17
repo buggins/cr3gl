@@ -76,6 +76,7 @@ struct CRUIConfig {
     bool touchMode;
     bool enableOpenGl;
     bool einkMode;
+    bool updateScreenModeInCurrentThread;
     TEXTURE_FORMAT textureFormat;
     TEXTURE_FORMAT getTextureFormat() { return !einkMode ? TEXTURE_RGBA : TEXTURE_ALPHA; }
 

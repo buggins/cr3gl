@@ -30,6 +30,7 @@ CRUIConfig::CRUIConfig() {
     hasBattery = false;
     batteryLevel = 100;
     textureFormat = TEXTURE_ALPHA;
+    updateScreenModeInCurrentThread = false;
 }
 
 void CRUIConfig::setupUserDir(lString8 baseDir) {

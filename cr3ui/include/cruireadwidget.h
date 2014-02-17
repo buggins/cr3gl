@@ -180,6 +180,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         LVDrawBuf * drawbuf;
         PagedModePage() : pageNumber(0), numPages(1), dx(0), dy(0), tdx(0), tdy(0), back(false), drawbuf(NULL) { }
         ~PagedModePage() {
+        	//CRLog::trace("Deleting page %08x", (lUInt32) drawbuf);
             if (drawbuf)
                 delete drawbuf;
         }

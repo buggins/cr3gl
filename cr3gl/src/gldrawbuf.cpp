@@ -523,7 +523,7 @@ public:
 };
 
 class GLImageCache : public CacheObjectListener {
-    LVHashTable<CacheableObject*,GLImageCacheItem*> _map;
+    LVHashTable<lUInt32,GLImageCacheItem*> _map;
     LVPtrVector<GLImageCachePage> _pages;
     GLImageCachePage * _activePage;
     int tdx;
@@ -533,12 +533,12 @@ class GLImageCache : public CacheObjectListener {
 public:
     GLImageCache();
     virtual ~GLImageCache();
-    GLImageCacheItem * get(CacheableObject * obj);
+    GLImageCacheItem * get(lUInt32 obj);
     GLImageCacheItem * set(LVImageSourceRef img);
     GLImageCacheItem * set(LVDrawBuf * img);
     void clear();
     void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
-    virtual void onCachedObjectDeleted(CacheableObject * obj);
+    virtual void onCachedObjectDeleted(lUInt32 obj);
     void removeDeletedItems();
 };
 
@@ -557,7 +557,7 @@ static int nearestPOT(int n) {
 GLImageCache * glImageCache = NULL;
 
 /// object deletion listener callback function type
-static void onObjectDestroyedCallback(CacheObjectListener * pcache, CacheableObject * pobject) {
+static void onObjectDestroyedCallback(CacheObjectListener * pcache, lUInt32 pobject) {
 	if (glImageCache == pcache)
 		glImageCache->onCachedObjectDeleted(pobject);
 }
@@ -827,7 +827,7 @@ public:
 // GLImageCache
 
 //#define GL_IMAGE_CACHE_PAGE_SIZE 1024
-GLImageCacheItem * GLImageCache::get(CacheableObject * obj) {
+GLImageCacheItem * GLImageCache::get(lUInt32 obj) {
 	GLImageCacheItem * res = _map.get(obj);
 	return res;
 }
@@ -851,7 +851,7 @@ GLImageCacheItem * GLImageCache::set(LVImageSourceRef img) {
 		res = page->addItem(img);
 		page->close();
 	}
-	_map.set(img.get(), res);
+	_map.set(img->getObjectId(), res);
 	return res;
 }
 
@@ -877,13 +877,13 @@ GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
 		res = page->addItem(img);
 		page->close();
 	}
-	_map.set(img, res);
+	_map.set(img->getObjectId(), res);
 	return res;
 }
 
 void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip, int rotationAngle)
 {
-	GLImageCacheItem* item = get(obj);
+	GLImageCacheItem* item = get(obj->getObjectId());
 	if (item) {
         item->getPage()->drawItem(item, x, y, dx, dy, srcx, srcy, srcdx, srcdy, color, options, clip, rotationAngle);
 	}
@@ -910,8 +910,8 @@ GLImageCache::~GLImageCache() {
 
 void GLImageCache::clear() {
     CRLog::info("GLImageCache::clear() map size = %d, pages = %d", _map.length(), _pages.length());
-    LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
-	LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * p;
+    LVHashTable<lUInt32,GLImageCacheItem*>::iterator iter = _map.forwardIterator();
+	LVHashTable<lUInt32,GLImageCacheItem*>::pair * p;
 	for (;;) {
 		p = iter.next();
 		if (!p)
@@ -924,10 +924,10 @@ void GLImageCache::clear() {
 }
 
 void GLImageCache::removeDeletedItems() {
-    LVArray<CacheableObject*> list;
-    LVHashTable<CacheableObject*,GLImageCacheItem*>::iterator p = _map.forwardIterator();
+    LVArray<lUInt32> list;
+    LVHashTable<lUInt32,GLImageCacheItem*>::iterator p = _map.forwardIterator();
     for (;;) {
-        LVHashTable<CacheableObject*,GLImageCacheItem*>::pair * item = p.next();
+        LVHashTable<lUInt32,GLImageCacheItem*>::pair * item = p.next();
         if (!item)
             break;
         if (item->value->_deleted)
@@ -938,18 +938,18 @@ void GLImageCache::removeDeletedItems() {
     }
 }
 
-void GLImageCache::onCachedObjectDeleted(CacheableObject * obj) {
-    CRLog::trace("Cached object deleted");
+void GLImageCache::onCachedObjectDeleted(lUInt32 obj) {
+    //CRLog::trace("Cached object deleted");
 	GLImageCacheItem* item = get(obj);
 	if (item) {
         if (LVGLPeekScene()) {
             item->_deleted = true;
-            CRLog::trace("item deleted while scene is active");
+            //CRLog::trace("item deleted while scene is active");
         } else {
             int itemsLeft = item->getPage()->deleteItem(item);
-            CRLog::trace("itemsLeft = %d", itemsLeft);
+            //CRLog::trace("itemsLeft = %d", itemsLeft);
             if (itemsLeft <= 0) {
-                CRLog::trace("removing page");
+                //CRLog::trace("removing page");
                 removePage(item->getPage());
             }
             _map.remove(obj);
@@ -1246,7 +1246,7 @@ void GLDrawBuf::DrawRotated( LVImageSourceRef img, int x, int y, int width, int 
 {
     if (width <= 0 || height <= 0)
         return;
-    GLImageCacheItem * item = glImageCache->get(img.get());
+    GLImageCacheItem * item = glImageCache->get(img.get()->getObjectId());
     if (item == NULL)
         item = glImageCache->set(img);
     if (item != NULL) {
@@ -1271,7 +1271,7 @@ void GLDrawBuf::Draw( LVImageSourceRef img, int x, int y, int width, int height,
     CR_UNUSED(dither);
     if (width <= 0 || height <= 0)
 		return;
-	GLImageCacheItem * item = glImageCache->get(img.get());
+	GLImageCacheItem * item = glImageCache->get(img->getObjectId());
 	if (item == NULL)
 		item = glImageCache->set(img);
 	if (item != NULL) {
@@ -1396,7 +1396,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
             }
         }
     } else {
-        GLImageCacheItem * item = glImageCache->get(src);
+        GLImageCacheItem * item = glImageCache->get(src->getObjectId());
         if (item == NULL)
             item = glImageCache->set(src);
         if (item != NULL) {

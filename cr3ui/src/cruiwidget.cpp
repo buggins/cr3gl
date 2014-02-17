@@ -510,7 +510,7 @@ void CRUIWidget::animate(lUInt64 millisPassed)
         getChild(i)->animate(millisPassed);
 }
 
-#define DEBUG_SCREEN_UPDATE 1
+#define DEBUG_SCREEN_UPDATE 0
 static void checkUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needRedraw, bool & animating) {
     if (widget->isLayoutRequested()) {
         if (!needLayout) {

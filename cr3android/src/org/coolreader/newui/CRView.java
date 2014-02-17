@@ -49,6 +49,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
+		//log.v("onDrawFrame");
 		gl.glClearColor(1, 1, 1, 1);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		drawInternal();
@@ -369,20 +370,40 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		}
 	}
 	
-	private final void updateScreen(boolean updateNow, boolean animation) {
-		if (!animation)
-			setRenderMode(RENDERMODE_WHEN_DIRTY);
-		else
-			setRenderMode(RENDERMODE_CONTINUOUSLY);
-		if (updateNow) {
-			post(new Runnable() {
+	int LAST_RENDERMODE = RENDERMODE_CONTINUOUSLY;
+	private int LAST_UPDATE_REQUEST = 1;
+	private final void updateScreen(final boolean updateNow, final boolean animation) {
+		final int MY_UPDATE_REQEUST = updateNow ? ++LAST_UPDATE_REQUEST : LAST_UPDATE_REQUEST;
+		final int newRendermode = !animation ? RENDERMODE_WHEN_DIRTY : RENDERMODE_CONTINUOUSLY;
+		if (updateNow || newRendermode != LAST_RENDERMODE) {
+			queueEvent(new Runnable() {
 				@Override
 				public void run() {
-					invalidate();
+					if (LAST_UPDATE_REQUEST == MY_UPDATE_REQEUST) {
+						if (LAST_RENDERMODE != newRendermode) {
+							setRenderMode(newRendermode);
+							LAST_RENDERMODE = newRendermode;
+						}
+						if (updateNow || animation) {
+							//log.v("Requesting render");
+							//invalidate();
+							requestRender();
+						} else {
+							//log.v("Skipping update request - no animation and no force update");
+						}
+					} else {
+						//log.v("Skipping update request - not last");
+					}
 				}
 			});
-			requestRender();
 		}
+//			//requestRender();
+//		} else {
+//			if (!animation)
+//				setRenderMode(RENDERMODE_WHEN_DIRTY);
+//			else
+//				setRenderMode(RENDERMODE_CONTINUOUSLY);
+//		}
 	}
 	
 	private final void exitApp() {

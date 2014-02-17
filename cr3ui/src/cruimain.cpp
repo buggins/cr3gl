@@ -737,16 +737,16 @@ public:
     {
         _updateRequestId = ++LAST_UPDATE_REQUEST_ID;
         LAST_UPDATE_REQUEST_UPDATE_NOW |= updateNow;
-        if (crconfig.einkMode)
-            CRLog::trace("CRUIUpdateEvent : posting update request updateNow=%s animating=%s", _updateNow ? "true" : "false",
-                     _animationFps > 0 ? "true" : "false");
+//        if (crconfig.einkMode)
+//            CRLog::trace("CRUIUpdateEvent : posting update request updateNow=%s animating=%s", _updateNow ? "true" : "false",
+//                     _animationFps > 0 ? "true" : "false");
     }
 
     virtual void run() {
         if (_updateRequestId == LAST_UPDATE_REQUEST_ID && !LAST_UPDATE_REQUEST_CANCELLED_ALL) {
-            if (crconfig.einkMode)
-                CRLog::trace("CRUIUpdateEvent : executing setScreenUpdateMode updateNow=%s animating=%s", LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow ? "true" : "false",
-                         _animationFps > 0 ? "true" : "false");
+//            if (crconfig.einkMode)
+//                CRLog::trace("CRUIUpdateEvent : executing setScreenUpdateMode updateNow=%s animating=%s", LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow ? "true" : "false",
+//                         _animationFps > 0 ? "true" : "false");
             _screenUpdater->setScreenUpdateMode(LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow, _animationFps);
             LAST_UPDATE_REQUEST_UPDATE_NOW = false;
         } else {
@@ -759,8 +759,11 @@ public:
 /// forward screen update request to external code
 void CRUIMainWidget::setScreenUpdateMode(bool updateNow, int animationFps) {
     if (_screenUpdater) {
-		CRLog::trace("CRUIMainWidget::setScreenUpdateMode(%s, %s)", updateNow ? "updateNow" : "schedule", animationFps ? "animating" : "single frame");
-        concurrencyProvider->executeGui(new CRUIUpdateEvent(_screenUpdater, updateNow, animationFps));
+		//CRLog::trace("CRUIMainWidget::setScreenUpdateMode(%s, %s)", updateNow ? "updateNow" : "schedule", animationFps ? "animating" : "single frame");
+		if (crconfig.updateScreenModeInCurrentThread)
+			_screenUpdater->setScreenUpdateMode(updateNow, animationFps);
+		else
+			concurrencyProvider->executeGui(new CRUIUpdateEvent(_screenUpdater, updateNow, animationFps));
         //_screenUpdater->setScreenUpdateMode(updateNow, animationFps);
     }
 }
@@ -836,11 +839,11 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
 
 /// draw now if force == true, layout/draw if necessary when force == false
 void CRUIMainWidget::update(bool force) {
-	if (crconfig.einkMode)
-		CRLog::trace("CRUIMainWidget::update(%s)", force ? "true" : "false");
+//	if (crconfig.einkMode)
+//		CRLog::trace("CRUIMainWidget::update(%s)", force ? "true" : "false");
     if (force) {
-        if (crconfig.einkMode)
-            CRLog::trace("Invalidating main widget");
+//        if (crconfig.einkMode)
+//            CRLog::trace("Invalidating main widget");
         invalidate();
     }
     bool needLayout, needDraw, animating;

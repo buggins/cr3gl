@@ -730,6 +730,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
         _popupControl.popupBackground->draw(buf);
     if (_popupControl.popup)
         _popupControl.popup->draw(buf);
+	_drawRequested = false;
 }
 
 class BookLoadedNotificationTask : public CRRunnable {
@@ -1153,6 +1154,7 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
             newpos = pos - _pos.height() * 9 / 10;
             speed = _pos.height() * 2;
         }
+        invalidate();
         break;
     case DCMD_PAGEDOWN:
         if (_viewMode == DVM_PAGES) {
@@ -1166,14 +1168,17 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
             newpos = pos + _pos.height() * 9 / 10;
             speed = _pos.height() * 2;
         }
+        invalidate();
         break;
     case DCMD_LINEUP:
         newpos = pos - _docview->getFontSize();
         speed = _pos.height() / 2;
+        invalidate();
         break;
     case DCMD_LINEDOWN:
         newpos = pos + _docview->getFontSize();
         speed = _pos.height() / 2;
+        invalidate();
         break;
     default:
         return _docview->doCommand((LVDocCmd)cmd, param) != 0;
@@ -1761,13 +1766,13 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         else
             cancelSelection();
 
-        invalidate();
+        //invalidate();
         //CRLog::trace("list DOWN");
         break;
     case ACTION_UP:
         {
             cancelPositionUpdateTimer();
-            invalidate();
+            //invalidate();
             if (!_selection.selecting)
                 cancelSelection();
             if (_selection.selecting) {
@@ -2495,7 +2500,6 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         return; // already prepared
     if (!back && findPage(pageNumber))
 		return; // already prepared
-    //CRLog::trace("Preparing page image for page %d", pageNumber);
     PagedModePage * page = new PagedModePage();
     page->dx = dx;
     page->dy = dy;
@@ -2504,8 +2508,10 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     page->pageNumber = pageNumber;
     page->numPages = numPages;
     page->drawbuf = createBuf();
+	//CRLog::trace("Created page %08x", (lUInt32) page->drawbuf);
     page->back = back;
     LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
+    //CRLog::trace("Preparing page image for page %d ; buf = %08x", pageNumber, (lUInt32)buf);
     buf->beforeDrawing();
     buf->SetTextColor(_docview->getTextColor());
     buf->SetBackgroundColor(_docview->getBackgroundColor());
@@ -2515,6 +2521,10 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         _docview->goToPage(pageNumber);
     //_docview->Draw(*buf, -1, pageNumber, false, false);
     _docview->Draw(*buf, false);
+//    if ((pageNumber & 1))
+//    	buf->FillRect(100, 10, 110, 20, 0x800000FF);
+//    else
+//    	buf->FillRect(120, 10, 130, 20, 0x800000FF);
     if (back)
         _docview->drawPageBackground(*buf, 0, 0, 0x60); // semitransparent background above page image
     if (oldPage != pageNumber)
@@ -2907,7 +2917,7 @@ void CRUIReadWidget::PagedModePageCache::calcDragPositionProgress(int startx, in
 /// draw
 void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int startx, int currx) {
     CR_UNUSED2(direction, progress);
-    //CRLog::trace("PagedModePageCache::draw(page=%d, progress=%d dir=%d)", pageNumber, progress, direction);
+    //CRLog::trace("PagedModePageCache::draw(page=%d, numPages=%d, progress=%d dir=%d)", pageNumber, numPages, progress, direction);
     // workaround for no-rtti builds
     LVDrawBuf * glbuf = dst; //dst->asGLDrawBuf(); //dynamic_cast<GLDrawBuf*>(buf);
     if (glbuf) {
@@ -2990,6 +3000,7 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             if (page) {
                 // simple draw current page
                 //page->drawbuf->DrawTo(glbuf, x, 0, 0, NULL);
+            	//CRLog::trace("drawing page %d", page->pageNumber);
                 CRUIDrawTo(page->drawbuf, glbuf, x, 0);
                 //CRUIDrawTo(page->drawbufglbuf->DrawFragment(, 0, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), x, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), 0);
             }

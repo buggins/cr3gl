@@ -102,15 +102,15 @@ public class DeviceInfo {
 		AMOLED_SCREEN = MANUFACTURER.toLowerCase().contentEquals("samsung") &&
         		(MODEL.toLowerCase().startsWith("gt-i")); // AMOLED screens: GT-IXXXX
 		EINK_NOOK = MANUFACTURER.toLowerCase().contentEquals("barnesandnoble") && 
-				(PRODUCT.contentEquals("NOOK") || MODEL.contentEquals("NOOK") || MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300")) &&
+				(PRODUCT.contentEquals("NOOK") || MODEL.contentEquals("NOOK") || MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300") || MODEL.contentEquals("BNRV500")) &&
 				DEVICE.toLowerCase().contentEquals("zoom2");
-		EINK_NOOK_120 = EINK_NOOK && (MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300"));
+		EINK_NOOK_120 = EINK_NOOK && (MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300") || MODEL.contentEquals("BNRV500"));
 		EINK_SONY = MANUFACTURER.toLowerCase().contentEquals("sony") && MODEL.startsWith("PRS-T");
 		//MANUFACTURER=Onyx, MODEL=C63ML, DEVICE=C63ML, PRODUCT=C63ML
 		EINK_ONYX = MANUFACTURER.toLowerCase().contentEquals("onyx") && MODEL.startsWith("C") && MODEL.endsWith("ML");
 		//MANUFACTURER -DNS, DEVICE -BK6004C, MODEL - DNS Airbook EGH602, PRODUCT - BK6004C
 		EINK_DNS = MANUFACTURER.toLowerCase().contentEquals("dns") && MODEL.startsWith("DNS Airbook EGH");
-		EINK_SCREEN = EINK_SONY || EINK_NOOK || EINK_ONYX || EINK_DNS; // TODO: set to true for eink devices like Nook Touch
+		EINK_SCREEN = EINK_SONY || EINK_NOOK || EINK_ONYX || EINK_DNS || true; // TODO: set to true for eink devices like Nook Touch
 
 		POCKETBOOK = MODEL.toLowerCase().startsWith("pocketbook") || MODEL.toLowerCase().startsWith("obreey");
 		
