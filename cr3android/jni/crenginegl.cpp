@@ -75,7 +75,7 @@ public:
     	lUInt64 ts = event->getEventTime();
 		CRUIMotionEventItem * actionItem = NULL;
 		if (crconfig.einkMode)
-			CRLog::trace("pointerCount = %d action = %d actionIndex = %d actionPointerId = %d", pointerCount, action, actionIndex, actionPointerId);
+			CRLog::trace("x0=%d y0=%d pointerCount = %d action = %d actionIndex = %d actionPointerId = %d x=%d y=%d", x0, y0, pointerCount, action, actionIndex, actionPointerId, event->getX(0) - x0, event->getY(0) - y0);
     	for (int i = 0; i < pointerCount; i++) {
     		int x = event->getX(i) - x0;
     		int y = event->getY(i) - y0;

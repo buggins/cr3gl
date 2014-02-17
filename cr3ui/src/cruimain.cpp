@@ -1055,6 +1055,8 @@ bool CRUIMainWidget::isAnimating() {
 void CRUIMainWidget::draw(LVDrawBuf * buf) {
     if (!_initialized)
         runStartupTasksIfNeeded();
+    if (crconfig.einkMode)
+    	CRLog::trace("CRUIMainWidget::draw");
 
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
