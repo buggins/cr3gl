@@ -733,15 +733,25 @@ class CRUIUpdateEvent : public CRRunnable {
     int _animationFps;
 public:
     CRUIUpdateEvent(CRUIScreenUpdateManagerCallback * screenUpdater, bool updateNow, int animationFps)
-        : _screenUpdater(screenUpdater), _updateNow(updateNow), _animationFps(animationFps) {
+        : _screenUpdater(screenUpdater), _updateNow(updateNow), _animationFps(animationFps)
+    {
         _updateRequestId = ++LAST_UPDATE_REQUEST_ID;
         LAST_UPDATE_REQUEST_UPDATE_NOW |= updateNow;
+        if (crconfig.einkMode)
+            CRLog::trace("CRUIUpdateEvent : posting update request updateNow=%s animating=%s", _updateNow ? "true" : "false",
+                     _animationFps > 0 ? "true" : "false");
     }
 
     virtual void run() {
         if (_updateRequestId == LAST_UPDATE_REQUEST_ID && !LAST_UPDATE_REQUEST_CANCELLED_ALL) {
+            if (crconfig.einkMode)
+                CRLog::trace("CRUIUpdateEvent : executing setScreenUpdateMode updateNow=%s animating=%s", LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow ? "true" : "false",
+                         _animationFps > 0 ? "true" : "false");
             _screenUpdater->setScreenUpdateMode(LAST_UPDATE_REQUEST_UPDATE_NOW | _updateNow, _animationFps);
             LAST_UPDATE_REQUEST_UPDATE_NOW = false;
+        } else {
+            if (crconfig.einkMode)
+                CRLog::trace("CRUIUpdateEvent : skipping non-last update request");
         }
     }
 };
