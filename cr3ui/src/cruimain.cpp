@@ -828,8 +828,11 @@ void CRUIMainWidget::layout(int left, int top, int right, int bottom) {
 void CRUIMainWidget::update(bool force) {
 	if (crconfig.einkMode)
 		CRLog::trace("CRUIMainWidget::update(%s)", force ? "true" : "false");
-    if (force)
+    if (force) {
+        if (crconfig.einkMode)
+            CRLog::trace("Invalidating main widget");
         invalidate();
+    }
     bool needLayout, needDraw, animating;
     CRUICheckUpdateOptions(this, needLayout, needDraw, animating);
     if (force || animating)
