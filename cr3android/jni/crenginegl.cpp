@@ -267,6 +267,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _setFullscreenMethod;
     CRMethodAccessor _openUrlMethod;
     CRMethodAccessor _cancelDownloadMethod;
+    CRMethodAccessor _setScreenUpdateModeMethod;
+    CRMethodAccessor _setScreenUpdateIntervalMethod;
 
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
@@ -469,6 +471,14 @@ public:
     }
     virtual void setFullscreen(bool fullscreen) {
     	return _setFullscreenMethod.callVoidBool(fullscreen);
+    }
+
+    virtual void setScreenUpdateMode(int mode) {
+    	_setScreenUpdateModeMethod.callVoid(mode);
+    }
+
+    virtual void setScreenUpdateInterval(int interval) {
+    	_setScreenUpdateIntervalMethod.callVoid(interval);
     }
 
     void setBatteryLevel(int level) {
@@ -804,6 +814,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _setFullscreenMethod(_obj, "setFullscreen", "(Z)V")
 	, _openUrlMethod(_obj, "openUrl", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I")
 	, _cancelDownloadMethod(_obj, "cancelDownload", "(I)V")
+	, _setScreenUpdateModeMethod(_obj, "setScreenUpdateMode", "(I)V")
+	, _setScreenUpdateIntervalMethod(_obj, "setScreenUpdateInterval", "(I)V")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)
@@ -1067,6 +1079,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.coverRenderCacheMaxItems = CRIntField(cfg,"coverRenderCacheMaxItems").get();
     crconfig.coverRenderCacheMaxBytes = CRIntField(cfg,"coverRenderCacheMaxBytes").get();
     crconfig.einkMode = CRBoolField(cfg,"einkMode").get();
+    crconfig.einkModeSettingsSupported = CRBoolField(cfg,"einkModeSettingsSupported").get();
     lString16Collection fonts;
     CRStringArrayField fontFilesField(cfg, "fontFiles");
     for (int i = 0; i < fontFilesField.length(); i++) {

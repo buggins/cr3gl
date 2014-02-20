@@ -525,6 +525,32 @@ void CRUIMainWidget::createReaderSettings() {
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_1PAGE, STR_SETTINGS_VIEW_MODE_VALUE_1PAGE));
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_2PAGES, STR_SETTINGS_VIEW_MODE_VALUE_2PAGES));
     pageLayout->addChild(viewmode);
+
+
+    if (crconfig.einkModeSettingsSupported) {
+		CRUISettingsOptionList * updatemode = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_UPDATE_MODE, STR_SETTINGS_APP_SCREEN_UPDATE_MODE_DESCRIPTION, PROP_APP_SCREEN_UPDATE_MODE);
+		updatemode->addOption(new CRUIOptionItem("0", STR_SETTINGS_APP_SCREEN_UPDATE_MODE_QUALITY));
+		updatemode->addOption(new CRUIOptionItem("1", STR_SETTINGS_APP_SCREEN_UPDATE_MODE_FAST));
+		updatemode->addOption(new CRUIOptionItem("2", STR_SETTINGS_APP_SCREEN_UPDATE_MODE_FAST2));
+		pageLayout->addChild(updatemode);
+		CRUISettingsOptionList * updateinterval = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_UPDATE_INTERVAL, STR_SETTINGS_APP_SCREEN_UPDATE_INTERVAL_DESCRIPTION, PROP_APP_SCREEN_UPDATE_INTERVAL);
+		updatemode->addOption(new CRUIOptionItem(lString8("0"), lString16("0")));
+		updatemode->addOption(new CRUIOptionItem(lString8("1"), lString16("1")));
+		updatemode->addOption(new CRUIOptionItem(lString8("2"), lString16("2")));
+		updatemode->addOption(new CRUIOptionItem(lString8("3"), lString16("3")));
+		updatemode->addOption(new CRUIOptionItem(lString8("4"), lString16("4")));
+		updatemode->addOption(new CRUIOptionItem(lString8("5"), lString16("5")));
+		updatemode->addOption(new CRUIOptionItem(lString8("7"), lString16("7")));
+		updatemode->addOption(new CRUIOptionItem(lString8("10"), lString16("10")));
+		updatemode->addOption(new CRUIOptionItem(lString8("15"), lString16("15")));
+		updatemode->addOption(new CRUIOptionItem(lString8("20"), lString16("20")));
+		pageLayout->addChild(updateinterval);
+    }
+//	if ( DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED ) {
+//		mOptionsPage.add(new ListOption(this, getString(R.string.options_screen_update_mode), PROP_APP_SCREEN_UPDATE_MODE).add(mScreenUpdateModes, mScreenUpdateModesTitles).setDefaultValue("0"));
+//		mOptionsPage.add(new ListOption(this, getString(R.string.options_screen_update_interval), PROP_APP_SCREEN_UPDATE_INTERVAL).add(mScreenFullUpdateInterval).setDefaultValue("10"));
+//	}
+
     if (!crconfig.einkMode) {
         CRUISettingsOptionList * animationmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_PAGE_ANIMATION, STR_SETTINGS_VIEW_PAGE_ANIMATION_DESCRIPTION, PROP_PAGE_VIEW_ANIMATION);
         animationmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_ANIMATION_VALUE_NONE, STR_SETTINGS_VIEW_PAGE_ANIMATION_VALUE_NONE));
@@ -646,6 +672,8 @@ CRUIMainWidget::CRUIMainWidget()
 
     _currentSettings->setStringDef(PROP_FONT_FACE, crconfig.uiFontFace.c_str());
     _currentSettings->setIntDef(PROP_FONT_SIZE, crconfig.defFontSize);
+    _currentSettings->setIntDef(PROP_APP_SCREEN_UPDATE_MODE, 0);
+    _currentSettings->setIntDef(PROP_APP_SCREEN_UPDATE_INTERVAL, 10);
     if (!crconfig.einkMode) {
         _currentSettings->setStringDef(PROP_NIGHT_MODE, "0");
         _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
@@ -896,6 +924,16 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             crconfig.setTheme(UnicodeToUtf8(newValue));
             crconfig.setupResourcesForScreenSize();
             themeChanged = true;
+        }
+        if (key == PROP_APP_SCREEN_UPDATE_MODE && crconfig.einkModeSettingsSupported) {
+        	int v = newValue.atoi();
+        	if (getPlatform())
+        		getPlatform()->setScreenUpdateMode(v);
+        }
+        if (key == PROP_APP_SCREEN_UPDATE_INTERVAL && crconfig.einkModeSettingsSupported) {
+        	int v = newValue.atoi();
+        	if (getPlatform())
+        		getPlatform()->setScreenUpdateInterval(v);
         }
         if (key == PROP_APP_FULLSCREEN) {
             if (getPlatform())

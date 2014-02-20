@@ -60,6 +60,15 @@ public:
     virtual bool isFullscreen() { return false; }
     virtual void setFullscreen(bool fullscreen) { CR_UNUSED(fullscreen); }
 
+    enum {
+    	EINK_UPDATE_MODE_CLEAR = 0,
+    	EINK_UPDATE_MODE_ONESHOT = 1,
+    	EINK_UPDATE_MODE_ACTIVE = 2
+    };
+
+    virtual void setScreenUpdateMode(int mode) { CR_UNUSED(mode); }
+    virtual void setScreenUpdateInterval(int interval) { CR_UNUSED(interval); }
+
     /// returns 0 if not supported, task ID if download task is started
     virtual int openUrl(lString8 url, lString8 method, lString8 login, lString8 password, lString8 saveAs) {
         CR_UNUSED5(url, method, login, password, saveAs);

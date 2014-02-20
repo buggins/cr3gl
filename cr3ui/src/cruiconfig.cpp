@@ -26,6 +26,7 @@ CRUIConfig::CRUIConfig() {
     touchMode = true;
     enableOpenGl = true;
     einkMode = false;
+    einkModeSettingsSupported = false;
     apiLevel = 0; // for Android only
     hasBattery = false;
     batteryLevel = 100;

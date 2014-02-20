@@ -18,7 +18,6 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
-import android.os.Message;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -49,6 +48,10 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
+		if (DeviceInfo.EINK_SCREEN){
+			// TODO: partial refresh
+			EinkScreen.PrepareController(this, false);
+		}
 		//log.v("onDrawFrame");
 		gl.glClearColor(1, 1, 1, 1);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
@@ -79,6 +82,8 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	@Override
 	public void onPause() {
 		log.i("CRView.onPause");
+		if (DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED)
+			EinkScreen.Refresh();
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
@@ -539,6 +544,45 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 			return mAssetManager.list(path);
 		} catch (IOException e) {
 			return null;
+		}
+	}
+	
+//	private final void einkPrepareController(boolean partially) {
+//		if (DeviceInfo.EINK_SCREEN && surfaceOk) {
+//			EinkScreen.PrepareController(this, partially);
+//		}
+//	}
+//	
+//	private final void einkResetController(int screenUpdateMode) {
+//		if (DeviceInfo.EINK_SCREEN && surfaceOk) {
+//			EinkScreen.ResetController(screenUpdateMode, this);
+//		}
+//	}
+//	
+	private int mScreenUpdateMode = 0;
+	public int getScreenUpdateMode() {
+		return mScreenUpdateMode;
+	}
+	public void setScreenUpdateMode(int screenUpdateMode) {
+		if (!DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED || !surfaceOk)
+			return;
+		mScreenUpdateMode = screenUpdateMode;
+		if (EinkScreen.UpdateMode != screenUpdateMode || EinkScreen.UpdateMode == 2) {
+			EinkScreen.ResetController(screenUpdateMode, this);
+		}
+	}
+
+	private int mScreenUpdateInterval = 0;
+	public int getScreenUpdateInterval() {
+		return mScreenUpdateInterval;
+	}
+	public void setScreenUpdateInterval(int screenUpdateInterval) {
+		if (!DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED || !surfaceOk)
+			return;
+		mScreenUpdateInterval = screenUpdateInterval;
+		if (EinkScreen.UpdateModeInterval != screenUpdateInterval) {
+			EinkScreen.UpdateModeInterval = screenUpdateInterval;
+			EinkScreen.ResetController(mScreenUpdateMode, this);
 		}
 	}
 	

@@ -29,6 +29,9 @@
 #define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
 #define PROP_APP_FULLSCREEN "app.fullscreen"
 
+#define PROP_APP_SCREEN_UPDATE_MODE "app.screen.update.mode"
+#define PROP_APP_SCREEN_UPDATE_INTERVAL "app.screen.update.interval"
+
 #define PROP_PAGE_VIEW_MODE_VALUE_SCROLL "0"
 #define PROP_PAGE_VIEW_MODE_VALUE_1PAGE "1"
 #define PROP_PAGE_VIEW_MODE_VALUE_2PAGES "2"
