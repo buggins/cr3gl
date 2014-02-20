@@ -5,7 +5,7 @@ import android.view.View;
 public class EinkScreen {
 	
 	/// variables
-	public static int UpdateMode = -1; 
+	public static int UpdateMode = -1;
 	// 0 - CLEAR_ALL, set only for old_mode == 2 
 	// 1 - ONESHOT, always set in prepare 
 	// 2 - ACTIVE, set in prepare

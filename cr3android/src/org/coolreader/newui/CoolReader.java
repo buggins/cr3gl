@@ -309,7 +309,7 @@ public class CoolReader extends Activity {
 	}
 	
 	public void setFullscreen(boolean fullscreen) {
-		if (this.fullscreen = fullscreen) {
+		if (this.fullscreen != fullscreen) {
 			this.fullscreen = fullscreen;
 			Window wnd = getWindow();
 			if ( fullscreen ) {
@@ -320,26 +320,27 @@ public class CoolReader extends Activity {
 				wnd.setFlags(0, 
 				        WindowManager.LayoutParams.FLAG_FULLSCREEN );
 			}
-			//setSystemUiVisibility();
+			setSystemUiVisibility();
 		}
 	}
 	
 	final int sdkLevel = android.os.Build.VERSION.SDK_INT;
-//	public boolean setSystemUiVisibility() {
-//		if (sdkLevel >= HONEYCOMB) {
-//			int flags = 0;
+	
+	public boolean setSystemUiVisibility() {
+		if (sdkLevel >= HONEYCOMB) {
+			int flags = 0;
 //			if (getKeyBacklight() == 0)
 //				flags |= SYSTEM_UI_FLAG_LOW_PROFILE;
-////			if (isFullscreen() && wantHideNavbarInFullscreen() && isSmartphone())
-////				flags |= SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-//			setSystemUiVisibility(flags);
-////			if (isFullscreen() && DeviceInfo.getSDKLevel() >= DeviceInfo.ICE_CREAM_SANDWICH)
-////				simulateTouch();
-//			return true;
-//		}
-//		return false;
-//	}
-//
+//			if (isFullscreen() && wantHideNavbarInFullscreen() && isSmartphone())
+//				flags |= SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+			setSystemUiVisibility(flags);
+//			if (isFullscreen() && DeviceInfo.getSDKLevel() >= DeviceInfo.ICE_CREAM_SANDWICH)
+//				simulateTouch();
+			return true;
+		}
+		return false;
+	}
+
 	private int lastSystemUiVisibility = -1;
 	private final static int SYSTEM_UI_FLAG_LOW_PROFILE = 1;
 	//private boolean systemUiVisibilityListenerIsSet = false;
