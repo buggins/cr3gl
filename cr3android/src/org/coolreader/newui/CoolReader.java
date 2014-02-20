@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -31,6 +34,7 @@ import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -38,6 +42,7 @@ import android.view.inputmethod.InputMethodManager;
 public class CoolReader extends Activity {
 	
 	public CRView crview;
+	private View mDecorView;
 	public static final String TAG = "cr3";
 	public static final Logger log = L.create(TAG);
 
@@ -214,9 +219,28 @@ public class CoolReader extends Activity {
 		return sdkInt;
 	}
 	
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+	super.onWindowFocusChanged(hasFocus);
+	if (hasFocus && (DeviceInfo.getSDKLevel() >= 19)) {
+		int flag = 0;
+		if (fullscreen)
+			flag |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+					| View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+            mDecorView.setSystemUiVisibility(flag);
+        }
+    }
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		log.i("CoolReader.onCreate() is called");
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		mDecorView = getWindow().getDecorView();
 		super.onCreate(savedInstanceState);
 		crview = new CRView(this);
 		crview.init(createConfig());
@@ -316,55 +340,57 @@ public class CoolReader extends Activity {
 //		return false;
 //	}
 //
-//	private int lastSystemUiVisibility = -1;
-//	private final static int SYSTEM_UI_FLAG_LOW_PROFILE = 1;
-//	//private boolean systemUiVisibilityListenerIsSet = false;
-//	@TargetApi(11)
-//	@SuppressLint("NewApi")
-//	private boolean setSystemUiVisibility(int value) {
-//		if (sdkLevel >= HONEYCOMB) {
-////			if (!systemUiVisibilityListenerIsSet && contentView != null) {
-////				contentView.setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
-////					@Override
-////					public void onSystemUiVisibilityChange(int visibility) {
-////						lastSystemUiVisibility = visibility;
-////					}
-////				});
-////			}
-//			boolean a4 = sdkLevel >= ICE_CREAM_SANDWICH;
-//			if (!a4)
-//				value &= SYSTEM_UI_FLAG_LOW_PROFILE;
-//			if (value == lastSystemUiVisibility && value != SYSTEM_UI_FLAG_LOW_PROFILE)// && a4)
-//				return false;
-//			lastSystemUiVisibility = value;
-//
-//			View view;
-//			//if (a4)
-//				view = getWindow().getDecorView(); // getReaderView();
-//			//else
-//			//	view = mActivity.getContentView(); // getReaderView();
-//			
-//			if (view == null)
-//				return false;
-//			Method m;
-//			try {
-//				m = view.getClass().getMethod("setSystemUiVisibility", int.class);
-//				m.invoke(view, value);
-//				return true;
-//			} catch (SecurityException e) {
-//				// ignore
-//			} catch (NoSuchMethodException e) {
-//				// ignore
-//			} catch (IllegalArgumentException e) {
-//				// ignore
-//			} catch (IllegalAccessException e) {
-//				// ignore
-//			} catch (InvocationTargetException e) {
-//				// ignore
-//			}
-//		}
-//		return false;
-//	}
+	private int lastSystemUiVisibility = -1;
+	private final static int SYSTEM_UI_FLAG_LOW_PROFILE = 1;
+	//private boolean systemUiVisibilityListenerIsSet = false;
+	@TargetApi(11)
+	@SuppressLint("NewApi")
+	private boolean setSystemUiVisibility(int value) {
+		if (sdkLevel >= HONEYCOMB) {
+			if (DeviceInfo.getSDKLevel() < 19) {
+	//			if (!systemUiVisibilityListenerIsSet && contentView != null) {
+	//				contentView.setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
+	//					@Override
+	//					public void onSystemUiVisibilityChange(int visibility) {
+	//						lastSystemUiVisibility = visibility;
+	//					}
+	//				});
+	//			}
+				boolean a4 = sdkLevel >= ICE_CREAM_SANDWICH;
+				if (!a4)
+					value &= SYSTEM_UI_FLAG_LOW_PROFILE;
+				if (value == lastSystemUiVisibility && value != SYSTEM_UI_FLAG_LOW_PROFILE)// && a4)
+					return false;
+				lastSystemUiVisibility = value;
+	
+				View view;
+				//if (a4)
+					view = getWindow().getDecorView(); // getReaderView();
+				//else
+				//	view = mActivity.getContentView(); // getReaderView();
+				
+				if (view == null)
+					return false;
+				Method m;
+				try {
+					m = view.getClass().getMethod("setSystemUiVisibility", int.class);
+					m.invoke(view, value);
+					return true;
+				} catch (SecurityException e) {
+					// ignore
+				} catch (NoSuchMethodException e) {
+					// ignore
+				} catch (IllegalArgumentException e) {
+					// ignore
+				} catch (IllegalAccessException e) {
+					// ignore
+				} catch (InvocationTargetException e) {
+					// ignore
+				}
+			}
+		}
+		return false;
+	}
 //	
 //	private int currentKeyBacklightLevel = 1;
 //	public int getKeyBacklight() {
