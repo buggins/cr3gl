@@ -96,8 +96,8 @@ public class CoolReader extends Activity {
 		cfg.screenDPI = (int)(metrics.density * 160);
 		cfg.screenX = metrics.widthPixels;
 		cfg.screenY = metrics.heightPixels;
-		cfg.einkMode = DeviceInfo.EINK_SCREEN || true;
-		cfg.einkModeSettingsSupported = DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED || true;
+		cfg.einkMode = DeviceInfo.EINK_SCREEN;
+		cfg.einkModeSettingsSupported = DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED;
 		String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 		
 		initMountRoots();
