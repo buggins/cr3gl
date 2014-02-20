@@ -534,16 +534,16 @@ void CRUIMainWidget::createReaderSettings() {
 		updatemode->addOption(new CRUIOptionItem("2", STR_SETTINGS_APP_SCREEN_UPDATE_MODE_FAST2));
 		pageLayout->addChild(updatemode);
 		CRUISettingsOptionList * updateinterval = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_UPDATE_INTERVAL, STR_SETTINGS_APP_SCREEN_UPDATE_INTERVAL_DESCRIPTION, PROP_APP_SCREEN_UPDATE_INTERVAL);
-		updatemode->addOption(new CRUIOptionItem(lString8("0"), lString16("0")));
-		updatemode->addOption(new CRUIOptionItem(lString8("1"), lString16("1")));
-		updatemode->addOption(new CRUIOptionItem(lString8("2"), lString16("2")));
-		updatemode->addOption(new CRUIOptionItem(lString8("3"), lString16("3")));
-		updatemode->addOption(new CRUIOptionItem(lString8("4"), lString16("4")));
-		updatemode->addOption(new CRUIOptionItem(lString8("5"), lString16("5")));
-		updatemode->addOption(new CRUIOptionItem(lString8("7"), lString16("7")));
-		updatemode->addOption(new CRUIOptionItem(lString8("10"), lString16("10")));
-		updatemode->addOption(new CRUIOptionItem(lString8("15"), lString16("15")));
-		updatemode->addOption(new CRUIOptionItem(lString8("20"), lString16("20")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("0"), lString16("0")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("1"), lString16("1")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("2"), lString16("2")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("3"), lString16("3")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("4"), lString16("4")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("5"), lString16("5")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("7"), lString16("7")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("10"), lString16("10")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("15"), lString16("15")));
+		updateinterval->addOption(new CRUIOptionItem(lString8("20"), lString16("20")));
 		pageLayout->addChild(updateinterval);
     }
 //	if ( DeviceInfo.EINK_SCREEN_UPDATE_MODES_SUPPORTED ) {
