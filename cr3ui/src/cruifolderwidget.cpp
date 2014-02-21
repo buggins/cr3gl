@@ -113,7 +113,7 @@ public:
         _layout->addChild(_line2);
         _layout->addChild(_infolayout);
         _layout->addChild(spacer2);
-        _layout->setPadding(lvRect(PT_TO_PX(4), 0, PT_TO_PX(1), 0));
+        _layout->setPadding(lvRect(PT_TO_PX(1), 0, PT_TO_PX(1), 0));
         _layout->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _layout->setMaxHeight(deviceInfo.minListItemSize * 3 / 2);
         //_layout->setMinHeight(_iconDy);

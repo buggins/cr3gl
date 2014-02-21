@@ -94,7 +94,9 @@ static int nearestIconSize(int sz) {
 }
 
 void CRUIConfig::setupResourcesForScreenSize() {
-	CRLog::trace("setupResourcesForScreenSize(%d,%d)", deviceInfo.shortSide, deviceInfo.longSide);
+	CRLog::trace("setupResourcesForScreenSize(%d,%d) dpi=%d, min item size=%d (%dmm), physical size: (%dmm x %dmm)", deviceInfo.shortSide, deviceInfo.longSide,
+			deviceInfo.dpi, MIN_ITEM_PX, PX_TO_MM(MIN_ITEM_PX),
+			PX_TO_MM(deviceInfo.shortSide), PX_TO_MM(deviceInfo.longSide));
 
     // calculate fonts size
     int sz = deviceInfo.shortSide;

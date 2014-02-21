@@ -10,8 +10,9 @@
 
 using namespace CRUI;
 
-#define MIN_ITEM_SIZE_PT 44
+//#define MIN_ITEM_SIZE_PT 44
 //#define MIN_ITEM_SIZE_PT 33
+#define MIN_ITEM_SIZE_PT 24
 
 CRUIDeviceInfo deviceInfo;
 

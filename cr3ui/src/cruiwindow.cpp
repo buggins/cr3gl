@@ -532,6 +532,7 @@ public:
         _itemIcon->setStyle("MENU_ITEM_ICON");
         _itemText->setStyle("MENU_ITEM_TEXT");
         _itemLayout->setStyle("MENU_ITEM");
+        _itemLayout->setMinHeight(MIN_ITEM_PX);
         //setAdapter(this);
     }
     virtual int getItemCount() { //CRUIListWidget * list
@@ -625,7 +626,7 @@ CRUITitleBarWidget::CRUITitleBarWidget(lString16 title, CRUIOnClickListener * bu
     addChild(_caption);
     if (hasMenuButton)
         addChild(_menuButton);
-    setMinHeight(MIN_ITEM_PX);
+    setMinHeight(MIN_ITEM_PX * 3 / 4);
     //_caption->setBackground(0xC0C0C040);
     if (hasMenuButton) {
         _menuButton->setId(lString8("MENU"));

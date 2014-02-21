@@ -1169,15 +1169,22 @@ bool CRBookDB::saveLastPosition(BookDBBook * book, BookDBBookmark * pos) {
     BookDBBookmark * existing = _lastPositionCache.find(book->id);
     if (!existing) {
         // insert new
+    	CRLog::trace("Existing last position bookmark not found for book %d", (int)book->id);
         bool res = insertBookmark(pos);
-        _lastPositionCache.put(pos->bookId, pos->clone());
+        if (res)
+        	_lastPositionCache.put(pos->bookId, pos->clone());
+        else
+        	CRLog::error("Cannot insert new last position record for book %d", (int)book->id);
         return res;
     } else {
         // update
         if (existing->operator ==(*pos))
             return true; // the same
         bool res = updateBookmark(pos, existing);
-        _lastPositionCache.put(pos->bookId, pos->clone());
+        if (res)
+        	_lastPositionCache.put(pos->bookId, pos->clone());
+        else
+        	CRLog::error("Cannot update last position for book %d", (int)book->id);
         return res;
     }
     return false;

@@ -91,16 +91,30 @@ static bool first_recent_dir_scan = true;
 void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
     CRLog::trace("CRUIMainWidget::onDirectoryScanFinished");
     if (item->getPathName() == _pendingBookOpenFolder) {
+    	CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- scan finished for pending book open folder");
         hideSlowOperationPopup();
         for (int i = 0; i < item->itemCount(); i++) {
+
             CRFileItem * file = (CRFileItem*)item->getItem(i);
             lString8 fn = file->getPathName();
             if (fn == _pendingBookOpenFile) {
+            	CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- found entry for pending book");
+            	if (!file->getBook())
+            		CRLog::warn("Book entry is not set for file item %s", fn.c_str());
                 openBook(file);
                 _pendingBookOpenFile.clear();
                 _pendingBookOpenFolder.clear();
                 return;
-            } else if (fn.startsWith(_pendingBookOpenFile)) {
+            }
+        }
+        for (int i = 0; i < item->itemCount(); i++) {
+
+            CRFileItem * file = (CRFileItem*)item->getItem(i);
+            lString8 fn = file->getPathName();
+            if (fn.startsWith(_pendingBookOpenFile)) {
+            	CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- found entry starting with pathname of pending book");
+            	if (!file->getBook())
+            		CRLog::warn("Book entry is not set for file item %s", fn.c_str());
                 openBook(file);
                 _pendingBookOpenFile.clear();
                 _pendingBookOpenFolder.clear();
@@ -109,6 +123,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
         }
         _pendingBookOpenFile.clear();
         _pendingBookOpenFolder.clear();
+        hideSlowOperationPopup();
         showMessage(lString16("Cannot open book from file ") + Utf8ToUnicode(item->getPathName()), 3000);
         return;
     }
@@ -118,16 +133,18 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
             CRLog::trace("Recent books list is empty: creating manual book item");
             first_recent_dir_scan = false;
             CRFileItem * book = createManualBook();
-            LVPtrVector<BookDBBook> books;
-            books.add(book->getBook()->clone());
-            bookDB->saveBooks(books);
+            CRLog::trace("Manual book id=%d path=%s", (int)book->getBook()->id, book->getBook()->pathname.c_str());
+//            LVPtrVector<BookDBBook> books;
+//            books.add(book->getBook()->clone());
+//            bookDB->saveBooks(books);
             BookDBBookmark * _lastPosition = new BookDBBookmark();
-            _lastPosition->bookId = books[0]->id;
+            _lastPosition->bookId = book->getBook()->id;
             _lastPosition->type = bmkt_lastpos;
             _lastPosition->percent = 0;
+            _lastPosition->startPos = "/FictionBook";
             _lastPosition->timestamp = GetCurrentTimeMillis();
             _lastPosition->titleText = "Cool Reader Manual";
-            dirCache->saveLastPosition(books[0], _lastPosition);
+            dirCache->saveLastPosition(book->getBook(), _lastPosition);
             delete _lastPosition;
             delete book;
         }
@@ -139,6 +156,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
         return;
     }
     if (_pendingFolder == item->getPathName()) {
+        CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- scan finished for pending folder");
         item->sort(CRUI::BY_TITLE);
         int newpos = _history.findPosByMode(MODE_FOLDER, _pendingFolder);
         if (newpos < 0) {
@@ -158,6 +176,7 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
             startAnimation(newpos, WINDOW_ANIMATION_DELAY);
         }
     } else {
+        CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- scan finished other folder");
         update(true);
     }
 }
@@ -409,16 +428,21 @@ void CRUIMainWidget::openBookFromFile(lString8 filename) {
 
 void CRUIMainWidget::openBook(const CRFileItem * file) {
     if (!file) {
+    	CRLog::trace("Opening recent book");
         CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
         file = dir && dir->itemCount() ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
     } else {
-        if (!file->getBook()) {
-            showMessage(lString16("Cannot open book"), 3000);
-            //file = dirCache->scanFile(file->getPathName());
-        }
     }
-    if (!file)
+    if (!file) {
+    	CRLog::error("CRUIMainWidget::openBook - no book provided, and no recent books");
         return;
+    }
+    if (!file->getBook()) {
+    	CRLog::error("No book entry in FileItem %s", file->getPathName().c_str());
+        showMessage(lString16("Cannot open book"), 3000);
+        //file = dirCache->scanFile(file->getPathName());
+        return;
+    }
     CRLog::debug("Opening book %s", file->getPathName().c_str());
     if (_animation.active) {
         CRLog::debug("Animation is active. Stopping.");
@@ -1257,6 +1281,8 @@ CRFileItem * CRUIMainWidget::createManualBook() {
 		outfile->Write(bom, 3, NULL);
 		outfile->Write(txt.c_str(), txt.length(), NULL);
     }
+
+	// new file with processed contents
 	fn = crconfig.manualFile;
 
 	// create/update file item
@@ -1264,6 +1290,7 @@ CRFileItem * CRUIMainWidget::createManualBook() {
     BookDBBook * book = NULL;
     book = bookDB->loadBook(fn);
     if (!book) {
+    	CRLog::trace("Creating DB record for manual book %s", fn.c_str());
         LVPtrVector<BookDBBook> books;
         book = new BookDBBook();
         book->pathname = DBString(fn.c_str());
@@ -1274,10 +1301,12 @@ CRFileItem * CRUIMainWidget::createManualBook() {
         book->title = DBString("Cool Reader Manual");
         book->filesize = txt.length() + 3;
         books.add(book);
-        if (book->id == 0)
-            bookDB->saveBooks(books);
+        bookDB->saveBooks(books);
+    	CRLog::trace("New manual book entry: id=%d", (int)book->id);
+    } else {
+    	CRLog::trace("Book already exists in DB: id=%d", (int)book->id);
     }
-    f->setBook(book->clone());
+    f->setBook(book);
     return f;
 }
 

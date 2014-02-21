@@ -537,7 +537,7 @@ public:
     GLImageCacheItem * set(LVImageSourceRef img);
     GLImageCacheItem * set(LVDrawBuf * img);
     void clear();
-    void drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
+    void drawItem(lUInt32 objectId, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, lUInt32 color, int options, lvRect * clip, int rotationAngle);
     virtual void onCachedObjectDeleted(lUInt32 obj);
     void removeDeletedItems();
 };
@@ -881,9 +881,9 @@ GLImageCacheItem * GLImageCache::set(LVDrawBuf * img) {
 	return res;
 }
 
-void GLImageCache::drawItem(CacheableObject * obj, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip, int rotationAngle)
+void GLImageCache::drawItem(lUInt32 objectId, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, int options, lvRect * clip, int rotationAngle)
 {
-	GLImageCacheItem* item = get(obj->getObjectId());
+	GLImageCacheItem* item = get(objectId);
 	if (item) {
         item->getPage()->drawItem(item, x, y, dx, dy, srcx, srcy, srcdx, srcdy, color, options, clip, rotationAngle);
 	}
@@ -1210,7 +1210,8 @@ void GLDrawBuf::Draw( int x, int y, const lUInt8 * bitmap, int width, int height
 
 
 class GLDrawImageSceneItem : public GLSceneItem {
-    CacheableObject * img;
+	lUInt32 objectId;
+    //CacheableObject * img;
 	int x;
 	int y;
 	int width;
@@ -1226,10 +1227,10 @@ class GLDrawImageSceneItem : public GLSceneItem {
 public:
 	virtual void draw() {
 		if (glImageCache)
-            glImageCache->drawItem(img, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip, rotationAngle);
+            glImageCache->drawItem(objectId, x, y, width, height, srcx, srcy, srcwidth, srcheight, color, options, clip, rotationAngle);
 	}
     GLDrawImageSceneItem(CacheableObject * _img, int _x, int _y, int _width, int _height, int _srcx, int _srcy, int _srcw, int _srch, lUInt32 _color, lUInt32 _options, lvRect * _clip, int _rotationAngle)
-	: img(_img), x(_x), y(_y), width(_width), height(_height),
+	: objectId(_img->getObjectId()), x(_x), y(_y), width(_width), height(_height),
 	  srcx(_srcx), srcy(_srcy), srcwidth(_srcw), srcheight(_srch),
       color(_color), options(_options), clip(_clip), rotationAngle(_rotationAngle)
 	{

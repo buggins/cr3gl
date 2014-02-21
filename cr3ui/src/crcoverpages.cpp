@@ -651,7 +651,7 @@ static void correctColors(LVColorDrawBuf * buf, lUInt32 srcColor, lUInt32 dstCol
 
 CRCoverImageCache::Entry * CRCoverImageCache::draw(CRCoverPageManager * _manager, CRDirEntry * _book, int dx, int dy) {
     CRLog::trace("CRCoverImageCache::draw called for %s", _book->getCoverPathName().c_str());
-
+    CRENGINE_GUARD;
     LVStreamRef stream = coverCache->getStream(_book->getCoverPathName());
     LVImageSourceRef image;
     if (!stream.isNull() && stream->GetSize() != 0) {

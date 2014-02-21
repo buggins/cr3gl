@@ -238,6 +238,10 @@ public:
         int texth = font->getHeight() * 2;
         _itemSize.y = iconh + texth + PT_TO_PX(4);
         _itemSize.x = iconw * 120 / 100 + PT_TO_PX(4);
+        if (_itemSize.y < MIN_ITEM_PX)
+        	_itemSize.y = MIN_ITEM_PX;
+        if (_itemSize.x < MIN_ITEM_PX)
+        	_itemSize.x = MIN_ITEM_PX;
         int count = _actionList.length();
         int cols = baseWidth / _itemSize.x;
         if (cols < 1)
@@ -780,24 +784,27 @@ public:
         _pathname = UnicodeToUtf8(pathname);
     }
     virtual void run() {
-        CRLog::info("Loading book in background thread");
-        bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
-        CRLog::info("Loading is finished %s", success ? "successfully" : "with error");
-#ifdef SLOW_RENDER_SIMULATION
-        concurrencyProvider->sleepMs(3000);
-#endif
-        if (!success) {
-            _read->getDocView()->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
-        }
-        concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
-        CRLog::info("Rendering book in background thread");
-        _read->getDocView()->Render();
-        _read->restorePosition();
-        _read->getDocView()->updateCache();
-#ifdef SLOW_RENDER_SIMULATION
-        concurrencyProvider->sleepMs(3000);
-#endif
-        CRLog::info("Render is finished");
+    	{
+			CRENGINE_GUARD;
+			CRLog::info("Loading book in background thread");
+			bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
+			CRLog::info("Loading is finished %s", success ? "successfully" : "with error");
+	#ifdef SLOW_RENDER_SIMULATION
+			concurrencyProvider->sleepMs(3000);
+	#endif
+			if (!success) {
+				_read->getDocView()->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
+			}
+			concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
+			CRLog::info("Rendering book in background thread");
+			_read->getDocView()->Render();
+			_read->restorePosition();
+			_read->getDocView()->updateCache();
+	#ifdef SLOW_RENDER_SIMULATION
+			concurrencyProvider->sleepMs(3000);
+	#endif
+			CRLog::info("Render is finished");
+    	}
         concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
     }
 };
@@ -811,13 +818,16 @@ public:
         _pathname = UnicodeToUtf8(pathname);
     }
     virtual void run() {
-        CRLog::info("Rendering in background thread");
-        _read->getDocView()->Render();
-        _read->getDocView()->updateCache();
-#ifdef SLOW_RENDER_SIMULATION
-        concurrencyProvider->sleepMs(3000);
-#endif
-        CRLog::info("Render in background thread is finished");
+    	{
+    	    CRENGINE_GUARD;
+			CRLog::info("Rendering in background thread");
+			_read->getDocView()->Render();
+			_read->getDocView()->updateCache();
+	#ifdef SLOW_RENDER_SIMULATION
+			concurrencyProvider->sleepMs(3000);
+	#endif
+			CRLog::info("Render in background thread is finished");
+    	}
         concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
     }
 };
@@ -832,6 +842,7 @@ void CRUIReadWidget::closeBook() {
     _fileItem = NULL;
     _lastPosition = NULL;
     _bookmarks.clear();
+    CRENGINE_GUARD;
     _docview->close();
 }
 
@@ -881,6 +892,7 @@ void CRUIReadWidget::updatePosition() {
     CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
         return;
+    CRENGINE_GUARD;
     ldomXPointer ptr = _docview->getBookmark();
     if ( ptr.isNull() )
         return;
@@ -2354,6 +2366,7 @@ void CRUIReadWidget::ScrollModePageCache::setSize(int _dx, int _dy) {
 
 /// ensure images are prepared
 void CRUIReadWidget::ScrollModePageCache::prepare(LVDocView * _docview, int _pos, int _dx, int _dy, int direction, bool force) {
+    CRENGINE_GUARD;
     setSize(_dx, _dy);
     if (_pos >= minpos && _pos + dy <= maxpos && !force)
         return; // already prepared
@@ -2569,6 +2582,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
 /// ensure images are prepared
 void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page, int _dx, int _dy, int _direction, bool force, int _pageAnimation) {
     CR_UNUSED(force);
+    CRENGINE_GUARD;
     setSize(_dx, _dy, _docview->getVisiblePageCount(), _docview->getPageCount());
     pageAnimation = _pageAnimation;
     if (_direction)
