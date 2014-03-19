@@ -114,12 +114,11 @@ CR3Renderer::Draw(void)
 #if USE_BACKBUFFER == 1
 	if (!_backbuffer) {
 		_backbuffer = new GLDrawBuf(GetTargetControlWidth(), GetTargetControlHeight(), 32, true);
-	} else if (_backbuffer->GetWidth() != GetTargetControlWidth() || _backbuffer->GetHeight() != GetTargetControlHeight()) {
+	} else if (true || _backbuffer->GetWidth() != GetTargetControlWidth() || _backbuffer->GetHeight() != GetTargetControlHeight()) {
 		delete _backbuffer;
 		_backbuffer = new GLDrawBuf(GetTargetControlWidth(), GetTargetControlHeight(), 32, true);
 	}
 
-	_backbuffer->beforeDrawing();
 #endif
 
 	lvRect pos = _widget->getPos();
@@ -137,28 +136,31 @@ CR3Renderer::Draw(void)
 		_widget->layout(0, 0, _widget->getMeasuredWidth(), _widget->getMeasuredHeight());
 		needDraw = true;
 	}
-	if (needDraw) {
+	//if (needDraw) {
 		//CRLog::trace("need draw");
 #if USE_BACKBUFFER == 1
-		_widget->draw(_backbuffer);
+	_backbuffer->beforeDrawing();
+	_widget->draw(_backbuffer);
 #else
-		buf.beforeDrawing();
-		_widget->draw(&buf);
+	buf.beforeDrawing();
+	_widget->draw(&buf);
 #endif
-	}
+	//}
 #if USE_BACKBUFFER == 1
 	_backbuffer->afterDrawing();
 
 	buf.beforeDrawing();
 	_backbuffer->DrawTo(&buf, 0, 0, 0, NULL);
+	//buf.FillRect(10, 10, 30, 30, 0x80FF0000);
+	//buf.FillRect(40, 10, 60, 30, 0x80FF0000);
 #endif
 	glDisable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
-	glFlush();
+	//glFlush();
 
 	buf.afterDrawing();
 
-	glFlush();
+	//glFlush();
 
 	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;

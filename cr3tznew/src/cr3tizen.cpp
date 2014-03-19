@@ -316,6 +316,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     if (!externalPath.empty())
     	deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, UnicodeToUtf8(externalPath));
     //deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
+    crconfig.updateScreenModeInCurrentThread = false;
 
 	CRLog::info("Calling crconfig.initEngine");
     crconfig.initEngine(false); // don't set logger
