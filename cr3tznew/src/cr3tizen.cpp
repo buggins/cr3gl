@@ -265,7 +265,9 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("LVInitCoolReaderTizen: Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
 
+	CRLog::info("LVInitCoolReaderTizen: Checking screen physical resolution");
 	Tizen::Graphics::Dimension phys = Tizen::Graphics::CoordinateSystem::GetPhysicalResolution();
+	CRLog::info("LVInitCoolReaderTizen: Checking screen logical resolution");
 	Tizen::Graphics::Dimension logical = Tizen::Graphics::CoordinateSystem::GetLogicalResolution();
 	// support
 	int dpi = 316;
