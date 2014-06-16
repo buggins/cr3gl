@@ -265,7 +265,9 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("LVInitCoolReaderTizen: Starting CoolReader");
 	CRLog::setLogLevel(CRLog::LL_TRACE);
 
+	CRLog::info("LVInitCoolReaderTizen: Checking screen physical resolution");
 	Tizen::Graphics::Dimension phys = Tizen::Graphics::CoordinateSystem::GetPhysicalResolution();
+	CRLog::info("LVInitCoolReaderTizen: Checking screen logical resolution");
 	Tizen::Graphics::Dimension logical = Tizen::Graphics::CoordinateSystem::GetLogicalResolution();
 	// support
 	int dpi = 316;
@@ -298,7 +300,11 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("Initializing font list");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansRegular.ttf");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/Rosemary.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/SamsungSans_Md.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/SamsungSans_Rg.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
+	crconfig.fontFiles.add("/usr/share/fallback_fonts/SamsungSansFallback.ttf");
 	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 
 	CRLog::info("Setting up resource dirs");
@@ -316,10 +322,12 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
     if (!externalPath.empty())
     	deviceInfo.topDirs.addItem(DIR_TYPE_SD_CARD, UnicodeToUtf8(externalPath));
     //deviceInfo.topDirs.addItem(DIR_TYPE_DEFAULT_BOOKS_DIR, lString8("/mnt/ums/Books"));
+    crconfig.updateScreenModeInCurrentThread = false;
 
 	CRLog::info("Calling crconfig.initEngine");
     crconfig.initEngine(false); // don't set logger
 	CRLog::info("Engine initialization done");
+    CRPauseCoverpageManager();
 }
 
 

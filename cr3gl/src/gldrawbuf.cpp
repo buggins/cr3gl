@@ -1479,7 +1479,7 @@ void GLDrawBuf::beforeDrawing()
 //		}
         if (!_scene) {
             _scene = new GLScene();
-            CRLog::error("Creating GLScene");
+            //CRLog::trace("Creating GLScene");
         }
         _scene = LVGLPushScene(_scene);
 

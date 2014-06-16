@@ -23,16 +23,18 @@ using namespace Tizen::Ui::Controls;
 
 CoolReaderApp::CoolReaderApp(void)
 {
-	LVInitCoolReaderTizen(GetAppResourcePath().GetPointer(), GetAppDataPath().GetPointer());
+    AppLog("CoolReaderApp::CoolReaderApp");
 }
 
 CoolReaderApp::~CoolReaderApp(void)
 {
+    AppLog("CoolReaderApp::~CoolReaderApp");
 }
 
 UiApp*
 CoolReaderApp::CreateInstance(void)
 {
+    AppLog("CoolReaderApp::CreateInstance");
 	// Create the instance through the constructor.
 	return new CoolReaderApp();
 }
@@ -40,6 +42,7 @@ CoolReaderApp::CreateInstance(void)
 bool
 CoolReaderApp::OnAppInitializing(AppRegistry& appRegistry)
 {
+    AppLog("CoolReaderApp::OnAppInitializing");
 	// TODO:
 	// Initialize Frame and App specific data.
 	// The App's permanent data and context can be obtained from the appRegistry.
@@ -52,12 +55,14 @@ CoolReaderApp::OnAppInitializing(AppRegistry& appRegistry)
 
 	// TODO:
 	// Add your initialization code here
+	LVInitCoolReaderTizen(GetAppResourcePath().GetPointer(), GetAppDataPath().GetPointer());
 	return true;
 }
 
 bool
 CoolReaderApp::OnAppInitialized(void)
 {
+    AppLog("CoolReaderApp::OnAppInitialized");
 	// TODO:
         // Add code to do after initialization here. 
 

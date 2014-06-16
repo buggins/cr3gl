@@ -25,7 +25,8 @@ OspMain(int argc, char *pArgv[])
                      args.Add(new (std::nothrow) String(pArgv[i]));
            }
 
-           result r = Tizen::App::UiApp::Execute(CoolReaderApp::CreateInstance, &args);
+           //result r = Tizen::App::UiApp::Execute(CoolReaderApp::CreateInstance, &args);
+           result r = Tizen::App::Application::Execute(CoolReaderApp::CreateInstance, &args);
            TryLog(r == E_SUCCESS, "[%s] Application execution failed", GetErrorMessage(r));
            AppLog("Application finished.");
 

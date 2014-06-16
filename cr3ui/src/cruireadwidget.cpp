@@ -894,43 +894,45 @@ void CRUIReadWidget::updatePosition() {
     CRLog::trace("CRUIReadWidget::updatePosition()");
     if (!_fileItem || !_fileItem->getBook())
         return;
-    CRENGINE_GUARD;
-    ldomXPointer ptr = _docview->getBookmark();
-    if ( ptr.isNull() )
-        return;
-    CRBookmark bm(ptr);
-    lString16 comment;
-    lString16 titleText;
-    lString16 posText;
-    bm.setType( bmkt_lastpos );
-    if ( _docview->getBookmarkPosText( ptr, titleText, posText ) ) {
-         bm.setTitleText( titleText );
-         bm.setPosText( posText );
+    {
+		CRENGINE_GUARD;
+		ldomXPointer ptr = _docview->getBookmark();
+		if ( ptr.isNull() )
+			return;
+		CRBookmark bm(ptr);
+		lString16 comment;
+		lString16 titleText;
+		lString16 posText;
+		bm.setType( bmkt_lastpos );
+		if ( _docview->getBookmarkPosText( ptr, titleText, posText ) ) {
+			 bm.setTitleText( titleText );
+			 bm.setPosText( posText );
+		}
+		bm.setStartPos( ptr.toString() );
+		int pos = ptr.toPoint().y;
+		int fh = _docview->getDocument()->getFullHeight();
+		int percent = fh > 0 ? (int)(pos * (lInt64)10000 / fh) : 0;
+		if ( percent<0 )
+			percent = 0;
+		if ( percent>10000 )
+			percent = 10000;
+		bm.setPercent( percent );
+		bm.setCommentText( comment );
+		if (!_lastPosition)
+			_lastPosition = new BookDBBookmark();
+		_lastPosition->bookId = _fileItem->getBook()->id;
+		_lastPosition->type = bm.getType();
+		_lastPosition->percent = bm.getPercent();
+		_lastPosition->shortcut = bm.getShortcut();
+		_lastPosition->timestamp = GetCurrentTimeMillis();
+		_lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
+		_lastPosition->endPos = UnicodeToUtf8(bm.getEndPos()).c_str();
+		_lastPosition->titleText = UnicodeToUtf8(bm.getTitleText()).c_str();
+		_lastPosition->posText = UnicodeToUtf8(bm.getPosText()).c_str();
+		_lastPosition->commentText = UnicodeToUtf8(bm.getCommentText()).c_str();
+		_lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
+		dirCache->saveLastPosition(_fileItem->getBook(), _lastPosition);
     }
-    bm.setStartPos( ptr.toString() );
-    int pos = ptr.toPoint().y;
-    int fh = _docview->getDocument()->getFullHeight();
-    int percent = fh > 0 ? (int)(pos * (lInt64)10000 / fh) : 0;
-    if ( percent<0 )
-        percent = 0;
-    if ( percent>10000 )
-        percent = 10000;
-    bm.setPercent( percent );
-    bm.setCommentText( comment );
-    if (!_lastPosition)
-        _lastPosition = new BookDBBookmark();
-    _lastPosition->bookId = _fileItem->getBook()->id;
-    _lastPosition->type = bm.getType();
-    _lastPosition->percent = bm.getPercent();
-    _lastPosition->shortcut = bm.getShortcut();
-    _lastPosition->timestamp = GetCurrentTimeMillis();
-    _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
-    _lastPosition->endPos = UnicodeToUtf8(bm.getEndPos()).c_str();
-    _lastPosition->titleText = UnicodeToUtf8(bm.getTitleText()).c_str();
-    _lastPosition->posText = UnicodeToUtf8(bm.getPosText()).c_str();
-    _lastPosition->commentText = UnicodeToUtf8(bm.getCommentText()).c_str();
-    _lastPosition->startPos = UnicodeToUtf8(bm.getStartPos()).c_str();
-    dirCache->saveLastPosition(_fileItem->getBook(), _lastPosition);
     prepareNextPage();
 }
 

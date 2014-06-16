@@ -40,14 +40,25 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	, __player(NULL)
 	, __playerStarted(true)
 {
+	_coverpageManagerPaused = true;
+
 	CRLog::trace("CR3Renderer::CR3Renderer");
+	CRLog::trace("CR3Renderer::CR3Renderer - creating event manager");
 	_eventManager = new CRUIEventManager();
+	CRLog::trace("CR3Renderer::CR3Renderer - creating event adapter");
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
+	CRLog::trace("CR3Renderer::CR3Renderer - creating download manager");
 	_downloadManager = new CRUIHttpTaskManagerTizen(_eventManager);
+    concurrencyProvider->sleepMs(100);
+	CRLog::trace("CR3Renderer::CR3Renderer - creating main widget");
 	_widget = new CRUIMainWidget();
+	CRLog::trace("CR3Renderer::CR3Renderer - setting root widget");
 	_eventManager->setRootWidget(_widget);
+	CRLog::trace("CR3Renderer::CR3Renderer - setting screen updater");
 	_widget->setScreenUpdater(this);
+	CRLog::trace("CR3Renderer::CR3Renderer - setting platform");
 	_widget->setPlatform(this);
+
 	CRLog::trace("CR3Renderer::CR3Renderer done");
 }
 
@@ -94,6 +105,10 @@ CR3Renderer::Draw(void)
 
 	 _eventAdapter->updateTizenSystemLang();
 
+	 if (_coverpageManagerPaused) {
+	    CRResumeCoverpageManager();
+	    _coverpageManagerPaused = false;
+	 }
 	//_updateRequested = false;
 
 	glShadeModel(GL_SMOOTH);
@@ -114,12 +129,11 @@ CR3Renderer::Draw(void)
 #if USE_BACKBUFFER == 1
 	if (!_backbuffer) {
 		_backbuffer = new GLDrawBuf(GetTargetControlWidth(), GetTargetControlHeight(), 32, true);
-	} else if (_backbuffer->GetWidth() != GetTargetControlWidth() || _backbuffer->GetHeight() != GetTargetControlHeight()) {
+	} else if (true || _backbuffer->GetWidth() != GetTargetControlWidth() || _backbuffer->GetHeight() != GetTargetControlHeight()) {
 		delete _backbuffer;
 		_backbuffer = new GLDrawBuf(GetTargetControlWidth(), GetTargetControlHeight(), 32, true);
 	}
 
-	_backbuffer->beforeDrawing();
 #endif
 
 	lvRect pos = _widget->getPos();
@@ -137,28 +151,31 @@ CR3Renderer::Draw(void)
 		_widget->layout(0, 0, _widget->getMeasuredWidth(), _widget->getMeasuredHeight());
 		needDraw = true;
 	}
-	if (needDraw) {
+	//if (needDraw) {
 		//CRLog::trace("need draw");
 #if USE_BACKBUFFER == 1
-		_widget->draw(_backbuffer);
+	_backbuffer->beforeDrawing();
+	_widget->draw(_backbuffer);
 #else
-		buf.beforeDrawing();
-		_widget->draw(&buf);
+	buf.beforeDrawing();
+	_widget->draw(&buf);
 #endif
-	}
+	//}
 #if USE_BACKBUFFER == 1
 	_backbuffer->afterDrawing();
 
 	buf.beforeDrawing();
 	_backbuffer->DrawTo(&buf, 0, 0, 0, NULL);
+	//buf.FillRect(10, 10, 30, 30, 0x80FF0000);
+	//buf.FillRect(40, 10, 60, 30, 0x80FF0000);
 #endif
 	glDisable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
-	glFlush();
+	//glFlush();
 
 	buf.afterDrawing();
 
-	glFlush();
+	//glFlush();
 
 	//CRLog::debug("CR3Renderer::Draw exiting");
 	return true;
@@ -169,6 +186,7 @@ CR3Renderer::Pause(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is paused. 
+    CRPauseCoverpageManager();
 
 	return true;
 }
@@ -178,6 +196,7 @@ CR3Renderer::Resume(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is resumed. 
+    CRResumeCoverpageManager();
 
 	return true;
 }

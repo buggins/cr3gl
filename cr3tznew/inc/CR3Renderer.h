@@ -82,6 +82,7 @@ class CR3Renderer
 	GLDrawBuf * _backbuffer;
 	Tizen::Ui::Controls::Keypad * _keypad;
 	bool _keypadShown;
+	bool _coverpageManagerPaused;
 	//bool _updateRequested;
 public:
 
