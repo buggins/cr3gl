@@ -669,7 +669,9 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     }
     if (renderIfNecessary()) {
         //CRLog::trace("Document is ready, drawing");
-        if (_viewMode == DVM_PAGES) {
+    	if (crconfig.einkModeSettingsSupported)
+    		_main->getPlatform()->prepareEinkController(true);
+    	if (_viewMode == DVM_PAGES) {
             int direction = 0;
             int progress = 0;
             int startx = -1;
