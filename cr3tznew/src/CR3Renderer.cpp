@@ -40,14 +40,24 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	, __player(NULL)
 	, __playerStarted(true)
 {
+	_coverpageManagerPaused = true;
+
 	CRLog::trace("CR3Renderer::CR3Renderer");
+	CRLog::trace("CR3Renderer::CR3Renderer - creating event manager");
 	_eventManager = new CRUIEventManager();
+	CRLog::trace("CR3Renderer::CR3Renderer - creating event adapter");
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
+	CRLog::trace("CR3Renderer::CR3Renderer - creating download manager");
 	_downloadManager = new CRUIHttpTaskManagerTizen(_eventManager);
+	CRLog::trace("CR3Renderer::CR3Renderer - creating main widget");
 	_widget = new CRUIMainWidget();
+	CRLog::trace("CR3Renderer::CR3Renderer - setting root widget");
 	_eventManager->setRootWidget(_widget);
+	CRLog::trace("CR3Renderer::CR3Renderer - setting screen updater");
 	_widget->setScreenUpdater(this);
+	CRLog::trace("CR3Renderer::CR3Renderer - setting platform");
 	_widget->setPlatform(this);
+
 	CRLog::trace("CR3Renderer::CR3Renderer done");
 }
 
@@ -94,6 +104,10 @@ CR3Renderer::Draw(void)
 
 	 _eventAdapter->updateTizenSystemLang();
 
+	 if (_coverpageManagerPaused) {
+	    CRResumeCoverpageManager();
+	    _coverpageManagerPaused = false;
+	 }
 	//_updateRequested = false;
 
 	glShadeModel(GL_SMOOTH);
@@ -171,6 +185,7 @@ CR3Renderer::Pause(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is paused. 
+    CRPauseCoverpageManager();
 
 	return true;
 }
@@ -180,6 +195,7 @@ CR3Renderer::Resume(void)
 {
 	// TODO:
 	// Do something necessary when Plyaer is resumed. 
+    CRResumeCoverpageManager();
 
 	return true;
 }

@@ -323,6 +323,7 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("Calling crconfig.initEngine");
     crconfig.initEngine(false); // don't set logger
 	CRLog::info("Engine initialization done");
+    CRPauseCoverpageManager();
 }
 
 
