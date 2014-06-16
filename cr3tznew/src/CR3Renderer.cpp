@@ -49,6 +49,7 @@ CR3Renderer::CR3Renderer(CoolReaderApp * app, CoolReaderFrame * frame)
 	_eventAdapter = new CRUIEventAdapter(_eventManager);
 	CRLog::trace("CR3Renderer::CR3Renderer - creating download manager");
 	_downloadManager = new CRUIHttpTaskManagerTizen(_eventManager);
+    concurrencyProvider->sleepMs(100);
 	CRLog::trace("CR3Renderer::CR3Renderer - creating main widget");
 	_widget = new CRUIMainWidget();
 	CRLog::trace("CR3Renderer::CR3Renderer - setting root widget");

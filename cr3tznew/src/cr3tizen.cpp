@@ -300,7 +300,11 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	CRLog::info("Initializing font list");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansRegular.ttf");
 	crconfig.fontFiles.add("/usr/share/fonts/TizenSansMeduim.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/Rosemary.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/SamsungSans_Md.ttf");
+	crconfig.fontFiles.add("/usr/share/fonts/SamsungSans_Rg.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
+	crconfig.fontFiles.add("/usr/share/fallback_fonts/SamsungSansFallback.ttf");
 	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
 
 	CRLog::info("Setting up resource dirs");
