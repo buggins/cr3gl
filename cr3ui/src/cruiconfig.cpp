@@ -355,28 +355,44 @@ void CRUIConfig::initEngine(bool setLogger) {
         for (int i = 0; i<fontFiles.length(); i++) {
             fontMan->RegisterFont(fontFiles[i]);
         }
+        for (int i = 0; i < fontDirs.length(); i++) {
+        	lString8 dir = fontDirs[i];
+        	LVAppendPathDelimiter(dir);
+        	if (LVDirectoryExists(dir)) {
+        		CRLog::debug("Searching for fonts in directory %s", dir.c_str());
+        	    LVContainerRef d = LVOpenDirectory(dir);
+        	    for (int j = 0; j < d->GetObjectCount(); j++) {
+        	    	const LVContainerItemInfo * item = d->GetObjectInfo(j);
+        	    	if (!item->IsContainer()) {
+        	    		lString8 name = UnicodeToUtf8(item->GetName());
+        	    		if (name.endsWith(".ttf")) {
+        	                fontMan->RegisterFont(dir + name);
+        	    		}
+        	    	}
+        	    }
+        	}
+        }
     } else {
     	CRLog::warn("Font manager is already initialized");
     }
-    lString8 fallbackFont = fallbackFontFace;
-    bool configuredFallbackFontFound = false;
-    lString8 foundFallbackFont;
-    lString16Collection faceList;
-    fontMan->getFaceList(faceList);
-    for (int i = 0; i < faceList.length(); i++) {
-    	lString8 face = UnicodeToUtf8(faceList[i]);
-    	if (face == fallbackFont)
-    		configuredFallbackFontFound = true;
-    	if (face == "Droid Sans Fallback" || face == "Arial Unicode") // TODO: more faces
-    		foundFallbackFont = face;
-    }
-    if (!configuredFallbackFontFound)
-    	fallbackFont = foundFallbackFont;
-    if (!fallbackFont.empty()) {
-    	fontMan->SetFallbackFontFace(fallbackFont);
-    }
+    if (!monoFontFace.empty())
+    	monoFontFace = fontMan->findFontFace(monoFontFace, css_ff_monospace);
+    if (monoFontFace.empty())
+    	monoFontFace = fontMan->findFontFace(lString8("'Courier New'"), css_ff_monospace);
+    if (!fallbackFontFace.empty())
+    	fallbackFontFace = fontMan->findFontFace(fallbackFontFace, css_ff_sans_serif);
+    if (fallbackFontFace.empty())
+    	fallbackFontFace = fontMan->findFontFace(lString8("'Droid Sans Fallback', 'Arial Unicode', 'Tizen Sans Fallback', 'Samsung Sans Fallback'"), css_ff_sans_serif);
+    if (!uiFontFace.empty())
+    	uiFontFace = fontMan->findFontFace(uiFontFace, css_ff_sans_serif);
+    if (uiFontFace.empty())
+    	uiFontFace = fontMan->findFontFace(lString8("'Droid Sans', 'Arial', 'Tizen Sans', 'Samsung Sans', 'Roboto', 'DjVu Sans'"), css_ff_sans_serif);
+    if (fallbackFontFace == uiFontFace)
+    	fallbackFontFace.clear();
+    if (!fallbackFontFace.empty())
+    	fontMan->SetFallbackFontFace(fallbackFontFace);
 
-
+    CRLog::info("uiFontFace: %s, monoFontFace: %s, fallbackFontFace: %s", uiFontFace.c_str(), monoFontFace.c_str(), fallbackFontFace.c_str());
     //fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
     //dirs.add(UnicodeToUtf8(resourceDir));
     lString8Collection dirs;
