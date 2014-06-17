@@ -1302,6 +1302,14 @@ CRFileItem * CRUIMainWidget::createManualBook() {
         book->filesize = txt.length() + 3;
         books.add(book);
         bookDB->saveBooks(books);
+        BookDBBook * loadedbook = bookDB->loadBook(fn);
+        if (loadedbook) {
+        	book = loadedbook;
+        	CRLog::trace("Just saved book is loaded ok: id=%d", (int)book->id);
+        } else {
+        	CRLog::error("Just saved book is not found: id=%d", (int)book->id);
+        	book = book->clone();
+        }
     	CRLog::trace("New manual book entry: id=%d", (int)book->id);
     } else {
     	CRLog::trace("Book already exists in DB: id=%d", (int)book->id);
