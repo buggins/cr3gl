@@ -307,6 +307,8 @@ void LVInitCoolReaderTizen(const wchar_t * resourceDir, const wchar_t * dbDir) {
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/TizenSansFallback.ttf");
 	crconfig.fontFiles.add("/usr/share/fallback_fonts/SamsungSansFallback.ttf");
 	//fontMan->SetFallbackFontFace(lString8("Tizen Sans Fallback"));
+	crconfig.uiFontFace = "'Tizen Sans', 'Samsung Sans'";
+	crconfig.fallbackFontFace = "'Tizen Sans Fallback', 'Samsung Sans Fallback'";
 
 	CRLog::info("Setting up resource dirs");
     crconfig.setupUserDir(UnicodeToUtf8(dbDir));
