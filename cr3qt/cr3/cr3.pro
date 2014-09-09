@@ -42,6 +42,7 @@ DEFINES += _DEBUG=1 DEBUG=1
 #DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
 
 DEFINES += USE_FREETYPE=1 \
+    USE_FREETYPE2=1 \
     COLOR_BACKBUFFER=1 \
     USE_DOM_UTF8_STORAGE=1 \
     CR3_PATCH \
@@ -201,7 +202,7 @@ win32 {
 #        ../../../cr3/thirdparty/libjpeg/jmemnobs.c
 }
 #!win32 {
-    unix:LIBS += -lpng
+    unix:LIBS += -lpng -ldl
 #    win32:LIBS += libpng.lib
 #}
 win32 {
