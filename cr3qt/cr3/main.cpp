@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
         lString8 filename;
         if (argc > 1) {
             filename = argv[1];
+            if (filename.startsWith("\"") && filename.endsWith("\""))
+                filename = filename.substr(1, filename.length() - 2);
             w.setFileToOpenOnStart(filename);
         }
         bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
