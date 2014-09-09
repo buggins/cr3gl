@@ -24,6 +24,11 @@ void applyThemeChange(CRUIWidget * widget) {
         applyThemeChange(widget->getChild(i));
 }
 
+void CRUIMainWidget::setFileToOpenOnStart(lString8 filename) {
+    CRLog::debug("setFileToOpenOnStart(%s)", filename.c_str());
+    _filenameToOpen = filename;
+}
+
 void CRUIMainWidget::onSystemLanguageChanged() {
 	if (_currentSettings->getStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM) == PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM) {
 		crconfig.setInterfaceLanguage(lString8(PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM));
@@ -464,6 +469,10 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     dirCache->setDefaultCallback(this);
     crconfig.startBackgroundThreads();
     dirCache->scan(lString8(RECENT_DIR_TAG));
+    if (!_filenameToOpen.empty()) {
+        openBookFromFile(_filenameToOpen);
+        _filenameToOpen.clear();
+    }
 }
 
 void CRUIMainWidget::createBrowserSettings() {

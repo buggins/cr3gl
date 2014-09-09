@@ -60,6 +60,10 @@ public:
     virtual bool isFullscreen() { return false; }
     virtual void setFullscreen(bool fullscreen) { CR_UNUSED(fullscreen); }
 
+    virtual void setFileToOpenOnStart(lString8 filename) {
+        CRLog::debug("setFileToOpenOnStart(%s)", filename.c_str());
+    }
+
     enum {
     	EINK_UPDATE_MODE_CLEAR = 0,
     	EINK_UPDATE_MODE_ONESHOT = 1,
@@ -346,6 +350,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     LVHashTable<lUInt32, CRUIWindowWidget *> _downloadMap;
 
     lString16 _messageText;
+    lString8 _filenameToOpen;
 
     void createBrowserSettings();
     void createReaderSettings();
@@ -394,6 +399,8 @@ public:
     CRUIPlatform * getPlatform() {
     	return _platform;
     }
+
+    virtual void setFileToOpenOnStart(lString8 filename);
 
 
     virtual int getChildCount();

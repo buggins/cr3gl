@@ -732,6 +732,7 @@ void CRUIHttpTaskBase::deleteOutputFile() {
 
 /// returns true if allows to redirect; recreates output file
 bool CRUIHttpTaskBase::canRedirect(lString8 url) {
+    CR_UNUSED(url);
     _stream.Clear();
     deleteOutputFile();
     return true;

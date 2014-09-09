@@ -32,6 +32,11 @@ int main(int argc, char *argv[])
 
 
         OpenGLWindow w;
+        lString8 filename;
+        if (argc > 1) {
+            filename = argv[1];
+            w.setFileToOpenOnStart(filename);
+        }
         bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
         if (fullscreen)
             w.showFullScreen();

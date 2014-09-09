@@ -46,6 +46,11 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 }
 //! [1]
 
+void OpenGLWindow::setFileToOpenOnStart(lString8 filename) {
+    _widget->setFileToOpenOnStart(filename);
+}
+
+
 OpenGLWindow::~OpenGLWindow()
 {
     delete _eventAdapter;

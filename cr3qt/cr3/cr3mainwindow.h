@@ -156,6 +156,7 @@ public:
     virtual bool isFullscreen();
     virtual void setFullscreen(bool fullscreen);
 
+    virtual void setFileToOpenOnStart(lString8 filename);
 
 public slots:
     void renderLater();
