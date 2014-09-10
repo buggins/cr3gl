@@ -13,6 +13,7 @@
             </title>
             <p>This is a program to read <b><i>electronic books</i></b> in a number of formats: EPUB, FB2, RTF, TXT, HTML, CHM, PDB, MOBI, TCR</p>
             <p>Save books to read on your device internal memory or SD card and open them using Cool Reader.</p>
+            <p>As well you can download books from online OPDS catalogs directly from Cool Reader.</p>
             <p>This is a port of Android version. Not all features of Android versions are implemented yet.</p>
 			<subtitle>Navigation while reading</subtitle>
 			<p>You can move to next / previous page using several methods:</p>
