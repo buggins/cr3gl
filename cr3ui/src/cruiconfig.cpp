@@ -108,8 +108,8 @@ void CRUIConfig::setupResourcesForScreenSize() {
 
     minFontSize = sz1;
     maxFontSize = sz / 8;
-    if (maxFontSize > 180)
-        maxFontSize = 180;
+    if (maxFontSize > 340)
+        maxFontSize = 340;
     if (minFontSize < 9)
         minFontSize = 9;
     defFontSize = sz3;
