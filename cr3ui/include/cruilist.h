@@ -64,6 +64,12 @@ protected:
     ScrollControl _scroll;
     CRUIScrollBar * _scrollBar;
 public:
+    // scrollbar as a child
+    virtual int getChildCount();
+    virtual CRUIWidget * getChild(int index);
+    /// returns true if widget is child of this
+    virtual bool isChild(CRUIWidget * widget);
+
     virtual void setColCount(int cnt) { _colCount = cnt; requestLayout(); }
     virtual int getColCount() { return _colCount; }
     virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }

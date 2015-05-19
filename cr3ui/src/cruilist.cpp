@@ -58,6 +58,20 @@ void CRUIListWidget::setScrollOffset(int offset) {
     }
 }
 
+/// returns true if widget is child of this
+bool CRUIListWidget::isChild(CRUIWidget * widget) {
+    return (widget == _scrollBar) || (widget == this);
+}
+
+int CRUIListWidget::getChildCount() {
+    return 1;
+}
+
+CRUIWidget * CRUIListWidget::getChild(int index) {
+    CR_UNUSED(index);
+    return _scrollBar;
+}
+
 void CRUIListWidget::updateScrollBar() {
     _scrollBar->setMaxScrollPos(_visibleSize + _maxScrollOffset);
     _scrollBar->setPageSize(_visibleSize);
