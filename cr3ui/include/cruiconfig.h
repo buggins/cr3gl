@@ -78,6 +78,7 @@ struct CRUIConfig {
     bool einkMode;
     bool einkModeSettingsSupported;
     bool updateScreenModeInCurrentThread;
+    bool desktopMode;
     TEXTURE_FORMAT textureFormat;
     TEXTURE_FORMAT getTextureFormat() { return !einkMode ? TEXTURE_RGBA : TEXTURE_ALPHA; }
 

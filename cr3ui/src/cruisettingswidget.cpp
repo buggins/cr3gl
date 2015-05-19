@@ -107,16 +107,26 @@ public:
         _title->setText(_item->getName());
         _lefticon->setImage(isSelected ? "btn_radio_on" : "btn_radio_off");
         CRUIImageRef img = item->getRightImage();
-        int sz = MIN_ITEM_PX - PT_TO_PX(3*2);
-        _righticon->setMinWidth(sz);
-        _righticon->setMaxWidth(sz);
-        _righticon->setMinHeight(sz);
-        _righticon->setMaxHeight(sz);
         if (img.isNull()) {
             _righticon->setVisibility(GONE);
         } else {
             _righticon->setVisibility(VISIBLE);
+            int sz = item->getRightImageSize();
+            if (sz == 0) {
+                sz = UNSPECIFIED;
+                _righticon->setMinWidth(img->originalWidth());
+                _righticon->setMaxWidth(img->originalWidth());
+                _righticon->setMinHeight(img->originalHeight());
+                _righticon->setMaxHeight(img->originalHeight());
+            } else {
+                _righticon->setMinWidth(sz);
+                _righticon->setMaxWidth(sz);
+                _righticon->setMinHeight(sz);
+                _righticon->setMaxHeight(sz);
+            }
             _righticon->setImage(img);
+            measure(500, 100);
+            layout(0, 0, 500, 100);
         }
         //_description->setText(_item->getDescription());
     }
@@ -752,6 +762,8 @@ CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef p
     _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     _sample->setMaxHeight(deviceInfo.shortSide / 3);
     _sample->setMinHeight(deviceInfo.shortSide / 5);
+    //_sample->setMinWidth(deviceInfo.shortSide / 5);
+    //_sample->setMaxWidth(deviceInfo.shortSide / 4);
     _sample->setBackground(0xC0808080);
     _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
@@ -1062,6 +1074,10 @@ CRUISettingsEditor * CRUIFontSizeSetting::createEditor(CRPropRef props) {
 /// create editor widget based on option type
 CRUISettingsEditor * CRUIBackgroundTextureSetting::createEditor(CRPropRef props) {
     return new CRUIBackgroundTextureEditorWidget(props, this);
+}
+
+int CRUITextureOptionItem::getRightImageSize() const {
+    return crconfig.desktopMode ? deviceInfo.shortSide / 6 : MIN_ITEM_PX - PT_TO_PX(3*2);
 }
 
 CRUIImageRef CRUITextureOptionItem::getRightImage() const {

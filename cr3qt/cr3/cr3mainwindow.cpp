@@ -14,6 +14,8 @@
 
 #include "gldrawbuf.h"
 
+#define DESKTOP_DPI 120
+
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
@@ -30,7 +32,7 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     //_qtgl = this;
 
-    deviceInfo.setScreenDimensions(dx, dy, 200);
+    deviceInfo.setScreenDimensions(dx, dy, DESKTOP_DPI);
     crconfig.setupResourcesForScreenSize();
     _widget = new CRUIMainWidget();
     _widget->setScreenUpdater(this);
@@ -152,7 +154,7 @@ void OpenGLWindow::render()
 //        if (minsz >= 900)
 //            dpi = 300;
 //        dpi = 100;
-        deviceInfo.setScreenDimensions(sz.width(), sz.height(), 200); // dpi
+        deviceInfo.setScreenDimensions(sz.width(), sz.height(), DESKTOP_DPI); // dpi
         adaptThemeForScreenSize();
         //CRLog::trace("Layout is needed");
         _widget->onThemeChanged();

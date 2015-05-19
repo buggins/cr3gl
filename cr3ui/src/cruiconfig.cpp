@@ -23,6 +23,7 @@ CRUIConfig::CRUIConfig() {
     coverRenderCacheMaxItems = 1000;
     coverRenderCacheMaxBytes = 16 * 1024 * 1024;
     uiFontFace = "Arial";
+    desktopMode = false;
     touchMode = true;
     enableOpenGl = true;
     einkMode = false;
@@ -143,7 +144,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
     sprintf(s, "folder_icons/%dx%d", folderIconSize, folderIconSize);
     dirs.add(resourceDir + s);
 
-    if (deviceInfo.shortSide <= 420) {
+    if (deviceInfo.shortSide <= 420 || crconfig.desktopMode) {
     	CRLog::info("screen density normal");
         dirs.add(resourceDir + "screen-density-normal");
         dirs.add(resourceDir + "screen-density-high");
@@ -151,7 +152,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
         themedirs.add(currentThemeDir + "screen-density-normal");
         themedirs.add(currentThemeDir + "screen-density-high");
         themedirs.add(currentThemeDir + "screen-density-xhigh");
-    } else if (deviceInfo.shortSide <= 480) {
+    } else if (deviceInfo.shortSide <= 800) {
     	CRLog::info("screen density high");
         dirs.add(resourceDir + "screen-density-high");
         dirs.add(resourceDir + "screen-density-xhigh");
@@ -159,7 +160,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
         themedirs.add(currentThemeDir + "screen-density-high");
         themedirs.add(currentThemeDir + "screen-density-xhigh");
         themedirs.add(currentThemeDir + "screen-density-normal");
-    } else if (deviceInfo.shortSide <= 800) {
+    } else if (deviceInfo.shortSide <= 960) {
     	CRLog::info("screen density xhigh");
         dirs.add(resourceDir + "screen-density-xhigh");
         dirs.add(resourceDir + "screen-density-xxhigh");

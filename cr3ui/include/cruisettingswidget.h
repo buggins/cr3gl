@@ -113,6 +113,7 @@ public:
     virtual lString16 getName() const;
     virtual const lString8 & getValue() const { return _value; }
     virtual CRUIImageRef getRightImage() const { return CRUIImageRef(); }
+    virtual int getRightImageSize() const { return 0; }
     virtual ~CRUIOptionItem() {}
 };
 
@@ -122,6 +123,7 @@ class CRUITextureOptionItem : public CRUIOptionItem {
 public:
     CRUITextureOptionItem(const CRUIBackgroundImageResource * item) : CRUIOptionItem(item->getId(), item->getName()), _resource(new CRUIBackgroundImageResource(*item)) {}
     virtual CRUIImageRef getRightImage() const;
+    virtual int getRightImageSize() const;
     virtual lString16 getName() const;
     virtual ~CRUITextureOptionItem() { delete _resource; }
 };
