@@ -129,9 +129,10 @@ static int translateKeyCode(int key) {
     case Qt::Key_8: return CR_KEY_8;
     case Qt::Key_9: return CR_KEY_9;
     case Qt::Key_Space: return CR_KEY_SPACE;
+    case Qt::Key_Control: return CR_KEY_CONTROL;
     case Qt::Key_Shift: return CR_KEY_SHIFT;
-    case Qt::Key_Alt: return CR_KEY_SHIFT;
-    case Qt::Key_Meta: return CR_KEY_SHIFT;
+    case Qt::Key_Alt: return CR_KEY_ALT;
+    case Qt::Key_Meta: return CR_KEY_META;
 
     case Qt::Key_Return: return CR_KEY_RETURN;
     case Qt::Key_Home: return CR_KEY_HOME;

@@ -203,8 +203,12 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
 		invalidate();
     	return true;
     }
+    bool altPressed = (event->modifiers() & CR_KEY_MODIFIER_ALT);
+#if CR3_OSX
+    altPressed = altPressed ||  (event->modifiers() & CR_KEY_MODIFIER_CONTROL);
+#endif
     if (event->getType() == KEY_ACTION_PRESS) {
-        if (key == CR_KEY_RETURN && (event->modifiers() & CR_KEY_MODIFIER_ALT) != 0) {
+        if (key == CR_KEY_RETURN && altPressed != 0) {
             onAction(ACTION_TOGGLE_FULLSCREEN);
             return true;
         }
