@@ -553,7 +553,7 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     }
 }
 
-void CRUISliderWidget::updatePos(int pos) {
+void CRUIScrollBase::updatePos(int pos) {
     int oldpos = _value;
     setScrollPos(pos);
     if (_value != oldpos) {

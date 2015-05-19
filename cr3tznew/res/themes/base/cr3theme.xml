@@ -112,7 +112,7 @@
     />
     <style
         id = "SETTINGS_ITEM_ICON"
-        padding="3pt"
+        margins="3pt"
         align="center"
     />
     <style
