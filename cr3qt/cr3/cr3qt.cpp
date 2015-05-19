@@ -320,9 +320,15 @@ void InitCREngine(lString16 exePath) {
         deviceInfo.topDirs.addItem(DIR_TYPE_FAVORITE, lString8(homedir));
         crconfig.defaultDownloadsDir = lString8(homedir) + "/Downloads";
         //deviceInfo.topDirs.addItem(DIR_TYPE_DOWNLOADS, lString8(homedir) + "/Downloads");
+#if CR3_OSX
+        crconfig.uiFontFace = "Arial";
+        crconfig.monoFontFace = "Courier New";
+        crconfig.fallbackFontFace = "Arial Unicode";
+#else
         crconfig.uiFontFace = "DejaVu Sans";
         crconfig.monoFontFace = "DejaVu Sans Mono";
         crconfig.fallbackFontFace = "Liberation Sans";
+#endif
     }
 #endif
 
