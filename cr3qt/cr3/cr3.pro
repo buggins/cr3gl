@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network opengl
+QT       += core gui network opengl openglextensions
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -53,7 +53,11 @@ DEFINES += USE_FREETYPE=1 \
     ENABLE_ANTIWORD=1 \
     MAX_IMAGE_SCALE_MUL=2 \
     QT_GL=1 \
-    NO_WIN32_DRAWING=1
+    NO_WIN32_DRAWING=1 \
+    CR_EMULATE_GETTEXT=1 \
+    FT2_BUILD_LIBRARY=1
+
+macx:DEFINES += USE_FONTCONFIG=0 CR3_OSX=1
 
 INCLUDEPATH += ../../../cr3/crengine/include \
     ../../../cr3/thirdparty/libpng \
@@ -61,7 +65,7 @@ INCLUDEPATH += ../../../cr3/crengine/include \
     ../../../cr3/thirdparty/zlib \
     ../../../cr3/thirdparty/chmlib \
     ../../../cr3/thirdparty/antiword \
-    ../../../cr3/thirdparty/freetype\include \
+    ../../../cr3/thirdparty/freetype/include \
     ../../../cr3/thirdparty/libjpeg
 
 SOURCES += \
@@ -197,51 +201,6 @@ SOURCES += \
     ../../../cr3/thirdparty/freetype/src/type1/type1.c \
     ../../../cr3/thirdparty/freetype/src/cid/type1cid.c \
     ../../../cr3/thirdparty/freetype/src/type42/type42.c \
-    ../../../cr3/thirdparty/chmlib/src/chm_lib.c \
-    ../../../cr3/thirdparty/chmlib/src/lzx.c \
-    ../../../cr3/thirdparty/antiword/asc85enc.c \
-    ../../../cr3/thirdparty/antiword/blocklist.c \
-    ../../../cr3/thirdparty/antiword/chartrans.c \
-    ../../../cr3/thirdparty/antiword/datalist.c \
-    ../../../cr3/thirdparty/antiword/depot.c \
-    ../../../cr3/thirdparty/antiword/doclist.c \
-    ../../../cr3/thirdparty/antiword/fail.c \
-    ../../../cr3/thirdparty/antiword/finddata.c \
-    ../../../cr3/thirdparty/antiword/findtext.c \
-    ../../../cr3/thirdparty/antiword/fontlist.c \
-    ../../../cr3/thirdparty/antiword/fonts.c \
-    ../../../cr3/thirdparty/antiword/fonts_u.c \
-    ../../../cr3/thirdparty/antiword/hdrftrlist.c \
-    ../../../cr3/thirdparty/antiword/imgexam.c \
-    ../../../cr3/thirdparty/antiword/listlist.c \
-    ../../../cr3/thirdparty/antiword/misc.c \
-    ../../../cr3/thirdparty/antiword/notes.c \
-    ../../../cr3/thirdparty/antiword/options.c \
-    ../../../cr3/thirdparty/antiword/out2window.c \
-    ../../../cr3/thirdparty/antiword/pdf.c \
-    ../../../cr3/thirdparty/antiword/pictlist.c \
-    ../../../cr3/thirdparty/antiword/prop0.c \
-    ../../../cr3/thirdparty/antiword/prop2.c \
-    ../../../cr3/thirdparty/antiword/prop6.c \
-    ../../../cr3/thirdparty/antiword/prop8.c \
-    ../../../cr3/thirdparty/antiword/properties.c \
-    ../../../cr3/thirdparty/antiword/propmod.c \
-    ../../../cr3/thirdparty/antiword/rowlist.c \
-    ../../../cr3/thirdparty/antiword/sectlist.c \
-    ../../../cr3/thirdparty/antiword/stylelist.c \
-    ../../../cr3/thirdparty/antiword/stylesheet.c \
-    ../../../cr3/thirdparty/antiword/summary.c \
-    ../../../cr3/thirdparty/antiword/tabstop.c \
-    ../../../cr3/thirdparty/antiword/unix.c \
-    ../../../cr3/thirdparty/antiword/utf8.c \
-    ../../../cr3/thirdparty/antiword/word2text.c \
-    ../../../cr3/thirdparty/antiword/worddos.c \
-    ../../../cr3/thirdparty/antiword/wordlib.c \
-    ../../../cr3/thirdparty/antiword/wordmac.c \
-    ../../../cr3/thirdparty/antiword/wordole.c \
-    ../../../cr3/thirdparty/antiword/wordwin.c \
-    ../../../cr3/thirdparty/antiword/xmalloc.c \
-    ../../../cr3/thirdparty/sqlite/sqlite3.c \
     ../../../cr3/thirdparty/zlib/adler32.c \
     ../../../cr3/thirdparty/zlib/crc32.c \
     ../../../cr3/thirdparty/zlib/infback.c \
@@ -312,7 +271,7 @@ HEADERS += \
 
 
 #!win32 {
-    unix:LIBS += -ljpeg
+    unix:!macx:LIBS += -ljpeg
 #    win32:LIBS += libjpeg.lib
 #}
 win32 {
@@ -367,12 +326,12 @@ win32 {
 #        ../../../cr3/thirdparty/libjpeg/jmemnobs.c
 }
 #!win32 {
-    unix:LIBS += -lpng -ldl
+    unix:!macx:LIBS += -lpng -ldl
 #    win32:LIBS += libpng.lib
 #}
 win32 {
 #    INCLUDEPATH += ../../../cr3/thirdparty/libpng
-    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\libpng
+#    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\libpng
 #    SOURCES += ../../../cr3/thirdparty/libpng/png.c \
 #        ../../../cr3/thirdparty/libpng/pngset.c \
 #        ../../../cr3/thirdparty/libpng/pngget.c \
@@ -390,11 +349,11 @@ win32 {
 #        ../../../cr3/thirdparty/libpng/pngpread.c
 }
 #!win32 {
-    unix:LIBS += -lfreetype -lfontconfig
+    unix:!macx:LIBS += -lfreetype -lfontconfig
 #    win32:LIBS += libfreetype.lib
 #}
 win32 {
-    DEFINES += FT2_BUILD_LIBRARY=1
+#    DEFINES += FT2_BUILD_LIBRARY=1
 #    INCLUDEPATH += ../../../cr3/thirdparty/freetype/include
     INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\freetype\include
 #    SOURCES += ../../../cr3/thirdparty/freetype/src/autofit/autofit.c \
@@ -435,12 +394,12 @@ win32 {
 #        ../../../cr3/thirdparty/freetype/src/winfonts/winfnt.c
 }
 #!win32 {
-    unix:LIBS += -lz
+    unix:!macx:LIBS += -lz
 #    win32:LIBS += libz.lib
 #}
 win32 {
     #INCLUDEPATH += ../../../cr3/thirdparty/zlib
-    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\zlib
+#    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\zlib
 #    SOURCES += ../../../cr3/thirdparty/zlib/adler32.c \
 #        ../../../cr3/thirdparty/zlib/compress.c \
 #        ../../../cr3/thirdparty/zlib/crc32.c \

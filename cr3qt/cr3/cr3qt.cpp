@@ -179,7 +179,7 @@ void CRUIEventAdapter::dispatchKeyEvent(QKeyEvent * event) {
     bool autorepeat = event->isAutoRepeat();
     int count = event->count();
     lUInt32 modifiers = translateModifiers(event->modifiers());
-    CRLog::trace("QKeyEvent type=%d srckey=%08x key=%04x srcmodifiers=%08x modifiers=%04x", type, event->key(), key, event->modifiers(), modifiers);
+    CRLog::trace("QKeyEvent type=%d srckey=%08x key=%04x srcmodifiers=%08x modifiers=%04x", type, event->key(), key, (int)event->modifiers(), modifiers);
     CRUIKeyEvent * ev = new CRUIKeyEvent(type, key, autorepeat, count, modifiers);
     if (s.length()) {
         lString16 txt = Utf8ToUnicode(s.toUtf8().constData());
