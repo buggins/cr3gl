@@ -174,10 +174,13 @@ class CRUIScrollBase : public CRUIWidget {
 protected:
     int _minValue;
     int _maxValue;
+    int _pageSize;
     int _value;
     CRUIOnScrollPosCallback * _callback;
     void updatePos(int pos);
 public:
+    int getPageSize() { return _pageSize; }
+    void setPageSize(int value) { _pageSize = value; invalidate(); }
     int getScrollPos() { return _value; }
     void setScrollPos(int value) { _value = value < _minValue ? _minValue : (value > _maxValue ? _maxValue : value); }
     int getMinScrollPos() { return _minValue; }
@@ -185,12 +188,43 @@ public:
     void setMinScrollPos(int value) { _minValue = value; }
     void setMaxScrollPos(int value) { _maxValue = value; }
     void setScrollPosCallback(CRUIOnScrollPosCallback * callback) { _callback = callback; }
-    CRUIScrollBase(int minValue, int maxValue, int currentValue)
-      : _minValue(minValue), _maxValue(maxValue), _value(currentValue)
+    CRUIScrollBase(int minValue, int maxValue, int currentValue, int pageSize = 1)
+      : _minValue(minValue), _maxValue(maxValue), _value(currentValue), _pageSize(pageSize)
       , _callback(NULL) {
         setScrollPos(currentValue);
     }
     virtual ~CRUIScrollBase() {}
+};
+
+class CRUIScrollBar : public CRUIScrollBase {
+protected:
+    bool _isVertical;
+    CRUIImageRef getHandleImage();
+public:
+    /// check orientation
+    virtual bool isVertical() const { return _isVertical; }
+    /// sets orientation
+    virtual CRUIScrollBar * setVertical(bool vertical) {
+        _isVertical = vertical;
+        if (_isVertical)
+            setBackground("scrollbar_background_vertical.9");
+        else
+            setBackground("scrollbar_background_horizontal.9");
+        requestLayout();
+        return this;
+    }
+
+    CRUIScrollBar(bool vertical, int minValue, int maxValue, int currentValue, int pageSize = 1)
+      :  CRUIScrollBase(minValue, maxValue, currentValue, pageSize)
+    {
+        setVertical(vertical);
+    }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
+    /// updates widget position based on specified rectangle
+    virtual void layout(int left, int top, int right, int bottom);
+    /// draws widget with its children to specified surface
+    virtual void draw(LVDrawBuf * buf);
 };
 
 class CRUISliderWidget : public CRUIScrollBase {

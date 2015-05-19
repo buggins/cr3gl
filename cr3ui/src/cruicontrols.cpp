@@ -476,6 +476,98 @@ bool CRUIButton::onTouchEvent(const CRUIMotionEvent * event) {
 }
 
 
+CRUIImageRef CRUIScrollBar::getHandleImage() {
+    if (_isVertical) {
+        return resourceResolver->getIcon("scrollbar_handle_vertical.9");
+    } else {
+        return resourceResolver->getIcon("scrollbar_handle_horizontal.9");
+    }
+}
+
+
+/// measure dimensions
+void CRUIScrollBar::measure(int baseWidth, int baseHeight) {
+    if (getVisibility() == GONE) {
+        _measuredWidth = 0;
+        _measuredHeight = 0;
+        return;
+    }
+    CRUIImageRef handle = getHandleImage();
+    int width = 0;
+    int height = 0;
+    if (!handle.isNull()) {
+        if (_isVertical) {
+            width = handle->originalWidth();
+            height = baseHeight;
+        } else {
+            width = baseWidth;
+            height = handle->originalHeight();
+        }
+    }
+    defMeasure(baseWidth, baseHeight, width, height);
+}
+
+/// updates widget position based on specified rectangle
+void CRUIScrollBar::layout(int left, int top, int right, int bottom) {
+    CRUIWidget::layout(left, top, right, bottom);
+}
+
+/// draws widget with its children to specified surface
+void CRUIScrollBar::draw(LVDrawBuf * buf) {
+    if (getVisibility() != VISIBLE) {
+        return;
+    }
+
+    int pageSize = _pageSize;
+    if (pageSize > _maxValue - _minValue)
+        return; // auto-hidden
+
+    CRUIWidget::draw(buf);
+    LVDrawStateSaver saver(*buf);
+    CR_UNUSED(saver);
+    lvRect rc = _pos;
+    applyMargin(rc);
+    setClipRect(buf, rc);
+    applyPadding(rc);
+
+    //CRUIImageRef handle = resourceResolver->getIcon("btn_radio_off");
+    CRUIImageRef handle = getHandleImage();
+
+    lvRect linerc = rc;
+    if (rc.isEmpty() || handle.isNull())
+        return;
+    if (_isVertical) {
+        int y0 = linerc.top + linerc.height() * (_value - _minValue) / (_maxValue - _minValue);
+        int y1 = linerc.top + linerc.height() * (_value - _minValue + _pageSize) / (_maxValue - _minValue);
+        if (y1 - y0 < handle->originalHeight()) {
+            int extra = handle->originalHeight() - (y1 - y0);
+            y0 -= extra / 2;
+            y1 += (extra + 1) / 2;
+        }
+        if (y0 < linerc.top) y0 = linerc.top;
+        if (y1 > linerc.bottom) y1 = linerc.bottom;
+        linerc.top = y0;
+        linerc.bottom = y1;
+        if (y0 < y1)
+            handle->draw(buf, linerc);
+    } else {
+        int x0 = linerc.left + linerc.width() * (_value - _minValue) / (_maxValue - _minValue);
+        int x1 = linerc.left + linerc.width() * (_value - _minValue + _pageSize) / (_maxValue - _minValue);
+        if (x1 - x0 < handle->originalWidth()) {
+            int extra = handle->originalWidth() - (x1 - x0);
+            x0 -= extra / 2;
+            x1 += (extra + 1) / 2;
+        }
+        if (x0 < linerc.left) x0 = linerc.left;
+        if (x1 > linerc.right) x1 = linerc.right;
+        linerc.left = x0;
+        linerc.right = x1;
+        if (x0 < x1)
+            handle->draw(buf, linerc);
+    }
+}
+
+
 
 
 
