@@ -10,6 +10,22 @@
 
 #include "cruilayout.h"
 
+class CRUIVSpacer : public CRUIWidget {
+public:
+    CRUIVSpacer() {
+        setLayoutParams(4, CRUI::FILL_PARENT);
+        setLayoutWeight(1);
+    }
+};
+
+class CRUIHSpacer : public CRUIWidget {
+public:
+    CRUIHSpacer() {
+        setLayoutParams(CRUI::FILL_PARENT, 4);
+        setLayoutWeight(1);
+    }
+};
+
 class CRUITextWidget : public CRUIWidget {
 protected:
 	lString16 _text;

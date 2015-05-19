@@ -245,6 +245,10 @@ public:
         _controls->addChild(widget);
     }
 
+    void addChildSpacer() {
+        _controls->addChild(new CRUIVSpacer());
+    }
+
     virtual void setCallback(CRUISettingsEditorCallback * callback) { _callback = callback; }
     virtual void setOnDragListener(CRUIDragListener * listener) { CR_UNUSED(listener); }
     /// measure dimensions

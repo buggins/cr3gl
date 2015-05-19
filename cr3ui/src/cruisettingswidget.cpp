@@ -340,11 +340,8 @@ CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettings
     _slider->setMinHeight(MIN_ITEM_PX);
     addChildControl(_sizetext);
     addChildControl(_slider);
-//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xE0FFFFFF);
-//    addChild(separator);
+    addChildSpacer();
+
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
@@ -383,11 +380,8 @@ CRUIInterlineSpaceEditorWidget::CRUIInterlineSpaceEditorWidget(CRPropRef props, 
     _slider->setMinHeight(MIN_ITEM_PX);
     addChildControl(_sizetext);
     addChildControl(_slider);
-//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xE0FFFFFF);
-//    addChild(separator);
+    addChildSpacer();
+
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
@@ -417,11 +411,8 @@ CRUIPageMarginsEditorWidget::CRUIPageMarginsEditorWidget(CRPropRef props, CRUISe
     _slider->setMinHeight(MIN_ITEM_PX);
     addChildControl(_sizetext);
     addChildControl(_slider);
-//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xE0FFFFFF);
-//    addChild(separator);
+    addChildSpacer();
+
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
@@ -562,11 +553,8 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
 
     _colorCorrectionPane->setVisibility(INVISIBLE);
 
-//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xC0FFFFFF);
-//    addChild(separator);
+    addChildSpacer();
+
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 
@@ -672,12 +660,8 @@ CRUIFontRenderingOptionsEditorWidget::CRUIFontRenderingOptionsEditorWidget(CRPro
     _sliderGamma->setScrollPosCallback(this);
     addChildControl(_sliderGamma);
 
+    addChildSpacer();
 
-//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xC0FFFFFF);
-//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
@@ -743,11 +727,6 @@ lString16 CRUIPageMarginsSetting::getDescription(CRPropRef props) const {
 }
 
 CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
-//    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xC0FFFFFF);
-//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
@@ -769,11 +748,6 @@ bool CRUIBackgroundTextureEditorWidget::onListItemClick(CRUIListWidget * widget,
 
 
 CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
-//    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
-//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-//    separator->setPadding(PT_TO_PX(2));
-//    separator->setBackground(0xC0FFFFFF);
-//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
     addChild(_sample);
 }
