@@ -200,7 +200,7 @@ public:
     virtual bool onTouchEvent(const CRUIMotionEvent * event);
 
     CRUISliderWidget(int minValue, int maxValue, int currentValue)
-      :  CRUIScrollBase(minValue, _maxValue, _value)
+      :  CRUIScrollBase(minValue, maxValue, currentValue)
       , _color1(0xFFFFFFFF), _color2(0xFFFFFFFF) {
     }
     virtual ~CRUISliderWidget() {}

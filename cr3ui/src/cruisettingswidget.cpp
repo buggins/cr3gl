@@ -146,13 +146,21 @@ CRUISettingsList * CRUISettingsList::asList() {
     return this;
 }
 
+/// measure dimensions
+void CRUISettingsEditor::measure(int baseWidth, int baseHeight) {
+    if (baseWidth != UNSPECIFIED && baseHeight != UNSPECIFIED) {
+        setVertical(baseWidth < baseHeight);
+    }
+    CRUILinearLayout::measure(baseWidth, baseHeight);
+}
+
 CRUISettingsListEditor::CRUISettingsListEditor(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting), _list(NULL) {
     _list = new CRUIListWidget(true);
     _list->setAdapter(this);
     _list->setOnItemClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
     _list->setLayoutParams(FILL_PARENT, FILL_PARENT);
-    addChild(_list);
+    addChildControl(_list);
 }
 
 
@@ -163,8 +171,15 @@ CRUIFontSampleWidget::CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSample
     for (int i = crconfig.minFontSize; i <= crconfig.maxFontSize; i++)
         fontSizes.add(i);
     _docview->setFontSizes(fontSizes, false);
-    _docview->createDefaultDocument(lString16(), sample);
+    _docview->createDefaultDocument(lString16(), sample + L"\n" + sample + L"\n" + sample + L"\n");
     _docview->setViewMode(DVM_SCROLL, 1);
+    setLayoutParams(FILL_PARENT, FILL_PARENT);
+    setMaxHeight(deviceInfo.shortSide / 3);
+    setMinHeight(deviceInfo.shortSide / 5);
+    setMaxWidth(deviceInfo.shortSide / 3);
+    setMinWidth(deviceInfo.shortSide / 5);
+    setBackground(0xE0808080);
+    setPadding(PT_TO_PX(4));
 }
 
 CRUIFontSampleWidget::~CRUIFontSampleWidget() {
@@ -323,23 +338,18 @@ CRUIFontSizeEditorWidget::CRUIFontSizeEditorWidget(CRPropRef props, CRUISettings
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(this);
     _slider->setMinHeight(MIN_ITEM_PX);
-    addChild(_sizetext);
-    addChild(_slider);
-    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xE0FFFFFF);
-    addChild(separator);
+    addChildControl(_sizetext);
+    addChildControl(_slider);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xE0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
-bool CRUIFontSizeEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+bool CRUIFontSizeEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED(widget);
     if (!manual)
         return false;
@@ -371,23 +381,18 @@ CRUIInterlineSpaceEditorWidget::CRUIInterlineSpaceEditorWidget(CRPropRef props, 
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(this);
     _slider->setMinHeight(MIN_ITEM_PX);
-    addChild(_sizetext);
-    addChild(_slider);
-    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xE0FFFFFF);
-    addChild(separator);
+    addChildControl(_sizetext);
+    addChildControl(_slider);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xE0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
-bool CRUIInterlineSpaceEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+bool CRUIInterlineSpaceEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED(widget);
     if (!manual)
         return false;
@@ -410,23 +415,18 @@ CRUIPageMarginsEditorWidget::CRUIPageMarginsEditorWidget(CRPropRef props, CRUISe
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(this);
     _slider->setMinHeight(MIN_ITEM_PX);
-    addChild(_sizetext);
-    addChild(_slider);
-    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xE0FFFFFF);
-    addChild(separator);
+    addChildControl(_sizetext);
+    addChildControl(_slider);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xE0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
-bool CRUIPageMarginsEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+bool CRUIPageMarginsEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED(widget);
     if (!manual)
         return false;
@@ -529,7 +529,7 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
         _checkbox->setId("ENABLE_TEXTURE");
         _checkbox->setSetting(_enableTextureSetting, _props);
         _checkbox->setOnClickListener(this);
-        addChild(_checkbox);
+        addChildControl(_checkbox);
 
         _sliderRB = createColorSlider("RB", brightnessSettingToSlider(_props, 16), this, 0x80000000, 0x80FF0000);
         _sliderGB = createColorSlider("GB", brightnessSettingToSlider(_props, 8), this, 0x80000000, 0x8000FF00);
@@ -558,27 +558,22 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     CRUIFrameLayout * frame = new CRUIFrameLayout();
     frame->addChild(_colorPane);
     frame->addChild(_colorCorrectionPane);
-    addChild(frame);
+    addChildControl(frame);
 
     _colorCorrectionPane->setVisibility(INVISIBLE);
 
-    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xC0FFFFFF);
-    addChild(separator);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xC0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 
     updateMode();
 }
 
-bool CRUIColorEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+bool CRUIColorEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED(widget);
     if (!manual)
         return false;
@@ -663,36 +658,31 @@ CRUIFontRenderingOptionsEditorWidget::CRUIFontRenderingOptionsEditorWidget(CRPro
     _cbBytecodeInterpretor->setId("ENABLE_BYTECODE_INTERPRETOR");
     _cbBytecodeInterpretor->setSetting(_settingBytecodeInterpretor, _props);
     _cbBytecodeInterpretor->setOnClickListener(this);
-    addChild(_cbBold);
-    addChild(_cbAntialiasing);
-    addChild(_cbBytecodeInterpretor);
+    addChildControl(_cbBold);
+    addChildControl(_cbAntialiasing);
+    addChildControl(_cbBytecodeInterpretor);
     CRUITextWidget * gammaTitle = new CRUITextWidget(STR_SETTINGS_FONT_GAMMA);
     gammaTitle->setStyle("SLIDER_TITLE");
     gammaTitle->setAlign(ALIGN_BOTTOM | ALIGN_HCENTER);
-    addChild(gammaTitle);
+    addChildControl(gammaTitle);
     int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
     _sliderGamma = new CRUISliderWidget(0, 30, gammaIndex);
     _sliderGamma->setId("GAMMA");
     _sliderGamma->setPadding(PT_TO_PX(4));
     _sliderGamma->setScrollPosCallback(this);
-    addChild(_sliderGamma);
+    addChildControl(_sliderGamma);
 
 
-    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xC0FFFFFF);
-    addChild(separator);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16(""));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xC0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
-bool CRUIFontRenderingOptionsEditorWidget::onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+bool CRUIFontRenderingOptionsEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED(manual);
     if (widget->getId() == "GAMMA") {
         _props->setInt(PROP_FONT_GAMMA_INDEX, pos);
@@ -753,19 +743,12 @@ lString16 CRUIPageMarginsSetting::getDescription(CRPropRef props) const {
 }
 
 CRUIBackgroundTextureEditorWidget::CRUIBackgroundTextureEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
-    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xC0FFFFFF);
-    addChild(separator);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xC0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    //_sample->setMinWidth(deviceInfo.shortSide / 5);
-    //_sample->setMaxWidth(deviceInfo.shortSide / 4);
-    _sample->setBackground(0xC0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 
@@ -786,17 +769,12 @@ bool CRUIBackgroundTextureEditorWidget::onListItemClick(CRUIListWidget * widget,
 
 
 CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
-    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
-    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    separator->setPadding(PT_TO_PX(2));
-    separator->setBackground(0xC0FFFFFF);
-    addChild(separator);
+//    CRUITextWidget * separator = new CRUITextWidget(lString16("Sample:"));
+//    separator->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//    separator->setPadding(PT_TO_PX(2));
+//    separator->setBackground(0xC0FFFFFF);
+//    addChild(separator);
     _sample = new CRUIFontSampleWidget(props);
-    _sample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-    _sample->setMaxHeight(deviceInfo.shortSide / 3);
-    _sample->setMinHeight(deviceInfo.shortSide / 5);
-    _sample->setBackground(0xE0808080);
-    _sample->setPadding(PT_TO_PX(4));
     addChild(_sample);
 }
 

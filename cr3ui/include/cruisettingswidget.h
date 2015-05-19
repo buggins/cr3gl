@@ -1,6 +1,7 @@
 #ifndef CRUISETTINGSWIDGET_CPP
 #define CRUISETTINGSWIDGET_CPP
 
+#include "cruitheme.h"
 #include "cruiwindow.h"
 #include "cruilist.h"
 #include "cruisettings.h"
@@ -233,10 +234,21 @@ protected:
     CRPropRef _props;
     CRUISettingsItem * _settings;
     CRUISettingsEditorCallback * _callback;
+    CRUIVerticalLayout * _controls;
 public:
-    CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting), _callback(NULL) {}
+    CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting), _callback(NULL) {
+        _controls = new CRUIVerticalLayout();
+        _controls->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
+        addChild(_controls);
+    }
+    void addChildControl(CRUIWidget * widget) {
+        _controls->addChild(widget);
+    }
+
     virtual void setCallback(CRUISettingsEditorCallback * callback) { _callback = callback; }
     virtual void setOnDragListener(CRUIDragListener * listener) { CR_UNUSED(listener); }
+    /// measure dimensions
+    virtual void measure(int baseWidth, int baseHeight);
 };
 
 class CRUISettingsListEditor : public CRUISettingsEditor, public CRUIListAdapter, public CRUIOnListItemClickListener {
@@ -307,7 +319,7 @@ protected:
     CRUIFontSampleWidget * _sample;
 public:
     CRUIFontSizeEditorWidget(CRPropRef props, CRUISettingsItem * setting);
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
     /// updates widget position based on specified rectangle
     virtual void layout(int left, int top, int right, int bottom);
 };
@@ -319,7 +331,7 @@ protected:
     CRUIFontSampleWidget * _sample;
 public:
     CRUIInterlineSpaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 };
 
 class CRUIPageMarginsEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
@@ -329,7 +341,7 @@ protected:
     CRUIFontSampleWidget * _sample;
 public:
     CRUIPageMarginsEditorWidget(CRPropRef props, CRUISettingsItem * setting);
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 };
 
 class CRUISettingsListItemWidget;
@@ -355,7 +367,7 @@ public:
         if (_enableTextureSetting)
             delete _enableTextureSetting;
     }
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
     virtual bool onClick(CRUIWidget * widget);
     void updateMode();
 
@@ -374,7 +386,7 @@ public:
     CRUIFontRenderingOptionsEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual ~CRUIFontRenderingOptionsEditorWidget();
 
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
     virtual bool onClick(CRUIWidget * widget);
 };
 

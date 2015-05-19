@@ -291,7 +291,7 @@ public:
         }
     }
 
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
         CR_UNUSED(widget);
         if (!manual)
             return false;
@@ -347,7 +347,7 @@ public:
         CRUIEventManager::cancelTimer(GO_TO_PERCENT_REPEAT_TIMER_ID);
     }
 
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) {
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
         CR_UNUSED(widget);
         if (!manual)
             return false;

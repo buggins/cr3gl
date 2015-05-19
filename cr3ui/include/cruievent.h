@@ -377,10 +377,10 @@ public:
 	virtual ~CRUIOnListItemLongClickListener() {}
 };
 
-class CRUISliderWidget;
+class CRUIScrollBase;
 class CRUIOnScrollPosCallback {
 public:
-    virtual bool onScrollPosChange(CRUISliderWidget * widget, int pos, bool manual) = 0;
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) = 0;
     virtual ~CRUIOnScrollPosCallback() {}
 };
 
