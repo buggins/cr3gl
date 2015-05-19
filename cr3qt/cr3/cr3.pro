@@ -42,7 +42,6 @@ DEFINES += _DEBUG=1 DEBUG=1
 #DEFINES += NDEBUG _ITERATOR_DEBUG_LEVEL=0
 
 DEFINES += USE_FREETYPE=1 \
-    USE_FREETYPE2=1 \
     COLOR_BACKBUFFER=1 \
     USE_DOM_UTF8_STORAGE=1 \
     CR3_PATCH \
@@ -56,7 +55,15 @@ DEFINES += USE_FREETYPE=1 \
     QT_GL=1 \
     NO_WIN32_DRAWING=1
 
-INCLUDEPATH += ../../../cr3/crengine/include
+INCLUDEPATH += ../../../cr3/crengine/include \
+    ../../../cr3/thirdparty/libpng \
+    ../../../cr3/thirdparty/sqlite \
+    ../../../cr3/thirdparty/zlib \
+    ../../../cr3/thirdparty/chmlib \
+    ../../../cr3/thirdparty/antiword \
+    ../../../cr3/thirdparty/freetype\include \
+    ../../../cr3/thirdparty/libjpeg
+
 SOURCES += \
     ../../../cr3/crengine/src/crconcurrent.cpp \
     ../../../cr3/crengine/src/wordfmt.cpp \
@@ -89,7 +96,164 @@ SOURCES += \
     ../../../cr3/crengine/src/cri18n.cpp \
     ../../../cr3/crengine/src/cp_stats.cpp \
     ../../../cr3/crengine/src/bookformats.cpp \
-    ../../../cr3/crengine/src/chmfmt.cpp
+    ../../../cr3/crengine/src/chmfmt.cpp \
+    ../../../cr3/thirdparty/libpng/pngerror.c  \
+    ../../../cr3/thirdparty/libpng/pngget.c  \
+    ../../../cr3/thirdparty/libpng/pngpread.c \
+    ../../../cr3/thirdparty/libpng/pngrio.c \
+    ../../../cr3/thirdparty/libpng/pngrutil.c \
+    ../../../cr3/thirdparty/libpng/pngvcrd.c \
+    ../../../cr3/thirdparty/libpng/png.c \
+    ../../../cr3/thirdparty/libpng/pngwrite.c \
+    ../../../cr3/thirdparty/libpng/pngwutil.c \
+    ../../../cr3/thirdparty/libpng/pnggccrd.c \
+    ../../../cr3/thirdparty/libpng/pngmem.c \
+    ../../../cr3/thirdparty/libpng/pngread.c \
+    ../../../cr3/thirdparty/libpng/pngrtran.c \
+    ../../../cr3/thirdparty/libpng/pngset.c \
+    ../../../cr3/thirdparty/libpng/pngtrans.c \
+    ../../../cr3/thirdparty/libpng/pngwio.c \
+    ../../../cr3/thirdparty/libpng/pngwtran.c \
+    ../../../cr3/thirdparty/libjpeg/jcapimin.c \
+    ../../../cr3/thirdparty/libjpeg/jchuff.c \
+    ../../../cr3/thirdparty/libjpeg/jcomapi.c \
+    ../../../cr3/thirdparty/libjpeg/jctrans.c \
+    ../../../cr3/thirdparty/libjpeg/jdcoefct.c \
+    ../../../cr3/thirdparty/libjpeg/jdmainct.c \
+    ../../../cr3/thirdparty/libjpeg/jdpostct.c \
+    ../../../cr3/thirdparty/libjpeg/jfdctfst.c \
+    ../../../cr3/thirdparty/libjpeg/jidctred.c \
+    ../../../cr3/thirdparty/libjpeg/jutils.c \
+    ../../../cr3/thirdparty/libjpeg/jcapistd.c \
+    ../../../cr3/thirdparty/libjpeg/jcinit.c \
+    ../../../cr3/thirdparty/libjpeg/jcparam.c \
+    ../../../cr3/thirdparty/libjpeg/jdapimin.c \
+    ../../../cr3/thirdparty/libjpeg/jdcolor.c \
+    ../../../cr3/thirdparty/libjpeg/jdmarker.c \
+    ../../../cr3/thirdparty/libjpeg/jdsample.c \
+    ../../../cr3/thirdparty/libjpeg/jfdctint.c \
+    ../../../cr3/thirdparty/libjpeg/jmemmgr.c \
+    ../../../cr3/thirdparty/libjpeg/jccoefct.c \
+    ../../../cr3/thirdparty/libjpeg/jcmainct.c \
+    ../../../cr3/thirdparty/libjpeg/jcphuff.c \
+    ../../../cr3/thirdparty/libjpeg/jdapistd.c \
+    ../../../cr3/thirdparty/libjpeg/jddctmgr.c \
+    ../../../cr3/thirdparty/libjpeg/jdmaster.c \
+    ../../../cr3/thirdparty/libjpeg/jdtrans.c \
+    ../../../cr3/thirdparty/libjpeg/jidctflt.c \
+    ../../../cr3/thirdparty/libjpeg/jmemnobs.c \
+    ../../../cr3/thirdparty/libjpeg/jccolor.c \
+    ../../../cr3/thirdparty/libjpeg/jcmarker.c \
+    ../../../cr3/thirdparty/libjpeg/jcprepct.c \
+    ../../../cr3/thirdparty/libjpeg/jdatadst.c \
+    ../../../cr3/thirdparty/libjpeg/jdhuff.c \
+    ../../../cr3/thirdparty/libjpeg/jdmerge.c \
+    ../../../cr3/thirdparty/libjpeg/jerror.c \
+    ../../../cr3/thirdparty/libjpeg/jidctfst.c \
+    ../../../cr3/thirdparty/libjpeg/jquant1.c \
+    ../../../cr3/thirdparty/libjpeg/jcdctmgr.c \
+    ../../../cr3/thirdparty/libjpeg/jcmaster.c \
+    ../../../cr3/thirdparty/libjpeg/jcsample.c \
+    ../../../cr3/thirdparty/libjpeg/jdatasrc.c \
+    ../../../cr3/thirdparty/libjpeg/jdinput.c \
+    ../../../cr3/thirdparty/libjpeg/jdphuff.c \
+    ../../../cr3/thirdparty/libjpeg/jfdctflt.c \
+    ../../../cr3/thirdparty/libjpeg/jidctint.c \
+    ../../../cr3/thirdparty/libjpeg/jquant2.c \
+    ../../../cr3/thirdparty/freetype/src/autofit/autofit.c \
+    ../../../cr3/thirdparty/freetype/src/bdf/bdf.c \
+    ../../../cr3/thirdparty/freetype/src/cff/cff.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftbase.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftbbox.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftbdf.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftbitmap.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftgasp.c \
+    ../../../cr3/thirdparty/freetype/src/cache/ftcache.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftglyph.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftgxval.c \
+    ../../../cr3/thirdparty/freetype/src/gzip/ftgzip.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftinit.c \
+    ../../../cr3/thirdparty/freetype/src/lzw/ftlzw.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftmm.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftpatent.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftotval.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftpfr.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftstroke.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftsynth.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftsystem.c \
+    ../../../cr3/thirdparty/freetype/src/base/fttype1.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftwinfnt.c \
+    ../../../cr3/thirdparty/freetype/src/base/ftxf86.c \
+    ../../../cr3/thirdparty/freetype/src/winfonts/winfnt.c \
+    ../../../cr3/thirdparty/freetype/src/pcf/pcf.c \
+    ../../../cr3/thirdparty/freetype/src/pfr/pfr.c \
+    ../../../cr3/thirdparty/freetype/src/psaux/psaux.c \
+    ../../../cr3/thirdparty/freetype/src/pshinter/pshinter.c \
+    ../../../cr3/thirdparty/freetype/src/psnames/psmodule.c \
+    ../../../cr3/thirdparty/freetype/src/raster/raster.c \
+    ../../../cr3/thirdparty/freetype/src/sfnt/sfnt.c \
+    ../../../cr3/thirdparty/freetype/src/smooth/smooth.c \
+    ../../../cr3/thirdparty/freetype/src/truetype/truetype.c \
+    ../../../cr3/thirdparty/freetype/src/type1/type1.c \
+    ../../../cr3/thirdparty/freetype/src/cid/type1cid.c \
+    ../../../cr3/thirdparty/freetype/src/type42/type42.c \
+    ../../../cr3/thirdparty/chmlib/src/chm_lib.c \
+    ../../../cr3/thirdparty/chmlib/src/lzx.c \
+    ../../../cr3/thirdparty/antiword/asc85enc.c \
+    ../../../cr3/thirdparty/antiword/blocklist.c \
+    ../../../cr3/thirdparty/antiword/chartrans.c \
+    ../../../cr3/thirdparty/antiword/datalist.c \
+    ../../../cr3/thirdparty/antiword/depot.c \
+    ../../../cr3/thirdparty/antiword/doclist.c \
+    ../../../cr3/thirdparty/antiword/fail.c \
+    ../../../cr3/thirdparty/antiword/finddata.c \
+    ../../../cr3/thirdparty/antiword/findtext.c \
+    ../../../cr3/thirdparty/antiword/fontlist.c \
+    ../../../cr3/thirdparty/antiword/fonts.c \
+    ../../../cr3/thirdparty/antiword/fonts_u.c \
+    ../../../cr3/thirdparty/antiword/hdrftrlist.c \
+    ../../../cr3/thirdparty/antiword/imgexam.c \
+    ../../../cr3/thirdparty/antiword/listlist.c \
+    ../../../cr3/thirdparty/antiword/misc.c \
+    ../../../cr3/thirdparty/antiword/notes.c \
+    ../../../cr3/thirdparty/antiword/options.c \
+    ../../../cr3/thirdparty/antiword/out2window.c \
+    ../../../cr3/thirdparty/antiword/pdf.c \
+    ../../../cr3/thirdparty/antiword/pictlist.c \
+    ../../../cr3/thirdparty/antiword/prop0.c \
+    ../../../cr3/thirdparty/antiword/prop2.c \
+    ../../../cr3/thirdparty/antiword/prop6.c \
+    ../../../cr3/thirdparty/antiword/prop8.c \
+    ../../../cr3/thirdparty/antiword/properties.c \
+    ../../../cr3/thirdparty/antiword/propmod.c \
+    ../../../cr3/thirdparty/antiword/rowlist.c \
+    ../../../cr3/thirdparty/antiword/sectlist.c \
+    ../../../cr3/thirdparty/antiword/stylelist.c \
+    ../../../cr3/thirdparty/antiword/stylesheet.c \
+    ../../../cr3/thirdparty/antiword/summary.c \
+    ../../../cr3/thirdparty/antiword/tabstop.c \
+    ../../../cr3/thirdparty/antiword/unix.c \
+    ../../../cr3/thirdparty/antiword/utf8.c \
+    ../../../cr3/thirdparty/antiword/word2text.c \
+    ../../../cr3/thirdparty/antiword/worddos.c \
+    ../../../cr3/thirdparty/antiword/wordlib.c \
+    ../../../cr3/thirdparty/antiword/wordmac.c \
+    ../../../cr3/thirdparty/antiword/wordole.c \
+    ../../../cr3/thirdparty/antiword/wordwin.c \
+    ../../../cr3/thirdparty/antiword/xmalloc.c \
+    ../../../cr3/thirdparty/sqlite/sqlite3.c \
+    ../../../cr3/thirdparty/zlib/adler32.c \
+    ../../../cr3/thirdparty/zlib/crc32.c \
+    ../../../cr3/thirdparty/zlib/infback.c \
+    ../../../cr3/thirdparty/zlib/inflate.c \
+    ../../../cr3/thirdparty/zlib/uncompr.c \
+    ../../../cr3/thirdparty/zlib/compress.c \
+    ../../../cr3/thirdparty/zlib/deflate.c \
+    ../../../cr3/thirdparty/zlib/gzio.c \
+    ../../../cr3/thirdparty/zlib/inffast.c \
+    ../../../cr3/thirdparty/zlib/inftrees.c \
+    ../../../cr3/thirdparty/zlib/trees.c \
+    ../../../cr3/thirdparty/zlib/zutil.c
 
 HEADERS += \
     ../../../cr3/crengine/include/crconcurrent.h \
@@ -152,7 +316,8 @@ HEADERS += \
 #    win32:LIBS += libjpeg.lib
 #}
 win32 {
-    INCLUDEPATH += C:\Qt\5.2.0\Src\qtbase\src\3rdparty\libjpeg
+#    INCLUDEPATH += D:\Qt\5.2.0\Src\qtbase\src\3rdparty\libjpeg
+#    INCLUDEPATH += D:\Qt\Qt5.4.0\5.4\msvc2013_64_opengl\include\QtZlib 
 #    INCLUDEPATH += ../../../cr3/thirdparty/libjpeg
 #    SOURCES += ../../../cr3/thirdparty/libjpeg/jcapimin.c \
 #        ../../../cr3/thirdparty/libjpeg/jcapistd.c \
