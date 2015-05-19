@@ -275,6 +275,11 @@ void InitCREngine(lString16 exePath) {
     QByteArray homeutf8 = home.toUtf8();
     lString8 home8(homeutf8.constData());
     LVAppendPathDelimiter(home8);
+    CRLog::info("Home path: %s", home8.c_str());
+    CRLog::info("Exe path: %s", UnicodeToUtf8(exePath).c_str());
+#if CR3_OSX
+    exePath += "../Resources/";
+#endif
     lString8 cr3dir = home8 + ".cr3";
     LVCreateDirectory(Utf8ToUnicode(cr3dir));
     LVAppendPathDelimiter(cr3dir);
