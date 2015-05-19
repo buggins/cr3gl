@@ -51,7 +51,8 @@ protected:
 	bool _ownAdapter;
 	int _scrollOffset;
 	int _maxScrollOffset;
-	int _topItem;
+    int _visibleSize;
+    int _topItem;
 	int _selectedItem;
 	int _dragStartOffset;
     int _colCount;
@@ -61,12 +62,14 @@ protected:
 	LVArray<lvPoint> _itemSizes;
 	LVArray<lvRect> _itemRects;
     ScrollControl _scroll;
+    CRUIScrollBar * _scrollBar;
 public:
     virtual void setColCount(int cnt) { _colCount = cnt; requestLayout(); }
     virtual int getColCount() { return _colCount; }
     virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }
     virtual int getSelectedItem() { return _selectedItem; }
     CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
+    virtual ~CRUIListWidget();
 	int itemFromPoint(int x, int y);
 	virtual bool isVertical() { return _vertical; }
 	virtual CRUIListWidget * setAdapter(CRUIListAdapter * adapter, bool deleteOnWidgetDestroy = false) {
@@ -85,6 +88,7 @@ public:
 	virtual bool onItemClickEvent(int itemIndex);
 	virtual bool onItemLongClickEvent(int itemIndex);
 
+    virtual void updateScrollBar();
 	virtual int getScrollOffset() { return _scrollOffset; }
 	virtual void setScrollOffset(int offset);
 

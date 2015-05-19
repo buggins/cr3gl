@@ -519,7 +519,7 @@ void CRUIScrollBar::draw(LVDrawBuf * buf) {
     }
 
     int pageSize = _pageSize;
-    if (pageSize > _maxValue - _minValue)
+    if (pageSize >= _maxValue - _minValue)
         return; // auto-hidden
 
     CRUIWidget::draw(buf);

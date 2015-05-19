@@ -24,6 +24,11 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
 {
     setStyle("MENU_LIST");
     setFocusable(true);
+    _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
+}
+
+CRUIListWidget::~CRUIListWidget() {
+    delete _scrollBar;
 }
 
 bool CRUIListWidget::onItemClickEvent(int itemIndex) {
@@ -47,8 +52,17 @@ void CRUIListWidget::setScrollOffset(int offset) {
 		_scrollOffset = _maxScrollOffset + delta;
 	if (_scrollOffset < - delta)
 		_scrollOffset = - delta;
-	if (_scrollOffset != oldOffset)
+    if (_scrollOffset != oldOffset) {
+        updateScrollBar();
 		invalidate();
+    }
+}
+
+void CRUIListWidget::updateScrollBar() {
+    _scrollBar->setMaxScrollPos(_visibleSize + _maxScrollOffset);
+    _scrollBar->setPageSize(_visibleSize);
+    _scrollBar->setScrollPos(_scrollOffset);
+    invalidate();
 }
 
 /// measure dimensions
@@ -63,18 +77,23 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 	lvRect margin = getMargin();
 	int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
 	int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
+    _scrollBar->measure(baseWidth, baseHeight);
+
 	_itemSizes.clear();
 	CRUIImageRef delimiter;
 	int delimiterSize = 0;
+    int scrollSize = 0;
 	if (isVertical()) {
 		delimiter = getStyle()->getListDelimiterVertical();
 		if (!delimiter.isNull())
 			delimiterSize = delimiter->originalHeight();
+        scrollSize = _scrollBar->getMeasuredWidth();
 	} else {
 		delimiter = getStyle()->getListDelimiterHorizontal();
 		if (!delimiter.isNull())
 			delimiterSize = delimiter->originalWidth();
-	}
+        scrollSize = _scrollBar->getMeasuredHeight();
+    }
 	if (_vertical) {
         // VERTICAL
 		int biggestw = 0;
@@ -103,7 +122,7 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			biggestw = maxw;
 		if (totalh > maxh)
 			totalh = maxh;
-		defMeasure(baseWidth, baseHeight, biggestw, totalh);
+        defMeasure(baseWidth, baseHeight, biggestw + scrollSize, totalh);
 	} else {
         // HORIZONTAL
 		int biggesth = 0;
@@ -124,7 +143,7 @@ void CRUIListWidget::measure(int baseWidth, int baseHeight) {
 			biggesth = maxh;
 		if (totalw > maxw)
 			totalw = maxw;
-		defMeasure(baseWidth, baseHeight, totalw, biggesth);
+        defMeasure(baseWidth, baseHeight, totalw, biggesth + scrollSize);
 	}
 }
 
@@ -162,7 +181,19 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 	applyMargin(clientRc);
 	applyPadding(clientRc);
 	int winsize = isVertical() ? clientRc.height() : clientRc.width();
-	lvRect childRc = clientRc;
+    int scrollSize = 0;
+    lvRect scrollRc = clientRc;
+    if (_vertical) {
+        scrollSize = _scrollBar->getMeasuredWidth();
+        clientRc.right -= scrollSize;
+        scrollRc.left = scrollRc.right - scrollSize;
+    } else {
+        scrollSize = _scrollBar->getMeasuredHeight();
+        clientRc.bottom -= scrollSize;
+        scrollRc.top = scrollRc.bottom - scrollSize;
+    }
+    _scrollBar->layout(scrollRc.left, scrollRc.top, scrollRc.right, scrollRc.bottom);
+    lvRect childRc = clientRc;
 	_itemRects.clear();
 	CRUIImageRef delimiter;
 	int delimiterSize = 0;
@@ -203,7 +234,8 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
                 y += delimiterSize;
         }
 		_maxScrollOffset = y - y0 - winsize > 0 ? y - y0 - winsize : 0;
-	} else {
+        _visibleSize = clientRc.height();
+    } else {
 		int x = childRc.left;
 		int x0 = x;
 		for (int i=0; i < getItemCount() && i < _itemSizes.length(); i++) {
@@ -216,7 +248,9 @@ void CRUIListWidget::layout(int left, int top, int right, int bottom) {
 				x += delimiterSize;
 		}
 		_maxScrollOffset = x - x0 - winsize > 0 ? x - x0 - winsize : 0;
+        _visibleSize = clientRc.width();
 	}
+    updateScrollBar();
 }
 
 /// draws widget with its children to specified surface
@@ -246,7 +280,8 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
 		delimiter = getStyle()->getListDelimiterHorizontal();
 		if (!delimiter.isNull())
 			delimiterSize = delimiter->originalWidth();
-	}
+    }
+    _scrollBar->draw(buf);
 	for (int i=0; i<getItemCount() && i < _itemRects.length(); i++) {
 		lvRect childRc = _itemRects[i];
 		lvRect delimiterRc;
