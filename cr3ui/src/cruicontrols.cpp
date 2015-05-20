@@ -571,6 +571,45 @@ void CRUIScrollBar::draw(LVDrawBuf * buf) {
     }
 }
 
+lvRect CRUIScrollBar::calcSliderPos(int pos) {
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+    CRUIImageRef handle = getHandleImage();
+    if (rc.isEmpty() || handle.isNull()) {
+        rc.right = rc.left;
+        rc.bottom = rc.top;
+        return rc;
+    }
+    lvRect linerc = rc;
+    if (_isVertical) {
+        int y0 = linerc.top + linerc.height() * (pos - _minValue) / (_maxValue - _minValue);
+        int y1 = linerc.top + linerc.height() * (pos - _minValue + _pageSize) / (_maxValue - _minValue);
+        if (y1 - y0 < handle->originalHeight()) {
+            int extra = handle->originalHeight() - (y1 - y0);
+            y0 -= extra / 2;
+            y1 += (extra + 1) / 2;
+        }
+        if (y0 < linerc.top) y0 = linerc.top;
+        if (y1 > linerc.bottom) y1 = linerc.bottom;
+        linerc.top = y0;
+        linerc.bottom = y1;
+    } else {
+        int x0 = linerc.left + linerc.width() * (pos - _minValue) / (_maxValue - _minValue);
+        int x1 = linerc.left + linerc.width() * (pos - _minValue + _pageSize) / (_maxValue - _minValue);
+        if (x1 - x0 < handle->originalWidth()) {
+            int extra = handle->originalWidth() - (x1 - x0);
+            x0 -= extra / 2;
+            x1 += (extra + 1) / 2;
+        }
+        if (x0 < linerc.left) x0 = linerc.left;
+        if (x1 > linerc.right) x1 = linerc.right;
+        linerc.left = x0;
+        linerc.right = x1;
+    }
+    return linerc;
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIScrollBar::onTouchEvent(const CRUIMotionEvent * event) {
     // For desktop mode only!
@@ -600,47 +639,56 @@ bool CRUIScrollBar::onTouchEvent(const CRUIMotionEvent * event) {
 
     switch (action) {
     case ACTION_DOWN:
-        _startDragCoord = coord;
-        _startDragPos = _value;
+        {
+            lvRect sliderRc = calcSliderPos(_value);
+            int newpos = UNSPECIFIED;
+            if (_isVertical) {
+                if (coord < sliderRc.top) {
+                    // page up
+                    newpos = _value - _pageSize * 3 / 4;
+                } else if (coord > sliderRc.bottom) {
+                    // page down
+                    newpos = _value + _pageSize * 3 / 4;
+                }
+            } else {
+                if (coord < sliderRc.left) {
+                    // page up
+                    newpos = _value - _pageSize * 3 / 4;
+                } else if (coord > sliderRc.right) {
+                    // page down
+                    newpos = _value + _pageSize * 3 / 4;
+                }
+            }
+            if (newpos != UNSPECIFIED) {
+                updatePos(newpos);
+                return true;
+            }
+            // start dragging
+            _startDragCoord = coord;
+            _startDragPos = _value;
+        }
         break;
     case ACTION_MOVE:
-        if (_startDragPos == -1)
-            return false;
         {
-            CRUIImageRef handle = getHandleImage();
+            if (_startDragPos == -1)
+                return false;
+
             lvRect linerc = rc;
-            if (rc.isEmpty() || handle.isNull())
+            lvRect sliderRc = calcSliderPos(_startDragPos);
+            if (sliderRc.isEmpty())
                 return false;
             int pos = 0;
             int pixelsBefore = 0;
             int pixelsAfter = 0;
             int pixelsPage = 0;
             if (_isVertical) {
-                int y0 = linerc.top + linerc.height() * (_startDragPos - _minValue) / (_maxValue - _minValue);
-                int y1 = linerc.top + linerc.height() * (_startDragPos - _minValue + _pageSize) / (_maxValue - _minValue);
-                if (y1 - y0 < handle->originalHeight()) {
-                    int extra = handle->originalHeight() - (y1 - y0);
-                    y0 -= extra / 2;
-                    y1 += (extra + 1) / 2;
-                }
-                if (y0 < linerc.top) y0 = linerc.top;
-                if (y1 > linerc.bottom) y1 = linerc.bottom;
-                pixelsBefore = y0 - linerc.top;
-                pixelsAfter = linerc.bottom - y1;
-                pixelsPage = y1 - y0;
+                pixelsBefore = sliderRc.top - linerc.top;
+                pixelsAfter = linerc.bottom - sliderRc.bottom;
+                pixelsPage = sliderRc.bottom - sliderRc.top;
             } else {
-                int x0 = linerc.left + linerc.width() * (_startDragPos - _minValue) / (_maxValue - _minValue);
-                int x1 = linerc.left + linerc.width() * (_startDragPos - _minValue + _pageSize) / (_maxValue - _minValue);
-                if (x1 - x0 < handle->originalWidth()) {
-                    int extra = handle->originalWidth() - (x1 - x0);
-                    x0 -= extra / 2;
-                    x1 += (extra + 1) / 2;
-                }
-                if (x0 < linerc.left) x0 = linerc.left;
-                if (x1 > linerc.right) x1 = linerc.right;
-                pixelsBefore = x0 - linerc.left;
-                pixelsAfter = linerc.right - x1;
-                pixelsPage = x1 - x0;
+                pixelsBefore = sliderRc.left - linerc.left;
+                pixelsAfter = linerc.right - sliderRc.right;
+                pixelsPage = sliderRc.right - sliderRc.left;
             }
             int delta = coord - _startDragCoord;
             int newPixelsBefore = pixelsBefore + delta;
@@ -652,8 +700,6 @@ bool CRUIScrollBar::onTouchEvent(const CRUIMotionEvent * event) {
                 pos = _minValue + newPixelsBefore * (maxPos - _minValue) / (newPixelsAfter + newPixelsBefore);
             }
             updatePos(pos);
-            if (_callback)
-                _callback->onScrollPosChange(this, pos, true);
         }
         break;
     case ACTION_UP:
@@ -753,6 +799,14 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     } else {
         handle->draw(buf, crc);
     }
+}
+
+void CRUIScrollBase::setScrollPos(int value) {
+    _value = value;
+    if (_value > _maxValue - _pageSize)
+        _value = _maxValue - _pageSize;
+    if (_value < _minValue)
+        _value = _minValue;
 }
 
 void CRUIScrollBase::updatePos(int pos) {

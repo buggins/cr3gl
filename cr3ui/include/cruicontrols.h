@@ -182,7 +182,7 @@ public:
     int getPageSize() { return _pageSize; }
     void setPageSize(int value) { _pageSize = value; invalidate(); }
     int getScrollPos() { return _value; }
-    void setScrollPos(int value) { _value = value < _minValue ? _minValue : (value > _maxValue ? _maxValue : value); }
+    void setScrollPos(int value);
     int getMinScrollPos() { return _minValue; }
     int getMaxScrollPos() { return _maxValue; }
     void setMinScrollPos(int value) { _minValue = value; }
@@ -202,6 +202,7 @@ protected:
     int _startDragCoord;
     int _startDragPos;
     CRUIImageRef getHandleImage();
+    lvRect calcSliderPos(int pos);
 public:
     /// check orientation
     virtual bool isVertical() const { return _isVertical; }
