@@ -1102,6 +1102,8 @@ static const char * TAP_ZONE_ACTION_LIST[] = {
     "NO_ACTION",
     "PAGE_UP",
     "PAGE_DOWN",
+    "PAGE_UP_10",
+    "PAGE_DOWN_10",
     "MENU",
     "SETTINGS",
     "TOC",
@@ -1125,7 +1127,7 @@ CRUITapZoneSettingsList::CRUITapZoneSettingsList(const char * nameRes, const cha
     for (int i = 1; i <= 9; i++) {
         lString8 s(modifier == 0 ? PROP_APP_TAP_ZONE_ACTION_NORMAL : PROP_APP_TAP_ZONE_ACTION_DOUBLE);
         s += lString8::itoa(i);
-        CRUISettingsOptionList * options = new CRUISettingsOptionList("tap_zone", NULL, s.c_str());
+        CRUISettingsOptionList * options = new CRUISettingsOptionList("SETTINGS_CONTROLS_TAP_ZONE_ACTION", NULL, s.c_str());
         for (int a = 0; TAP_ZONE_ACTION_LIST[a]; a++) {
             const CRUIAction * action = CRUIActionByName(TAP_ZONE_ACTION_LIST[a]);
             if (!action) {

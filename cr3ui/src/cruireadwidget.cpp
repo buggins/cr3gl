@@ -1159,30 +1159,34 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
     }
     switch (cmd) {
     case DCMD_PAGEUP:
+        if (param <= 0)
+            param = 1;
         if (_viewMode == DVM_PAGES) {
-            if (_pageAnimation == PAGE_ANIMATION_NONE) {
-                _docview->doCommand((LVDocCmd)cmd, 1);
+            if (_pageAnimation == PAGE_ANIMATION_NONE || param == 10) {
+                _docview->doCommand((LVDocCmd)cmd, param);
             } else {
                 newpage = page - _docview->getVisiblePageCount();
                 speed = _pos.width() * 2;
             }
         } else {
-            newpos = pos - _pos.height() * 9 / 10;
-            speed = _pos.height() * 2;
+            newpos = pos - _pos.height() * (param - 1) - _pos.height() * 9 / 10;
+            speed = _pos.height() * 2 * param;
         }
         invalidate();
         break;
     case DCMD_PAGEDOWN:
+        if (param <= 0)
+            param = 1;
         if (_viewMode == DVM_PAGES) {
-            if (_pageAnimation == PAGE_ANIMATION_NONE) {
-                _docview->doCommand((LVDocCmd)cmd, 1);
+            if (_pageAnimation == PAGE_ANIMATION_NONE || param == 10) {
+                _docview->doCommand((LVDocCmd)cmd, param);
             } else {
                 newpage = page + _docview->getVisiblePageCount();
                 speed = _pos.width() * 4;
             }
         } else {
-            newpos = pos + _pos.height() * 9 / 10;
-            speed = _pos.height() * 2;
+            newpos = pos + _pos.height() * (param - 1) + _pos.height() * 9 / 10;
+            speed = _pos.height() * 2 * param;
         }
         invalidate();
         break;
