@@ -1178,7 +1178,7 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
                 _docview->doCommand((LVDocCmd)cmd, 1);
             } else {
                 newpage = page + _docview->getVisiblePageCount();
-                speed = _pos.width() * 2;
+                speed = _pos.width() * 4;
             }
         } else {
             newpos = pos + _pos.height() * 9 / 10;
@@ -1187,13 +1187,13 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
         invalidate();
         break;
     case DCMD_LINEUP:
-        newpos = pos - _docview->getFontSize();
-        speed = _pos.height() / 2;
+        newpos = pos - _docview->getFontSize() * 3 * (param > 0 ? param : 1);
+        speed = _pos.height();
         invalidate();
         break;
     case DCMD_LINEDOWN:
-        newpos = pos + _docview->getFontSize();
-        speed = _pos.height() / 2;
+        newpos = pos + _docview->getFontSize() * 3 * (param > 0 ? param : 1);
+        speed = _pos.height();
         invalidate();
         break;
     default:
@@ -1753,6 +1753,28 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 //    if (event->isCancelRequested())
 //        return true;
     switch (action) {
+    case ACTION_WHEEL:
+        {
+            int delta = event->getWheelDelta();
+            int cmd = DCMD_PAGEDOWN;
+            int param = 1;
+            if (_viewMode == DVM_PAGES) {
+                if (_scroll.isActive())
+                    return true;
+                if (delta < 0)
+                    cmd = DCMD_PAGEDOWN;
+                else
+                    cmd = DCMD_PAGEUP;
+            } else {
+                if (delta < 0)
+                    cmd = DCMD_LINEDOWN;
+                else
+                    cmd = DCMD_LINEUP;
+                param = 4;
+            }
+            doCommand(cmd, param);
+        }
+        break;
     case ACTION_DOWN:
         cancelPositionUpdateTimer();
         if (_scroll.isActive()) {
