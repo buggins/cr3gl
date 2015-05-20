@@ -44,7 +44,7 @@ public:
     virtual ~CRUIDragListener() {}
 };
 
-class CRUIListWidget : public CRUIWidget {
+class CRUIListWidget : public CRUIWidget, CRUIOnScrollPosCallback {
 protected:
 	bool _vertical;
 	CRUIListAdapter * _adapter;
@@ -68,6 +68,7 @@ public:
     CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
     virtual ~CRUIListWidget();
 
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 
     // scrollbar as a child
     virtual int getChildCount();

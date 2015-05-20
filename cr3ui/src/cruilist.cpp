@@ -25,6 +25,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
     setStyle("MENU_LIST");
     setFocusable(true);
     _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
+    _scrollBar->setScrollPosCallback(this);
     _visibleSize = 0;
 }
 
@@ -71,6 +72,13 @@ int CRUIListWidget::getChildCount() {
 CRUIWidget * CRUIListWidget::getChild(int index) {
     CR_UNUSED(index);
     return _scrollBar;
+}
+
+bool CRUIListWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED2(widget, manual);
+    setScrollOffset(pos);
+    //CRLog::trace("scrollPos: %d", pos);
+    return true;
 }
 
 void CRUIListWidget::updateScrollBar() {

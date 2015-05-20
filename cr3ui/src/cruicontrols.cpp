@@ -499,9 +499,13 @@ void CRUIScrollBar::measure(int baseWidth, int baseHeight) {
         if (_isVertical) {
             width = handle->originalWidth();
             height = handle->originalHeight();
+            if (crconfig.desktopMode)
+                width = width * 3 / 2;
         } else {
             width = handle->originalWidth();
             height = handle->originalHeight();
+            if (crconfig.desktopMode)
+                height = height * 3 / 2;
         }
     }
     defMeasure(baseWidth, baseHeight, width, height);
@@ -567,7 +571,113 @@ void CRUIScrollBar::draw(LVDrawBuf * buf) {
     }
 }
 
+/// motion event handler, returns true if it handled event
+bool CRUIScrollBar::onTouchEvent(const CRUIMotionEvent * event) {
+    // For desktop mode only!
+    if (!crconfig.desktopMode)
+        return false;
 
+    int action = event->getAction();
+
+    lvRect rc = _pos;
+    applyMargin(rc);
+    applyPadding(rc);
+
+    int mincoord, maxcoord, coord;
+    if (_isVertical) {
+        mincoord = _pos.top;
+        maxcoord = _pos.bottom;
+        coord = event->getY();
+    } else {
+        mincoord = _pos.left;
+        maxcoord = _pos.right;
+        coord = event->getX();
+    }
+    if (coord < mincoord)
+        coord = mincoord;
+    else if (coord > maxcoord)
+        coord = maxcoord;
+
+    switch (action) {
+    case ACTION_DOWN:
+        _startDragCoord = coord;
+        _startDragPos = _value;
+        break;
+    case ACTION_MOVE:
+        if (_startDragPos == -1)
+            return false;
+        {
+            CRUIImageRef handle = getHandleImage();
+            lvRect linerc = rc;
+            if (rc.isEmpty() || handle.isNull())
+                return false;
+            int pos = 0;
+            int pixelsBefore = 0;
+            int pixelsAfter = 0;
+            int pixelsPage = 0;
+            if (_isVertical) {
+                int y0 = linerc.top + linerc.height() * (_startDragPos - _minValue) / (_maxValue - _minValue);
+                int y1 = linerc.top + linerc.height() * (_startDragPos - _minValue + _pageSize) / (_maxValue - _minValue);
+                if (y1 - y0 < handle->originalHeight()) {
+                    int extra = handle->originalHeight() - (y1 - y0);
+                    y0 -= extra / 2;
+                    y1 += (extra + 1) / 2;
+                }
+                if (y0 < linerc.top) y0 = linerc.top;
+                if (y1 > linerc.bottom) y1 = linerc.bottom;
+                pixelsBefore = y0 - linerc.top;
+                pixelsAfter = linerc.bottom - y1;
+                pixelsPage = y1 - y0;
+            } else {
+                int x0 = linerc.left + linerc.width() * (_startDragPos - _minValue) / (_maxValue - _minValue);
+                int x1 = linerc.left + linerc.width() * (_startDragPos - _minValue + _pageSize) / (_maxValue - _minValue);
+                if (x1 - x0 < handle->originalWidth()) {
+                    int extra = handle->originalWidth() - (x1 - x0);
+                    x0 -= extra / 2;
+                    x1 += (extra + 1) / 2;
+                }
+                if (x0 < linerc.left) x0 = linerc.left;
+                if (x1 > linerc.right) x1 = linerc.right;
+                pixelsBefore = x0 - linerc.left;
+                pixelsAfter = linerc.right - x1;
+                pixelsPage = x1 - x0;
+            }
+            int delta = coord - _startDragCoord;
+            int newPixelsBefore = pixelsBefore + delta;
+            if (newPixelsBefore < 0) newPixelsBefore = 0;
+            int newPixelsAfter = pixelsAfter - delta;
+            if (newPixelsAfter < 0) newPixelsAfter = 0;
+            int maxPos = _maxValue - _pageSize;
+            if (maxPos > _minValue && newPixelsAfter + newPixelsBefore > 0) {
+                pos = _minValue + newPixelsBefore * (maxPos - _minValue) / (newPixelsAfter + newPixelsBefore);
+            }
+            updatePos(pos);
+            if (_callback)
+                _callback->onScrollPosChange(this, pos, true);
+        }
+        break;
+    case ACTION_UP:
+        if (_startDragPos == -1)
+            return false;
+
+        _startDragCoord = _startDragPos = -1;
+        break;
+    case ACTION_FOCUS_IN:
+        if (_startDragPos == -1)
+            return false;
+        break;
+    case ACTION_FOCUS_OUT:
+        return false; // to continue tracking
+    case ACTION_CANCEL:
+        if (_startDragPos == -1)
+            return false;
+        _startDragCoord = _startDragPos = -1;
+        break;
+    default:
+        return CRUIWidget::onTouchEvent(event);
+    }
+    return true;
+}
 
 
 

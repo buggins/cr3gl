@@ -199,6 +199,8 @@ public:
 class CRUIScrollBar : public CRUIScrollBase {
 protected:
     bool _isVertical;
+    int _startDragCoord;
+    int _startDragPos;
     CRUIImageRef getHandleImage();
 public:
     /// check orientation
@@ -218,6 +220,7 @@ public:
       :  CRUIScrollBase(minValue, maxValue, currentValue, pageSize)
     {
         setVertical(vertical);
+        _startDragCoord = _startDragPos = -1;
     }
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight);
@@ -225,6 +228,9 @@ public:
     virtual void layout(int left, int top, int right, int bottom);
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
+
+    /// motion event handler, returns true if it handled event
+    virtual bool onTouchEvent(const CRUIMotionEvent * event);
 };
 
 class CRUISliderWidget : public CRUIScrollBase {

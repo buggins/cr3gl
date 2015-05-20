@@ -5,7 +5,7 @@
 #include "cruilayout.h"
 #include "cruicontrols.h"
 
-class CRUIScrollWidget : public CRUILinearLayout {
+class CRUIScrollWidget : public CRUILinearLayout, CRUIOnScrollPosCallback {
 protected:
     int _scrollOffset;
     int _maxScrollOffset;
@@ -29,6 +29,7 @@ public:
     /// returns true if widget is child of this
     virtual bool isChild(CRUIWidget * widget);
 
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 
     virtual CRUIDragListener * getOnDragListener() { return _onStartDragCallback; }
     virtual void setOnDragListener(CRUIDragListener * listener) { _onStartDragCallback = listener; }

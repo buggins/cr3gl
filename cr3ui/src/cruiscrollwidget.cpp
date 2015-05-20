@@ -20,6 +20,7 @@ CRUIScrollWidget::CRUIScrollWidget(bool vertical)
 {
     setStyle("MENU_LIST");
     _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
+    _scrollBar->setScrollPosCallback(this);
     _visibleSize = 0;
     _sbHidden = false;
 }
@@ -55,6 +56,13 @@ void CRUIScrollWidget::updateScrollBar() {
     _scrollBar->setPageSize(_visibleSize);
     _scrollBar->setScrollPos(_scrollOffset);
     invalidate();
+}
+
+bool CRUIScrollWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED2(widget, manual);
+    setScrollOffset(pos);
+    //CRLog::trace("scrollPos: %d", pos);
+    return true;
 }
 
 void CRUIScrollWidget::setScrollOffset(int offset) {
