@@ -77,6 +77,11 @@ void adaptThemeForScreenSize() {
     crconfig.setupResourcesForScreenSize();
 }
 
+void OpenGLWindow::wheelEvent(QWheelEvent * event) {
+    _eventAdapter->dispatchWheelEvent(event);
+    event->accept();
+}
+
 void OpenGLWindow::mousePressEvent(QMouseEvent * event) {
     _eventAdapter->dispatchTouchEvent(event);
     event->accept();

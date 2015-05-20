@@ -221,6 +221,17 @@ bool CRUIScrollWidget::onTouchEvent(const CRUIMotionEvent * event) {
     bool isDragging = _dragStartOffset != NO_DRAG;
     //CRLog::trace("CRUIScrollWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
     switch (action) {
+    case ACTION_WHEEL:
+        {
+            int newpos = _scrollOffset;
+            if (_isVertical) {
+                newpos -= event->getWheelDelta() * _pos.height() / 6;
+            } else {
+                newpos -= event->getWheelDelta() * _pos.width() / 6;
+            }
+            setScrollOffset(newpos);
+        }
+        break;
     case ACTION_DOWN:
         _scroll.stop();
         invalidate();

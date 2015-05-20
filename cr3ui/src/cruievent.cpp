@@ -510,7 +510,7 @@ bool CRUIEventManager::dispatchTouchEvent(CRUIMotionEvent * event) {
 			//CRLog::trace("Dispatching event directly to widget");
 			res = dispatchTouchEvent(widget, event);
 		}
-	} else if (event->getAction() != ACTION_DOWN) { // skip non tracked event - only DOWN allowed
+    } else if (event->getAction() != ACTION_DOWN && event->getAction() != ACTION_WHEEL) { // skip non tracked event - only DOWN allowed
 		CRLog::trace("Skipping non-down event %d without widget", event->getAction());
 		res = false;
 	} else {

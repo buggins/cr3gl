@@ -22,8 +22,9 @@ namespace CRUI {
 		ACTION_FOCUS_OUT,
 		ACTION_FOCUS_IN,
 		ACTION_CANCEL,
+        ACTION_WHEEL // mouse wheel
 	};
-};
+}
 
 inline int myAbs(int x) { return x >= 0 ? x : -x; }
 
@@ -43,6 +44,7 @@ class CRUIMotionEventItem {
 	CRUIWidget * _widget;
 	bool _cancelRequested;
 	bool _cancelled;
+    int _wheelDelta;
 
     struct TrackItem {
         lInt16 x;
@@ -76,6 +78,7 @@ public:
 	bool isOutside() const { return _isOutside; }
 	bool isCancelled() const { return _cancelled; }
 	bool isCancelRequested() const { return _cancelRequested; }
+    int getWheelDelta() const { return _wheelDelta; }
 	void cancel() { if (!_cancelRequested && !_cancelled) _cancelRequested = true; }
 };
 
@@ -91,7 +94,8 @@ public:
     int count() const { return _data.length(); }
 	const CRUIMotionEventItem * operator[] (int index) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
 	const CRUIMotionEventItem * get(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index] : NULL; }
-	int getX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
+    int getWheelDelta() const { return _data.length() > 0 ? _data[0]->getWheelDelta() : 0; }
+    int getX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getX() : 0; }
 	int getY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getY() : 0; }
 	int getStartX(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartX() : 0; }
 	int getStartY(int index = 0) const { return index >= 0 && index<_data.length() ? _data[index]->getStartY() : 0; }

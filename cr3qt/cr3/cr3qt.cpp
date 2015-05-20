@@ -35,6 +35,25 @@ CRUIEventAdapter::CRUIEventAdapter(CRUIEventManager * eventManager) : _eventMana
 using namespace CRUI;
 
 static lUInt32 pointerId = 1;
+void CRUIEventAdapter::dispatchWheelEvent(QWheelEvent * _event)
+{
+    int x = _event->x();
+    int y = _event->y();
+    int numDegrees = _event->delta() / 8;
+    int numSteps = numDegrees / 15;
+    unsigned long pointId = pointerId; //touchInfo.GetPointId();
+    int action = ACTION_WHEEL;
+    lUInt64 ts = GetCurrentTimeMillis();
+    //CRLog::trace("mouse event ts %lld", ts);
+    CRUIMotionEventItem * lastItem = _activePointer;
+    CRUIMotionEventItem * item = new CRUIMotionEventItem(lastItem, pointId, action, x, y, ts);
+    CRUIMotionEvent * event = new CRUIMotionEvent();
+    item->_wheelDelta = numSteps;
+    event->addEvent(item);
+    _eventManager->dispatchTouchEvent(event);
+    delete event;
+}
+
 void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
 {
     int x = event->x();
@@ -54,6 +73,8 @@ void CRUIEventAdapter::dispatchTouchEvent(QMouseEvent * event)
         action = ACTION_UP; break;
     case QEvent::MouseMove: //The touch moved event type
         action = ACTION_MOVE; break;
+    case QEvent::Wheel:
+        action = ACTION_WHEEL; break;
     }
     if (action) {
         lUInt64 ts = GetCurrentTimeMillis();
