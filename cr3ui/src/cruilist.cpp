@@ -25,6 +25,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
     setStyle("MENU_LIST");
     setFocusable(true);
     _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
+    _visibleSize = 0;
 }
 
 CRUIListWidget::~CRUIListWidget() {

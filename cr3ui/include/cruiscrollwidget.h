@@ -10,17 +10,33 @@ protected:
     int _scrollOffset;
     int _maxScrollOffset;
     int _totalSize;
+    int _visibleSize;
     int _dragStartOffset;
+    bool _sbHidden;
+    lvRect _clientRect;
+    lvRect _sbRect;
     CRUIDragListener * _onStartDragCallback;
     ScrollControl _scroll;
+    CRUIScrollBar * _scrollBar;
 public:
 
     CRUIScrollWidget(bool vertical = true);
-    virtual ~CRUIScrollWidget() {}
+    virtual ~CRUIScrollWidget();
+
+    // scrollbar as a child
+    virtual int getChildCount();
+    virtual CRUIWidget * getChild(int index);
+    /// returns true if widget is child of this
+    virtual bool isChild(CRUIWidget * widget);
+
 
     virtual CRUIDragListener * getOnDragListener() { return _onStartDragCallback; }
     virtual void setOnDragListener(CRUIDragListener * listener) { _onStartDragCallback = listener; }
 
+    /// sets orientation
+    virtual CRUILinearLayout * setVertical(bool vertical);
+
+    virtual void updateScrollBar();
     virtual int getScrollOffset() { return _scrollOffset; }
     virtual void setScrollOffset(int offset);
 

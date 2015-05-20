@@ -64,6 +64,11 @@ protected:
     ScrollControl _scroll;
     CRUIScrollBar * _scrollBar;
 public:
+
+    CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
+    virtual ~CRUIListWidget();
+
+
     // scrollbar as a child
     virtual int getChildCount();
     virtual CRUIWidget * getChild(int index);
@@ -74,8 +79,7 @@ public:
     virtual int getColCount() { return _colCount; }
     virtual void setSelectedItem(int index) { _selectedItem = index; invalidate(); }
     virtual int getSelectedItem() { return _selectedItem; }
-    CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
-    virtual ~CRUIListWidget();
+
 	int itemFromPoint(int x, int y);
 	virtual bool isVertical() { return _vertical; }
 	virtual CRUIListWidget * setAdapter(CRUIListAdapter * adapter, bool deleteOnWidgetDestroy = false) {

@@ -19,6 +19,42 @@ CRUIScrollWidget::CRUIScrollWidget(bool vertical)
     , _onStartDragCallback(NULL)
 {
     setStyle("MENU_LIST");
+    _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
+    _visibleSize = 0;
+    _sbHidden = false;
+}
+
+CRUIScrollWidget::~CRUIScrollWidget() {
+    delete _scrollBar;
+}
+
+/// sets orientation
+CRUILinearLayout * CRUIScrollWidget::setVertical(bool vertical) {
+    CRUILinearLayout::setVertical(vertical);
+    _scrollBar->setVertical(vertical);
+    return this;
+}
+
+/// returns true if widget is child of this
+bool CRUIScrollWidget::isChild(CRUIWidget * widget) {
+    return (widget == _scrollBar) || CRUILinearLayout::isChild(widget);
+}
+
+int CRUIScrollWidget::getChildCount() {
+    return CRUILinearLayout::getChildCount() + (_sbHidden ? 0 : 1);
+}
+
+CRUIWidget * CRUIScrollWidget::getChild(int index) {
+    if (index < CRUILinearLayout::getChildCount())
+        return CRUILinearLayout::getChild(index);
+    return _scrollBar;
+}
+
+void CRUIScrollWidget::updateScrollBar() {
+    _scrollBar->setMaxScrollPos(_visibleSize + _maxScrollOffset);
+    _scrollBar->setPageSize(_visibleSize);
+    _scrollBar->setScrollPos(_scrollOffset);
+    invalidate();
 }
 
 void CRUIScrollWidget::setScrollOffset(int offset) {
@@ -32,6 +68,7 @@ void CRUIScrollWidget::setScrollOffset(int offset) {
         _scrollOffset = - delta;
     if (_scrollOffset != oldOffset) {
         layout(_pos.left, _pos.top, _pos.right, _pos.bottom);
+        updateScrollBar();
         invalidate();
     }
 }
@@ -44,18 +81,29 @@ void CRUIScrollWidget::measure(int baseWidth, int baseHeight) {
         _measuredHeight = 0;
         return;
     }
+    _scrollBar->measure(baseWidth, baseHeight);
+    int sbsize = 0;
+    if (isVertical()) {
+        sbsize = _scrollBar->getMeasuredWidth();
+    } else {
+        sbsize = _scrollBar->getMeasuredHeight();
+    }
     lvRect padding;
     getPadding(padding);
     lvRect margin = getMargin();
     int maxw = baseWidth - (margin.left + margin.right + padding.left + padding.right);
     int maxh = baseHeight - (margin.top + margin.bottom + padding.top + padding.bottom);
     if (isVertical()) {
-        CRUILinearLayout::measure(baseWidth, UNSPECIFIED);
+        _sbHidden = true;
+        CRUILinearLayout::measure(baseWidth - sbsize, UNSPECIFIED);
+        _sbHidden = false;
         _totalSize = _measuredHeight;
         if (_measuredHeight > maxh)
             _measuredHeight = maxh;
     } else {
-        CRUILinearLayout::measure(UNSPECIFIED, baseHeight);
+        _sbHidden = true;
+        CRUILinearLayout::measure(UNSPECIFIED, baseHeight - sbsize);
+        _sbHidden = false;
         _totalSize = _measuredHeight;
         if (_measuredWidth > maxw)
             _measuredWidth = maxw;
@@ -64,25 +112,45 @@ void CRUIScrollWidget::measure(int baseWidth, int baseHeight) {
 
 /// updates widget position based on specified rectangle
 void CRUIScrollWidget::layout(int left, int top, int right, int bottom) {
+    int sbsize = 0;
     if (isVertical()) {
-        CRUILinearLayout::measure(right - left, UNSPECIFIED);
+        sbsize = _scrollBar->getMeasuredWidth();
+        _sbHidden = true;
+        CRUILinearLayout::measure(right - left - sbsize, UNSPECIFIED);
         _totalSize = _measuredHeight;
-        CRUILinearLayout::layout(left, top - _scrollOffset, right, top - _scrollOffset + _measuredHeight);
+        CRUILinearLayout::layout(left, top - _scrollOffset, right - sbsize, top - _scrollOffset + _measuredHeight);
+        _sbHidden = false;
     } else {
-        CRUILinearLayout::measure(UNSPECIFIED, bottom - top);
+        _sbHidden = true;
+        sbsize = _scrollBar->getMeasuredHeight();
+        CRUILinearLayout::measure(UNSPECIFIED, bottom - top - sbsize);
         _totalSize = _measuredWidth;
-        CRUILinearLayout::layout(left - _scrollOffset, top, left - _scrollOffset + _measuredWidth, bottom);
+        CRUILinearLayout::layout(left - _scrollOffset, top, left - _scrollOffset + _measuredWidth, bottom - sbsize);
+        _sbHidden = false;
     }
     _pos.left = left;
     _pos.top = top;
     _pos.right = right;
     _pos.bottom = bottom;
     _layoutRequested = false;
-    lvRect clientRc = _pos;
-    applyMargin(clientRc);
-    applyPadding(clientRc);
-    int winsize = isVertical() ? clientRc.height() : clientRc.width();
-    _maxScrollOffset = _totalSize - winsize > 0 ? _totalSize - winsize : 0;
+    _clientRect = _pos;
+    applyMargin(_clientRect);
+    applyPadding(_clientRect);
+
+    _sbRect = _clientRect;
+    if (isVertical()) {
+        _sbRect.left = _sbRect.right - sbsize;
+        _clientRect.right -= sbsize;
+    } else {
+        _sbRect.top = _sbRect.bottom - sbsize;
+        _clientRect.bottom -= sbsize;
+    }
+    _visibleSize = isVertical() ? _clientRect.height() : _clientRect.width();
+    _maxScrollOffset = _totalSize - _visibleSize > 0 ? _totalSize - _visibleSize : 0;
+
+    _scrollBar->layout(_sbRect.left, _sbRect.top, _sbRect.right, _sbRect.bottom);
+
+    updateScrollBar();
 }
 
 /// draws widget with its children to specified surface
@@ -90,7 +158,20 @@ void CRUIScrollWidget::draw(LVDrawBuf * buf) {
     if (getVisibility() != VISIBLE) {
         return;
     }
+    lvRect oldpos = _pos;
+    int sbsize = 0;
+    if (isVertical()) {
+        sbsize = _scrollBar->getMeasuredWidth();
+        _pos.right -= sbsize;
+    } else {
+        sbsize = _scrollBar->getMeasuredHeight();
+        _pos.bottom -= sbsize;
+    }
+    _sbHidden = true;
     CRUILinearLayout::draw(buf);
+    _sbHidden = false;
+    _pos = oldpos;
+    _scrollBar->draw(buf);
 }
 
 lvPoint CRUIScrollWidget::getTileOffset() const {

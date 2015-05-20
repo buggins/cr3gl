@@ -498,9 +498,9 @@ void CRUIScrollBar::measure(int baseWidth, int baseHeight) {
     if (!handle.isNull()) {
         if (_isVertical) {
             width = handle->originalWidth();
-            height = baseHeight;
+            height = handle->originalHeight();
         } else {
-            width = baseWidth;
+            width = handle->originalWidth();
             height = handle->originalHeight();
         }
     }
