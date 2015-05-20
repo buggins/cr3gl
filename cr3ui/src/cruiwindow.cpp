@@ -203,9 +203,9 @@ bool CRUIWindowWidget::onKeyEvent(const CRUIKeyEvent * event) {
 		invalidate();
     	return true;
     }
-    bool altPressed = (event->modifiers() & CR_KEY_MODIFIER_ALT);
+    bool altPressed = (event->modifiers() & CR_KEY_MODIFIER_ALT) != 0;
 #if CR3_OSX
-    altPressed = altPressed ||  (event->modifiers() & CR_KEY_MODIFIER_CONTROL);
+    altPressed = altPressed ||  ((event->modifiers() & CR_KEY_MODIFIER_CONTROL) != 0);
 #endif
     if (event->getType() == KEY_ACTION_PRESS) {
         if (key == CR_KEY_RETURN && altPressed != 0) {

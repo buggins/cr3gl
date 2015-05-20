@@ -16,12 +16,12 @@
 DBString::DBString(const char * s)
 {
 	//CRLog::trace("DBString(%s)", s);
-	str = s ? strdup(s) : NULL;
+    str = s ? _strdup(s) : NULL;
 	//CRLog::trace("DBString(%s) - duplicated", s);
 }
 
 DBString::DBString(const DBString & s) {
-	str = s.str ? strdup(s.str) : NULL;
+    str = s.str ? _strdup(s.str) : NULL;
 }
 
 DBString::~DBString()
@@ -37,7 +37,7 @@ void DBString::clear() {
 }
 
 int DBString::length() const {
-	return str ? strlen(str) : 0;
+    return (int)(str ? strlen(str) : 0);
 }
 
 char DBString::operator[] (int index) const {
@@ -49,19 +49,19 @@ char DBString::operator[] (int index) const {
 
 DBString & DBString::operator = (const DBString & s) {
 	clear();
-	str = s.str ? strdup(s.str) : NULL;
+    str = s.str ? _strdup(s.str) : NULL;
 	return *this;
 }
 
 DBString & DBString::operator = (const char * s) {
 	clear();
-	str = s ? strdup(s) : NULL;
+    str = s ? _strdup(s) : NULL;
 	return *this;
 }
 
 DBString & DBString::operator += (const char * s) {
 	int thislength = length();
-	int slength = s ? strlen(s) : 0;
+    int slength = (int)(s ? strlen(s) : 0);
 	if (slength == 0)
 		return *this;
 	if (thislength == 0) {
@@ -161,7 +161,7 @@ bool SQLiteDB::tableExists(const char * tableName) {
 static bool columnNamePresentInCreateTable(const char * createTable, const char * columnName) {
 	if (!createTable || !columnName)
 		return false;
-	int len = strlen(columnName);
+    int len = (int)strlen(columnName);
 	const char * pos = strstr(createTable, columnName);
 	if (!pos)
 		return false;
@@ -343,7 +343,7 @@ int SQLiteStatement::prepare(const char * sql) {
 	int res = sqlite3_prepare_v2(
 	  _db->getHandle(),            /* Database handle */
 	  sql,       /* SQL statement, UTF-8 encoded */
-	  strlen(sql),              /* Maximum length of zSql in bytes. */
+      (int)strlen(sql),              /* Maximum length of zSql in bytes. */
 	  &_stmt,  /* OUT: Statement handle */
 	  NULL     /* OUT: Pointer to unused portion of zSql */
 	);
@@ -353,7 +353,7 @@ int SQLiteStatement::prepare(const char * sql) {
 	} else {
         if (!sqlite3_stmt_readonly(_stmt))
             _db->setChangeFlag();
-		_sql = strdup(sql);
+        _sql = _strdup(sql);
 		_parameterCount = sqlite3_bind_parameter_count(_stmt);
 	}
 	return res;
