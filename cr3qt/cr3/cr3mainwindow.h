@@ -159,9 +159,11 @@ public:
 
     virtual void setFileToOpenOnStart(lString8 filename);
 
+
 public slots:
     void renderLater();
     void renderNow();
+    void onMessageReceived(const QString &message);
 
 protected:
     bool event(QEvent *event);

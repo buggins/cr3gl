@@ -2,6 +2,7 @@
 
 #include "cr3qt.h"
 #include <QApplication>
+#include <QtSingleApplication>
 
 using namespace CRUI;
 
@@ -28,23 +29,35 @@ int main(int argc, char *argv[])
         lString16 exePath = LVExtractPath(Utf8ToUnicode(argv[0]));
         LVAppendPathDelimiter(exePath);
         InitCREngine(exePath);
-        QApplication a(argc, argv);
 
-
-        OpenGLWindow w;
         lString8 filename;
+        QString qfilename = "";
         if (argc > 1) {
             filename = argv[1];
-            if (filename.startsWith("\"") && filename.endsWith("\""))
+            if (filename.startsWith("\"") && filename.endsWith("\"")) {
                 filename = filename.substr(1, filename.length() - 2);
-            w.setFileToOpenOnStart(filename);
+                qfilename = filename.c_str();
+            }
         }
-        bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
-        if (fullscreen)
-            w.showFullScreen();
-        else
-            w.show();
-        res = a.exec();
+
+        QtSingleApplication a(argc, argv);
+
+        if (a.isRunning()) {
+            res = a.sendMessage(qfilename);
+        } else {
+
+            OpenGLWindow w;
+            a.setActivationWindow(&w);
+            if (!filename.empty()) {
+                w.setFileToOpenOnStart(filename);
+            }
+            bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
+            if (fullscreen)
+                w.showFullScreen();
+            else
+                w.show();
+            res = a.exec();
+        }
     }
     crconfig.uninitEngine();
     return res;

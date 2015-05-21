@@ -296,6 +296,11 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 }
 //! [3]
 
+void OpenGLWindow::onMessageReceived(const QString &message) {
+    CRLog::info("onMessageReceived: %s", message.constData());
+}
+
+
 //! [4]
 void OpenGLWindow::renderNow()
 {

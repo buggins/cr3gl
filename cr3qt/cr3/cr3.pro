@@ -66,7 +66,8 @@ INCLUDEPATH += ../../../cr3/crengine/include \
     ../../../cr3/thirdparty/chmlib \
     ../../../cr3/thirdparty/antiword \
     ../../../cr3/thirdparty/freetype/include \
-    ../../../cr3/thirdparty/libjpeg
+    ../../../cr3/thirdparty/libjpeg \
+    qtsingleapplication
 
 SOURCES += \
     ../../../cr3/crengine/src/crconcurrent.cpp \
@@ -555,3 +556,21 @@ HEADERS += \
     ../../cr3ui/include/cruiopdsbook.h \
     ../../cr3ui/include/cruisettings.h \
     ../../cr3ui/include/stringresource.h
+
+SOURCES += \
+    qtsingleapplication/qtlocalpeer.cpp \
+    qtsingleapplication/qtlockedfile.cpp \
+    qtsingleapplication/qtsingleapplication.cpp
+
+win32:SOURCES += \
+    qtsingleapplication/qtlockedfile_win.cpp
+unix:SOURCES += \
+    qtsingleapplication/qtlockedfile_unix.cpp
+    
+HEADERS += \
+    qtsingleapplication/QtLockedFile \
+    qtsingleapplication/QtSingleApplication \
+    qtsingleapplication/qtlocalpeer.h \
+    qtsingleapplication/qtlockedfile.h \
+    qtsingleapplication/qtsingleapplication.h
+    
