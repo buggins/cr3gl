@@ -12,16 +12,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#define strdup(X) _strdup(X)
+#endif
+
 #if USE_LSTRING8_FOR_DB != 1
 DBString::DBString(const char * s)
 {
 	//CRLog::trace("DBString(%s)", s);
-    str = s ? _strdup(s) : NULL;
+    str = s ? strdup(s) : NULL;
 	//CRLog::trace("DBString(%s) - duplicated", s);
 }
 
 DBString::DBString(const DBString & s) {
-    str = s.str ? _strdup(s.str) : NULL;
+    str = s.str ? strdup(s.str) : NULL;
 }
 
 DBString::~DBString()
@@ -49,13 +53,13 @@ char DBString::operator[] (int index) const {
 
 DBString & DBString::operator = (const DBString & s) {
 	clear();
-    str = s.str ? _strdup(s.str) : NULL;
+    str = s.str ? strdup(s.str) : NULL;
 	return *this;
 }
 
 DBString & DBString::operator = (const char * s) {
 	clear();
-    str = s ? _strdup(s) : NULL;
+    str = s ? strdup(s) : NULL;
 	return *this;
 }
 
@@ -353,7 +357,7 @@ int SQLiteStatement::prepare(const char * sql) {
 	} else {
         if (!sqlite3_stmt_readonly(_stmt))
             _db->setChangeFlag();
-        _sql = _strdup(sql);
+        _sql = strdup(sql);
 		_parameterCount = sqlite3_bind_parameter_count(_stmt);
 	}
 	return res;
