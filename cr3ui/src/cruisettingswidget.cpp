@@ -55,18 +55,22 @@ public:
         _settings = settings;
         _title->setText(_settings->getName());
         setDescription(_settings->getDescription(props));
-        _righticon->setImage(_settings->getValueIcon(props));
+        CRUIImageRef icon = _settings->getValueIcon(props);
+        _righticon->setImage(icon);
+        int dx = UNSPECIFIED;
+        int dy = UNSPECIFIED;
         if (settings->fixedValueIconSize()) {
-            _righticon->setMinWidth(MIN_ITEM_PX - PT_TO_PX(4));
-            _righticon->setMaxWidth(MIN_ITEM_PX - PT_TO_PX(4));
-            _righticon->setMinHeight(MIN_ITEM_PX - PT_TO_PX(4));
-            _righticon->setMaxHeight(MIN_ITEM_PX - PT_TO_PX(4));
+            dx = dy = MIN_ITEM_PX - PT_TO_PX(4);
         } else {
-            _righticon->setMinWidth(UNSPECIFIED);
-            _righticon->setMaxWidth(UNSPECIFIED);
-            _righticon->setMinHeight(UNSPECIFIED);
-            _righticon->setMaxHeight(UNSPECIFIED);
+            if (!icon.isNull()) {
+                dx = icon->originalWidth();
+                dy = icon->originalHeight();
+            }
         }
+        _righticon->setMinWidth(dx);
+        _righticon->setMaxWidth(dx);
+        _righticon->setMinHeight(dy);
+        _righticon->setMaxHeight(dy);
 
     }
     virtual ~CRUISettingsListItemWidgetBase() {}
@@ -114,10 +118,10 @@ public:
             int sz = item->getRightImageSize();
             if (sz == 0) {
                 sz = UNSPECIFIED;
-                _righticon->setMinWidth(img->originalWidth());
-                _righticon->setMaxWidth(img->originalWidth());
-                _righticon->setMinHeight(img->originalHeight());
-                _righticon->setMaxHeight(img->originalHeight());
+                _righticon->setMinWidth(img->originalWidth() + 2*PT_TO_PX(3));
+                _righticon->setMaxWidth(img->originalWidth() + 2*PT_TO_PX(3));
+                _righticon->setMinHeight(img->originalHeight() + 2*PT_TO_PX(3));
+                _righticon->setMaxHeight(img->originalHeight() + 2*PT_TO_PX(3));
             } else {
                 _righticon->setMinWidth(sz);
                 _righticon->setMaxWidth(sz);
