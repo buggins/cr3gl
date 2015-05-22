@@ -573,4 +573,45 @@ HEADERS += \
     qtsingleapplication/qtlocalpeer.h \
     qtsingleapplication/qtlockedfile.h \
     qtsingleapplication/qtsingleapplication.h
+
+#Embed Qt Speech library    
+DEFINES += QTSPEECH_STATIC
+DEPENDPATH += qt-speech
+INCLUDEPATH += qt-speech
+
+HEADERS += \
+    qt-speech/QtSpeech \
+    qt-speech/QtSpeech.h \
+
+macx {
+    SOURCES += qt-speech/QtSpeech_mac.cpp
+    LIBS *= -framework AppKit
+}
+
+win32 {
+    SOURCES += qt-speech/QtSpeech_win.cpp
+
+    INCLUDEPATH += "C:/Program Files/PSDK/Include"
+    INCLUDEPATH += "C:/Program Files/PSDK/Include/atl"
+    INCLUDEPATH += "C:/Program Files/Microsoft Speech SDK 5.1/Include"
+
+    LIBS += -L"C:/Program Files/Microsoft Speech SDK 5.1/Lib/i386"
+}
+
+unix:!mac {
+    HEADERS += qt-speech/QtSpeech_unx.h
+    SOURCES += qt-speech/QtSpeech_unx.cpp
+
+    INCLUDEPATH += $$PWD/festival/speech_tools/include
+    INCLUDEPATH += $$PWD/festival/festival/src/include
+
+    LIBS += -lncurses
+    LIBS += -L$$PWD/festival/festival/src/lib -lFestival
+    LIBS += -L$$PWD/festival/speech_tools/lib -lestools -lestbase -leststring
+
+    # Linux: use asound 
+    LIBS += -lasound
     
+    # Mac: use system Frameworks
+    #LIBS += -framework CoreAudio -framework AudioUnit -framework AudioToolbox -framework Carbon
+}

@@ -11,6 +11,7 @@
 #include <QAuthenticator>
 #include <QSslError>
 #include <QDesktopServices>
+#include <QtSpeech>
 
 #include "gldrawbuf.h"
 
@@ -45,6 +46,9 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     CRPauseCoverpageManager();
     m_coverpageManagerPaused = true;
     _fullscreen = false;
+    _speechManager = new QtSpeech(this);
+    QtSpeech::VoiceNames voiceList = _speechManager->voices();
+    CRLog::debug("TTS Voices available: %d", voiceList.length());
 }
 //! [1]
 
@@ -69,6 +73,8 @@ OpenGLWindow::~OpenGLWindow()
     delete _eventAdapter;
     delete _eventManager;
     delete _downloadManager;
+    if (_speechManager)
+        delete _speechManager;
     delete _widget;
 //    delete m_device;
     //_qtgl = NULL;

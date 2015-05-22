@@ -50,6 +50,7 @@
 #include <QUrl>
 #include <QNetworkReply>
 #include <QtSingleApplication>
+#include <QtSpeech>
 
 #include "cr3qt.h"
 #include "cruimain.h"
@@ -112,9 +113,11 @@ protected:
     CRUIEventManager * _eventManager;
     CRUIEventAdapter * _eventAdapter;
     CRUIHttpTaskManagerQt * _downloadManager;
+    QtSpeech * _speechManager;
     bool _fullscreen;
 public:
     CRPropRef getSettings() { return _widget->getSettings(); }
+
     explicit OpenGLWindow(QWindow *parent = 0);
     ~OpenGLWindow();
 
