@@ -49,6 +49,11 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _speechManager = new QtSpeech(this);
     QtSpeech::VoiceNames voiceList = _speechManager->voices();
     CRLog::debug("TTS Voices available: %d", voiceList.length());
+    for (int i = 0; i < voiceList.length(); i++) {
+        CRLog::debug("TTS Voice: %s lang: %d", lString8(voiceList[i].name.toUtf8().constData()).c_str(), voiceList[i].lang);
+    }
+    if (voiceList.length())
+        _speechManager->tell(QString("Hello"));
 }
 //! [1]
 

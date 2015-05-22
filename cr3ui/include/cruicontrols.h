@@ -174,8 +174,8 @@ class CRUIScrollBase : public CRUIWidget {
 protected:
     int _minValue;
     int _maxValue;
-    int _pageSize;
     int _value;
+    int _pageSize;
     CRUIOnScrollPosCallback * _callback;
     void updatePos(int pos);
 public:
