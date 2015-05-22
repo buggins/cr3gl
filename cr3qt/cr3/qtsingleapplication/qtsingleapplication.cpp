@@ -288,9 +288,9 @@ void QtSingleApplication::setActivationWindow(QWindow* aw, bool activateOnMessag
 {
     actWin = aw;
     if (activateOnMessage)
-        connect(peer, SIGNAL(messageReceived(const QString&)), this, SLOT(activateWindow()));
+        connect(peer, SIGNAL(messageReceived(const QString&)), this, SLOT(activateWindow(const QString&)));
     else
-        disconnect(peer, SIGNAL(messageReceived(const QString&)), this, SLOT(activateWindow()));
+        disconnect(peer, SIGNAL(messageReceived(const QString&)), this, SLOT(activateWindow(const QString&)));
 }
 
 
@@ -320,16 +320,15 @@ QWindow* QtSingleApplication::activationWindow() const
 
   \sa setActivationWindow(), messageReceived(), initialize()
 */
-void QtSingleApplication::activateWindow()
+void QtSingleApplication::activateWindow(const QString& msg)
 {
     if (actWin) {
-//        actWin->setWindowState(actWin->windowState() & ~Qt::WindowMinimized);
-//        actWin->raise();
-//        actWin->activateWindow();
         actWin->setWindowState(Qt::WindowState(actWin->windowState() & ~Qt::WindowMinimized));
         actWin->raise();
-        //actWin->activateWindow();
+        actWin->requestActivate();
     }
+    if (msg.length() > 0 && msgHandler)
+        msgHandler->onMessageReceived(msg);
 }
 
 
@@ -348,3 +347,7 @@ void QtSingleApplication::activateWindow()
 
     \obsolete
 */
+
+void MessageReceivedHandler::onMessageReceived(const QString &)
+{
+}

@@ -49,6 +49,7 @@
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkReply>
+#include <QtSingleApplication>
 
 #include "cr3qt.h"
 #include "cruimain.h"
@@ -100,7 +101,9 @@ public:
 };
 
 //! [1]
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions, public CRUIScreenUpdateManagerCallback, public CRUIPlatform
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions,
+        public CRUIScreenUpdateManagerCallback, public CRUIPlatform,
+        public MessageReceivedHandler
 {
     Q_OBJECT
 

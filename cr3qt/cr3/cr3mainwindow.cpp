@@ -48,6 +48,17 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 }
 //! [1]
 
+void OpenGLWindow::onMessageReceived(const QString & msg) {
+    lString8 fn((const char *)msg.toUtf8().constData());
+    CRLog::info("onMessageReceived: %s", fn.c_str());
+    if (!LVFileExists(fn)) {
+        CRLog::warn("File %s does not exist", fn.c_str());
+        return;
+    }
+    if (_widget)
+        _widget->openBookFromFile(fn);
+}
+
 void OpenGLWindow::setFileToOpenOnStart(lString8 filename) {
     _widget->setFileToOpenOnStart(filename);
 }
@@ -295,10 +306,6 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
         renderNow();
 }
 //! [3]
-
-void OpenGLWindow::onMessageReceived(const QString &message) {
-    CRLog::info("onMessageReceived: %s", message.constData());
-}
 
 
 //! [4]
@@ -556,3 +563,4 @@ void CRUIHttpTaskQt::sslErrors(QNetworkReply*,const QList<QSslError> &errors) {
 }
 
 #endif
+

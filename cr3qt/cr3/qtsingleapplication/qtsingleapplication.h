@@ -46,6 +46,12 @@
 
 class QtLocalPeer;
 
+class MessageReceivedHandler {
+public:
+    virtual void onMessageReceived(const QString &);
+    virtual ~MessageReceivedHandler() {}
+};
+
 #if defined(Q_OS_WIN)
 #  if !defined(QT_QTSINGLEAPPLICATION_EXPORT) && !defined(QT_QTSINGLEAPPLICATION_IMPORT)
 #    define QT_QTSINGLEAPPLICATION_EXPORT
@@ -84,13 +90,17 @@ public:
     void setActivationWindow(QWindow* aw, bool activateOnMessage = true);
     QWindow* activationWindow() const;
 
+    void setMessageHandler(MessageReceivedHandler * handler) {
+        msgHandler = handler;
+    }
+
     // Obsolete:
     void initialize(bool dummy = true)
         { isRunning(); Q_UNUSED(dummy) }
 
 public Q_SLOTS:
     bool sendMessage(const QString &message, int timeout = 5000);
-    void activateWindow();
+    void activateWindow(const QString& msg = "");
 
 
 Q_SIGNALS:
@@ -101,6 +111,7 @@ private:
     void sysInit(const QString &appId = QString());
     QtLocalPeer *peer;
     QWindow *actWin;
+    MessageReceivedHandler *msgHandler;
 };
 
 #endif // QTSINGLEAPPLICATION_H

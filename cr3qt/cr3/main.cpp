@@ -26,28 +26,30 @@ int main(int argc, char *argv[])
 //        m_localServer->listen(serverName);
 
 
-        lString16 exePath = LVExtractPath(Utf8ToUnicode(argv[0]));
-        LVAppendPathDelimiter(exePath);
-        InitCREngine(exePath);
-
         lString8 filename;
         QString qfilename = "";
         if (argc > 1) {
             filename = argv[1];
             if (filename.startsWith("\"") && filename.endsWith("\"")) {
                 filename = filename.substr(1, filename.length() - 2);
-                qfilename = filename.c_str();
             }
+            qfilename = filename.c_str();
         }
 
         QtSingleApplication a(argc, argv);
 
         if (a.isRunning()) {
+            //CRLog::info("App is already running. Sending parameter: %s", filename.c_str());
             res = a.sendMessage(qfilename);
         } else {
 
+            lString16 exePath = LVExtractPath(Utf8ToUnicode(argv[0]));
+            LVAppendPathDelimiter(exePath);
+            InitCREngine(exePath);
+
             OpenGLWindow w;
             a.setActivationWindow(&w);
+            a.setMessageHandler(&w);
             if (!filename.empty()) {
                 w.setFileToOpenOnStart(filename);
             }
@@ -57,8 +59,9 @@ int main(int argc, char *argv[])
             else
                 w.show();
             res = a.exec();
+
+            crconfig.uninitEngine();
         }
     }
-    crconfig.uninitEngine();
     return res;
 }
