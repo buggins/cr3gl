@@ -28,6 +28,13 @@ public:
     virtual ~CRDocumentRenderCallback() {}
 };
 
+class CRUITextToSpeechCallback {
+public:
+    virtual void onSentenceFinished() = 0;
+    virtual ~CRUITextToSpeechCallback() {}
+};
+
+
 class CRUIDocView : public LVDocView {
     CRUIImageRef background;
     //CRUIImageRef backgroundScrollLeft;
@@ -116,10 +123,12 @@ enum PageFlipAnimation {
     PAGE_ANIMATION_3D
 };
 
+class CRUITextToSpeechCallback;
 class CRUIReadWidget : public CRUIWindowWidget
         , public CRDocumentLoadCallback
         , public CRDocumentRenderCallback
         , public LVDocViewCallback
+        , public CRUITextToSpeechCallback
 {
     CRUIDocView * _docview;
     CRUIDocView * _pinchSettingPreview;
@@ -286,6 +295,8 @@ public:
 
     void removeBookmark(lInt64 id);
     LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
+
+    virtual void onSentenceFinished();
 
     /// restore last position from DB
     bool restorePosition();

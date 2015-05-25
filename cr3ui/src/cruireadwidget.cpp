@@ -2154,6 +2154,8 @@ void CRUIReadWidget::showReaderMenu() {
     actions.add(ACTION_GOTO_PERCENT);
     actions.add(ACTION_BOOKMARKS);
     actions.add(ACTION_FIND_TEXT);
+    if (_main->getPlatform()->getTextToSpeech())
+        actions.add(ACTION_TTS_PLAY);
     actions.add(ACTION_HELP);
     if (_main->getPlatform()->supportsFullscreen())
         actions.add(ACTION_TOGGLE_FULLSCREEN);
@@ -2162,6 +2164,10 @@ void CRUIReadWidget::showReaderMenu() {
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
     CRLog::trace("showing popup");
     preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
+}
+
+void CRUIReadWidget::onSentenceFinished() {
+    CRLog::trace("CRUIReadWidget::onSentenceFinished()");
 }
 
 /// override to handle menu or other action
@@ -2209,6 +2215,16 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_FIND_TEXT:
         showFindTextPopup();
+        return true;
+    case CMD_TTS_PLAY:
+        CRLog::trace("CMD_TTS_PLAY");
+        if (_main->getPlatform()->getTextToSpeech()) {
+            CRLog::trace("enter TELL");
+            _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
+            _main->getPlatform()->getTextToSpeech()->tell(lString16(L"Test text to speech."));
+            CRLog::trace("exit TELL");
+        }
+        invalidate();
         return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));

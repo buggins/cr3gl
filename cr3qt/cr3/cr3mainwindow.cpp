@@ -36,7 +36,7 @@ CRUIQtTextToSpeech::CRUIQtTextToSpeech() : _ttsCallback(NULL), _currentVoice(NUL
     }
     //if (voiceList.length())
     //    _speechManager->tell(QString("Hello"));
-    tell(lString16(L"Hello"));
+    //tell(lString16(L"Hello"));
 }
 
 CRUITextToSpeechCallback * CRUIQtTextToSpeech::getTextToSpeechCallback() {
@@ -169,7 +169,7 @@ OpenGLWindow::~OpenGLWindow()
 }
 
 CRUITextToSpeech * OpenGLWindow::getTextToSpeech() {
-    return NULL;
+    return _textToSpeech;
 }
 
 //! [2]

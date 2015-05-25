@@ -46,12 +46,6 @@ public:
     lString8 getLang() { return _lang; }
 };
 
-class CRUITextToSpeechCallback {
-public:
-    virtual void onSentenceFinished() = 0;
-    virtual ~CRUITextToSpeechCallback() {}
-};
-
 class CRUITextToSpeech {
 public:
     virtual CRUITextToSpeechCallback * getTextToSpeechCallback() = 0;
