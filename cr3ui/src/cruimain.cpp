@@ -530,7 +530,7 @@ void CRUIMainWidget::createReaderSettings() {
     interfaceSettings->addChild(uilangs);
 
     if (getPlatform()->getTextToSpeech()) {
-        CRUISettingsOptionList * ttsvoices = new CRUISettingsOptionList(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
+        CRUISettingsOptionList * ttsvoices = new CRUITTSSetting(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
         ttsvoices->addOption(new CRUIOptionItem(PROP_APP_TTS_VOICE_VALUE_SYSTEM, STR_SETTINGS_TTS_VOICE_VALUE_SYSTEM));
         LVPtrVector<CRUITextToSpeechVoice, false> voiceList;
         getPlatform()->getTextToSpeech()->getAvailableVoices(voiceList);

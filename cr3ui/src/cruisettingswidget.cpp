@@ -750,6 +750,70 @@ bool CRUIBackgroundTextureEditorWidget::onListItemClick(CRUIListWidget * widget,
 
 
 
+CRUITTSSettingEditorWidget::CRUITTSSettingEditorWidget(CRPropRef props, CRUISettingsItem * setting)
+    : CRUISettingsOptionsListEditorWidget(props, setting)
+{
+    CRUIVerticalLayout * controls = new CRUIVerticalLayout();
+    controls->setLayoutParams(FILL_PARENT, FILL_PARENT);
+    controls->setPadding(PT_TO_PX(4));
+    int rate = props->getIntDef(PROP_APP_TTS_RATE, 70);
+    CRUITextWidget * _label = new CRUITextWidget(STR_SETTINGS_TTS_RATE);
+    _label->setPadding(PT_TO_PX(4));
+    CRUISliderWidget * _slider = new CRUISliderWidget(0, 100, rate);
+    _slider->setScrollPosCallback(this);
+    _slider->setMinHeight(MIN_ITEM_PX);
+    _slider->setPadding(lvRect(0, 0, 0, PT_TO_PX(6)));
+    CRUITextWidget * _label2 = new CRUITextWidget(STR_SETTINGS_TTS_SAMPLE);
+    _label2->setPadding(PT_TO_PX(4));
+    _edit = new CRUIEditWidget();
+    _edit->setText(lString16("Text To Speech voice test sample"));
+    _edit->setPadding(PT_TO_PX(6));
+    CRUIButton * _btnTest = new CRUIButton(_16(STR_SETTINGS_TTS_SAMPLE_PLAY));
+    _btnTest->setPadding(PT_TO_PX(4));
+    controls->addChild(_label);
+    controls->addChild(_slider);
+    controls->addChild(_label2);
+    controls->addChild(_edit);
+    controls->addChild(_btnTest);
+    _btnTest->setOnClickListener(this);
+    controls->addChild(new CRUIVSpacer());
+    insertChild(controls, 0);
+}
+
+bool CRUITTSSettingEditorWidget::onClick(CRUIWidget * widget) {
+    CR_UNUSED(widget);
+    if (getPlatform()->getTextToSpeech()) {
+        if (getPlatform()->getTextToSpeech()->isSpeaking())
+            getPlatform()->getTextToSpeech()->stop();
+        getPlatform()->getTextToSpeech()->tell(_edit->getText());
+    }
+    return true;
+}
+
+bool CRUITTSSettingEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    _props->setInt(PROP_APP_TTS_RATE, pos);
+    if (manual && getPlatform()->getTextToSpeech()) {
+        //getPlatform()->getTextToSpeech()->stop();
+        getPlatform()->getTextToSpeech()->setRate(pos);
+    }
+    return true;
+}
+
+bool CRUITTSSettingEditorWidget::onListItemClick(CRUIListWidget * widget, int itemIndex) {
+    CR_UNUSED(widget);
+    const CRUIOptionItem * item = _settings->getOption(itemIndex);
+    _currentValue = item->getValue();
+    _props->setString(_settings->getSettingId().c_str(), _currentValue);
+    if (getPlatform()->getTextToSpeech()) {
+        if (getPlatform()->getTextToSpeech()->isSpeaking())
+            getPlatform()->getTextToSpeech()->stop();
+        getPlatform()->getTextToSpeech()->setCurrentVoice(_currentValue);
+    }
+    invalidate();
+    return true;
+}
+
+
 
 CRUIFontFaceEditorWidget::CRUIFontFaceEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsOptionsListEditorWidget(props, setting) {
     _sample = new CRUIFontSampleWidget(props);
@@ -947,6 +1011,7 @@ CRUISettingsWidget::CRUISettingsWidget(CRUIMainWidget * main, CRUISettingsItem *
         editor->setCallback(this);
         editor->setOnDragListener(this);
         editor->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        editor->setPlatform(main->getPlatform());
         _body->addChild(editor);
     }
 }
@@ -1010,6 +1075,10 @@ bool CRUISettingsWidget::onTouchEvent(const CRUIMotionEvent * event) {
 /// create editor widget based on option type
 CRUISettingsEditor * CRUISettingsOptionList::createEditor(CRPropRef props) {
     return new CRUISettingsOptionsListEditorWidget(props, this);
+}
+
+CRUISettingsEditor * CRUITTSSetting::createEditor(CRPropRef props) {
+    return new CRUITTSSettingEditorWidget(props, this);
 }
 
 /// create editor widget based on option type

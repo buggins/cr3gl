@@ -215,7 +215,9 @@ void QtSpeech::tell(QString text) const {
 void QtSpeech::tell(QString text, QObject * obj, const char * slot) const
 {
     if (d->waitingFinish) {
-        throw LogicError(Where+"Already waiting to finish speech");
+        CRLog::error("Already speaking");
+        return;
+        //throw LogicError(Where+"Already waiting to finish speech");
     }
 
     d->onFinishObj = obj;

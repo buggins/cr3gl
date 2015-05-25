@@ -163,6 +163,15 @@ public:
     virtual CRUIImageRef getValueIcon(CRPropRef props) const;
 };
 
+class CRUITTSSetting : public CRUISettingsOptionList {
+public:
+    CRUITTSSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsOptionList(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+};
+
 class CRUIFontFaceSetting : public CRUISettingsOptionList {
 public:
     CRUIFontFaceSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsOptionList(nameRes, descriptionRes, settingId) {
@@ -229,18 +238,27 @@ public:
     virtual ~CRUISettingsEditorCallback() {}
 };
 
+class CRUIPlatform;
+
 class CRUISettingsEditor : public CRUIVerticalLayout {
 protected:
     CRPropRef _props;
     CRUISettingsItem * _settings;
     CRUISettingsEditorCallback * _callback;
     CRUIVerticalLayout * _controls;
+    CRUIPlatform * _platform;
 public:
     CRUISettingsEditor(CRPropRef props, CRUISettingsItem * setting) : _props(props), _settings(setting), _callback(NULL) {
+        _platform = NULL;
         _controls = new CRUIVerticalLayout();
         _controls->setLayoutParams(CRUI::FILL_PARENT, CRUI::FILL_PARENT);
         addChild(_controls);
     }
+    void setPlatform(CRUIPlatform * platform) {
+        _platform = platform;
+    }
+    CRUIPlatform * getPlatform() { return _platform; }
+
     void addChildControl(CRUIWidget * widget) {
         _controls->addChild(widget);
     }
@@ -298,6 +316,20 @@ public:
     /// draws widget with its children to specified surface
     virtual void draw(LVDrawBuf * buf);
     void format();
+};
+
+class CRUITTSSettingEditorWidget
+        : public CRUISettingsOptionsListEditorWidget
+        , public CRUIOnScrollPosCallback
+        , public CRUIOnClickListener
+{
+private:
+    CRUIEditWidget * _edit;
+public:
+    CRUITTSSettingEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
+    virtual bool onClick(CRUIWidget * widget);
+    virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 };
 
 class CRUIFontFaceEditorWidget : public CRUISettingsOptionsListEditorWidget {

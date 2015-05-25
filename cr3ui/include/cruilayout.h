@@ -17,7 +17,8 @@ public:
 	virtual int getChildCount() { return _children.length(); }
 	virtual CRUIWidget * getChild(int index) { return _children.get(index); }
 	virtual CRUIWidget * addChild(CRUIWidget * child) { child->setParent(this); _children.add(child); return child; }
-	virtual CRUIWidget * removeChild(int index) { return _children.remove(index); }
+    virtual CRUIWidget * insertChild(CRUIWidget * child, int index = -1) { child->setParent(this); _children.insert(index, child); return child; }
+    virtual CRUIWidget * removeChild(int index) { return _children.remove(index); }
     virtual CRUIWidget * removeChild(CRUIWidget * child) { return _children.remove(child); }
     virtual ~CRUIContainerWidget() { _children.clear(); }
 	/// draws widget with its children to specified surface
