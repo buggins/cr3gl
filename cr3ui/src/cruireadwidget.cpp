@@ -200,7 +200,7 @@ public:
             CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
             caption->setMaxLines(2)->setFontSize(FONT_SIZE_XSMALL);
             if (!labels)
-                caption->setVisibility(Visibility::GONE);
+                caption->setVisibility(CRUI::GONE);
             _buttons.add(button);
             addChild(button);
         }
