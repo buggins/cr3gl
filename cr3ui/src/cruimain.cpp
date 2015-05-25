@@ -1232,13 +1232,14 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
     }
     if (!_messageText.empty()) {
         CRUITextWidget text(_messageText);
-        text.setFontSize(FONT_SIZE_SMALL);
-        text.setMaxLines(2);
+        text.setStyle("MESSAGE");
+        //text.setFontSize(FONT_SIZE_SMALL);
+        //text.setMaxLines(2);
         text.setPadding(PT_TO_PX(7));
         text.setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         text.measure(_pos.width(), _pos.height());
-        text.setBackground(0x60FFFFFF);
-        text.setTextColor(0x00FF0000);
+        //text.setBackground(0x60FFFFFF);
+        //text.setTextColor(0x00FF0000);
         int dx = text.getMeasuredWidth();
         int dy = text.getMeasuredHeight();
         if (dx > _pos.width())

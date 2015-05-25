@@ -77,6 +77,10 @@
         id = "CONTROL_POPUP"
     />
     <style
+        id = "MESSAGE"
+        fontSize="small"
+    />
+    <style
         id = "SETTINGS_WIDGET"
     />
     <style

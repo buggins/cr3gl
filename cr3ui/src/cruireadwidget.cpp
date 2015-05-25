@@ -1292,8 +1292,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_F5:
-            doCommand(CMD_TTS_PLAY);
-            invalidate();
+            onAction(ACTION_TTS_PLAY);
             return true;
         case CR_KEY_Q:
             doCommand(DCMD_SELECT_FIRST_SENTENCE);
@@ -2262,6 +2261,7 @@ void CRUIReadWidget::startReadAloud() {
         return;
     CRLog::trace("CRUIReadWidget::startReadAloud()");
     if (_main->getPlatform()->getTextToSpeech()) {
+        _main->showMessage(_16(STR_TTS_PLAY_IN_PROGRESS), 4000);
         ldomXRangeList & sel = _docview->getDocument()->getSelections();
         ldomXRange currSel;
         if ( sel.length()>0 )
