@@ -17,6 +17,96 @@
 
 #define DESKTOP_DPI 120
 
+CRUIQtTextToSpeech::CRUIQtTextToSpeech() : _ttsCallback(NULL), _currentVoice(NULL), _defaultVoice(NULL) {
+    _speechManager = new QtSpeech(this);
+    //const VoiceName & currentVoice = _speechManager->name();
+    QtSpeech::VoiceNames voiceList = _speechManager->voices();
+    CRLog::debug("TTS Voices available: %d", voiceList.length());
+    for (int i = 0; i < voiceList.length(); i++) {
+        lString8 id(voiceList[i].id.toUtf8().constData());
+        lString8 name(voiceList[i].name.toUtf8().constData());
+        lString8 lang(voiceList[i].lang.toUtf8().constData());
+        CRLog::debug("TTS Voice: id:'%s'' name:'%s' lang: %s",  id.c_str(), name.c_str(), lang.c_str());
+        CRUITextToSpeechVoice * voice = new CRUITextToSpeechVoice(id, name, lang);
+        _voices.add(voice);
+        if (voiceList[i].id == _speechManager->name().id) {
+            _currentVoice = _defaultVoice = voice;
+            CRLog::info("Current TTS Voice: '%s' lang: %s", name.c_str(), lang.c_str());
+        }
+    }
+    //if (voiceList.length())
+    //    _speechManager->tell(QString("Hello"));
+    tell(lString16(L"Hello"));
+}
+
+CRUITextToSpeechCallback * CRUIQtTextToSpeech::getTextToSpeechCallback() {
+    return _ttsCallback;
+}
+
+void CRUIQtTextToSpeech::setTextToSpeechCallback(CRUITextToSpeechCallback * callback) {
+    _ttsCallback = callback;
+}
+
+void CRUIQtTextToSpeech::getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list) {
+    list.clear();
+    for(int i = 0; i < _voices.length(); i++)
+        list.add(_voices[i]);
+}
+
+CRUITextToSpeechVoice * CRUIQtTextToSpeech::getCurrentVoice() {
+    return _currentVoice;
+}
+
+CRUITextToSpeechVoice * CRUIQtTextToSpeech::getDefaultVoice() {
+    return _defaultVoice;
+}
+
+void CRUIQtTextToSpeech::sentenceFinished() {
+    CRLog::trace("CRUIQtTextToSpeech::sentenceFinished()");
+    if (_ttsCallback)
+        _ttsCallback->onSentenceFinished();
+}
+
+bool CRUIQtTextToSpeech::setCurrentVoice(lString8 id) {
+    if (id.empty() && _defaultVoice)
+        id = _defaultVoice->getId();
+    if (_currentVoice->getId() == id)
+        return true;
+    for (int i = 0; i < _voices.length(); i++) {
+        if (_voices[i]->getId() == id) {
+            QtSpeech::VoiceName n;
+            n.id = QString::fromUtf8(_voices[i]->getId().c_str());
+            n.name = QString::fromUtf8(_voices[i]->getName().c_str());
+            n.lang = QString::fromUtf8(_voices[i]->getLang().c_str());
+            if (_speechManager)
+                delete _speechManager;
+            _speechManager = new QtSpeech(n, this);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CRUIQtTextToSpeech::canChangeCurrentVoice() {
+    return true;
+}
+
+bool CRUIQtTextToSpeech::tell(lString16 text) {
+    if (!_speechManager)
+        return false;
+    lString8 txt = UnicodeToUtf8(text);
+    QString s = QString::fromUtf8(txt.c_str());
+    _speechManager->tell(s, this, SLOT(sentenceFinished()));
+    return true;
+}
+
+CRUIQtTextToSpeech::~CRUIQtTextToSpeech() {
+    if (_speechManager)
+        delete _speechManager;
+}
+
+
+
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
@@ -42,18 +132,11 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
     _downloadManager = new CRUIHttpTaskManagerQt(_eventManager);
+    _textToSpeech = new CRUIQtTextToSpeech();
     CRLog::info("Pausing coverpage manager on start");
     CRPauseCoverpageManager();
     m_coverpageManagerPaused = true;
     _fullscreen = false;
-    _speechManager = new QtSpeech(this);
-    QtSpeech::VoiceNames voiceList = _speechManager->voices();
-    CRLog::debug("TTS Voices available: %d", voiceList.length());
-    for (int i = 0; i < voiceList.length(); i++) {
-        CRLog::debug("TTS Voice: %s lang: %d", lString8(voiceList[i].name.toUtf8().constData()).c_str(), voiceList[i].lang);
-    }
-    if (voiceList.length())
-        _speechManager->tell(QString("Hello"));
 }
 //! [1]
 
@@ -78,11 +161,15 @@ OpenGLWindow::~OpenGLWindow()
     delete _eventAdapter;
     delete _eventManager;
     delete _downloadManager;
-    if (_speechManager)
-        delete _speechManager;
+    if (_textToSpeech)
+        delete _textToSpeech;
     delete _widget;
 //    delete m_device;
     //_qtgl = NULL;
+}
+
+CRUITextToSpeech * OpenGLWindow::getTextToSpeech() {
+    return NULL;
 }
 
 //! [2]

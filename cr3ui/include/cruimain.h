@@ -32,6 +32,39 @@ public:
     virtual ~CRUIScreenUpdateManagerCallback() {}
 };
 
+class CRUITextToSpeechVoice {
+    lString8 _id;
+    lString8 _name;
+    lString8 _lang;
+public:
+    CRUITextToSpeechVoice(lString8 id, lString8 name, lString8 lang)
+        : _id(id), _name(name), _lang(lang)
+    {
+    }
+    lString8 getId() { return _id; }
+    lString8 getName() { return _name; }
+    lString8 getLang() { return _lang; }
+};
+
+class CRUITextToSpeechCallback {
+public:
+    virtual void onSentenceFinished() = 0;
+    virtual ~CRUITextToSpeechCallback() {}
+};
+
+class CRUITextToSpeech {
+public:
+    virtual CRUITextToSpeechCallback * getTextToSpeechCallback() = 0;
+    virtual void setTextToSpeechCallback(CRUITextToSpeechCallback * callback) = 0;
+    virtual void getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list) = 0;
+    virtual CRUITextToSpeechVoice * getCurrentVoice() = 0;
+    virtual CRUITextToSpeechVoice * getDefaultVoice() = 0;
+    virtual bool setCurrentVoice(lString8 id) = 0;
+    virtual bool canChangeCurrentVoice() = 0;
+    virtual bool tell(lString16 text) = 0;
+    virtual ~CRUITextToSpeech() {}
+};
+
 class CRUIPlatform {
 public:
 	/// completely exit app
@@ -80,6 +113,8 @@ public:
     }
     /// cancel specified download task
     virtual void cancelDownload(int downloadTaskId) { CR_UNUSED(downloadTaskId); }
+
+    virtual CRUITextToSpeech * getTextToSpeech() { return NULL; }
 
 	virtual ~CRUIPlatform() {}
 };

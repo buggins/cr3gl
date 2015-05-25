@@ -41,7 +41,7 @@ public:
     struct CloseError : Error { CloseError(QString s):Error(s) {} };
 
     // types
-    struct VoiceName { QString id; QString name; int lang; };
+    struct VoiceName { QString id; QString name; QString lang; };
     typedef QList<VoiceName> VoiceNames;
 
     // api

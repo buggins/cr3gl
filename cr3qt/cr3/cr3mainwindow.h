@@ -113,9 +113,12 @@ protected:
     CRUIEventManager * _eventManager;
     CRUIEventAdapter * _eventAdapter;
     CRUIHttpTaskManagerQt * _downloadManager;
-    QtSpeech * _speechManager;
+    CRUITextToSpeech * _textToSpeech;
     bool _fullscreen;
 public:
+
+    virtual CRUITextToSpeech * getTextToSpeech();
+
     CRPropRef getSettings() { return _widget->getSettings(); }
 
     explicit OpenGLWindow(QWindow *parent = 0);
@@ -185,6 +188,29 @@ private:
     QOpenGLPaintDevice *m_device;
 };
 //! [1]
+
+class CRUIQtTextToSpeech : public QObject, public CRUITextToSpeech {
+    Q_OBJECT
+private:
+    CRUITextToSpeechCallback * _ttsCallback;
+    CRUITextToSpeechVoice * _currentVoice;
+    CRUITextToSpeechVoice * _defaultVoice;
+    QtSpeech * _speechManager;
+    LVPtrVector<CRUITextToSpeechVoice, true> _voices;
+public slots:
+    void sentenceFinished();
+public:
+    CRUIQtTextToSpeech();
+    virtual CRUITextToSpeechCallback * getTextToSpeechCallback();
+    virtual void setTextToSpeechCallback(CRUITextToSpeechCallback * callback);
+    virtual void getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list);
+    virtual CRUITextToSpeechVoice * getCurrentVoice();
+    virtual CRUITextToSpeechVoice * getDefaultVoice();
+    virtual bool setCurrentVoice(lString8 id);
+    virtual bool canChangeCurrentVoice();
+    virtual bool tell(lString16 text);
+    virtual ~CRUIQtTextToSpeech();
+};
 
 
 

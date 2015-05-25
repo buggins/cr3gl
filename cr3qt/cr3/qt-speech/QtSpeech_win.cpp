@@ -44,6 +44,28 @@ namespace QtSpeech_v1 { // API v1.0
     }\
 }
 
+QString langNameFromVoice(CComPtr<ISpObjectToken> voice) {
+    LANGID langId = 0;
+    if (SpGetLanguageFromVoiceToken(voice, &langId) == S_OK) {
+        //CRLog::debug("language: ", langId);
+        switch(langId) {
+        case 0x0419: return "ru_RU"; // Russian/Russia
+        case 0x0C09: return "en_AU"; // English/Australia
+        case 0x0409: return "en_US"; // English/US
+        case 0x0809: return "en_GB"; // English/GB
+        case 0x1009: return "en_CA"; // English/Canada
+        default:
+            switch(langId & 0xFF) {
+            case 0x09: return "en";
+            case 0x19: return "ru";
+            default:
+                return "";
+            }
+        }
+    }
+    return "";
+}
+
 // internal data
 class QtSpeech::Private {
 public:
@@ -94,6 +116,7 @@ QtSpeech::QtSpeech(QObject * parent)
     SysCall( voice->GetId(&w_id), InitError);
     n.name = QString::fromWCharArray(w_name);
     n.id = QString::fromWCharArray(w_id);
+    n.lang = langNameFromVoice(voice);
     voice.Release();
 
     if (n.id.isEmpty())
@@ -121,6 +144,7 @@ QtSpeech::QtSpeech(VoiceName n, QObject * parent)
         SysCall( voice->GetId(&w_id), InitError);
         n.name = QString::fromWCharArray(w_name);
         n.id = QString::fromWCharArray(w_id);
+        n.lang = langNameFromVoice(voice);
         voice.Release();
     }
     else {
@@ -171,14 +195,11 @@ QtSpeech::VoiceNames QtSpeech::voices()
         SysCall( voices->Next( 1, &voice, NULL ), LogicError);
         SysCall( SpGetDescription(voice, &w_name), LogicError);
         SysCall( voice->GetId(&w_id), LogicError);
-        LANGID langId = 0;
-        if (SpGetLanguageFromVoiceToken(voice, &langId) == S_OK) {
-            //CRLog::debug("language: ", langId);
-        }
 
         QString id = QString::fromWCharArray(w_id);
         QString name = QString::fromWCharArray(w_name);
-        VoiceName n = { id, name, (int)langId };
+        QString lang = langNameFromVoice(voice);
+        VoiceName n = { id, name, lang };
         vs << n;
 
         voice.Release();
