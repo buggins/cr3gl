@@ -126,7 +126,7 @@ QtSpeech::QtSpeech(VoiceName n, QObject * parent)
     else {
         SysCall( SpEnumTokens(SPCAT_VOICES, NULL, NULL, &voices), InitError);
         SysCall( voices->GetCount(&count), InitError);
-        for (int i =0; i< count; i++) {
+        for (int i =0; i < (int)count; i++) {
             WCHAR * w_id = 0L;
             CComPtr<ISpObjectToken> voice;
             SysCall( voices->Next( 1, &voice, NULL ), InitError);
@@ -164,17 +164,21 @@ QtSpeech::VoiceNames QtSpeech::voices()
     SysCall( SpEnumTokens(SPCAT_VOICES, NULL, NULL, &voices), LogicError);
     SysCall( voices->GetCount(&count), LogicError);
 
-    for(int i=0; i< count; i++) {
+    for(int i=0; i < (int)count; i++) {
         WCHAR * w_id = 0L;
         WCHAR * w_name = 0L;
         CComPtr<ISpObjectToken> voice;
         SysCall( voices->Next( 1, &voice, NULL ), LogicError);
         SysCall( SpGetDescription(voice, &w_name), LogicError);
         SysCall( voice->GetId(&w_id), LogicError);
+        LANGID langId = 0;
+        if (SpGetLanguageFromVoiceToken(voice, &langId) == S_OK) {
+            //CRLog::debug("language: ", langId);
+        }
 
         QString id = QString::fromWCharArray(w_id);
         QString name = QString::fromWCharArray(w_name);
-        VoiceName n = { id, name };
+        VoiceName n = { id, name, (int)langId };
         vs << n;
 
         voice.Release();
