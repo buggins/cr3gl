@@ -121,6 +121,12 @@
         background2="list_shadow_vertical.9"
     />
     <style
+        id = "MESSAGE"
+        textColor="0x000000"
+        background="0xC0C0C0"
+        background2="toolbar_shadow.9"
+    />
+    <style
         id = "SETTINGS_WIDGET"
         background="#000000"
         background2="list_shadow_vertical.9"

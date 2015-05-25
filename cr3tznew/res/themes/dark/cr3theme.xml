@@ -124,6 +124,11 @@
         background2="list_shadow_vertical.9"
     />
     <style
+        id = "MESSAGE"
+        background="0x000000"
+        background2="toolbar_shadow.9"
+    />
+    <style
         id = "SETTINGS_WIDGET"
         background="tx_wood_dark_v3.jpg|tiled"
         background2="list_shadow_vertical.9"

@@ -1238,6 +1238,14 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     	CRLog::trace("Popup is active - transferring key to window");
     	return CRUIWindowWidget::onKeyEvent(event);
     }
+
+    if (_ttsInProgress) {
+        if (event->getType() != KEY_ACTION_RELEASE || key == CR_KEY_F5)
+            return true;
+        stopReadAloud();
+        return true;
+    }
+
     bool longPress = event->getDownDuration() > 500;
     if (event->getType() == KEY_ACTION_RELEASE) {
         switch(key) {
