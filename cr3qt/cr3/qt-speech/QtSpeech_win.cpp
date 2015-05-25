@@ -28,6 +28,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
+#include "lvstring.h"
 
 namespace QtSpeech_v1 { // API v1.0
 
@@ -213,19 +214,21 @@ void QtSpeech::tell(QString text) const {
 
 void QtSpeech::tell(QString text, QObject * obj, const char * slot) const
 {
-    if (d->waitingFinish)
+    if (d->waitingFinish) {
         throw LogicError(Where+"Already waiting to finish speech");
+    }
 
     d->onFinishObj = obj;
     d->onFinishSlot = slot;
     if (obj && slot)
         connect(const_cast<QtSpeech *>(this), SIGNAL(finished()), obj, slot);
 
-    d->waitingFinish = true;
     const_cast<QtSpeech *>(this)->startTimer(100);
 
     Private::WCHAR_Holder w_text(text);
     SysCall( d->voice->Speak( w_text.w, SPF_ASYNC | SPF_IS_NOT_XML, 0), LogicError);
+    CRLog::trace("setting waitingFinish flag");
+    d->waitingFinish = true;
 }
 
 void QtSpeech::say(QString text) const
@@ -238,13 +241,19 @@ void QtSpeech::timerEvent(QTimerEvent * te)
 {
     QObject::timerEvent(te);
 
+    CRLog::trace("timerEvent");
     if (d->waitingFinish) {
+        CRLog::trace("timerEvent - waiting finish");
         SPVOICESTATUS es;
         d->voice->GetStatus( &es, NULL );
         if (es.dwRunningState == SPRS_DONE) {
+            CRLog::trace("timerEvent - waiting finish, status = DONE");
             d->waitingFinish = false;
             killTimer(te->timerId());
+            CRLog::trace("timerEvent - signal");
             finished();
+            if (d->onFinishObj && d->onFinishSlot)
+                disconnect(const_cast<QtSpeech *>(this), SIGNAL(finished()), d->onFinishObj, d->onFinishSlot);
         }
     }
 }

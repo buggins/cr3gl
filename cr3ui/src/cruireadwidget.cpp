@@ -610,6 +610,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 	, _fileItem(NULL)
 	, _lastPosition(NULL)
 	, _startPositionIsUpdated(false)
+    , _ttsInProgress(false)
 	, _pinchOp(PINCH_OP_NONE)
 {
     setId("READ");
@@ -2166,8 +2167,67 @@ void CRUIReadWidget::showReaderMenu() {
     preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
 }
 
+
 void CRUIReadWidget::onSentenceFinished() {
     CRLog::trace("CRUIReadWidget::onSentenceFinished()");
+    if (!_docview->onSelectionCommand(DCMD_SELECT_NEXT_SENTENCE, 1)) {
+        _ttsInProgress = false;
+        return;
+    }
+    updateReadingPosition();
+    _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
+    CRLog::trace("CRUIReadWidget::onSentenceFinished() tell %s", UnicodeToUtf8(_selection.selectionText).c_str());
+    _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
+}
+
+bool CRUIReadWidget::updateReadingPosition() {
+    ldomXRangeList & sel = _docview->getDocument()->getSelections();
+    ldomXRange currSel;
+    if ( sel.length()>0 )
+        currSel = *sel[0];
+    if (currSel.isNull()) {
+        // no selection
+        return false;
+    }
+    _selection.startPos = currSel.getStart().toString();
+    _selection.endPos = currSel.getEnd().toString();
+    _selection.startCursorPos.clear();
+    _selection.endCursorPos.clear();
+    _docview->getCursorRect(currSel.getStart(), _selection.startCursorPos, false);
+    _docview->getCursorRect(currSel.getEnd(), _selection.endCursorPos, false);
+    _selection.selectionText = currSel.getRangeText();
+    updateSelectionBookmark();
+    clearImageCaches();
+    invalidate();
+    _main->update(false);
+    return true;
+}
+
+void CRUIReadWidget::startReadAloud() {
+    if (_ttsInProgress)
+        return;
+    CRLog::trace("CRUIReadWidget::startReadAloud()");
+    if (_main->getPlatform()->getTextToSpeech()) {
+        ldomXRangeList & sel = _docview->getDocument()->getSelections();
+        ldomXRange currSel;
+        if ( sel.length()>0 )
+            currSel = *sel[0];
+        else {
+            _docview->onSelectionCommand(DCMD_SELECT_FIRST_SENTENCE, 1);
+            ldomXRangeList & sel = _docview->getDocument()->getSelections();
+            if ( sel.length()>0 )
+                currSel = *sel[0];
+        }
+        if (currSel.isNull()) {
+            // no selection
+            return;
+        }
+        updateReadingPosition();
+        _ttsInProgress = true;
+        _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
+        _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
+    }
+    invalidate();
 }
 
 /// override to handle menu or other action
@@ -2217,14 +2277,7 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         showFindTextPopup();
         return true;
     case CMD_TTS_PLAY:
-        CRLog::trace("CMD_TTS_PLAY");
-        if (_main->getPlatform()->getTextToSpeech()) {
-            CRLog::trace("enter TELL");
-            _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
-            _main->getPlatform()->getTextToSpeech()->tell(lString16(L"Test text to speech."));
-            CRLog::trace("exit TELL");
-        }
-        invalidate();
+        startReadAloud();
         return true;
     case CMD_SETTINGS:
         _main->showSettings(lString8("@settings/reader"));

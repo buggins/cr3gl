@@ -61,10 +61,25 @@ CRUITextToSpeechVoice * CRUIQtTextToSpeech::getDefaultVoice() {
     return _defaultVoice;
 }
 
+class CRUITtsFinishedEvent : public CRRunnable {
+    CRUITextToSpeechCallback * _callback;
+public:
+    CRUITtsFinishedEvent(CRUITextToSpeechCallback * callback)
+        : _callback(callback)
+    {
+        CRLog::trace("CRUITtsFinishedEvent created");
+    }
+
+    virtual void run() {
+        CRLog::trace("CRUITtsFinishedEvent::run()");
+        _callback->onSentenceFinished();
+    }
+};
+
 void CRUIQtTextToSpeech::sentenceFinished() {
     CRLog::trace("CRUIQtTextToSpeech::sentenceFinished()");
     if (_ttsCallback)
-        _ttsCallback->onSentenceFinished();
+        concurrencyProvider->executeGui(new CRUITtsFinishedEvent(_ttsCallback));
 }
 
 bool CRUIQtTextToSpeech::setCurrentVoice(lString8 id) {
@@ -92,6 +107,7 @@ bool CRUIQtTextToSpeech::canChangeCurrentVoice() {
 }
 
 bool CRUIQtTextToSpeech::tell(lString16 text) {
+    CRLog::trace("CRUIQtTextToSpeech::tell %s", UnicodeToUtf8(text).c_str());
     if (!_speechManager)
         return false;
     lString8 txt = UnicodeToUtf8(text);

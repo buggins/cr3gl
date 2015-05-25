@@ -269,6 +269,8 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     bool _startPositionIsUpdated;
 
+    bool _ttsInProgress;
+
     lString16 _lastSearchPattern;
 
     enum {
@@ -289,6 +291,9 @@ class CRUIReadWidget : public CRUIWindowWidget
     void startPinchOp(int op, int dx, int dy);
     void updatePinchOp(int dx, int dy);
     void endPinchOp(int dx, int dy, bool cancel);
+
+    bool updateReadingPosition();
+
 public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
@@ -370,6 +375,9 @@ public:
     void showReaderMenu();
     void showTOC();
     void showBookmarks();
+
+    void startReadAloud();
+
     bool hasTOC();
     lString16 getCurrentPositionDesc();
     int getCurrentPositionPercent();
