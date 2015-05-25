@@ -123,6 +123,7 @@ enum PageFlipAnimation {
     PAGE_ANIMATION_3D
 };
 
+class CRUIReadMenu;
 class CRUITextToSpeechCallback;
 class CRUIReadWidget : public CRUIWindowWidget
         , public CRDocumentLoadCallback
@@ -139,6 +140,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     ScrollControl _scroll;
     LVDocViewMode _viewMode;
     PageFlipAnimation _pageAnimation;
+    lvRect _clientRect;
 
     class ScrollModePage {
     public:
@@ -294,6 +296,10 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     bool updateReadingPosition();
 
+    CRUIReadMenu * _toolbar;
+
+    void setShowToolbar(bool visible);
+
 public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
@@ -373,6 +379,8 @@ public:
     void showFindTextPopup();
     void showGoToPercentPopup();
     void showReaderMenu();
+    CRUIReadMenu * createReaderMenu(bool forToolbar);
+
     void showTOC();
     void showBookmarks();
 

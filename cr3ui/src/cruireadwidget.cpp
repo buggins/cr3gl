@@ -184,8 +184,10 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     lvPoint _itemSize;
     int _btnCols;
     int _btnRows;
+    int _maxRows;
 public:
-    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true) : _window(window), _actionList(actionList) {
+    CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true, bool labels = true, int maxRows = 0) : _window(window), _actionList(actionList) {
+        _maxRows = maxRows;
         setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
@@ -195,7 +197,10 @@ public:
             button->setStyle("BUTTON_NOBACKGROUND");
             button->setPadding(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2)));
             button->setFontSize(FONT_SIZE_XSMALL);
-            ((CRUITextWidget*)button->childById("BUTTON_CAPTION")->setFontSize(FONT_SIZE_XSMALL))->setMaxLines(2);
+            CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
+            caption->setMaxLines(2)->setFontSize(FONT_SIZE_XSMALL);
+            if (!labels)
+                caption->setVisibility(Visibility::GONE);
             _buttons.add(button);
             addChild(button);
         }
@@ -247,8 +252,13 @@ public:
         if (cols < 1)
             cols = 1;
         int rows = (count + (cols - 1)) / cols;
-        while (cols > 2 && (count + (cols - 1 - 1)) / (cols - 1) == rows)
-            cols--;
+        if (_maxRows == 0) {
+            while (cols > 2 && (count + (cols - 1 - 1)) / (cols - 1) == rows)
+                cols--;
+        } else {
+            if (rows > _maxRows)
+                rows = _maxRows;
+        }
         _btnCols = cols;
         _btnRows = rows; // + 1;
         if (_scrollLayout)
@@ -612,6 +622,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 	, _startPositionIsUpdated(false)
     , _ttsInProgress(false)
 	, _pinchOp(PINCH_OP_NONE)
+    , _toolbar(NULL)
 {
     setId("READ");
     _docview = createDocView();
@@ -628,20 +639,34 @@ CRUIReadWidget::~CRUIReadWidget() {
         delete _fileItem;
     if (_lastPosition)
         delete _lastPosition;
+    if (_toolbar)
+        delete _toolbar;
 }
 
 /// measure dimensions
 void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
     _measuredWidth = baseWidth;
     _measuredHeight = baseHeight;
+    if (_toolbar) {
+        _toolbar->measure(baseWidth, baseHeight);
+    }
 }
 
 /// updates widget position based on specified rectangle
 void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
+    _clientRect = lvRect(left, top, right, bottom);
+    int toolbarHeight = 0;
+    if (_toolbar) {
+        toolbarHeight = _toolbar->getMeasuredHeight();
+        _clientRect.top += toolbarHeight;
+    }
     CRUIWindowWidget::layout(left, top, right, bottom);
+    if (_toolbar) {
+        _toolbar->layout(left, top, right, top + toolbarHeight);
+    }
     if (!_locked) {
-        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top) {
-            _docview->Resize(right-left, bottom-top);
+        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top - toolbarHeight) {
+            _docview->Resize(right-left, bottom-top - toolbarHeight);
         }
     }
 }
@@ -731,6 +756,10 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
         drawVGradient(buf, top2, 0xE0000000, 0xFF000000);
         drawVGradient(buf, bottom2, 0xFF000000, 0xE0000000);
         drawVGradient(buf, bottom, 0xE0000000, 0xA0000000);
+    }
+    // toolbar support
+    if (_toolbar) {
+        _toolbar->draw(buf);
     }
     // popup support
     if (_popupControl.popupBackground)
@@ -1032,18 +1061,25 @@ int CRUIReadWidget::getChildCount() {
         cnt++;
     if (_popupControl.popupBackground)
         cnt++;
+    if (_toolbar)
+        cnt++;
     return cnt;
 }
 
 /// overriden to treat popup as first child
 CRUIWidget * CRUIReadWidget::getChild(int index) {
-    CR_UNUSED(index);
-    if (index == 0) {
-        if (_popupControl.popupBackground)
-            return _popupControl.popupBackground;
-        return _popupControl.popup;
+    CRUIWidget * children[3];
+    int i = 0;
+    if (_popupControl.popupBackground)
+        children[i++] = _popupControl.popupBackground;
+    if (_popupControl.popup)
+        children[i++] = _popupControl.popup;
+    if (_toolbar)
+        children[i++] = _toolbar;
+    if (index < i) {
+        return children[index];
     }
-    return _popupControl.popup;
+    return NULL;
 }
 
 void CRUIReadWidget::onScrollAnimationStop() {
@@ -1258,10 +1294,15 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_DOWN:
         case CR_KEY_LEFT:
         case CR_KEY_RIGHT:
-        case CR_KEY_F5:
         case CR_KEY_Q:
         case CR_KEY_W:
         case CR_KEY_E:
+            return true;
+        case CR_KEY_F5:
+            onAction(ACTION_TTS_PLAY);
+            return true;
+        case CR_KEY_F3:
+            //onAction(ACTION_SHOW_FOLDER);
             return true;
         default:
             break;
@@ -1300,8 +1341,9 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
         case CR_KEY_F5:
-            onAction(ACTION_TTS_PLAY);
+        case CR_KEY_F3:
             return true;
+#ifdef _DEBUG
         case CR_KEY_Q:
             doCommand(DCMD_SELECT_FIRST_SENTENCE);
             return true;
@@ -1311,6 +1353,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_E:
             doCommand(DCMD_SELECT_PREV_SENTENCE);
             return true;
+#endif
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
             doCommand(DCMD_PAGEDOWN);
@@ -2175,8 +2218,7 @@ void CRUIReadWidget::showGoToPercentPopup() {
     preparePopup(popup, ALIGN_BOTTOM, margins, 0x30, false, true);
 }
 
-void CRUIReadWidget::showReaderMenu() {
-    CRLog::trace("showReaderMenu");
+CRUIReadMenu * CRUIReadWidget::createReaderMenu(bool forToolbar) {
     CRUIActionList actions;
     actions.add(ACTION_BACK);
     if (_docview->canGoBack())
@@ -2199,13 +2241,23 @@ void CRUIReadWidget::showReaderMenu() {
     actions.add(ACTION_FIND_TEXT);
     if (_main->getPlatform()->getTextToSpeech())
         actions.add(ACTION_TTS_PLAY);
+    if (forToolbar) {
+        actions.add(ACTION_PAGE_UP);
+        actions.add(ACTION_PAGE_DOWN);
+    }
     actions.add(ACTION_HELP);
     if (_main->getPlatform()->supportsFullscreen())
         actions.add(ACTION_TOGGLE_FULLSCREEN);
     actions.add(ACTION_EXIT);
-    lvRect margins;
-    CRUIReadMenu * menu = new CRUIReadMenu(this, actions);
+    CRUIReadMenu * menu = new CRUIReadMenu(this, actions, !forToolbar, !forToolbar, 1);
+    return menu;
+}
+
+void CRUIReadWidget::showReaderMenu() {
+    CRLog::trace("showReaderMenu");
+    CRUIReadMenu * menu = createReaderMenu(false);
     CRLog::trace("showing popup");
+    lvRect margins;
     preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
 }
 
@@ -2227,6 +2279,20 @@ void CRUIReadWidget::onSentenceFinished() {
     _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
     CRLog::trace("CRUIReadWidget::onSentenceFinished() tell %s", UnicodeToUtf8(_selection.selectionText).c_str());
     _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
+}
+
+void CRUIReadWidget::setShowToolbar(bool visible) {
+    if (visible) {
+        if (_toolbar)
+            delete _toolbar;
+        _toolbar = createReaderMenu(true);
+    } else {
+        if (_toolbar) {
+            delete _toolbar;
+            _toolbar = NULL;
+            requestLayout();
+        }
+    }
 }
 
 bool CRUIReadWidget::updateReadingPosition() {
@@ -2379,6 +2445,13 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 || key == PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST) {
             //backgroundChanged = true;
             //needClearCache = true;
+        }
+        if (key == PROP_APP_READER_SHOW_TOOLBAR) {
+            bool flg = changed->getBoolDef(PROP_APP_READER_SHOW_TOOLBAR, 1);
+            bool currentValue = _toolbar ? true : false;
+            if (flg != currentValue) {
+                setShowToolbar(flg);
+            }
         }
         if (key == PROP_HYPHENATION_DICT) {
             setHyph(lastBookLang, value);

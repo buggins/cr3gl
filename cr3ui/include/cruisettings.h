@@ -33,6 +33,8 @@
 #define PROP_APP_TTS_VOICE_VALUE_SYSTEM "@system"
 #define PROP_APP_TTS_RATE "app.tts.rate"
 
+#define PROP_APP_READER_SHOW_TOOLBAR "app.reader.toolbar"
+
 #define PROP_APP_SCREEN_UPDATE_MODE "app.screen.update.mode"
 #define PROP_APP_SCREEN_UPDATE_INTERVAL "app.screen.update.interval"
 

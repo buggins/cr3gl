@@ -791,6 +791,7 @@ bool CRUITTSSettingEditorWidget::onClick(CRUIWidget * widget) {
 }
 
 bool CRUITTSSettingEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
     _props->setInt(PROP_APP_TTS_RATE, pos);
     if (manual && getPlatform()->getTextToSpeech()) {
         //getPlatform()->getTextToSpeech()->stop();

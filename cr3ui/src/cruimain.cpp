@@ -549,6 +549,7 @@ void CRUIMainWidget::createReaderSettings() {
         //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
         interfaceSettings->addChild(themes);
     }
+    interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_READER_TOOLBAR, NULL, PROP_APP_READER_SHOW_TOOLBAR, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_ON, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_OFF));
 
     _readerSettings.addChild(interfaceSettings);
 
@@ -684,6 +685,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
+    _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode ? "1" : "0");
     _currentSettings->setStringDef(PROP_APP_TTS_RATE, "50");
     _currentSettings->setStringDef(PROP_APP_TTS_VOICE, PROP_APP_TTS_VOICE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);
