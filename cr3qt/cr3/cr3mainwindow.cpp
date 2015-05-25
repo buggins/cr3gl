@@ -20,8 +20,10 @@
 CRUIQtTextToSpeech::CRUIQtTextToSpeech()
     : _ttsCallback(NULL), _currentVoice(NULL)
     , _defaultVoice(NULL), _isSpeaking(false)
+    , _rate(50)
 {
     _speechManager = new QtSpeech(this);
+    _speechManager->setRate(_rate);
     //const VoiceName & currentVoice = _speechManager->name();
     QtSpeech::VoiceNames voiceList = _speechManager->voices();
     CRLog::debug("TTS Voices available: %d", voiceList.length());
@@ -95,6 +97,20 @@ void CRUIQtTextToSpeech::sentenceFinished() {
         concurrencyProvider->executeGui(new CRUITtsFinishedEvent(_ttsCallback));
 }
 
+bool CRUIQtTextToSpeech::setRate(int rate) {
+    if (rate < 0)
+        rate = 0;
+    else if (rate > 100)
+        rate = 100;
+    _rate = rate;
+    _speechManager->setRate(rate);
+    return true;
+}
+
+int CRUIQtTextToSpeech::getRate() {
+    return _rate;
+}
+
 bool CRUIQtTextToSpeech::setCurrentVoice(lString8 id) {
     if (id.empty() && _defaultVoice)
         id = _defaultVoice->getId();
@@ -110,6 +126,8 @@ bool CRUIQtTextToSpeech::setCurrentVoice(lString8 id) {
             if (_speechManager)
                 delete _speechManager;
             _speechManager = new QtSpeech(n, this);
+            _speechManager->setRate(_rate);
+            _currentVoice = _voices[i];
             return true;
         }
     }
@@ -156,14 +174,16 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 
     deviceInfo.setScreenDimensions(dx, dy, DESKTOP_DPI);
     crconfig.setupResourcesForScreenSize();
-    _widget = new CRUIMainWidget();
-    _widget->setScreenUpdater(this);
-    _widget->setPlatform(this);
+
+    _textToSpeech = new CRUIQtTextToSpeech();
+
+    _widget = new CRUIMainWidget(this, this);
+    //_widget->setScreenUpdater(this);
+    //_widget->setPlatform(this);
     _eventManager = new CRUIEventManager();
     _eventAdapter = new CRUIEventAdapter(_eventManager);
     _eventManager->setRootWidget(_widget);
     _downloadManager = new CRUIHttpTaskManagerQt(_eventManager);
-    _textToSpeech = new CRUIQtTextToSpeech();
     CRLog::info("Pausing coverpage manager on start");
     CRPauseCoverpageManager();
     m_coverpageManagerPaused = true;

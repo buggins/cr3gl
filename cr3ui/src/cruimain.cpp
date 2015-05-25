@@ -489,8 +489,8 @@ void CRUIMainWidget::createBrowserSettings() {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
-    //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(uilangs);
+    //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
 }
 
@@ -528,6 +528,17 @@ void CRUIMainWidget::createReaderSettings() {
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
     interfaceSettings->addChild(uilangs);
+
+    if (getPlatform()->getTextToSpeech()) {
+        CRUISettingsOptionList * ttsvoices = new CRUISettingsOptionList(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
+        ttsvoices->addOption(new CRUIOptionItem(PROP_APP_TTS_VOICE_VALUE_SYSTEM, STR_SETTINGS_TTS_VOICE_VALUE_SYSTEM));
+        LVPtrVector<CRUITextToSpeechVoice, false> voiceList;
+        getPlatform()->getTextToSpeech()->getAvailableVoices(voiceList);
+        for (int i = 0; i < voiceList.length(); i++) {
+            ttsvoices->addOption(new CRUIOptionItem(voiceList[i]->getId(), Utf8ToUnicode(voiceList[i]->getName())));
+        }
+        interfaceSettings->addChild(ttsvoices);
+    }
 
     if (!crconfig.einkMode) {
         CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
@@ -652,7 +663,7 @@ void CRUIMainWidget::updateFolderBookmarks() {
 }
 
 
-CRUIMainWidget::CRUIMainWidget()
+CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, CRUIPlatform * platform)
 : _eventManager(NULL), _home(NULL), _read(NULL)
 , _popup(NULL), _keyboard(NULL), _popupBackground(NULL),    _screenUpdater(NULL)
 , _platform(NULL), _lastAnimationTs(0), _initialized(false)
@@ -662,6 +673,10 @@ CRUIMainWidget::CRUIMainWidget()
 {
 	CRLog::info("CRUIMainWidget::CRUIMainWidget");
     setId("MAIN");
+
+    _screenUpdater = screenUpdater;
+    _platform = platform;
+
     _currentSettings = LVCreatePropsContainer(); // currently active settings
     _newSettings = LVCreatePropsContainer(); // to be edited by Settings editors
     CRLog::info("Loading settings from %s", crconfig.iniFile.c_str());
@@ -669,6 +684,8 @@ CRUIMainWidget::CRUIMainWidget()
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
+    _currentSettings->setStringDef(PROP_APP_TTS_RATE, "50");
+    _currentSettings->setStringDef(PROP_APP_TTS_VOICE, PROP_APP_TTS_VOICE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_HYPHENATION_DICT, "en");
     if (!crconfig.einkMode) {
@@ -954,6 +971,18 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             lString8 lang = UnicodeToUtf8(newValue);
             crconfig.setInterfaceLanguage(lang);
             requestLayout();
+        }
+        if (key == PROP_APP_TTS_VOICE) {
+            lString8 voiceId = UnicodeToUtf8(newValue);
+            if (voiceId == PROP_APP_TTS_VOICE_VALUE_SYSTEM)
+                voiceId = "";
+            if (getPlatform()->getTextToSpeech())
+                getPlatform()->getTextToSpeech()->setCurrentVoice(voiceId);
+        }
+        if (key == PROP_APP_TTS_RATE) {
+            int v = newValue.atoi();
+            if (getPlatform()->getTextToSpeech())
+                getPlatform()->getTextToSpeech()->setRate(v);
         }
         if (key == PROP_APP_THEME) {
             crconfig.setTheme(UnicodeToUtf8(newValue));

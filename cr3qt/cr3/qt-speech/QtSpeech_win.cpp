@@ -240,6 +240,14 @@ void QtSpeech::say(QString text) const
     SysCall( d->voice->Speak( w_text.w, SPF_IS_NOT_XML, 0), LogicError);
 }
 
+void QtSpeech::setRate(int rate) {
+    if (rate < 0)
+        rate = 0;
+    if (rate > 100)
+        rate = 100;
+    d->voice->SetRate(rate / 5 - 10);
+}
+
 void QtSpeech::stop() {
     d->voice->Pause();
     Private::WCHAR_Holder w_text(QString("STOP"));

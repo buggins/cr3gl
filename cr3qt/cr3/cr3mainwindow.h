@@ -198,6 +198,7 @@ private:
     QtSpeech * _speechManager;
     LVPtrVector<CRUITextToSpeechVoice, true> _voices;
     bool _isSpeaking;
+    int _rate;
 public slots:
     void sentenceFinished();
 public:
@@ -207,6 +208,8 @@ public:
     virtual void getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list);
     virtual CRUITextToSpeechVoice * getCurrentVoice();
     virtual CRUITextToSpeechVoice * getDefaultVoice();
+    virtual bool setRate(int rate);
+    virtual int getRate();
     virtual bool setCurrentVoice(lString8 id);
     virtual bool canChangeCurrentVoice();
     virtual bool tell(lString16 text);

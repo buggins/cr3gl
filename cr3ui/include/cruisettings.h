@@ -29,6 +29,10 @@
 #define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
 #define PROP_APP_FULLSCREEN "app.fullscreen"
 
+#define PROP_APP_TTS_VOICE "app.tts.voice"
+#define PROP_APP_TTS_VOICE_VALUE_SYSTEM "@system"
+#define PROP_APP_TTS_RATE "app.tts.rate"
+
 #define PROP_APP_SCREEN_UPDATE_MODE "app.screen.update.mode"
 #define PROP_APP_SCREEN_UPDATE_INTERVAL "app.screen.update.interval"
 

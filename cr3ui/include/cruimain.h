@@ -54,6 +54,8 @@ public:
     virtual CRUITextToSpeechVoice * getCurrentVoice() = 0;
     virtual CRUITextToSpeechVoice * getDefaultVoice() = 0;
     virtual bool setCurrentVoice(lString8 id) = 0;
+    virtual bool setRate(int rate) = 0;
+    virtual int getRate() = 0;
     virtual bool canChangeCurrentVoice() = 0;
     virtual bool tell(lString16 text) = 0;
     virtual bool isSpeaking() = 0;
@@ -507,7 +509,7 @@ public:
 
     void updateFolderBookmarks();
 
-    CRUIMainWidget();
+    CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater = NULL, CRUIPlatform * platform = NULL);
     virtual ~CRUIMainWidget();
 };
 

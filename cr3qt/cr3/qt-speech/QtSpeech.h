@@ -56,6 +56,8 @@ public:
     void tell(QString) const;                                   //!< Tell something, asynchronous
     void tell(QString, QObject * obj, const char * slot) const; //!< Tell something, invoke slot at end
 
+    void setRate(int rate);
+
     void stop();
 
 signals:
