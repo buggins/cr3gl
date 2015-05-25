@@ -377,6 +377,7 @@ public:
     void showBookmarks();
 
     void startReadAloud();
+    void stopReadAloud();
 
     bool hasTOC();
     lString16 getCurrentPositionDesc();

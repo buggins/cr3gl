@@ -56,6 +56,8 @@ public:
     virtual bool setCurrentVoice(lString8 id) = 0;
     virtual bool canChangeCurrentVoice() = 0;
     virtual bool tell(lString16 text) = 0;
+    virtual bool isSpeaking() = 0;
+    virtual void stop() = 0;
     virtual ~CRUITextToSpeech() {}
 };
 

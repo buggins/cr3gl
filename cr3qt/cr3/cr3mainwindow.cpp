@@ -17,7 +17,10 @@
 
 #define DESKTOP_DPI 120
 
-CRUIQtTextToSpeech::CRUIQtTextToSpeech() : _ttsCallback(NULL), _currentVoice(NULL), _defaultVoice(NULL) {
+CRUIQtTextToSpeech::CRUIQtTextToSpeech()
+    : _ttsCallback(NULL), _currentVoice(NULL)
+    , _defaultVoice(NULL), _isSpeaking(false)
+{
     _speechManager = new QtSpeech(this);
     //const VoiceName & currentVoice = _speechManager->name();
     QtSpeech::VoiceNames voiceList = _speechManager->voices();
@@ -76,8 +79,18 @@ public:
     }
 };
 
+bool CRUIQtTextToSpeech::isSpeaking() {
+    return _isSpeaking;
+}
+
+void CRUIQtTextToSpeech::stop() {
+    _isSpeaking = false;
+    _speechManager->stop();
+}
+
 void CRUIQtTextToSpeech::sentenceFinished() {
-    CRLog::trace("CRUIQtTextToSpeech::sentenceFinished()");
+    _isSpeaking = false;
+    //CRLog::trace("CRUIQtTextToSpeech::sentenceFinished()");
     if (_ttsCallback)
         concurrencyProvider->executeGui(new CRUITtsFinishedEvent(_ttsCallback));
 }
@@ -87,6 +100,7 @@ bool CRUIQtTextToSpeech::setCurrentVoice(lString8 id) {
         id = _defaultVoice->getId();
     if (_currentVoice->getId() == id)
         return true;
+    stop();
     for (int i = 0; i < _voices.length(); i++) {
         if (_voices[i]->getId() == id) {
             QtSpeech::VoiceName n;
@@ -107,9 +121,10 @@ bool CRUIQtTextToSpeech::canChangeCurrentVoice() {
 }
 
 bool CRUIQtTextToSpeech::tell(lString16 text) {
-    CRLog::trace("CRUIQtTextToSpeech::tell %s", UnicodeToUtf8(text).c_str());
+    //CRLog::trace("CRUIQtTextToSpeech::tell %s", UnicodeToUtf8(text).c_str());
     if (!_speechManager)
         return false;
+    _isSpeaking = true;
     lString8 txt = UnicodeToUtf8(text);
     QString s = QString::fromUtf8(txt.c_str());
     _speechManager->tell(s, this, SLOT(sentenceFinished()));

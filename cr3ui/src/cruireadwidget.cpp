@@ -1201,6 +1201,14 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
         speed = _pos.height();
         invalidate();
         break;
+    case DCMD_SELECT_FIRST_SENTENCE:
+    case DCMD_SELECT_PREV_SENTENCE:
+    case DCMD_SELECT_NEXT_SENTENCE:
+        _docview->doCommand((LVDocCmd)cmd, param);
+        clearImageCaches();
+        invalidate();
+        //_main->update(false);
+        return true;
     default:
         return _docview->doCommand((LVDocCmd)cmd, param) != 0;
     }
@@ -1242,6 +1250,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_DOWN:
         case CR_KEY_LEFT:
         case CR_KEY_RIGHT:
+        case CR_KEY_F5:
+        case CR_KEY_Q:
+        case CR_KEY_W:
+        case CR_KEY_E:
             return true;
         default:
             break;
@@ -1279,6 +1291,19 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         }
         //CRLog::trace("keyDown(0x%04x) oldpos=%d", key,  _docview->GetPos());
         switch(key) {
+        case CR_KEY_F5:
+            doCommand(CMD_TTS_PLAY);
+            invalidate();
+            return true;
+        case CR_KEY_Q:
+            doCommand(DCMD_SELECT_FIRST_SENTENCE);
+            return true;
+        case CR_KEY_W:
+            doCommand(DCMD_SELECT_NEXT_SENTENCE);
+            return true;
+        case CR_KEY_E:
+            doCommand(DCMD_SELECT_PREV_SENTENCE);
+            return true;
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
             doCommand(DCMD_PAGEDOWN);
@@ -1619,6 +1644,8 @@ void CRUIReadWidget::selectionDone(int x, int y) {
         CRUIActionList actions;
         actions.add(ACTION_SELECTION_COPY);
         actions.add(ACTION_SELECTION_ADD_BOOKMARK);
+        if (_main->getPlatform()->getTextToSpeech())
+            actions.add(ACTION_TTS_PLAY);
         lvRect margins;
         CRUIReadMenu * menu = new CRUIReadMenu(this, actions, false);
         CRLog::trace("showing popup");
@@ -1745,6 +1772,14 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
         return false;
     int action = event->getAction();
+
+    if (_ttsInProgress) {
+        if (action == ACTION_UP) {
+            stopReadAloud();
+        }
+        return true;
+    }
+
     if (action != ACTION_MOVE && event->count() > 1)
     	CRLog::trace("CRUIReadWidget::onTouchEvent multitouch %d pointers action = %d", event->count(), action);
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
@@ -2169,6 +2204,13 @@ void CRUIReadWidget::showReaderMenu() {
 
 
 void CRUIReadWidget::onSentenceFinished() {
+    if (!_ttsInProgress) {
+        _docview->clearSelection();
+        clearImageCaches();
+        invalidate();
+        _main->update(false);
+        return;
+    }
     CRLog::trace("CRUIReadWidget::onSentenceFinished()");
     if (!_docview->onSelectionCommand(DCMD_SELECT_NEXT_SENTENCE, 1)) {
         _ttsInProgress = false;
@@ -2201,6 +2243,18 @@ bool CRUIReadWidget::updateReadingPosition() {
     invalidate();
     _main->update(false);
     return true;
+}
+
+void CRUIReadWidget::stopReadAloud() {
+    if (_ttsInProgress) {
+        _ttsInProgress = false;
+        if (_main->getPlatform()->getTextToSpeech())
+            _main->getPlatform()->getTextToSpeech()->stop();
+        _docview->clearSelection();
+        clearImageCaches();
+        invalidate();
+        _main->update(false);
+    }
 }
 
 void CRUIReadWidget::startReadAloud() {

@@ -192,6 +192,10 @@ void QtSpeech::tell(QString text, QObject * obj, const char * slot) const
     if (ok != noErr) throw LogicError(Where+"SpeakCFString()");
 }
 
+void QtSpeech::stop() {
+    SysCall( StopSpeech(d->channel), CloseError);
+}
+
 void QtSpeech::say(QString text) const
 {
     if (d->isWaitingInLoop)

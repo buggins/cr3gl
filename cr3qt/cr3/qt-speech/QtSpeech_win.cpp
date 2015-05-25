@@ -225,9 +225,12 @@ void QtSpeech::tell(QString text, QObject * obj, const char * slot) const
 
     const_cast<QtSpeech *>(this)->startTimer(100);
 
+    d->voice->SetPriority(SPVPRI_NORMAL);
+    d->voice->SetAlertBoundary(SPEI_PHONEME); //SPEI_WORD_BOUNDARY
+
     Private::WCHAR_Holder w_text(text);
     SysCall( d->voice->Speak( w_text.w, SPF_ASYNC | SPF_IS_NOT_XML, 0), LogicError);
-    CRLog::trace("setting waitingFinish flag");
+    //CRLog::trace("setting waitingFinish flag");
     d->waitingFinish = true;
 }
 
@@ -237,20 +240,30 @@ void QtSpeech::say(QString text) const
     SysCall( d->voice->Speak( w_text.w, SPF_IS_NOT_XML, 0), LogicError);
 }
 
+void QtSpeech::stop() {
+    d->voice->Pause();
+    Private::WCHAR_Holder w_text(QString("STOP"));
+    d->voice->SetPriority(SPVPRI_ALERT);
+    d->voice->SetAlertBoundary(SPEI_PHONEME); //SPEI_WORD_BOUNDARY
+    d->voice->Speak(w_text.w, SPF_ASYNC | SPF_PURGEBEFORESPEAK | SPF_IS_NOT_XML, 0);
+    //ULONG pulNumSkipped = 0;
+    //d->voice->Skip(L"Sentence", 1, &pulNumSkipped);
+}
+
 void QtSpeech::timerEvent(QTimerEvent * te)
 {
     QObject::timerEvent(te);
 
-    CRLog::trace("timerEvent");
+    //CRLog::trace("timerEvent");
     if (d->waitingFinish) {
-        CRLog::trace("timerEvent - waiting finish");
+        //CRLog::trace("timerEvent - waiting finish");
         SPVOICESTATUS es;
         d->voice->GetStatus( &es, NULL );
         if (es.dwRunningState == SPRS_DONE) {
-            CRLog::trace("timerEvent - waiting finish, status = DONE");
+            //CRLog::trace("timerEvent - waiting finish, status = DONE");
             d->waitingFinish = false;
             killTimer(te->timerId());
-            CRLog::trace("timerEvent - signal");
+            //CRLog::trace("timerEvent - signal");
             finished();
             if (d->onFinishObj && d->onFinishSlot)
                 disconnect(const_cast<QtSpeech *>(this), SIGNAL(finished()), d->onFinishObj, d->onFinishSlot);
