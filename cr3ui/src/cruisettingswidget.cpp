@@ -275,14 +275,19 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     LVRendPageInfo * page = _pageList[0];
     bgImage->draw(buf, rc, 0, 0);
 
-    lvRect rc2 = rc;
-    rc2.shrink(3);
-    buf->FillRect(rc2, 0xC0FFC080);
+    //lvRect rc2 = rc;
+    //rc2.shrink(3);
+    //buf->FillRect(rc2, 0xC0FFC080);
 
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
     buf->SetTextColor(textColor);
     _docview->drawPageTo(buf, *page, &rc, 1, 0);
-    rc = getParent()->getPos();
+    lvRect rc2 = rc;
+    rc2.right = rc2.left + rc2.width() / 7;
+    buf->GradientRect(rc2.left, rc2.top, rc2.right, rc2.bottom, 0xD0000000, 0xFF000000, 0xFF000000, 0xD0000000);
+    rc2 = rc;
+    rc2.left = rc2.right - rc2.width() / 7;
+    buf->GradientRect(rc2.left, rc2.top, rc2.right, rc2.bottom, 0xFF000000, 0xD0000000, 0xD0000000, 0xFF000000);
 }
 
 static lString16 formatInterlineSpace(int sz) {

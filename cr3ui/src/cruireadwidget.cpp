@@ -44,6 +44,7 @@ CRUIDocView::CRUIDocView() : LVDocView() {
     //background = resourceResolver->getIcon("leather.jpg", true);
     _coverColor = 0xA04030;
     _showCover = true;
+    _pages3d = true;
     background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
 }
 
@@ -67,6 +68,8 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
             _showCover = props->getBoolDef(key.c_str(), true);
         } else if (key == PROP_APP_BOOK_COVER_COLOR) {
             _coverColor = props->getColorDef(key.c_str(), 0xA04030);
+        } else if (key == PROP_PAGE_VIEW_ANIMATION) {
+            _pages3d = props->getIntDef(PROP_PAGE_VIEW_ANIMATION, 0) == PAGE_ANIMATION_3D;
         } else if (key == PROP_FONT_ANTIALIASING) {
             int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
             if (antialiasingMode == 1) {
@@ -123,17 +126,9 @@ void CRUIDocView::drawPageBackground( LVDrawBuf & drawbuf, int offsetX, int offs
     }
 
     LVDrawStateSaver s(drawbuf);
+    CR_UNUSED(s);
     drawbuf.setAlpha(alpha);
     background->draw(&drawbuf, rc, offsetX, offsetY);
-//        drawbuf.FillRect(rc, 0xE0E0C040);
-//        if (!backgroundScrollLeft.isNull() && !backgroundScrollRight.isNull()) {
-//			lvRect leftrc = rc;
-//			leftrc.right = leftrc.left + backgroundScrollLeft->originalWidth();
-//			backgroundScrollLeft->draw(&drawbuf, leftrc, 0, offsetY);
-//			lvRect rightrc = rc;
-//			rightrc.left = rightrc.right - backgroundScrollRight->originalWidth();
-//			backgroundScrollRight->draw(&drawbuf, rightrc, 0, offsetY);
-//        }
 }
 
 void CRUIDocView::setBackground(CRUIImageRef img) {
@@ -171,23 +166,91 @@ lString16 CRUIDocView::getLink( int x, int y, int r )
 lvRect CRUIDocView::calcCoverFrameWidths(lvRect rc)
 {
     lvRect res;
-    if (!_showCover)
+    if (!_showCover || !_pages3d)
         return res;
-    int fw = rc.height() / 30;
-    if (fw > rc.width() / 30)
-        fw = rc.width() / 30;
+    int visiblePages = getVisiblePageCount();
+    bool isPageMode = getViewMode() == DVM_PAGES;
+    if (!isPageMode)
+        return res;
+    int fw = rc.minDimension() / 60 + PT_TO_PX(2);
     res.top = res.bottom = fw;
-    res.left = res.right = fw * 2;
+    res.right = fw * 3 / 2 + PT_TO_PX(1);
+    if (visiblePages > 1)
+        res.left = fw * 3 / 2 + PT_TO_PX(1);
     return res;
 }
 
 void CRUIDocView::drawCoverFrame(LVDrawBuf & drawbuf, lvRect outerRect, lvRect innerRect) {
-    if (outerRect.left >= innerRect.left)
+    if (outerRect.top >= innerRect.top)
         return;
     drawbuf.FillRect(outerRect.left, outerRect.top, outerRect.right, innerRect.top, _coverColor);
     drawbuf.FillRect(outerRect.left, innerRect.bottom, outerRect.right, outerRect.bottom, _coverColor);
     drawbuf.FillRect(outerRect.left, innerRect.top, innerRect.left, innerRect.bottom, _coverColor);
     drawbuf.FillRect(innerRect.right, innerRect.top, outerRect.right, innerRect.bottom, _coverColor);
+    int dw = (innerRect.top - outerRect.top) * 40 / 100;
+    int maxalpha = 128;
+    for (int i = 0; i < dw; i++ ) {
+
+        lUInt32 cl = (255 - (dw - i) * maxalpha / dw) << 24;
+        if (i == 0)
+            cl = 0x40000000;
+        if (dw > 5 && i == 1)
+            cl = 0x60000000;
+        lUInt32 topcl = cl | 0x202020;
+        lvRect rc = outerRect;
+        rc.top += i;
+        rc.right -= i;
+        rc.bottom -= i;
+        if (outerRect.left != innerRect.left) {
+            rc.left += i;
+            drawbuf.FillRect(rc.left, rc.top + 1, rc.left + 1, rc.bottom - 1, topcl);
+        }
+        drawbuf.FillRect(rc.left, rc.top, rc.right, rc.top + 1, topcl);
+        drawbuf.FillRect(rc.right - 1, rc.top + 1, rc.right, rc.bottom - 1, cl);
+        drawbuf.FillRect(rc.left, rc.bottom - 1, rc.right, rc.bottom, cl);
+    }
+    outerRect.left = (outerRect.left + innerRect.left * 2) / 3;
+    outerRect.right = (outerRect.right + innerRect.right * 2) / 3;
+    outerRect.top = innerRect.top;
+    outerRect.bottom = innerRect.bottom;
+    lvRect rc = outerRect;
+    rc.right = innerRect.left;
+    if (rc.right > rc.left) {
+        LVDrawStateSaver saver(drawbuf);
+        CR_UNUSED(saver);
+        drawbuf.SetClipRect(&rc);
+        drawPageBackground(drawbuf, 0, 0, 0);
+        drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xE0000000, 0xC0000000, 0xC0000000, 0xE0000000);
+        drawbuf.FillRect(rc.right - 1, rc.top, rc.right, rc.bottom, 0xC0000000);
+        rc.right = rc.left + rc.width() * 60 / 100;
+        drawbuf.FillRect(rc.right - 1, rc.top, rc.right, rc.bottom, 0xC0000000);
+        drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xE0000000, 0xA0000000, 0xA0000000, 0xE0000000);
+        drawbuf.FillRect(rc.left, rc.top, rc.left + 1, rc.bottom, 0xC0000000);
+        if (rc.width() > 3) {
+            rc.right = rc.left + rc.width() * 50 / 100;
+            drawbuf.FillRect(rc.right - 1, rc.top, rc.right, rc.bottom, 0xD0000000);
+            drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xF0000000, 0xC0000000, 0xC0000000, 0xF0000000);
+        }
+    }
+    rc = outerRect;
+    rc.left = innerRect.right;
+    {
+        LVDrawStateSaver saver(drawbuf);
+        CR_UNUSED(saver);
+        drawbuf.SetClipRect(&rc);
+        drawPageBackground(drawbuf, 0, 0, 0);
+        drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xC0000000, 0xE0000000, 0xE0000000, 0xC0000000);
+        drawbuf.FillRect(rc.left, rc.top, rc.left + 1, rc.bottom, 0xC0000000);
+        rc.left = rc.right - rc.width() * 60 / 100;
+        drawbuf.FillRect(rc.left, rc.top, rc.left + 1, rc.bottom, 0xC0000000);
+        drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xA0000000, 0xE0000000, 0xE0000000, 0xA0000000);
+        drawbuf.FillRect(rc.right - 1, rc.top, rc.right, rc.bottom, 0xC0000000);
+        if (rc.width() > 3) {
+            rc.left = rc.right - rc.width() * 50 / 100;
+            drawbuf.FillRect(rc.left, rc.top, rc.left + 1, rc.bottom, 0xD0000000);
+            drawbuf.GradientRect(rc.left, rc.top, rc.right, rc.bottom, 0xC0000000, 0xF0000000, 0xF0000000, 0xC0000000);
+        }
+    }
 }
 
 lString16 CRUIDocView::getLink( int x, int y )
@@ -341,6 +404,8 @@ public:
             int rowh = rc.height() / _buttons.length();
             if (rowh < _itemSize.y)
                 rowh = _itemSize.y;
+            if (rowh > _itemSize.y * 130 / 100)
+                rowh = _itemSize.y * 130 / 100;
             lvRect btnrc = rc;
             for (int y = 0; y < _buttons.length(); y++) {
                 btnrc.bottom = btnrc.top + rowh;
@@ -358,6 +423,8 @@ public:
             int colw = rc.width() / _buttons.length();
             if (colw < _itemSize.x)
                 colw = _itemSize.x;
+            if (colw > _itemSize.x * 130 / 100)
+                colw = _itemSize.x * 130 / 100;
             lvRect btnrc = rc;
             for (int y = 0; y < _buttons.length(); y++) {
                 btnrc.right = btnrc.left + colw;
@@ -780,6 +847,9 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
         _clientRect.top += toolbarHeight;
         _clientRect.left += toolbarWidth;
     }
+    _bookRect = _clientRect;
+    lvRect frame = _docview->calcCoverFrameWidths(_clientRect);
+    _clientRect.shrinkBy(frame);
     CRUIReadMenu * saved = _toolbar;
     _toolbar = NULL;
     CRUIWindowWidget::layout(left, top, right, bottom);
@@ -855,6 +925,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
             //CRLog::trace("preparing");
             _pagedCache.prepare(_docview, _docview->getCurPage(), _clientRect.width(), _clientRect.height(), direction, false, _pageAnimation);
             //CRLog::trace("drawing");
+            _docview->drawCoverFrame(*buf, _bookRect, _clientRect);
             _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _clientRect.left, _clientRect.top, startx, currx);
             //CRLog::trace("drawing done");
         } else {
@@ -2609,7 +2680,7 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 setToolbarPosition(n);
             }
         }
-        if (key == PROP_APP_BOOK_COVER_VISIBLE) {
+        if (key == PROP_APP_BOOK_COVER_VISIBLE || key == PROP_PAGE_VIEW_ANIMATION) {
             docviewprops->setString(key.c_str(), value.c_str());
         } else if (key == PROP_APP_BOOK_COVER_COLOR) {
             docviewprops->setString(key.c_str(), value.c_str());

@@ -41,6 +41,7 @@ class CRUIDocView : public LVDocView {
     //CRUIImageRef backgroundScrollRight;
     lUInt32 _coverColor;
     bool _showCover;
+    bool _pages3d;
 public:
     CRUIDocView();
     /// clears page background
@@ -153,6 +154,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     LVDocViewMode _viewMode;
     PageFlipAnimation _pageAnimation;
     lvRect _clientRect;
+    lvRect _bookRect;
 
     class ScrollModePage {
     public:
