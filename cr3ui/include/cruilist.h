@@ -83,6 +83,13 @@ public:
 
 	int itemFromPoint(int x, int y);
 	virtual bool isVertical() { return _vertical; }
+    virtual void setVertical(bool vertical) {
+        if (_vertical != vertical) {
+            _vertical = vertical;
+            requestLayout();
+        }
+    }
+
 	virtual CRUIListWidget * setAdapter(CRUIListAdapter * adapter, bool deleteOnWidgetDestroy = false) {
 		_adapter = adapter;
 		_ownAdapter = deleteOnWidgetDestroy;

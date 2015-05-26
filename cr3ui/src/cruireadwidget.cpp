@@ -186,10 +186,12 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _btnRows;
     int _maxRows;
     bool _labels;
+    bool _vertical;
 public:
     CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true, bool labels = true, int maxRows = 0) : _window(window), _actionList(actionList) {
         _maxRows = maxRows;
         _labels = labels;
+        _vertical = false;
         setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
@@ -234,6 +236,17 @@ public:
             _positionText = NULL;
         }
     }
+    virtual bool isVertical() {
+        return _vertical;
+    }
+
+    virtual void setVertical(bool v) {
+        if (_vertical != v) {
+            _vertical = v;
+            requestLayout();
+        }
+    }
+
     /// measure dimensions
     virtual void measure(int baseWidth, int baseHeight) {
         if (getVisibility() == GONE) {
@@ -253,25 +266,40 @@ public:
         if (_itemSize.x < MIN_ITEM_PX)
         	_itemSize.x = MIN_ITEM_PX;
         int count = _actionList.length();
-        int cols = baseWidth / _itemSize.x;
-        if (cols < 1)
-            cols = 1;
-        int rows = (count + (cols - 1)) / cols;
-        if (_maxRows == 0) {
-            while (cols > 2 && (count + (cols - 1 - 1)) / (cols - 1) == rows)
-                cols--;
+        if (_vertical) {
+            int rows = baseHeight / _itemSize.y;
+            if (rows < 1)
+                rows = 1;
+            if (rows > _buttons.length())
+                rows = _buttons.length();
+            int cols = 1;
+            _btnCols = cols;
+            _btnRows = rows; // + 1;
+            if (_scrollLayout)
+                _scrollLayout->measure(baseWidth, baseHeight);
+            int height = baseHeight;
+            int width = _btnCols * _itemSize.x + PT_TO_PX(3);
+            defMeasure(baseWidth, baseHeight, width, height);
         } else {
-            if (rows > _maxRows)
-                rows = _maxRows;
+            int cols = baseWidth / _itemSize.x;
+            if (cols < 1)
+                cols = 1;
+            int rows = (count + (cols - 1)) / cols;
+            if (_maxRows == 0) {
+                while (cols > 2 && (count + (cols - 1 - 1)) / (cols - 1) == rows)
+                    cols--;
+            } else {
+                if (rows > _maxRows)
+                    rows = _maxRows;
+            }
+            _btnCols = cols;
+            _btnRows = rows; // + 1;
+            if (_scrollLayout)
+                _scrollLayout->measure(baseWidth, baseHeight);
+            int width = baseWidth;
+            int height = _btnRows * _itemSize.y + PT_TO_PX(3) + (_scrollLayout ? _scrollLayout->getMeasuredHeight() : 0);
+            defMeasure(baseWidth, baseHeight, width, height);
         }
-        _btnCols = cols;
-        _btnRows = rows; // + 1;
-        if (_scrollLayout)
-            _scrollLayout->measure(baseWidth, baseHeight);
-        int width = baseWidth;
-        int height = _btnRows * _itemSize.y + PT_TO_PX(3) + (_scrollLayout ? _scrollLayout->getMeasuredHeight() : 0);
-        defMeasure(baseWidth, baseHeight, width, height);
-
     }
 
     /// updates widget position based on specified rectangle
@@ -281,28 +309,47 @@ public:
         lvRect rc = _pos;
         applyMargin(rc);
         applyPadding(rc);
-        if (_scrollLayout) {
-            _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
-            rc.bottom -= _scrollLayout->getMeasuredHeight();
-        }
-        int rowh = rc.height() / _btnRows;
-        lvRect rowrc = rc;
-        for (int y = 0; y < _btnRows; y++) {
-            int i0 = _btnCols * y;
-            int rowlen = count - i0;
-            if (rowlen > _btnCols)
-                rowlen = _btnCols;
-            rowrc.bottom = rowrc.top + rowh;
-            lvRect btnrc = rowrc;
-            int itemw = rowrc.width() / rowlen;
-            for (int x = 0; x < rowlen; x++) {
-                btnrc.right = btnrc.left + itemw;
-                CRUIButton * button = _buttons[i0 + x];
-                button->measure(btnrc.width(), btnrc.height());
-                button->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
-                btnrc.left += itemw;
+        if (_vertical) {
+            int rowh = rc.height() / _buttons.length();
+            if (rowh < _itemSize.y)
+                rowh = _itemSize.y;
+            lvRect btnrc = rc;
+            for (int y = 0; y < _buttons.length(); y++) {
+                btnrc.bottom = btnrc.top + rowh;
+                CRUIButton * button = _buttons[y];
+                if (btnrc.bottom < rc.bottom) {
+                    button->setVisibility(CRUI::VISIBLE);
+                    button->measure(btnrc.width(), btnrc.height());
+                    button->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                } else {
+                    button->setVisibility(CRUI::GONE);
+                }
+                btnrc.top += rowh;
             }
-            rowrc.top += rowh;
+        } else {
+            if (_scrollLayout) {
+                _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
+                rc.bottom -= _scrollLayout->getMeasuredHeight();
+            }
+            int rowh = rc.height() / _btnRows;
+            lvRect rowrc = rc;
+            for (int y = 0; y < _btnRows; y++) {
+                int i0 = _btnCols * y;
+                int rowlen = count - i0;
+                if (rowlen > _btnCols)
+                    rowlen = _btnCols;
+                rowrc.bottom = rowrc.top + rowh;
+                lvRect btnrc = rowrc;
+                int itemw = rowrc.width() / rowlen;
+                for (int x = 0; x < rowlen; x++) {
+                    btnrc.right = btnrc.left + itemw;
+                    CRUIButton * button = _buttons[i0 + x];
+                    button->measure(btnrc.width(), btnrc.height());
+                    button->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                    btnrc.left += itemw;
+                }
+                rowrc.top += rowh;
+            }
         }
     }
 
@@ -653,6 +700,8 @@ void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
     _measuredWidth = baseWidth;
     _measuredHeight = baseHeight;
     if (_toolbar) {
+        bool toolbarVertical = baseWidth > baseHeight ? true : false;
+        _toolbar->setVertical(toolbarVertical);
         _toolbar->measure(baseWidth, baseHeight);
     }
 }
@@ -660,21 +709,33 @@ void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
 /// updates widget position based on specified rectangle
 void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     _clientRect = lvRect(left, top, right, bottom);
+    bool toolbarVertical = _clientRect.width() > _clientRect.height() ? true : false;
+    //_clientRect.left += 50;
     int toolbarHeight = 0;
+    int toolbarWidth = 0;
     if (_toolbar) {
-        toolbarHeight = _toolbar->getMeasuredHeight();
+        _toolbar->setVertical(toolbarVertical);
+        _toolbar->measure(_clientRect.width(), _clientRect.height());
+        if (toolbarVertical)
+            toolbarWidth = _toolbar->getMeasuredWidth();
+        else
+            toolbarHeight = _toolbar->getMeasuredHeight();
         _clientRect.top += toolbarHeight;
+        _clientRect.left += toolbarWidth;
     }
     CRUIReadMenu * saved = _toolbar;
     _toolbar = NULL;
     CRUIWindowWidget::layout(left, top, right, bottom);
     _toolbar = saved;
     if (_toolbar) {
-        _toolbar->layout(left, top, right, top + toolbarHeight);
+        if (toolbarVertical)
+            _toolbar->layout(left, top, left + toolbarWidth, bottom);
+        else
+            _toolbar->layout(left, top, right, top + toolbarHeight);
     }
     if (!_locked) {
-        if (_docview->GetWidth() != right - left || _docview->GetHeight() != bottom - top - toolbarHeight) {
-            _docview->Resize(right-left, bottom-top - toolbarHeight);
+        if (_docview->GetWidth() != _clientRect.width() || _docview->GetHeight() != _clientRect.height()) {
+            _docview->Resize(_clientRect.width(), _clientRect.height());
         }
     }
 }
@@ -692,7 +753,7 @@ void CRUIReadWidget::prepareScroll(int direction) {
 
 /// draws widget with its children to specified surface
 void CRUIReadWidget::draw(LVDrawBuf * buf) {
-    _popupControl.updateLayout(_pos);
+    _popupControl.updateLayout(_clientRect);
     if (_pinchOp && _pinchSettingPreview) {
     	_pinchSettingPreview->SetPos(0, false);
         buf->SetTextColor(_pinchSettingPreview->getTextColor());
@@ -730,7 +791,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
 //                }
             } else if (_isDragging) {
                 direction = _pagedCache.dir() > 0 ? 1 : -1;
-                progress = (- (_dragPos.x - _dragStart.x) * direction) * 10000 / _pos.width();
+                progress = (- (_dragPos.x - _dragStart.x) * direction) * 10000 / _clientRect.width();
                 startx = _dragStart.x;
                 currx = _dragPos.x;
             }
@@ -1119,7 +1180,7 @@ void CRUIReadWidget::animate(lUInt64 millisPassed) {
     bool changed = scrollWasActive && _scroll.animate(millisPassed);
     if (changed) {
         if (_viewMode == DVM_PAGES) {
-            if (_scroll.pos() >= _pos.width() - 1) {
+            if (_scroll.pos() >= _clientRect.width() - 1) {
                 //CRLog::trace("Stopping page animation: stop position reached");
                 _scroll.stop();
             }
@@ -1183,7 +1244,7 @@ void CRUIReadWidget::animatePageFlip(int newpage, int speed) {
     }
     prepareScroll(dir);
     _scroll.setDirection(dir);
-    _scroll.start(0, _pos.width(), speed, SCROLL_FRICTION);
+    _scroll.start(0, _clientRect.width(), speed, SCROLL_FRICTION);
     invalidate();
     //_main->update(true);
 }
@@ -1211,11 +1272,11 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
                 _docview->doCommand((LVDocCmd)cmd, param);
             } else {
                 newpage = page - _docview->getVisiblePageCount();
-                speed = _pos.width() * 2;
+                speed = _clientRect.width() * 2;
             }
         } else {
-            newpos = pos - _pos.height() * (param - 1) - _pos.height() * 9 / 10;
-            speed = _pos.height() * 2 * param;
+            newpos = pos - _clientRect.height() * (param - 1) - _clientRect.height() * 9 / 10;
+            speed = _clientRect.height() * 2 * param;
         }
         invalidate();
         break;
@@ -1227,22 +1288,22 @@ bool CRUIReadWidget::doCommand(int cmd, int param) {
                 _docview->doCommand((LVDocCmd)cmd, param);
             } else {
                 newpage = page + _docview->getVisiblePageCount();
-                speed = _pos.width() * 4;
+                speed = _clientRect.width() * 4;
             }
         } else {
-            newpos = pos + _pos.height() * (param - 1) + _pos.height() * 9 / 10;
-            speed = _pos.height() * 2 * param;
+            newpos = pos + _clientRect.height() * (param - 1) + _clientRect.height() * 9 / 10;
+            speed = _clientRect.height() * 2 * param;
         }
         invalidate();
         break;
     case DCMD_LINEUP:
         newpos = pos - _docview->getFontSize() * 3 * (param > 0 ? param : 1);
-        speed = _pos.height();
+        speed = _clientRect.height();
         invalidate();
         break;
     case DCMD_LINEDOWN:
         newpos = pos + _docview->getFontSize() * 3 * (param > 0 ? param : 1);
-        speed = _pos.height();
+        speed = _clientRect.height();
         invalidate();
         break;
     case DCMD_SELECT_FIRST_SENTENCE:
@@ -1411,8 +1472,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
 }
 
 int CRUIReadWidget::pointToTapZone(int x, int y) {
-    int x0 = x / ((_pos.width() + 2) / 3);
-    int y0 = y / ((_pos.height() + 2) / 3);
+    y -= _clientRect.top - _pos.top;
+    x -= _clientRect.left - _pos.left;
+    int x0 = x / ((_clientRect.width() + 2) / 3);
+    int y0 = y / ((_clientRect.height() + 2) / 3);
     if (x0 > 2) x0 = 2;
     if (x0 < 0) x0 = 0;
     if (y0 > 2) y0 = 2;
@@ -1478,7 +1541,7 @@ void CRUIReadWidget::startPinchOp(int op, int dx, int dy) {
     _pinchSettingPreview->createDefaultDocument(title, sampleText + "\n"
     		+ sampleText + "\n" + sampleText + "\n" + sampleText
     		+ "\n" + sampleText + "\n" + sampleText + "\n" + sampleText + "\n" + sampleText);
-    _pinchSettingPreview->Resize(_pos.width(), _pos.height());
+    _pinchSettingPreview->Resize(_clientRect.width(), _clientRect.height());
     CRLog::trace("startPinchOp %d   %d %d", _pinchOp, dx, dy);
     invalidate();
 }
@@ -1713,10 +1776,10 @@ void CRUIReadWidget::selectionDone(int x, int y) {
         CRLog::trace("showing popup");
 
         int pos = ALIGN_CENTER;
-        if (_selection.startCursorPos.top > _pos.height() / 3) {
+        if (_selection.startCursorPos.top > _clientRect.height() / 3) {
             pos = ALIGN_TOP;
             menu->setAlign(ALIGN_TOP|ALIGN_HCENTER);
-        } else if (_selection.endCursorPos.bottom < 2 * _pos.height() / 3) {
+        } else if (_selection.endCursorPos.bottom < 2 * _clientRect.height() / 3) {
             pos = ALIGN_BOTTOM;
             menu->setAlign(ALIGN_BOTTOM|ALIGN_HCENTER);
         } else {
@@ -1732,6 +1795,7 @@ void CRUIReadWidget::selectionDone(int x, int y) {
 
 void CRUIReadWidget::updateSelection(int x, int y) {
     y -= _clientRect.top - _pos.top;
+    x -= _clientRect.left - _pos.left;
     if (!_selection.selecting)
         return;
     lvPoint pt(x, y);
@@ -1757,6 +1821,7 @@ void CRUIReadWidget::updateSelection(int x, int y) {
 
 void CRUIReadWidget::startSelectionTimer(int x, int y) {
     y -= _clientRect.top - _pos.top;
+    x -= _clientRect.left - _pos.left;
     cancelSelection();
     lvPoint pt(x, y);
     ldomXPointer p = _docview->getNodeByPoint(pt);
@@ -1847,6 +1912,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (action != ACTION_MOVE && event->count() > 1)
     	CRLog::trace("CRUIReadWidget::onTouchEvent multitouch %d pointers action = %d", event->count(), action);
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d)", action, event->getX(), event->getY());
+    bool insideClient = _clientRect.isPointInside(lvPoint(event->getX(), event->getY()));
     int dx = event->getX() - event->getStartX();
     int dy = event->getY() - event->getStartY();
     int pinchDx = event->getPinchDx();
@@ -1894,18 +1960,20 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             }
         }
         _isDragging = false;
-        _dragStart.x = event->getX();
-        _dragStart.y = event->getY();
-        _dragPos = _dragStart;
-        if (_viewMode == DVM_PAGES)
-            _dragStartOffset = _dragStart.x;
-        else
-            _dragStartOffset = _docview->GetPos();
+        if (insideClient) {
+            _dragStart.x = event->getX();
+            _dragStart.y = event->getY();
+            _dragPos = _dragStart;
+            if (_viewMode == DVM_PAGES)
+                _dragStartOffset = _dragStart.x;
+            else
+                _dragStartOffset = _docview->GetPos();
+        }
         if (_scroll.isActive())
             _scroll.stop();
-        if (event->count() == 1)
+        if (event->count() == 1 && insideClient) {
             startSelectionTimer(event->getX(), event->getY());
-        else
+        } else
             cancelSelection();
 
         //invalidate();
@@ -1926,14 +1994,14 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 if (_viewMode == DVM_PAGES) {
-                    int w = _pos.width();
+                    int w = _clientRect.width();
                     int xx = 0;
                     int progress = 0; //myAbs(_dragPos.x - _dragStart.x);
                     _pagedCache.calcDragPositionProgress(_dragStart.x, _dragPos.x, _pagedCache.dir(), progress, xx);
-                    progress = _pos.width() * progress / 10000;
+                    progress = _clientRect.width() * progress / 10000;
                     int spd = myAbs(speed.x);
                     bool cancelling = ((speed.x > 0 && _pagedCache.dir() > 0) || (speed.x < 0 && _pagedCache.dir() < 0)) && (spd > SCROLL_MIN_SPEED * 2);
-                    if ((progress < _pos.width() / 7) && (spd < SCROLL_MIN_SPEED * 3))
+                    if ((progress < _clientRect.width() / 7) && (spd < SCROLL_MIN_SPEED * 3))
                         cancelling = true; // cancel if too small progress and too small speed
                     _scroll.setDirection(_pagedCache.dir());
                     if (spd < w)
@@ -1959,6 +2027,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else {
             	int x = event->getX();
             	int y = event->getY();
+                x -= _clientRect.left - _pos.left;
+                y -= _clientRect.top - _pos.top;
                 lString16 link = _docview->getLink(x, y, 0);
                 if (link.empty())
                     link = _docview->getLink(x, y, 6);
@@ -2040,9 +2110,10 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     case ACTION_MOVE:
         if (_selection.selecting) {
             // update selection
-            updateSelection(event->getX(), event->getY());
+            if (insideClient)
+                updateSelection(event->getX(), event->getY());
         } else if (_pinchOp) {
-    		updatePinchOp(pinchDx, pinchDy);
+            updatePinchOp(pinchDx, pinchDy);
     	} else if (!_isDragging && event->count() == 2) {
             cancelSelection();
 			int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
@@ -2068,68 +2139,76 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			}
         } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             cancelSelection();
-            _isDragging = true;
-            _docview->SetPos(_dragStartOffset - delta, false);
-            prepareScroll(-delta);
-            invalidate();
+            if (insideClient) {
+                _isDragging = true;
+                _docview->SetPos(_dragStartOffset - delta, false);
+                prepareScroll(-delta);
+                invalidate();
+            }
             //_main->update(true);
         } else if (_viewMode == DVM_PAGES && !_isDragging && ((delta2 > DRAG_THRESHOLD) || (-delta2 > DRAG_THRESHOLD))) {
-            if (_pageAnimation == PAGE_ANIMATION_NONE) {
-                if (delta2 < 0)
-                    _docview->doCommand(DCMD_PAGEDOWN, 1);
-                else
-                    _docview->doCommand(DCMD_PAGEUP, 1);
-                event->cancelAllPointers();
+            if (insideClient) {
+                if (_pageAnimation == PAGE_ANIMATION_NONE) {
+                    if (delta2 < 0)
+                        _docview->doCommand(DCMD_PAGEDOWN, 1);
+                    else
+                        _docview->doCommand(DCMD_PAGEUP, 1);
+                    event->cancelAllPointers();
+                    cancelSelection();
+                    invalidate();
+                    return true;
+                }
+                _isDragging = true;
+                cancelSelection();
+                prepareScroll(-delta2);
+                invalidate();
+                //_main->update(true);
+            }
+        } else if (_isDragging) {
+            if (insideClient) {
+                _dragPos.x = event->getX();
+                _dragPos.y = event->getY();
+                if (_viewMode == DVM_PAGES) {
+                    // will be handled in Draw
+                } else {
+                    _docview->SetPos(_dragStartOffset - delta, false);
+                }
                 cancelSelection();
                 invalidate();
-                return true;
             }
-            _isDragging = true;
-            cancelSelection();
-            prepareScroll(-delta2);
-            invalidate();
-            //_main->update(true);
-        } else if (_isDragging) {
-            _dragPos.x = event->getX();
-            _dragPos.y = event->getY();
-            if (_viewMode == DVM_PAGES) {
-                // will be handled in Draw
-            } else {
-                _docview->SetPos(_dragStartOffset - delta, false);
-            }
-            cancelSelection();
-            invalidate();
             //_main->update(true);
         } else if (!_isDragging) {
-        	if (event->count() == 2) {
-        		int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
-        		int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
-        		int ddx1 = myAbs(event->getX(0) - event->getX(1));
-        		int ddy1 = myAbs(event->getY(0) - event->getY(1));
-        		int op0, op1;
-        		op0 = -1;
-        		op1 = -2;
-        		if (ddx0 > ddy0 / 2)
-        			op0 = PINCH_OP_HORIZONTAL;
-        		else if (ddy0 > ddx0 / 2)
-        			op0 = PINCH_OP_VERTICAL;
-        		else
-        			op0 = PINCH_OP_DIAGONAL;
-        		if (ddx1 > ddy1 / 2)
-        			op1 = PINCH_OP_HORIZONTAL;
-        		else if (ddy1 > ddx1 / 2)
-        			op1 = PINCH_OP_VERTICAL;
-        		else
-        			op0 = PINCH_OP_DIAGONAL;
-        		int ddd = myAbs(pinchDx) + myAbs(pinchDy);
-        		if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
-                    cancelSelection();
-                    startPinchOp(op0, pinchDx, pinchDy);
-                }
-            } else {
-        		if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
-                    cancelSelection();
-                    _main->startDragging(event, false);
+            if (insideClient) {
+                if (event->count() == 2) {
+                    int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
+                    int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
+                    int ddx1 = myAbs(event->getX(0) - event->getX(1));
+                    int ddy1 = myAbs(event->getY(0) - event->getY(1));
+                    int op0, op1;
+                    op0 = -1;
+                    op1 = -2;
+                    if (ddx0 > ddy0 / 2)
+                        op0 = PINCH_OP_HORIZONTAL;
+                    else if (ddy0 > ddx0 / 2)
+                        op0 = PINCH_OP_VERTICAL;
+                    else
+                        op0 = PINCH_OP_DIAGONAL;
+                    if (ddx1 > ddy1 / 2)
+                        op1 = PINCH_OP_HORIZONTAL;
+                    else if (ddy1 > ddx1 / 2)
+                        op1 = PINCH_OP_VERTICAL;
+                    else
+                        op0 = PINCH_OP_DIAGONAL;
+                    int ddd = myAbs(pinchDx) + myAbs(pinchDy);
+                    if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
+                        cancelSelection();
+                        startPinchOp(op0, pinchDx, pinchDy);
+                    }
+                } else {
+                    if ((delta2 > DRAG_THRESHOLD_X) || (-delta2 > DRAG_THRESHOLD_X)) {
+                        cancelSelection();
+                        _main->startDragging(event, false);
+                    }
                 }
             }
         }
@@ -2184,7 +2263,7 @@ void CRUIReadWidget::moveByPage(int direction) {
     if (_viewMode == DVM_PAGES) {
         _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
     } else {
-        _scrollCache.prepare(_docview, _docview->GetPos(), _pos.width(), _pos.height(), 0, false);
+        _scrollCache.prepare(_docview, _docview->GetPos(), _clientRect.width(), _clientRect.height(), 0, false);
     }
     invalidate();
     //_main->update(true);
@@ -2199,7 +2278,7 @@ void CRUIReadWidget::goToPercent(int percent) {
     if (_viewMode == DVM_PAGES)
         _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
     else
-        _scrollCache.prepare(_docview, p, _pos.width(), _pos.height(), 0, false);
+        _scrollCache.prepare(_docview, p, _clientRect.width(), _clientRect.height(), 0, false);
     invalidate();
 }
 
@@ -2901,13 +2980,18 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
 
 // solve equation a - sin(a) == n
 float solve_a_minus_sina_eq_n(float n) {
+    int s = 1;
+    if (n < 0) {
+        s = -1;
+        n = -n;
+    }
     float a1 = 0;
     float a2 = (float)M_PI / 2;
     for (;;) {
         float a = (a1 + a2) / 2;
         float err = n - (a - (float)sin(a));
         if (err < 0.0001f && err > -0.0001f)
-            return a;
+            return a * s;
         if (err < 0)
             a2 = a;
         else
@@ -3113,7 +3197,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
 
     if (shadowdarkness > 1 && shadowdarkness <= 100) {
         shadowcl1 = (255 - shadowdarkness * 0x50 / 100) << 24;
-        buf->GradientRect(shadowx, y, shadowx + shadowdx, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+        buf->GradientRect(x + shadowx, y, x + shadowx + shadowdx, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
     }
 }
 
