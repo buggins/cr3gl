@@ -115,6 +115,14 @@ public:
     virtual ~CRUIBookmarksWidget() { delete _itemWidget; }
 };
 
+enum ReaderToolbarPosition {
+    READER_TOOLBAR_OFF,
+    READER_TOOLBAR_TOP,
+    READER_TOOLBAR_LEFT,
+    READER_TOOLBAR_SHORT_SIDE,
+    READER_TOOLBAR_LONG_SIDE
+};
+
 enum PageFlipAnimation {
     PAGE_ANIMATION_NONE,
     PAGE_ANIMATION_SLIDE,
@@ -297,8 +305,10 @@ class CRUIReadWidget : public CRUIWindowWidget
     bool updateReadingPosition();
 
     CRUIReadMenu * _toolbar;
+    int _toolbarPosition;
 
-    void setShowToolbar(bool visible);
+    void setToolbarPosition(int position);
+    bool isToolbarVertical(int baseWidth, int baseHeight);
 
 public:
     CRUIReadWidget(CRUIMainWidget * main);

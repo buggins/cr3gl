@@ -326,6 +326,23 @@ public:
                 }
                 btnrc.top += rowh;
             }
+        } else if (_maxRows == 1 && !_scrollLayout) {
+            int colw = rc.width() / _buttons.length();
+            if (colw < _itemSize.x)
+                colw = _itemSize.x;
+            lvRect btnrc = rc;
+            for (int y = 0; y < _buttons.length(); y++) {
+                btnrc.right = btnrc.left + colw;
+                CRUIButton * button = _buttons[y];
+                if (btnrc.right <= rc.right) {
+                    button->setVisibility(CRUI::VISIBLE);
+                    button->measure(btnrc.width(), btnrc.height());
+                    button->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                } else {
+                    button->setVisibility(CRUI::GONE);
+                }
+                btnrc.left += colw;
+            }
         } else {
             if (_scrollLayout) {
                 _scrollLayout->layout(rc.left, rc.bottom - _scrollLayout->getMeasuredHeight(), rc.right, rc.bottom);
@@ -675,6 +692,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _ttsInProgress(false)
 	, _pinchOp(PINCH_OP_NONE)
     , _toolbar(NULL)
+    , _toolbarPosition(READER_TOOLBAR_OFF)
 {
     setId("READ");
     _docview = createDocView();
@@ -695,12 +713,23 @@ CRUIReadWidget::~CRUIReadWidget() {
         delete _toolbar;
 }
 
+bool CRUIReadWidget::isToolbarVertical(int baseWidth, int baseHeight) {
+    if (_toolbarPosition == READER_TOOLBAR_LEFT)
+        return true;
+    else if (_toolbarPosition == READER_TOOLBAR_TOP)
+        return false;
+    else if (baseWidth > baseHeight)
+        return _toolbarPosition == READER_TOOLBAR_SHORT_SIDE;
+    else
+        return _toolbarPosition == READER_TOOLBAR_LONG_SIDE;
+}
+
 /// measure dimensions
 void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
     _measuredWidth = baseWidth;
     _measuredHeight = baseHeight;
     if (_toolbar) {
-        bool toolbarVertical = baseWidth > baseHeight ? true : false;
+        bool toolbarVertical = isToolbarVertical(baseWidth, baseHeight);
         _toolbar->setVertical(toolbarVertical);
         _toolbar->measure(baseWidth, baseHeight);
     }
@@ -709,7 +738,7 @@ void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
 /// updates widget position based on specified rectangle
 void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     _clientRect = lvRect(left, top, right, bottom);
-    bool toolbarVertical = _clientRect.width() > _clientRect.height() ? true : false;
+    bool toolbarVertical = isToolbarVertical(_clientRect.width(), _clientRect.height());
     //_clientRect.left += 50;
     int toolbarHeight = 0;
     int toolbarWidth = 0;
@@ -2377,11 +2406,15 @@ void CRUIReadWidget::onSentenceFinished() {
     _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
 }
 
-void CRUIReadWidget::setShowToolbar(bool visible) {
-    if (visible) {
+void CRUIReadWidget::setToolbarPosition(int toolbarPosition) {
+    if (toolbarPosition == _toolbarPosition)
+        return;
+    _toolbarPosition = toolbarPosition;
+    if (_toolbarPosition) {
         if (_toolbar)
             delete _toolbar;
         _toolbar = createReaderMenu(true);
+        requestLayout();
     } else {
         if (_toolbar) {
             delete _toolbar;
@@ -2543,10 +2576,9 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             //needClearCache = true;
         }
         if (key == PROP_APP_READER_SHOW_TOOLBAR) {
-            bool flg = changed->getBoolDef(PROP_APP_READER_SHOW_TOOLBAR, 1);
-            bool currentValue = _toolbar ? true : false;
-            if (flg != currentValue) {
-                setShowToolbar(flg);
+            int n = changed->getIntDef(PROP_APP_READER_SHOW_TOOLBAR, 0);
+            if (n != _toolbarPosition) {
+                setToolbarPosition(n);
             }
         }
         if (key == PROP_HYPHENATION_DICT) {
