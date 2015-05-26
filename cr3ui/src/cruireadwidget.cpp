@@ -185,22 +185,27 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _btnCols;
     int _btnRows;
     int _maxRows;
+    bool _labels;
 public:
     CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true, bool labels = true, int maxRows = 0) : _window(window), _actionList(actionList) {
         _maxRows = maxRows;
+        _labels = labels;
         setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
-            CRUIButton * button = new CRUIButton(action->getName(), action->icon_res.c_str(), true);
+            lString16 title = labels ? action->getName() : lString16::empty_str;
+            CRUIButton * button = new CRUIButton(title, action->icon_res.c_str(), true);
             button->setId(lString8::itoa(action->id));
             button->setOnClickListener(this);
             button->setStyle("BUTTON_NOBACKGROUND");
             button->setPadding(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2)));
             button->setFontSize(FONT_SIZE_XSMALL);
-            CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
-            caption->setMaxLines(2)->setFontSize(FONT_SIZE_XSMALL);
-            if (!labels)
-                caption->setVisibility(CRUI::GONE);
+            if (labels) {
+                CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
+                caption->setMaxLines(2)->setFontSize(FONT_SIZE_XSMALL);
+            }
+            //if (!labels)
+            //    caption->setVisibility(CRUI::GONE);
             _buttons.add(button);
             addChild(button);
         }
@@ -240,7 +245,7 @@ public:
         LVFontRef font = currentTheme->getFontForSize(FONT_SIZE_XSMALL);
         int iconh = icon->originalHeight();
         int iconw = icon->originalWidth();
-        int texth = font->getHeight() * 2;
+        int texth = _labels ? font->getHeight() * 2 : 0;
         _itemSize.y = iconh + texth + PT_TO_PX(4);
         _itemSize.x = iconw * 120 / 100 + PT_TO_PX(4);
         if (_itemSize.y < MIN_ITEM_PX)
@@ -660,7 +665,10 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
         toolbarHeight = _toolbar->getMeasuredHeight();
         _clientRect.top += toolbarHeight;
     }
+    CRUIReadMenu * saved = _toolbar;
+    _toolbar = NULL;
     CRUIWindowWidget::layout(left, top, right, bottom);
+    _toolbar = saved;
     if (_toolbar) {
         _toolbar->layout(left, top, right, top + toolbarHeight);
     }
@@ -727,29 +735,29 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
                 currx = _dragPos.x;
             }
             //CRLog::trace("preparing");
-            _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, false, _pageAnimation);
+            _pagedCache.prepare(_docview, _docview->getCurPage(), _clientRect.width(), _clientRect.height(), direction, false, _pageAnimation);
             //CRLog::trace("drawing");
-            _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _pos.left, startx, currx);
+            _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _clientRect.left, _clientRect.top, startx, currx);
             //CRLog::trace("drawing done");
         } else {
-            _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, 0, false);
-            _scrollCache.draw(buf, _docview->GetPos(), _pos.left, _pos.top);
+            _scrollCache.prepare(_docview, _docview->GetPos(), _clientRect.width(), _clientRect.height(), 0, false);
+            _scrollCache.draw(buf, _docview->GetPos(), _clientRect.left, _clientRect.top);
         }
     } else {
         // document render in progress; draw just page background
         //CRLog::trace("Document is locked, just drawing background");
-        _docview->drawPageBackground(*buf, 0, 0);
+        _docview->drawPageBackground(*buf, _clientRect.left, _clientRect.top);
     }
     // scroll bottom and top gradients
     if (_viewMode != DVM_PAGES) {
-        lvRect top = _pos;
+        lvRect top = _clientRect;
         top.bottom = top.top + deviceInfo.shortSide / 60;
-        lvRect top2 = _pos;
+        lvRect top2 = _clientRect;
         top2.top = top.bottom;
         top2.bottom = top.top + deviceInfo.shortSide / 30;
-        lvRect bottom = _pos;
+        lvRect bottom = _clientRect;
         bottom.top = bottom.bottom - deviceInfo.shortSide / 60;
-        lvRect bottom2 = _pos;
+        lvRect bottom2 = _clientRect;
         bottom2.bottom = bottom.top;
         bottom2.top = bottom.bottom - deviceInfo.shortSide / 30;
         drawVGradient(buf, top, 0xA0000000, 0xE0000000);
@@ -1036,9 +1044,9 @@ bool CRUIReadWidget::renderIfNecessary() {
         CRLog::trace("Document is locked");
         return false;
     }
-    if (_docview->GetWidth() != _pos.width() || _docview->GetHeight() != _pos.height()) {
-        CRLog::trace("Changing docview size to %dx%d", _pos.width(), _pos.height());
-        _docview->Resize(_pos.width(), _pos.height());
+    if (_docview->GetWidth() != _clientRect.width() || _docview->GetHeight() != _clientRect.height()) {
+        CRLog::trace("Changing docview size to %dx%d", _clientRect.width(), _clientRect.height());
+        _docview->Resize(_clientRect.width(), _clientRect.height());
     }
     if (_docview->IsRendered())
         return true;
@@ -1297,6 +1305,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         case CR_KEY_Q:
         case CR_KEY_W:
         case CR_KEY_E:
+        case CR_KEY_F9:
             return true;
         case CR_KEY_F5:
             onAction(ACTION_TTS_PLAY);
@@ -1312,7 +1321,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
             onScrollAnimationStop();
         }
         switch(key) {
-        case CR_KEY_F9:
+        case CR_KEY_F10:
         case CR_KEY_MENU:
             if (longPress)
                 _main->showSettings(lString8("@settings/reader"));
@@ -1342,6 +1351,10 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
         switch(key) {
         case CR_KEY_F5:
         case CR_KEY_F3:
+            return true;
+        case CR_KEY_F9:
+            _main->showSettings(lString8("@settings/reader"));
+            invalidate();
             return true;
 #ifdef _DEBUG
         case CR_KEY_Q:
@@ -1388,7 +1401,6 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
 //            return true;
         case CR_KEY_MENU:
         //case CR_KEY_RETURN:
-        case CR_KEY_F9:
             return true;
         default:
             break;
@@ -1719,6 +1731,7 @@ void CRUIReadWidget::selectionDone(int x, int y) {
 }
 
 void CRUIReadWidget::updateSelection(int x, int y) {
+    y -= _clientRect.top - _pos.top;
     if (!_selection.selecting)
         return;
     lvPoint pt(x, y);
@@ -1743,6 +1756,7 @@ void CRUIReadWidget::updateSelection(int x, int y) {
 }
 
 void CRUIReadWidget::startSelectionTimer(int x, int y) {
+    y -= _clientRect.top - _pos.top;
     cancelSelection();
     lvPoint pt(x, y);
     ldomXPointer p = _docview->getNodeByPoint(pt);
@@ -2248,8 +2262,11 @@ CRUIReadMenu * CRUIReadWidget::createReaderMenu(bool forToolbar) {
     actions.add(ACTION_HELP);
     if (_main->getPlatform()->supportsFullscreen())
         actions.add(ACTION_TOGGLE_FULLSCREEN);
-    actions.add(ACTION_EXIT);
+    if (!forToolbar)
+        actions.add(ACTION_EXIT);
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions, !forToolbar, !forToolbar, 1);
+    if (forToolbar)
+        menu->setStyle("TOOL_BAR");
     return menu;
 }
 
@@ -2853,13 +2870,13 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
     //CRLog::trace("prepare done");
 }
 
-void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2) {
+void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2, int y) {
     lUInt32 shadowAlpha = 64;
     float dangle = (angle2 - angle1);
     if (dangle < 0)
         dangle = -dangle;
     if (dangle < 0.01f) {
-        buf->DrawFragment(page->drawbuf, srcx1, 0, srcx2 - srcx1, dy, dstx1, 0, dstx2 - dstx1, dy, 0);
+        buf->DrawFragment(page->drawbuf, srcx1, 0, srcx2 - srcx1, dy, dstx1, y, dstx2 - dstx1, dy, 0);
     } else {
         // TODO
         int steps = (int)(dangle / 0.15f + 1);
@@ -2874,10 +2891,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             int sx2 = srcx1 + (srcx2 - srcx1) * (step + 1) / steps;
             int dx1 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a1) - sa1) / (sa2 - sa1) + 0.5f);
             int dx2 = (int)(dstx1 + (dstx2 - dstx1) * ((float)sin(a2) - sa1) / (sa2 - sa1) + 0.5f);
-            buf->DrawFragment(page->drawbuf, sx1, 0, sx2 - sx1, dy, dx1, 0, dx2 - dx1, dy, 0);
+            buf->DrawFragment(page->drawbuf, sx1, 0, sx2 - sx1, dy, dx1, y, dx2 - dx1, dy, 0);
             lUInt32 shadowcl1 = (alpha1 << 24) | 0x000000;
             lUInt32 shadowcl2 = (alpha2 << 24) | 0x000000;
-            buf->GradientRect(dx1, 0, dx2, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+            buf->GradientRect(dx1, y, dx2, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
         }
     }
 }
@@ -2930,7 +2947,7 @@ float solve_cosa_plus_a_eq_n(float n) {
     }
 }
 
-void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int xx, int diam, int x) {
+void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int xx, int diam, int x, int y) {
     bool twoPages = numPages > 1;
     float m_pi_2 = (float)M_PI / 2;
     float fdiam = (float)diam;
@@ -2962,10 +2979,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
 
         int aa = (int)(dx - downx + 0.5f);
         int bb = (int)(dx - xx + 0.5f);
-        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0);
+        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0, y);
         if (xx > 0)
-            drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0);
-        drawFolded(buf, page1, aa, dx, aa + x, dx - xx + x, 0, ba);
+            drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0, y);
+        drawFolded(buf, page1, aa, dx, aa + x, dx - xx + x, 0, ba, y);
 
         shadowx = bb;
         shadowdx = xx;
@@ -2987,13 +3004,13 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
         int sbb = (int)(aa + bx + 0.5f);
         int cc = (int)(bb - c + 0.5f);
         int icx = (int)(cx + 0.5f);
-        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part
-        drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0); // right flat part
-        drawFolded(buf, page1, aa, sbb, aa + x, bb + x, 0, ba); // bottom bent
+        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0, y); // left flat part
+        drawFolded(buf, page2, bb, dx, bb + x, dx + x, 0, 0, y); // right flat part
+        drawFolded(buf, page1, aa, sbb, aa + x, bb + x, 0, ba, y); // bottom bent
         if (twoPages)
-            drawFolded(buf, page1back, 0, icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
+            drawFolded(buf, page1back, 0, icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2, y); // top bent
         else
-            drawFolded(buf, page1back, dx, dx - icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2); // top bent
+            drawFolded(buf, page1back, dx, dx - icx, cc + x, bb + x, m_pi_2 - ca, m_pi_2, y); // top bent
 
         shadowx = bb;
         //shadowdx = xx;
@@ -3019,10 +3036,10 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
             sc1 = dx - sc1 - 1;
         }
 
-        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part
-        drawFolded(buf, page2, cc, dx, cc + x, dx + x, 0, 0); // right flat part
-        drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
-        drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+        drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0, y); // left flat part
+        drawFolded(buf, page2, cc, dx, cc + x, dx + x, 0, 0, y); // right flat part
+        drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2, y); // top bent
+        drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0, y); // left flat bent
 
         shadowx = cc;
         //shadowdx = xx;
@@ -3055,13 +3072,13 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                 bb -= dx;
                 cc -=dx;
             }
-            drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
+            drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0, y); // right flat part
             if (aa > 0)
-                drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0); // left flat part bottom
+                drawFolded(buf, page1, 0, aa, 0 + x, aa + x, 0, 0, y); // left flat part bottom
             if (cc > 0)
-                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2); // top bent
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, m_pi_2, y); // top bent
             if (bb > 0)
-                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0, y); // left flat bent
 
             shadowx = cc;
         } else if (exx >= 0) {
@@ -3081,12 +3098,12 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
                 sd1 = dx - sd1 - 1;
                 sc1 = dx - sc1 - 1;
             }
-            drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0); // right flat part
+            drawFolded(buf, page2, dx - maxdx, dx, dx - maxdx + x, dx + x, 0, 0, y); // right flat part
             if (twoPages) {
                 if (exx > 0)
-                    drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0); // left flat part bottom
-                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca); // top bent
-                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0); // left flat bent
+                    drawFolded(buf, page1, 0, exx, 0 + x, exx + x, 0, 0, y); // left flat part bottom
+                drawFolded(buf, page1back, sd1, sc1, bb + x, cc + x, 0, ca, y); // top bent
+                drawFolded(buf, page1back, sd0, sd1, aa + x, bb + x, 0, 0, y); // left flat bent
             }
 
             shadowx = dx - maxdx;
@@ -3096,7 +3113,7 @@ void CRUIReadWidget::PagedModePageCache::drawFolded(LVDrawBuf * buf, PagedModePa
 
     if (shadowdarkness > 1 && shadowdarkness <= 100) {
         shadowcl1 = (255 - shadowdarkness * 0x50 / 100) << 24;
-        buf->GradientRect(shadowx, 0, shadowx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+        buf->GradientRect(shadowx, y, shadowx + shadowdx, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
     }
 }
 
@@ -3163,7 +3180,7 @@ void CRUIReadWidget::PagedModePageCache::calcDragPositionProgress(int startx, in
 }
 
 /// draw
-void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int startx, int currx) {
+void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int y, int startx, int currx) {
     CR_UNUSED2(direction, progress);
     //CRLog::trace("PagedModePageCache::draw(page=%d, numPages=%d, progress=%d dir=%d)", pageNumber, numPages, progress, direction);
     // workaround for no-rtti builds
@@ -3199,58 +3216,49 @@ void CRUIReadWidget::PagedModePageCache::draw(LVDrawBuf * dst, int pageNumber, i
             if (direction > 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0);
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, 0);
-                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, y);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, y);
+                    glbuf->GradientRect(x + dx - ddx, y, x + dx - ddx + shadowdx, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 + dx - ddx, 0);
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, 0);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 + dx - ddx, y);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 - ddx, y);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0, alpha);
+                    CRLog::trace("Fade animation: alpha %d", alpha);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, y);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, y, alpha);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
                     CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(pageNumber) : page2;
                     if (!page_back)
                         page_back = page;
-                    drawFolded(glbuf, page, page_back, page2, xx, diam, x);
-//                    page2->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-//                    glbuf->DrawFragment(page->drawbuf, 0, 0, dx, dy, x + 0, 0, dx - ddx, dy, 0);
-//                    glbuf->GradientRect(x + dx - ddx, 0, x + dx - ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    drawFolded(glbuf, page, page_back, page2, xx, diam, x, y);
                 }
             } else if (direction < 0) {
                 //
                 if (pageAnimation == PAGE_ANIMATION_SLIDE) {
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, 0);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, y);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, y);
                     if (ddx < shadowdx)
                         shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
-                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    glbuf->GradientRect(x + 0 + ddx, y, x + 0 + ddx + shadowdx, y + dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
                 } else if (pageAnimation == PAGE_ANIMATION_SLIDE2) {
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 + ddx, 0);
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, 0);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0 + ddx, y);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0 - dx + ddx, y);
                 } else if (pageAnimation == PAGE_ANIMATION_FADE) {
-                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, 0);
-                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, 0, alpha);
+                    CRLog::trace("Fade animation: alpha %d", alpha);
+                    CRUIDrawTo(page->drawbuf, glbuf, x + 0, y);
+                    CRUIDrawTo(page2->drawbuf, glbuf, x + 0, y, alpha);
                 } else if (pageAnimation == PAGE_ANIMATION_3D) {
                     CRUIReadWidget::PagedModePage * page_back = numPages == 1 ? findPageBack(nextPage) : page;
                     if (!page_back)
                         page_back = page2;
-                    drawFolded(glbuf, page2, page_back, page, xx, diam, x);
-//                    page->drawbuf->DrawTo(glbuf, x + 0, 0, 0, NULL);
-//                    glbuf->DrawFragment(page2->drawbuf, 0, 0, dx, dy, x + 0, 0, ddx, dy, 0);
-//                    if (ddx < shadowdx)
-//                        shadowcl1 = (0xFF - ddx * 0x3F / shadowdx) << 24;
-//                    glbuf->GradientRect(x + 0 + ddx, 0, x + 0 + ddx + shadowdx, dy, shadowcl1, shadowcl2, shadowcl2, shadowcl1);
+                    drawFolded(glbuf, page2, page_back, page, xx, diam, x, y);
                 }
             }
         } else {
             // no animation
             if (page) {
                 // simple draw current page
-                //page->drawbuf->DrawTo(glbuf, x, 0, 0, NULL);
-            	//CRLog::trace("drawing page %d", page->pageNumber);
-                CRUIDrawTo(page->drawbuf, glbuf, x, 0);
-                //CRUIDrawTo(page->drawbufglbuf->DrawFragment(, 0, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), x, 0, page->drawbuf->GetWidth(), page->drawbuf->GetHeight(), 0);
+                CRUIDrawTo(page->drawbuf, glbuf, x, y);
             }
         }
         //glbuf->afterDrawing();

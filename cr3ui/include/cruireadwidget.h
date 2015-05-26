@@ -223,9 +223,9 @@ class CRUIReadWidget : public CRUIWindowWidget
         int getLastDirection() { return direction; }
         void calcDragPositionProgress(int startx, int currx, int direction, int & progress, int & xx);
         /// draw
-        void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int startx = -1, int currx = -1);
-        void drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int xx, int diam, int x);
-        void drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2);
+        void draw(LVDrawBuf * dst, int pageNumber, int direction, int progress, int x, int y, int startx = -1, int currx = -1);
+        void drawFolded(LVDrawBuf * buf, PagedModePage * page1, PagedModePage * page1back, PagedModePage * page2, int xx, int diam, int x, int y);
+        void drawFolded(LVDrawBuf * buf, PagedModePage * page, int srcx1, int srcx2, int dstx1, int dstx2, float angle1, float angle2, int y);
         /// remove images from cache
         void clear();
     };

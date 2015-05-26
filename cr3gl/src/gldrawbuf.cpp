@@ -1353,6 +1353,7 @@ void GLDrawBuf::DrawRescaled(LVDrawBuf * src, int x, int y, int dx, int dy, int 
 void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int srcdy, int x, int y, int dx, int dy, int options)
 {
     CR_UNUSED(options);
+    lUInt32 alpha = (((options >> 16) & 0xFF) << 24) | 0xFFFFFF;
     if (dx <= 0 || dy <= 0 || !src)
         return;
     //CRLog::trace("GLDrawBuf::DrawFragment %d,%d %dx%d -> %d,%d %dx%d", srcx, srcy, srcdx, srcdy, x, y, dx, dy);
@@ -1372,7 +1373,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
                                 glbuf->_textureId, glbuf->_tdx, glbuf->_tdy,
                                 srcrc,
                                 dstrc,
-                                applyAlpha(0xFFFFFF),
+                                applyAlpha(alpha),
                                 srcdx != dx || srcdy != dy)
                 );
             }
@@ -1412,7 +1413,7 @@ void GLDrawBuf::DrawFragment(LVDrawBuf * src, int srcx, int srcy, int srcdx, int
                 return; // out of bounds
             lvRect * clip = rc.clipBy(cliprect); // probably, should be clipped
             //_scene->add(new GLDrawImageSceneItem(src, x, GetHeight() - y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
-            _scene->add(new GLDrawImageSceneItem(src, x, y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(0xFFFFFF), 0, clip, 0));
+            _scene->add(new GLDrawImageSceneItem(src, x, y, dx, dy, srcx, srcy, srcdx, srcdy, applyAlpha(alpha), 0, clip, 0));
         }
 	}
 }
