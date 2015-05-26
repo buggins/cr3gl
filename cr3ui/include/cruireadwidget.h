@@ -39,6 +39,8 @@ class CRUIDocView : public LVDocView {
     CRUIImageRef background;
     //CRUIImageRef backgroundScrollLeft;
     //CRUIImageRef backgroundScrollRight;
+    lUInt32 _coverColor;
+    bool _showCover;
 public:
     CRUIDocView();
     /// clears page background
@@ -48,6 +50,8 @@ public:
     virtual CRPropRef propsApply( CRPropRef props );
     lString16 getLink(int x, int y, int r);
     lString16 getLink(int x, int y);
+    lvRect calcCoverFrameWidths(lvRect rc);
+    void drawCoverFrame(LVDrawBuf & drawbuf, lvRect outerRect, lvRect innerRect);
 };
 
 class CRUIReadWidget;

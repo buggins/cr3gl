@@ -176,7 +176,8 @@ CRUIFontSampleWidget::CRUIFontSampleWidget(CRPropRef props) : CRUISettingsSample
         fontSizes.add(i);
     _docview->setFontSizes(fontSizes, false);
     _docview->createDefaultDocument(lString16(), sample + L"\n" + sample + L"\n" + sample + L"\n");
-    _docview->setViewMode(DVM_SCROLL, 1);
+    _docview->setViewMode(DVM_PAGES, 1);
+    _docview->setStatusMode(0, false, false, false, false, false, false, false);
     setLayoutParams(FILL_PARENT, FILL_PARENT);
     setMaxHeight(deviceInfo.shortSide / 3);
     setMinHeight(deviceInfo.shortSide / 5);
@@ -212,9 +213,12 @@ void CRUIFontSampleWidget::format() {
         _lastPropsHash = h;
         changed = true;
     }
-    if (_lastSize.x != _pos.width() || _lastSize.y != _pos.height()) {
-        _lastSize.x = _pos.width();
-        _lastSize.y = _pos.height();
+    lvRect frameWidths = _docview->calcCoverFrameWidths(_pos);
+    lvRect pageRc = _pos;
+    pageRc.shrinkBy(frameWidths);
+    if (_lastSize.x != pageRc.width() || _lastSize.y != pageRc.height()) {
+        _lastSize.x = pageRc.width();
+        _lastSize.y = pageRc.height();
         changed = true;
     }
     if (changed) {
@@ -222,6 +226,7 @@ void CRUIFontSampleWidget::format() {
         applyMargin(rc);
         lvRect margins;
         getPadding(margins);
+        rc.shrinkBy(frameWidths);
         _docview->Resize(rc.width(), rc.height());
         _docview->setPageMargins(margins);
         CRPropRef propsForDocview = LVCreatePropsContainer();
@@ -235,51 +240,13 @@ void CRUIFontSampleWidget::format() {
             PROP_FONT_HINTING,
             PROP_INTERLINE_SPACE,
             PROP_PAGE_MARGINS,
+            PROP_APP_BOOK_COVER_COLOR,
+            PROP_APP_BOOK_COVER_VISIBLE,
             NULL
         };
         for (int i = 0; props_for_copy[i]; i++) {
             propsForDocview->setString(props_for_copy[i], _props->getStringDef(props_for_copy[i]));
         }
-//        lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
-//        int fontSize = _props->getIntDef(PROP_FONT_SIZE);
-//        lString8 face = UnicodeToUtf8(_props->getStringDef(PROP_FONT_FACE));
-//        int gammaIndex = _props->getIntDef(PROP_FONT_GAMMA_INDEX, 15);
-//        int oldGammaIndex = fontMan->GetGammaIndex();
-//        if (oldGammaIndex != gammaIndex) {
-//            fontMan->SetGammaIndex(gammaIndex);
-//            _docview->clearImageCache();
-//            invalidate();
-//        }
-//        int antialiasingMode = _props->getIntDef(PROP_FONT_ANTIALIASING, 2);
-//        if (antialiasingMode == 1) {
-//            antialiasingMode = 2;
-//        }
-//        if (fontMan->GetAntialiasMode() != antialiasingMode) {
-//            fontMan->SetAntialiasMode(antialiasingMode);
-//            _docview->clearImageCache();
-//            invalidate();
-//        }
-//        bool bold = _props->getBoolDef(PROP_FONT_WEIGHT_EMBOLDEN, false);
-//        int v = bold ? STYLE_FONT_EMBOLD_MODE_EMBOLD
-//                : STYLE_FONT_EMBOLD_MODE_NORMAL;
-//        if (v != LVRendGetFontEmbolden()) {
-//            LVRendSetFontEmbolden(v);
-//        }
-//        bool bytecode = _props->getBoolDef(PROP_FONT_HINTING, 1);
-//        int hintingMode = bytecode ? HINTING_MODE_BYTECODE_INTERPRETOR : HINTING_MODE_AUTOHINT;
-//        if ((int)fontMan->GetHintingMode() != hintingMode && hintingMode >= 0 && hintingMode <= 2) {
-//            //CRLog::debug("Setting hinting mode to %d", mode);
-//            fontMan->SetHintingMode((hinting_mode_t)hintingMode);
-//            _docview->clearImageCache();
-//            invalidate();
-//        }
-
-//        CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
-//        //SimpleTitleFormatter fmt(sample, face, false, false, textColor, rc.width(), rc.height(), fontSize);
-//        _docview->setTextColor(textColor);
-//        _docview->setBackground(bgImage);
-//        _docview->setFontSize(fontSize);
-//        _docview->setDefaultFontFace(face);
         _docview->propsApply(propsForDocview);
         _docview->Render(0, 0, &_pageList);
     }
@@ -296,12 +263,26 @@ void CRUIFontSampleWidget::draw(LVDrawBuf * buf) {
     lvRect margins;
     getPadding(margins);
     format();
+
+    lvRect frameWidths = _docview->calcCoverFrameWidths(_pos);
+    lvRect pageRc = rc;
+    pageRc.shrinkBy(frameWidths);
+
+    _docview->drawCoverFrame(*buf, rc, pageRc);
+    rc = pageRc;
+
     CRUIImageRef bgImage = resourceResolver->getBackgroundImage(_props);
     LVRendPageInfo * page = _pageList[0];
     bgImage->draw(buf, rc, 0, 0);
+
+    lvRect rc2 = rc;
+    rc2.shrink(3);
+    buf->FillRect(rc2, 0xC0FFC080);
+
     lUInt32 textColor = _props->getColorDef(PROP_FONT_COLOR, 0);
     buf->SetTextColor(textColor);
     _docview->drawPageTo(buf, *page, &rc, 1, 0);
+    rc = getParent()->getPos();
 }
 
 static lString16 formatInterlineSpace(int sz) {
@@ -518,6 +499,8 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
     _colorPane->addChild(_sliderG);
     _colorPane->addChild(_sliderB);
 
+    _colorSample = NULL;
+
     if (setting->getSettingId() == PROP_BACKGROUND_COLOR) {
         _enableTextureSetting = new CRUISettingsCheckbox(STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED, NULL, PROP_BACKGROUND_IMAGE_ENABLED, STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED_VALUE_ON, STR_SETTINGS_BACKGROUND_TEXTURE_ENABLED_VALUE_OFF);
         _checkbox = new CRUISettingsListItemWidget();
@@ -548,7 +531,27 @@ CRUIColorEditorWidget::CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem *
         table->addChild(_sliderBB); table->addChild(_sliderBC);
         _colorCorrectionPane->addChild(table);
     }
+    if (setting->getSettingId() != PROP_BACKGROUND_COLOR) {
+        _colorSample = new CRUITextWidget(lString16());
+        _colorSample->setStyle("TOOL_BAR");
+        _colorSample->setMinHeight(MIN_ITEM_PX * 3 / 2);
+        _colorSample->setMaxHeight(MIN_ITEM_PX * 3 / 2);
+        _colorSample->setMargin(PT_TO_PX(5));
+        _colorSample->setPadding(PT_TO_PX(3));
+        _colorSample->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _colorSample->setAlign(ALIGN_CENTER);
+        _colorSample->setFontSize(FONT_SIZE_LARGE);
+        char buf[32];
+        sprintf(buf, "#%06x", cl);
+        _colorSample->setText(Utf8ToUnicode(buf));
+        _colorSample->setBackground(cl);
+        if ((cl & 255) + ((cl >> 8) & 255) + ((cl >> 8) & 255) < 128 * 3)
+            _colorSample->setTextColor(0xFFFFFF);
+        else
+            _colorSample->setTextColor(0x000000);
 
+        _colorPane->addChild(_colorSample);
+    }
 
     CRUIFrameLayout * frame = new CRUIFrameLayout();
     frame->addChild(_colorPane);
@@ -589,6 +592,16 @@ bool CRUIColorEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, 
         _sliderR->setColors(replaceColor(cl, 16, 0), replaceColor(cl, 16, 255));
         _sliderG->setColors(replaceColor(cl, 8, 0), replaceColor(cl, 8, 255));
         _sliderB->setColors(replaceColor(cl, 0, 0), replaceColor(cl, 0, 255));
+        if (_colorSample) {
+            _colorSample->setBackground(cl);
+            if ((cl & 255) + ((cl >> 8) & 255) + ((cl >> 8) & 255) < 128 * 3)
+                _colorSample->setTextColor(0xFFFFFF);
+            else
+                _colorSample->setTextColor(0x000000);
+            char buf[32];
+            sprintf(buf, "#%06x", cl);
+            _colorSample->setText(Utf8ToUnicode(buf));
+        }
     }
     _props->setColor(_settings->getSettingId().c_str(), cl);
     if (widget->getId() == "RB")

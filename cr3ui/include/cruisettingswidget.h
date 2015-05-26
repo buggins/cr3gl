@@ -397,6 +397,7 @@ protected:
     CRUIVerticalLayout * _colorPane;
     CRUIVerticalLayout * _colorCorrectionPane;
     CRUIFontSampleWidget * _sample;
+    CRUITextWidget * _colorSample;
 public:
     CRUIColorEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual ~CRUIColorEditorWidget() {

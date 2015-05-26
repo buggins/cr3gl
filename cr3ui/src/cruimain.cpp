@@ -516,6 +516,7 @@ void CRUIMainWidget::createReaderSettings() {
             textures->addOption(new CRUITextureOptionItem(resourceResolver->getBackground(i)));
         }
         fontsAndColors->addChild(textures);
+        fontsAndColors->addChild(new CRUIColorSetting(STR_SETTINGS_APP_BOOK_COVER_COLOR, NULL, PROP_APP_BOOK_COVER_COLOR));
     }
 
     _readerSettings.addChild(fontsAndColors);
@@ -567,8 +568,7 @@ void CRUIMainWidget::createReaderSettings() {
     _readerSettings.addChild(controls);
 
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
-    pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
-    pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));
+
     CRUISettingsOptionList * viewmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_MODE, STR_SETTINGS_VIEW_MODE_DESCRIPTION, PROP_PAGE_VIEW_MODE);
     if (!crconfig.einkMode) {
         viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_SCROLL, STR_SETTINGS_VIEW_MODE_VALUE_SCROLL));
@@ -576,7 +576,13 @@ void CRUIMainWidget::createReaderSettings() {
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_1PAGE, STR_SETTINGS_VIEW_MODE_VALUE_1PAGE));
     viewmode->addOption(new CRUIOptionItem(PROP_PAGE_VIEW_MODE_VALUE_2PAGES, STR_SETTINGS_VIEW_MODE_VALUE_2PAGES));
     pageLayout->addChild(viewmode);
+    pageLayout->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_BOOK_COVER_VISIBLE, NULL, PROP_APP_BOOK_COVER_VISIBLE, STR_SETTINGS_APP_BOOK_COVER_VISIBLE_VALUE_ON, STR_SETTINGS_APP_BOOK_COVER_VISIBLE_VALUE_OFF));
+    if (!crconfig.einkMode) {
+        pageLayout->addChild(new CRUIColorSetting(STR_SETTINGS_APP_BOOK_COVER_COLOR, NULL, PROP_APP_BOOK_COVER_COLOR));
+    }
 
+    pageLayout->addChild(new CRUIInterlineSpaceSetting(STR_SETTINGS_INTERLINE_SPACE, NULL, PROP_INTERLINE_SPACE));
+    pageLayout->addChild(new CRUIPageMarginsSetting(STR_SETTINGS_PAGE_MARGINS, NULL, PROP_PAGE_MARGINS));
 
     if (crconfig.einkModeSettingsSupported) {
 		CRUISettingsOptionList * updatemode = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_UPDATE_MODE, STR_SETTINGS_APP_SCREEN_UPDATE_MODE_DESCRIPTION, PROP_APP_SCREEN_UPDATE_MODE);
@@ -692,6 +698,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
     _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode ? "1" : "0");
+    _currentSettings->setStringDef(PROP_APP_BOOK_COVER_VISIBLE, deviceInfo.longSideMillimeters > 130 ? "1" : "0");
     _currentSettings->setStringDef(PROP_APP_TTS_RATE, "50");
     _currentSettings->setStringDef(PROP_APP_TTS_VOICE, PROP_APP_TTS_VOICE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);
@@ -745,17 +752,23 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x000000);
     } else {
         _currentSettings->setString(PROP_NIGHT_MODE, "0");
-        _currentSettings->setColor(PROP_FONT_COLOR, 0x000000);
-        _currentSettings->setColor(PROP_FONT_COLOR_DAY, 0x000000);
-        _currentSettings->setColor(PROP_FONT_COLOR_NIGHT, 0x000000);
-        _currentSettings->setColor(PROP_BACKGROUND_COLOR, 0xFFFFFF);
-        _currentSettings->setColor(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
-        _currentSettings->setColor(PROP_BACKGROUND_COLOR_NIGHT, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
+        _currentSettings->setColorDef(PROP_FONT_COLOR_DAY, 0x000000);
+        _currentSettings->setColorDef(PROP_FONT_COLOR_NIGHT, 0x000000);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_DAY, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_BACKGROUND_COLOR_NIGHT, 0xFFFFFF);
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED, "0");
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "0");
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "0");
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xB04030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xB04030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x703020);
     }
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_DAY, COLOR_TRANSFORM_BRIGHTNESS_NONE);
@@ -1382,6 +1395,7 @@ void copyDayNightSettings(CRPropRef & props, const char * from, const char * to)
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_ENABLED);
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS);
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE_CORRECTION_CONTRAST);
+    copyDayNightSetting(props, from, to, PROP_APP_BOOK_COVER_COLOR);
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_COLOR);
     copyDayNightSetting(props, from, to, PROP_BACKGROUND_IMAGE);
     copyDayNightSetting(props, from, to, PROP_FONT_GAMMA_INDEX);

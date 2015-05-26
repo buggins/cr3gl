@@ -40,6 +40,11 @@
 #define PROP_APP_READER_SHOW_TOOLBAR_VALUE_SHORT_SIDE "3"
 #define PROP_APP_READER_SHOW_TOOLBAR_VALUE_LONG_SIDE "4"
 
+#define PROP_APP_BOOK_COVER_VISIBLE "app.reader.cover.visible"
+#define PROP_APP_BOOK_COVER_VISIBLE_VALUE_OFF "0"
+#define PROP_APP_BOOK_COVER_VISIBLE_VALUE_ON "1"
+#define PROP_APP_BOOK_COVER_COLOR "app.reader.cover.color"
+
 #define PROP_APP_SCREEN_UPDATE_MODE "app.screen.update.mode"
 #define PROP_APP_SCREEN_UPDATE_INTERVAL "app.screen.update.interval"
 
@@ -70,6 +75,9 @@
 #define PROP_BACKGROUND_COLOR_NIGHT "background.color.default.night"
 #define PROP_BACKGROUND_IMAGE_DAY "background.image.filename.day"
 #define PROP_BACKGROUND_IMAGE_NIGHT "background.image.filename.night"
+#define PROP_APP_BOOK_COVER_COLOR_DAY "app.reader.cover.color.day"
+#define PROP_APP_BOOK_COVER_COLOR_NIGHT "app.reader.cover.color.night"
+
 #define PROP_PAGE_MARGINS "page.margins"
 
 //#define PROP_FONT_ANTIALIASING       "font.antialiasing.mode"

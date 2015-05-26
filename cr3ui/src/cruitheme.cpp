@@ -558,6 +558,13 @@ void CRUIBitmapImage::drawRotated(LVDrawBuf * buf, lvRect & rect, int angle) {
 
 void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoffset) {
     if (_tiled) {
+        LVDrawStateSaver s(*buf);
+        CR_UNUSED(s);
+        lvRect clip;
+        buf->GetClipRect(&clip);
+        clip.intersect(rect);
+        buf->SetClipRect(&clip);
+
 		int w = originalWidth();
 		int h = originalHeight();
 		if (w <= 0 || h <= 0)
@@ -574,10 +581,14 @@ void CRUIBitmapImage::draw(LVDrawBuf * buf, lvRect & rect, int xoffset, int yoff
 		for (int y = rect.top - yoffset; y < rect.bottom; y += h) {
 			rc2.top = y;
 			rc2.bottom = y + h;
+            if (rc2.bottom > rect.bottom)
+                rc2.bottom = rect.bottom;
 			for (int x = rect.left - xoffset; x < rect.right; x += w) {
 				rc2.left = x;
 				rc2.right = x + w;
-				buf->Draw(_src, rc2.left, rc2.top, w, h, false);
+                if (rc2.right > rect.right)
+                    rc2.right = rect.right;
+                buf->Draw(_src, rc2.left, rc2.top, w, h, false);
 			}
 		}
 	} else {

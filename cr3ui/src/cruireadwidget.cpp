@@ -42,6 +42,8 @@ lUInt32 applyAlpha(lUInt32 cl1, lUInt32 cl2, int alpha) {
 
 CRUIDocView::CRUIDocView() : LVDocView() {
     //background = resourceResolver->getIcon("leather.jpg", true);
+    _coverColor = 0xA04030;
+    _showCover = true;
     background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
 }
 
@@ -61,6 +63,10 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
             lvRect margins(hmargin, hmargin / 2, hmargin, hmargin / 2);
             setPageMargins(margins);
             requestRender();
+        } else if (key == PROP_APP_BOOK_COVER_VISIBLE) {
+            _showCover = props->getBoolDef(key.c_str(), true);
+        } else if (key == PROP_APP_BOOK_COVER_COLOR) {
+            _coverColor = props->getColorDef(key.c_str(), 0xA04030);
         } else if (key == PROP_FONT_ANTIALIASING) {
             int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
             if (antialiasingMode == 1) {
@@ -160,6 +166,28 @@ lString16 CRUIDocView::getLink( int x, int y, int r )
             return link;
     }
     return lString16::empty_str;
+}
+
+lvRect CRUIDocView::calcCoverFrameWidths(lvRect rc)
+{
+    lvRect res;
+    if (!_showCover)
+        return res;
+    int fw = rc.height() / 30;
+    if (fw > rc.width() / 30)
+        fw = rc.width() / 30;
+    res.top = res.bottom = fw;
+    res.left = res.right = fw * 2;
+    return res;
+}
+
+void CRUIDocView::drawCoverFrame(LVDrawBuf & drawbuf, lvRect outerRect, lvRect innerRect) {
+    if (outerRect.left >= innerRect.left)
+        return;
+    drawbuf.FillRect(outerRect.left, outerRect.top, outerRect.right, innerRect.top, _coverColor);
+    drawbuf.FillRect(outerRect.left, innerRect.bottom, outerRect.right, outerRect.bottom, _coverColor);
+    drawbuf.FillRect(outerRect.left, innerRect.top, innerRect.left, innerRect.bottom, _coverColor);
+    drawbuf.FillRect(innerRect.right, innerRect.top, outerRect.right, innerRect.bottom, _coverColor);
 }
 
 lString16 CRUIDocView::getLink( int x, int y )
@@ -2580,6 +2608,11 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             if (n != _toolbarPosition) {
                 setToolbarPosition(n);
             }
+        }
+        if (key == PROP_APP_BOOK_COVER_VISIBLE) {
+            docviewprops->setString(key.c_str(), value.c_str());
+        } else if (key == PROP_APP_BOOK_COVER_COLOR) {
+            docviewprops->setString(key.c_str(), value.c_str());
         }
         if (key == PROP_HYPHENATION_DICT) {
             setHyph(lastBookLang, value);
