@@ -165,9 +165,17 @@ lString16 CRUIDocView::getLink( int x, int y, int r )
 
 lvRect CRUIDocView::calcCoverFrameWidths(lvRect rc)
 {
+    // calc page count
+    int pageCount = getPagesVisibleSetting();
+    int fsz = getFontSize();
+    if (rc.width() / 2 / fsz < 15)
+        pageCount = 1;
+    overrideVisiblePageCount(pageCount);
+
     lvRect res;
     if (!_showCover || !_pages3d)
         return res;
+
     int visiblePages = getVisiblePageCount();
     bool isPageMode = getViewMode() == DVM_PAGES;
     if (!isPageMode)
@@ -848,6 +856,7 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
         _clientRect.left += toolbarWidth;
     }
     _bookRect = _clientRect;
+
     lvRect frame = _docview->calcCoverFrameWidths(_clientRect);
     _clientRect.shrinkBy(frame);
     CRUIReadMenu * saved = _toolbar;
