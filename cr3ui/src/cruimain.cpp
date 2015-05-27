@@ -557,6 +557,7 @@ void CRUIMainWidget::createReaderSettings() {
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_SHORT_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_SHORT_SIDE));
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_LONG_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_LONG_SIDE));
     interfaceSettings->addChild(toolbar);
+    interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_READER_SCROLLBAR, NULL, PROP_APP_READER_SHOW_SCROLLBAR, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_ON, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_OFF));
 
     _readerSettings.addChild(interfaceSettings);
 
@@ -697,8 +698,13 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     if (!stream.isNull())
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
-    _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode ? "1" : "0");
-    _currentSettings->setStringDef(PROP_APP_BOOK_COVER_VISIBLE, deviceInfo.longSideMillimeters > 130 ? "1" : "0");
+
+    bool bigScreen = deviceInfo.longSideMillimeters > 130;
+
+    _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
+    _currentSettings->setStringDef(PROP_APP_READER_SHOW_SCROLLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
+
+    _currentSettings->setStringDef(PROP_APP_BOOK_COVER_VISIBLE, "1");
     _currentSettings->setStringDef(PROP_APP_TTS_RATE, "50");
     _currentSettings->setStringDef(PROP_APP_TTS_VOICE, PROP_APP_TTS_VOICE_VALUE_SYSTEM);
     _currentSettings->setStringDef(PROP_APP_INTERFACE_LANGUAGE, PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM);

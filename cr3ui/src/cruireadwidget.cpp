@@ -796,6 +796,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
 	, _pinchOp(PINCH_OP_NONE)
     , _toolbar(NULL)
     , _toolbarPosition(READER_TOOLBAR_OFF)
+    , _scrollbar(NULL)
 {
     setId("READ");
     _docview = createDocView();
@@ -814,6 +815,8 @@ CRUIReadWidget::~CRUIReadWidget() {
         delete _lastPosition;
     if (_toolbar)
         delete _toolbar;
+    if (_scrollbar)
+        delete _scrollbar;
 }
 
 bool CRUIReadWidget::isToolbarVertical(int baseWidth, int baseHeight) {
@@ -836,6 +839,9 @@ void CRUIReadWidget::measure(int baseWidth, int baseHeight) {
         _toolbar->setVertical(toolbarVertical);
         _toolbar->measure(baseWidth, baseHeight);
     }
+    if (_scrollbar) {
+        _scrollbar->measure(baseWidth, baseHeight);
+    }
 }
 
 /// updates widget position based on specified rectangle
@@ -845,6 +851,7 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     //_clientRect.left += 50;
     int toolbarHeight = 0;
     int toolbarWidth = 0;
+    int scrollbarWidth = 0;
     if (_toolbar) {
         _toolbar->setVertical(toolbarVertical);
         _toolbar->measure(_clientRect.width(), _clientRect.height());
@@ -854,6 +861,11 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
             toolbarHeight = _toolbar->getMeasuredHeight();
         _clientRect.top += toolbarHeight;
         _clientRect.left += toolbarWidth;
+    }
+    if (_scrollbar) {
+        _scrollbar->measure(_clientRect.width(), _clientRect.height());
+        scrollbarWidth = _scrollbar->getMeasuredWidth();
+        _clientRect.right -= scrollbarWidth;
     }
     _bookRect = _clientRect;
 
@@ -868,6 +880,9 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
             _toolbar->layout(left, top, left + toolbarWidth, bottom);
         else
             _toolbar->layout(left, top, right, top + toolbarHeight);
+    }
+    if (_scrollbar) {
+        _scrollbar->layout(_bookRect.right, _bookRect.top, right, _bookRect.bottom);
     }
     if (!_locked) {
         if (_docview->GetWidth() != _clientRect.width() || _docview->GetHeight() != _clientRect.height()) {
@@ -966,6 +981,10 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     // toolbar support
     if (_toolbar) {
         _toolbar->draw(buf);
+    }
+    // scrollbar support
+    if (_scrollbar) {
+        _scrollbar->draw(buf);
     }
     // popup support
     if (_popupControl.popupBackground)
@@ -1269,12 +1288,14 @@ int CRUIReadWidget::getChildCount() {
         cnt++;
     if (_toolbar)
         cnt++;
+    if (_scrollbar)
+        cnt++;
     return cnt;
 }
 
 /// overriden to treat popup as first child
 CRUIWidget * CRUIReadWidget::getChild(int index) {
-    CRUIWidget * children[3];
+    CRUIWidget * children[4];
     int i = 0;
     if (_popupControl.popupBackground)
         children[i++] = _popupControl.popupBackground;
@@ -1282,6 +1303,8 @@ CRUIWidget * CRUIReadWidget::getChild(int index) {
         children[i++] = _popupControl.popup;
     if (_toolbar)
         children[i++] = _toolbar;
+    if (_scrollbar)
+        children[i++] = _scrollbar;
     if (index < i) {
         return children[index];
     }
@@ -2495,6 +2518,14 @@ void CRUIReadWidget::showReaderMenu() {
 }
 
 
+bool CRUIReadWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED3(widget, pos, manual);
+    if (manual) {
+        //
+    }
+    return true;
+}
+
 void CRUIReadWidget::onSentenceFinished() {
     if (!_ttsInProgress) {
         _docview->clearSelection();
@@ -2512,6 +2543,25 @@ void CRUIReadWidget::onSentenceFinished() {
     _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
     CRLog::trace("CRUIReadWidget::onSentenceFinished() tell %s", UnicodeToUtf8(_selection.selectionText).c_str());
     _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
+}
+
+void CRUIReadWidget::setScrollBarVisible(bool v) {
+    bool currentlyVisible = _scrollbar != NULL;
+    if (currentlyVisible == v)
+        return;
+    if (v) {
+        _scrollbar = new CRUIScrollBar(true, 0, 100, 0, 1);
+        _scrollbar->setStyle("TOOL_BAR");
+    } else {
+        if (_scrollbar)
+            delete _scrollbar;
+        _scrollbar = NULL;
+    }
+    requestLayout();
+}
+
+void CRUIReadWidget::updateScrollbar() {
+
 }
 
 void CRUIReadWidget::setToolbarPosition(int toolbarPosition) {
@@ -2688,6 +2738,10 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             if (n != _toolbarPosition) {
                 setToolbarPosition(n);
             }
+        }
+        if (key == PROP_APP_READER_SHOW_SCROLLBAR) {
+            bool flg = changed->getBoolDef(PROP_APP_READER_SHOW_SCROLLBAR, 0);
+            setScrollBarVisible(flg);
         }
         if (key == PROP_APP_BOOK_COVER_VISIBLE || key == PROP_PAGE_VIEW_ANIMATION) {
             docviewprops->setString(key.c_str(), value.c_str());

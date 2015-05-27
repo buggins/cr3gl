@@ -210,9 +210,9 @@ public:
     virtual CRUIScrollBar * setVertical(bool vertical) {
         _isVertical = vertical;
         if (_isVertical)
-            setBackground("scrollbar_background_vertical.9");
+            setBackground2("scrollbar_background_vertical.9");
         else
-            setBackground("scrollbar_background_horizontal.9");
+            setBackground2("scrollbar_background_horizontal.9");
         requestLayout();
         return this;
     }

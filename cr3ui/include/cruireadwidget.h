@@ -143,6 +143,7 @@ class CRUIReadWidget : public CRUIWindowWidget
         , public CRDocumentRenderCallback
         , public LVDocViewCallback
         , public CRUITextToSpeechCallback
+        , public CRUIOnScrollPosCallback
 {
     CRUIDocView * _docview;
     CRUIDocView * _pinchSettingPreview;
@@ -312,9 +313,13 @@ class CRUIReadWidget : public CRUIWindowWidget
 
     CRUIReadMenu * _toolbar;
     int _toolbarPosition;
+    CRUIScrollBar * _scrollbar;
 
     void setToolbarPosition(int position);
     bool isToolbarVertical(int baseWidth, int baseHeight);
+
+    void setScrollBarVisible(bool v);
+    void updateScrollbar();
 
 public:
     CRUIReadWidget(CRUIMainWidget * main);
@@ -324,6 +329,7 @@ public:
     LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
 
     virtual void onSentenceFinished();
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 
     /// restore last position from DB
     bool restorePosition();
