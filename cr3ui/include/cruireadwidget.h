@@ -413,6 +413,7 @@ public:
     lString16 getCurrentPositionDesc();
     int getCurrentPositionPercent();
     void goToPercent(int percent);
+    void goToPage(int page);
 
     void goToPosition(lString16 path);
 

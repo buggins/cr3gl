@@ -801,12 +801,24 @@ void CRUISliderWidget::draw(LVDrawBuf * buf) {
     }
 }
 
+int CRUIScrollBase::getScrollPosPercent() {
+    int res = 0;
+    if (_maxValue - _minValue - _pageSize > 0)
+        res = (int)((lInt64)10000 * (_value - _minValue) / (_maxValue - _minValue - _pageSize));
+    if (res > 10000)
+        res = 10000;
+    return res;
+}
+
 void CRUIScrollBase::setScrollPos(int value) {
+    int oldValue = _value;
     _value = value;
     if (_value > _maxValue - _pageSize)
         _value = _maxValue - _pageSize;
     if (_value < _minValue)
         _value = _minValue;
+    if (_value != oldValue)
+        invalidate();
 }
 
 void CRUIScrollBase::updatePos(int pos) {

@@ -866,6 +866,7 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
         _scrollbar->measure(_clientRect.width(), _clientRect.height());
         scrollbarWidth = _scrollbar->getMeasuredWidth();
         _clientRect.right -= scrollbarWidth;
+        updateScrollbar();
     }
     _bookRect = _clientRect;
 
@@ -984,6 +985,7 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     }
     // scrollbar support
     if (_scrollbar) {
+        updateScrollbar();
         _scrollbar->draw(buf);
     }
     // popup support
@@ -2429,6 +2431,13 @@ void CRUIReadWidget::moveByPage(int direction) {
     //_main->update(true);
 }
 
+void CRUIReadWidget::goToPage(int page) {
+    if (_viewMode == DVM_PAGES) {
+        _docview->goToPage(page, false);
+        _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, 0, false, _pageAnimation);
+    }
+}
+
 void CRUIReadWidget::goToPercent(int percent) {
     int maxpos = _docview->GetFullHeight() - _docview->GetHeight();
     if (maxpos < 0)
@@ -2517,15 +2526,6 @@ void CRUIReadWidget::showReaderMenu() {
     preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
 }
 
-
-bool CRUIReadWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
-    CR_UNUSED3(widget, pos, manual);
-    if (manual) {
-        //
-    }
-    return true;
-}
-
 void CRUIReadWidget::onSentenceFinished() {
     if (!_ttsInProgress) {
         _docview->clearSelection();
@@ -2552,6 +2552,7 @@ void CRUIReadWidget::setScrollBarVisible(bool v) {
     if (v) {
         _scrollbar = new CRUIScrollBar(true, 0, 100, 0, 1);
         _scrollbar->setStyle("TOOL_BAR");
+        _scrollbar->setScrollPosCallback(this);
     } else {
         if (_scrollbar)
             delete _scrollbar;
@@ -2561,7 +2562,24 @@ void CRUIReadWidget::setScrollBarVisible(bool v) {
 }
 
 void CRUIReadWidget::updateScrollbar() {
+    if (!_scrollbar)
+        return;
+    //if (!_docview->)
+    const LVScrollInfo * si = _docview->getScrollInfo();
+    _scrollbar->setMaxScrollPos(si->maxpos + si->pagesize);
+    _scrollbar->setPageSize(si->pagesize);
+    _scrollbar->setScrollPos(si->pos);
+}
 
+bool CRUIReadWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED3(widget, pos, manual);
+    if (manual) {
+        if (_viewMode == DVM_PAGES)
+            goToPage(pos * _docview->getVisiblePageCount());
+        else
+            goToPercent(_scrollbar->getScrollPosPercent());
+    }
+    return true;
 }
 
 void CRUIReadWidget::setToolbarPosition(int toolbarPosition) {

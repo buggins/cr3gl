@@ -180,13 +180,14 @@ protected:
     void updatePos(int pos);
 public:
     int getPageSize() { return _pageSize; }
-    void setPageSize(int value) { _pageSize = value; invalidate(); }
+    void setPageSize(int value) { if (value != _pageSize) { _pageSize = value; invalidate(); } }
     int getScrollPos() { return _value; }
+    int getScrollPosPercent();
     void setScrollPos(int value);
     int getMinScrollPos() { return _minValue; }
     int getMaxScrollPos() { return _maxValue; }
-    void setMinScrollPos(int value) { _minValue = value; }
-    void setMaxScrollPos(int value) { _maxValue = value; }
+    void setMinScrollPos(int value) { if (value!=_minValue) { _minValue = value; invalidate(); }}
+    void setMaxScrollPos(int value) { if (value!=_maxValue) { _maxValue = value; invalidate(); }}
     void setScrollPosCallback(CRUIOnScrollPosCallback * callback) { _callback = callback; }
     CRUIScrollBase(int minValue, int maxValue, int currentValue, int pageSize = 1)
       : _minValue(minValue), _maxValue(maxValue), _value(currentValue), _pageSize(pageSize)
