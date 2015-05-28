@@ -318,10 +318,9 @@ public:
 				jobject obj = (jobject)_env->GetObjectArrayElement(arr, i);
 				if (obj) {
 					_voices.add(voiceFromJava(obj));
-					_env->DeleteLocalRef(obj);
 				}
 			}
-        	_env->DeleteLocalRef(obj);
+        	_env->DeleteLocalRef(arr);
 		}
 	}
 
@@ -342,9 +341,10 @@ public:
     CRUITextToSpeechVoice * voiceFromJava(jobject obj) {
     	CRUITextToSpeechVoice * res = NULL;
     	if (obj) {
-    		CRStringField id(_obj, "id");
-    		CRStringField name(_obj, "name");
-    		CRStringField lang(_obj, "lang");
+    	    CRObjectAccessor acc(obj);
+    		CRStringField id(acc, "id");
+    		CRStringField name(acc, "name");
+    		CRStringField lang(acc, "lang");
     		res = new CRUITextToSpeechVoice(id.get8(), name.get8(), lang.get8());
         	_env->DeleteLocalRef(obj);
     	}

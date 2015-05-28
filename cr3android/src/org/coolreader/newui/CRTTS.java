@@ -1,5 +1,6 @@
 package org.coolreader.newui;
 
+import java.util.List;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
@@ -19,6 +20,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 		public String id;
 		public String name;
 		public String lang;
+		public String engine; // engine package
 		public VoiceInfo(String id, String name, String lang) {
 			this.id = id;
 			this.name = name;
@@ -27,7 +29,13 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	}
 	
 	private class NewApiSupport {
+		public TextToSpeech createTextToSpeech(String engineName) {
+			return new TextToSpeech(_context, CRTTS.this);
+		}
 		public void construct() {
+			
+		}
+		public void initDone() {
 			
 		}
 		public boolean setCurrentVoice(String id) {
@@ -38,6 +46,17 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	@TargetApi(8)
 	@SuppressLint("NewApi")
 	private class Api8Support extends NewApiSupport {
+		public TextToSpeech createTextToSpeech(String engineName) {
+			return new TextToSpeech(_context, CRTTS.this);
+		}
+		public void construct() {
+			
+		}
+	}
+	
+	@TargetApi(14)
+	@SuppressLint("NewApi")
+	private class Api18Support extends NewApiSupport {
 		public void construct() {
 			
 		}
@@ -55,10 +74,22 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	@SuppressLint("NewApi")
 	private class Api21Support extends NewApiSupport {
 		public void construct() {
-			
+			log.d("api21.construct");
+			List<TextToSpeech.EngineInfo> engines = _textToSpeech.getEngines();
+			for(TextToSpeech.EngineInfo e: engines) {
+				log.d("Engine: name=" + e.name + " label=" + e.label);
+			}
 		}
 		public boolean setCurrentVoice(String id) {
 			return false;
+		}
+		public void initDone() {
+			log.d("api21.initDone");
+			List<TextToSpeech.EngineInfo> engines = _textToSpeech.getEngines();
+			for(TextToSpeech.EngineInfo e: engines) {
+				log.d("Engine: name=" + e.name + " label=" + e.label);
+			}
+			
 		}
 	}
 	
@@ -75,8 +106,8 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 		else
 			_apiSupport = new NewApiSupport();
 		setDefaultVoiceList();
-		_apiSupport.construct();
 		create(null);
+		_apiSupport.construct();
 	}
 	
 	public void create(String engineName) {
@@ -98,6 +129,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 		_error = (status != TextToSpeech.SUCCESS);
 		log.i("CRTTS.onInit status = " + (status == TextToSpeech.SUCCESS ? "SUCCESS" : "ERROR"));
 		if (_initialized) {
+			_apiSupport.initDone();
 			_textToSpeech.setOnUtteranceCompletedListener(this);
 			_rate = 50;
 			Locale locale = _textToSpeech.getLanguage();
@@ -165,10 +197,16 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
     	return false;
     }
 
+    //private static HashMap<String, String> emptySpeakParams = new HashMap<String, String>();
     public boolean tell(String text) {
 		if (_textToSpeech == null)
 			return false;
-    	return false;
+		if (_speaking)
+			stop();
+		boolean res = _textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null) == TextToSpeech.SUCCESS;
+		if (res)
+			_speaking = true;
+		return res;
     }
 
     public boolean isSpeaking() {
