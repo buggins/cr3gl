@@ -27,7 +27,7 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, DownloadManagerCallback {
+public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, DownloadManagerCallback, CRTTS.TTSCallback {
 
 	public static final String TAG = "cr3v";
 	public static final Logger log = L.create(TAG);
@@ -311,6 +311,9 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	
 	native private void setBatteryLevelInternal(int level);
 
+	native private void onSentenceFinishedInternal();
+
+	native private void onTtsInitializedInternal();
 	
 	// accessible from Java JNI calls
 	
@@ -585,6 +588,36 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 			EinkScreen.ResetController(mScreenUpdateMode, this);
 		}
 	}
+
+	
+    public CRTTS getTTS() {
+    	return activity.getTTS();
+    }
+    
+	@Override
+	public void onTtsSentenceFinished() {
+		log.i("CRTTS callback: onTtsSentenceFinished");
+		// process in GL thread
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				onSentenceFinishedInternal();
+				requestRender();
+			}
+		});
+	}
+
+	@Override
+	public void onTtsInitDone() {
+		log.i("CRTTS callback: onTtsInitDone");
+		// process in GL thread
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				onTtsInitializedInternal();
+			}
+		});
+	}
 	
 	private long mNativeObject; // holds pointer to native object instance
 	private AssetManager mAssetManager;
@@ -594,4 +627,5 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	static {
 		System.loadLibrary("crenginegl");
 	}
+
 }

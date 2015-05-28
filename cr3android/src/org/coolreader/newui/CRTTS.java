@@ -11,8 +11,8 @@ import android.speech.tts.TextToSpeech;
 public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 	
 	public interface TTSCallback {
-	    void onSentenceFinished();
-	    void onInitDone();
+	    void onTtsSentenceFinished();
+	    void onTtsInitDone();
 	}
 	
 	public static class VoiceInfo {
@@ -103,13 +103,15 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 			Locale locale = _textToSpeech.getLanguage();
 			String lang = locale.getLanguage();
 			log.i("TTS language: " + lang);
+			if (_ttsCallback != null)
+				_ttsCallback.onTtsInitDone();
 		}
 	}
 
 	@Override
 	public void onUtteranceCompleted(String utteranceId) {
 		if (_ttsCallback != null)
-			_ttsCallback.onSentenceFinished();
+			_ttsCallback.onTtsSentenceFinished();
 		_speaking = false;
 	}
 	

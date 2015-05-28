@@ -51,6 +51,8 @@ public class CoolReader extends Activity {
 	private InputMethodManager inputMethodManager;
 	BroadcastReceiver intentReceiver;
 	
+	private CRTTS tts;
+	
 	private DownloadManager downloadManager;
 	
 	public DownloadManager getDownloadManager() {
@@ -237,14 +239,20 @@ public class CoolReader extends Activity {
         }
     }
 	
+    public CRTTS getTTS() {
+    	return tts;
+    }
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		log.i("CoolReader.onCreate() is called");
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		tts = new CRTTS(this);
 		mDecorView = getWindow().getDecorView();
 		super.onCreate(savedInstanceState);
 		crview = new CRView(this);
 		crview.init(createConfig());
+		tts.setTextToSpeechCallback(crview);
 		setContentView(crview);
 		clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);

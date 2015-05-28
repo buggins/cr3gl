@@ -127,6 +127,23 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
 JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadProgress
   (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jint, jint);
 
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onSentenceFinishedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onSentenceFinishedInternal
+  (JNIEnv * _env, jobject _this);
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onTtsInitializedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onTtsInitializedInternal
+  (JNIEnv * _env, jobject _this);
+
+
 #ifdef __cplusplus
 }
 #endif

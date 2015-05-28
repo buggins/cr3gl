@@ -249,6 +249,64 @@ public:
     }
 };
 
+class CRUITextToSpeechAdapter : public CRUITextToSpeech {
+    CRJNIEnv _env;
+    CRObjectAccessor _obj;
+    CRUITextToSpeechCallback * _callback;
+public:
+	CRUITextToSpeechAdapter(jobject obj)
+	: _obj(obj)
+	, _callback(NULL)
+	{
+	}
+    virtual CRUITextToSpeechCallback * getTextToSpeechCallback() {
+    	return _callback;
+    }
+    virtual void setTextToSpeechCallback(CRUITextToSpeechCallback * callback) {
+    	_callback = callback;
+    }
+    virtual void getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list) {
+    	list.clear();
+    	// TODO
+    }
+    virtual CRUITextToSpeechVoice * getCurrentVoice() {
+    	return NULL;
+    }
+    virtual CRUITextToSpeechVoice * getDefaultVoice() {
+    	return NULL;
+    }
+
+	void onSentenceFinished() {
+		if (_callback)
+			_callback->onSentenceFinished();
+	}
+
+    virtual bool setCurrentVoice(lString8 id) {
+    	return false;
+    }
+    virtual bool setRate(int rate) {
+    	return false;
+    }
+    virtual int getRate() {
+    	return 50;
+    }
+    virtual bool canChangeCurrentVoice() {
+    	return false;
+    }
+    virtual bool tell(lString16 text) {
+    	return false;
+    }
+    virtual bool isSpeaking() {
+    	return false;
+    }
+    virtual void stop() {
+
+    }
+    virtual ~CRUITextToSpeechAdapter() {
+
+    }
+};
+
 
 class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateManagerCallback, public CRUIPlatform {
     CRJNIEnv _env;
@@ -269,10 +327,12 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _cancelDownloadMethod;
     CRMethodAccessor _setScreenUpdateModeMethod;
     CRMethodAccessor _setScreenUpdateIntervalMethod;
+    CRMethodAccessor _getTTSMethod;
 
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
     CRUIEventAdapter _eventAdapter;
+    CRUITextToSpeechAdapter * _tts;
 	bool _surfaceCreated;
 	bool _virtualKeyboardShown;
 	int _dx;
@@ -526,8 +586,24 @@ public:
     	_eventManager.dispatchDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
     }
 
+    virtual CRUITextToSpeech * getTextToSpeech() {
+    	return _tts;
+    }
+
+	void onSentenceFinished() {
+		if (_tts) {
+			_tts->onSentenceFinished();
+		}
+	}
+
+	void onTtsInitialized() {
+		_tts = new CRUITextToSpeechAdapter(_getTTSMethod.callObj());
+	}
+
 	~DocViewNative() {
     	delete _widget;
+    	if (_tts)
+    		delete _tts;
     	LVSetAssetContainerFactory(NULL);
     }
 };
@@ -817,6 +893,7 @@ DocViewNative::DocViewNative(jobject obj)
 	, _cancelDownloadMethod(_obj, "cancelDownload", "(I)V")
 	, _setScreenUpdateModeMethod(_obj, "setScreenUpdateMode", "(I)V")
 	, _setScreenUpdateIntervalMethod(_obj, "setScreenUpdateInterval", "(I)V")
+	, _getTTSMethod(_obj, "getTTS", "()Lorg/coolreader/newui/CRTTS;")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)
@@ -826,6 +903,7 @@ DocViewNative::DocViewNative(jobject obj)
 {
 	LVSetAssetContainerFactory(this);
 	m_coverpageManagerPaused = true;
+	_tts = NULL;
 }
 
 static DocViewNative * getNative(JNIEnv * env, jobject _this)
@@ -1170,6 +1248,35 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
 
 /*
  * Class:     org_coolreader_newui_CRView
+ * Method:    onSentenceFinishedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onSentenceFinishedInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRLog::trace("Java_org_coolreader_newui_CRView_onSentenceFinishedInternal");
+	native->onSentenceFinished();
+	//native->onPause();
+}
+
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onTtsInitializedInternal
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onTtsInitializedInternal
+  (JNIEnv * _env, jobject _this)
+{
+	DocViewNative * native = getNative(_env, _this);
+	CRLog::trace("Java_org_coolreader_newui_CRView_onTtsInitializedInternal");
+	native->onTtsInitialized();
+	//native->onPause();
+}
+
+
+/*
+ * Class:     org_coolreader_newui_CRView
  * Method:    onPauseInternal
  * Signature: ()V
  */
@@ -1332,7 +1439,9 @@ static JNINativeMethod sCRViewMethods[] =
 	{"loadBookInternal", "(Ljava/lang/String;)V", (void*)Java_org_coolreader_newui_CRView_loadBookInternal},
 	{"setBatteryLevelInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_setBatteryLevelInternal},
 	{"onDownloadResult", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[B)V", (void*)Java_org_coolreader_newui_CRView_onDownloadResult},
-	{"onDownloadProgress", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V", (void*)Java_org_coolreader_newui_CRView_onDownloadProgress}
+	{"onDownloadProgress", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V", (void*)Java_org_coolreader_newui_CRView_onDownloadProgress},
+	{"onSentenceFinishedInternal", "()V", (void*)Java_org_coolreader_newui_CRView_onSentenceFinishedInternal},
+	{"onTtsInitializedInternal", "()V", (void*)Java_org_coolreader_newui_CRView_onTtsInitializedInternal}
 };
 
 /*
