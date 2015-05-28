@@ -252,55 +252,167 @@ public:
 class CRUITextToSpeechAdapter : public CRUITextToSpeech {
     CRJNIEnv _env;
     CRObjectAccessor _obj;
+    // VoiceInfo[] getAvailableVoices();
+    CRMethodAccessor _getAvailableVoicesMethod;
+    // VoiceInfo getCurrentVoice();
+    CRMethodAccessor _getCurrentVoiceMethod;
+    // VoiceInfo getDefaultVoice();
+    CRMethodAccessor _getDefaultVoiceMethod;
+    // boolean setCurrentVoice(String id);
+    CRMethodAccessor _setCurrentVoiceMethod;
+    // boolean setRate(int rate);
+    CRMethodAccessor _setRateMethod;
+    // int getRate();
+    CRMethodAccessor _getRateMethod;
+    // boolean canChangeCurrentVoice();
+    CRMethodAccessor _canChangeCurrentVoiceMethod;
+    // boolean tell(String text);
+    CRMethodAccessor _tellMethod;
+    // boolean isSpeaking();
+    CRMethodAccessor _isSpeakingMethod;
+    // void stop();
+    CRMethodAccessor _stopMethod;
+    // boolean isInitialized();
+    CRMethodAccessor _isInitializedMethod;
+    // boolean isError();
+    CRMethodAccessor _isErrorMethod;
     CRUITextToSpeechCallback * _callback;
+    int _rate;
+    LVPtrVector<CRUITextToSpeechVoice, false> _voices;
+    bool _speaking;
 public:
 	CRUITextToSpeechAdapter(jobject obj)
 	: _obj(obj)
+	// VoiceInfo[] getAvailableVoices();
+	, _getAvailableVoicesMethod(_obj, "getAvailableVoices", "()[Lorg/coolreader/newui/CRTTS$VoiceInfo;")
+	// VoiceInfo getCurrentVoice();
+	, _getCurrentVoiceMethod(_obj, "getCurrentVoice", "()Lorg/coolreader/newui/CRTTS$VoiceInfo;")
+	// VoiceInfo getDefaultVoice();
+	, _getDefaultVoiceMethod(_obj, "getDefaultVoice", "()Lorg/coolreader/newui/CRTTS$VoiceInfo;")
+	// boolean setCurrentVoice(String id);
+	, _setCurrentVoiceMethod(_obj, "setCurrentVoice", "(Ljava/lang/String;)Z")
+	// boolean setRate(int rate);
+	, _setRateMethod(_obj, "setRate", "(I)Z")
+	// int getRate();
+	, _getRateMethod(_obj, "getRate", "()I")
+	// boolean canChangeCurrentVoice();
+	, _canChangeCurrentVoiceMethod(_obj, "canChangeCurrentVoice", "()Z")
+	// boolean tell(String text);
+	, _tellMethod(_obj, "tell", "(Ljava/lang/String;)Z")
+	// boolean isSpeaking();
+	, _isSpeakingMethod(_obj, "isSpeaking", "()Z")
+	// void stop();
+	, _stopMethod(_obj, "stop", "()V")
+	// boolean isInitialized();
+	, _isInitializedMethod(_obj, "isInitialized", "()Z")
+	// boolean isError();
+	, _isErrorMethod(_obj, "isError", "()Z")
 	, _callback(NULL)
+	, _rate(50)
+	, _speaking(false)
 	{
+		jobjectArray arr = _getAvailableVoicesMethod.callObjArray();
+		if (arr) {
+			int len = _env->GetArrayLength(arr);
+			for ( int i=0; i<len; i++ ) {
+				jobject obj = (jobject)_env->GetObjectArrayElement(arr, i);
+				if (obj) {
+					_voices.add(voiceFromJava(obj));
+					_env->DeleteLocalRef(obj);
+				}
+			}
+        	_env->DeleteLocalRef(obj);
+		}
 	}
-    virtual CRUITextToSpeechCallback * getTextToSpeechCallback() {
+
+	virtual CRUITextToSpeechCallback * getTextToSpeechCallback() {
     	return _callback;
     }
+
     virtual void setTextToSpeechCallback(CRUITextToSpeechCallback * callback) {
     	_callback = callback;
     }
+
     virtual void getAvailableVoices(LVPtrVector<CRUITextToSpeechVoice, false> & list) {
     	list.clear();
-    	// TODO
+    	for(int i = 0; i < _voices.length(); i++)
+    		list.add(_voices[i]);
     }
+
+    CRUITextToSpeechVoice * voiceFromJava(jobject obj) {
+    	CRUITextToSpeechVoice * res = NULL;
+    	if (obj) {
+    		CRStringField id(_obj, "id");
+    		CRStringField name(_obj, "name");
+    		CRStringField lang(_obj, "lang");
+    		res = new CRUITextToSpeechVoice(id.get8(), name.get8(), lang.get8());
+        	_env->DeleteLocalRef(obj);
+    	}
+    	return res;
+    }
+
+    CRUITextToSpeechVoice * toLocalVoice(CRUITextToSpeechVoice * v) {
+    	if (!v)
+    		return NULL;
+    	for (int i = 0; i < _voices.length(); i++) {
+    		if (_voices[i]->getId() == v->getId()) {
+    			delete v;
+    			return _voices[i];
+    		}
+    	}
+    	return v;
+    }
+
     virtual CRUITextToSpeechVoice * getCurrentVoice() {
-    	return NULL;
+    	CRUITextToSpeechVoice * res = voiceFromJava(_getCurrentVoiceMethod.callObj());
+    	return toLocalVoice(res);
     }
+
     virtual CRUITextToSpeechVoice * getDefaultVoice() {
-    	return NULL;
+    	CRUITextToSpeechVoice * res = voiceFromJava(_getDefaultVoiceMethod.callObj());
+    	return toLocalVoice(res);
     }
 
 	void onSentenceFinished() {
+		_speaking = false;
 		if (_callback)
 			_callback->onSentenceFinished();
 	}
 
     virtual bool setCurrentVoice(lString8 id) {
-    	return false;
+    	jstring s = _env.toJavaString(Utf8ToUnicode(id));
+    	bool res = _setCurrentVoiceMethod.callBool(s);
+    	_env->DeleteLocalRef(s);
+    	return res;
     }
     virtual bool setRate(int rate) {
-    	return false;
+    	if (rate < 0)
+    		rate = 0;
+    	if (rate > 100)
+    		rate = 100;
+    	_rate = rate;
+    	return _setRateMethod.callBool(rate);
     }
     virtual int getRate() {
-    	return 50;
+    	return _rate;
     }
     virtual bool canChangeCurrentVoice() {
-    	return false;
+    	return _canChangeCurrentVoiceMethod.callBool();
     }
     virtual bool tell(lString16 text) {
-    	return false;
+    	jstring s = _env.toJavaString(text);
+    	bool res = _tellMethod.callBool(s);
+    	_env->DeleteLocalRef(s);
+    	if (res)
+    		_speaking = true;
+    	return res;
     }
     virtual bool isSpeaking() {
-    	return false;
+    	return _speaking; //_isSpeakingMethod.callBool();
     }
     virtual void stop() {
-
+    	_stopMethod.callVoid();
+    	_speaking = false;
     }
     virtual ~CRUITextToSpeechAdapter() {
 
@@ -597,7 +709,9 @@ public:
 	}
 
 	void onTtsInitialized() {
+		CRLog::info("onTtsInitialized");
 		_tts = new CRUITextToSpeechAdapter(_getTTSMethod.callObj());
+		_widget->ttsInitialized();
 	}
 
 	~DocViewNative() {

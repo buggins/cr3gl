@@ -376,6 +376,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     CRUISettingsList _browserSettings;
     CRUISettingsList _readerSettings;
+    CRUISettingsList * _interfaceSettings;
 
     CRPropRef _currentSettings; // curretnly active settings
     CRPropRef _newSettings; // to be edited by Settings editors
@@ -508,6 +509,9 @@ public:
 
 
     void updateFolderBookmarks();
+
+    void createTtsOptions();
+    void ttsInitialized();
 
     CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, CRUIPlatform * platform);
     virtual ~CRUIMainWidget();

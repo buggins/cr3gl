@@ -193,6 +193,10 @@ public:
 	{
 		return (jobjectArray)objacc->CallObjectMethod( objacc.getObject(), methodid, obj );
 	}
+	jobjectArray callObjArray()
+	{
+		return (jobjectArray)objacc->CallObjectMethod( objacc.getObject(), methodid);
+	}
 	jobject callObj(jobject obj1, jobject obj2)
 	{
 		return objacc->CallObjectMethod( objacc.getObject(), methodid, obj1, obj2 ); 
@@ -204,6 +208,10 @@ public:
 	jboolean callBool(jstring s)
 	{
 		return objacc->CallBooleanMethod( objacc.getObject(), methodid, s );
+	}
+	jboolean callBool(int v)
+	{
+		return objacc->CallBooleanMethod( objacc.getObject(), methodid, v );
 	}
 	jboolean callBool(jstring s, jstring s2)
 	{

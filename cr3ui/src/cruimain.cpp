@@ -523,28 +523,21 @@ void CRUIMainWidget::createReaderSettings() {
     _readerSettings.addChild(fontsAndColors);
 
     //CRLog::trace("Creating Settings UI reader settings: interface");
-    CRUISettingsList * interfaceSettings = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
-    interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
+    _interfaceSettings = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
+    _interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
     //CRLog::trace("Creating Settings UI reader settings: interface: languages");
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
-    interfaceSettings->addChild(uilangs);
+    _interfaceSettings->addChild(uilangs);
 
     //CRLog::trace("Creating Settings UI reader settings: interface: tts");
     if (getPlatform()->getTextToSpeech()) {
-        CRUISettingsOptionList * ttsvoices = new CRUITTSSetting(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
-        ttsvoices->addOption(new CRUIOptionItem(PROP_APP_TTS_VOICE_VALUE_SYSTEM, STR_SETTINGS_TTS_VOICE_VALUE_SYSTEM));
-        LVPtrVector<CRUITextToSpeechVoice, false> voiceList;
-        getPlatform()->getTextToSpeech()->getAvailableVoices(voiceList);
-        for (int i = 0; i < voiceList.length(); i++) {
-            ttsvoices->addOption(new CRUIOptionItem(voiceList[i]->getId(), Utf8ToUnicode(voiceList[i]->getName())));
-        }
-        interfaceSettings->addChild(ttsvoices);
+    	createTtsOptions();
     } else {
-        CRLog::trace("Creating Settings UI reader settings: interface: no text to speech on platform");
+        CRLog::trace("text to speech on platform");
     }
 
     //CRLog::trace("Creating Settings UI reader settings: interface: themes");
@@ -555,7 +548,7 @@ void CRUIMainWidget::createReaderSettings() {
         themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_WHITE, STR_SETTINGS_THEME_VALUE_WHITE));
         themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_BLACK, STR_SETTINGS_THEME_VALUE_BLACK));
         //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
-        interfaceSettings->addChild(themes);
+        _interfaceSettings->addChild(themes);
     }
     //CRLog::trace("Creating Settings UI reader settings: interface: toolbar");
     CRUISettingsOptionList * toolbar = new CRUISettingsOptionList(STR_SETTINGS_APP_READER_TOOLBAR, STR_SETTINGS_APP_READER_TOOLBAR_DESCRIPTION, PROP_APP_READER_SHOW_TOOLBAR);
@@ -564,11 +557,11 @@ void CRUIMainWidget::createReaderSettings() {
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_LEFT, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_LEFT));
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_SHORT_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_SHORT_SIDE));
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_LONG_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_LONG_SIDE));
-    interfaceSettings->addChild(toolbar);
+    _interfaceSettings->addChild(toolbar);
     //CRLog::trace("Creating Settings UI reader settings: interface: scrollbar");
-    interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_READER_SCROLLBAR, NULL, PROP_APP_READER_SHOW_SCROLLBAR, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_ON, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_OFF));
+    _interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_READER_SCROLLBAR, NULL, PROP_APP_READER_SHOW_SCROLLBAR, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_ON, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_OFF));
 
-    _readerSettings.addChild(interfaceSettings);
+    _readerSettings.addChild(_interfaceSettings);
 
     //CRLog::trace("Creating Settings UI reader settings: controls");
     CRUISettingsList * controls = new CRUISettingsList(STR_SETTINGS_CONTROLS, STR_SETTINGS_CONTROLS_DESCRIPTION, SETTINGS_PATH_CONTROLS);
@@ -643,6 +636,24 @@ void CRUIMainWidget::createReaderSettings() {
     formattingOptions->addChild(hyph);
     _readerSettings.addChild(formattingOptions);
 
+}
+
+void CRUIMainWidget::createTtsOptions() {
+    CRLog::trace("Creating text to speech options");
+    CRUISettingsOptionList * ttsvoices = new CRUITTSSetting(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
+    ttsvoices->addOption(new CRUIOptionItem(PROP_APP_TTS_VOICE_VALUE_SYSTEM, STR_SETTINGS_TTS_VOICE_VALUE_SYSTEM));
+    LVPtrVector<CRUITextToSpeechVoice, false> voiceList;
+    getPlatform()->getTextToSpeech()->getAvailableVoices(voiceList);
+    for (int i = 0; i < voiceList.length(); i++) {
+        ttsvoices->addOption(new CRUIOptionItem(voiceList[i]->getId(), Utf8ToUnicode(voiceList[i]->getName())));
+    }
+    _interfaceSettings->addChild(ttsvoices);
+}
+
+void CRUIMainWidget::ttsInitialized() {
+	if (_platform->getTextToSpeech()) {
+		createTtsOptions();
+	}
 }
 
 void CRUIMainWidget::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
