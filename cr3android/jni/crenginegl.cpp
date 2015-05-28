@@ -284,13 +284,14 @@ public:
 
     bool create() {
 		CRLog::trace("Creating widget");
-    	_widget = new CRUIMainWidget();
+    	_widget = new CRUIMainWidget(this, this);
+		CRLog::trace("_eventManager.setRootWidget for main widget");
     	_eventManager.setRootWidget(_widget);
-    	_widget->setScreenUpdater(this);
-    	_widget->setPlatform(this);
+		CRLog::trace("setFullscreen");
     	setFullscreen(_widget->getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false));
     	if (!_fileToOpen.empty())
         	_widget->openBookFromFile(_fileToOpen);
+		CRLog::trace("Created widget");
     	return true;
     }
 

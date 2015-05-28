@@ -509,7 +509,7 @@ public:
 
     void updateFolderBookmarks();
 
-    CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater = NULL, CRUIPlatform * platform = NULL);
+    CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, CRUIPlatform * platform);
     virtual ~CRUIMainWidget();
 };
 

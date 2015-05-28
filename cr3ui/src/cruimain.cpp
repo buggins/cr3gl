@@ -495,6 +495,7 @@ void CRUIMainWidget::createBrowserSettings() {
 }
 
 void CRUIMainWidget::createReaderSettings() {
+    //CRLog::trace("Creating Settings UI reader settings: fonts and colors");
     CRUISettingsList * fontsAndColors = new CRUISettingsList(STR_SETTINGS_FONTS_AND_COLORS, NULL, SETTINGS_PATH_READER_FONTSANDCOLORS);
     CRUISettingsOptionList * fontFaces = new CRUIFontFaceSetting(STR_SETTINGS_FONT_FACE, NULL, PROP_FONT_FACE);
     lString16Collection faceList;
@@ -521,8 +522,10 @@ void CRUIMainWidget::createReaderSettings() {
 
     _readerSettings.addChild(fontsAndColors);
 
+    //CRLog::trace("Creating Settings UI reader settings: interface");
     CRUISettingsList * interfaceSettings = new CRUISettingsList(STR_SETTINGS_INTERFACE, STR_SETTINGS_INTERFACE_DESCRIPTION, SETTINGS_PATH_READER_INTERFACE);
     interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
+    //CRLog::trace("Creating Settings UI reader settings: interface: languages");
     CRUISettingsOptionList * uilangs = new CRUISettingsOptionList(STR_SETTINGS_INTERFACE_LANGUAGE, NULL, PROP_APP_INTERFACE_LANGUAGE);
     for (int i = 0; i < crconfig.interfaceLanguages.length(); i++) {
         CRUIInterfaceLanguage * lang = crconfig.interfaceLanguages[i];
@@ -530,6 +533,7 @@ void CRUIMainWidget::createReaderSettings() {
     }
     interfaceSettings->addChild(uilangs);
 
+    //CRLog::trace("Creating Settings UI reader settings: interface: tts");
     if (getPlatform()->getTextToSpeech()) {
         CRUISettingsOptionList * ttsvoices = new CRUITTSSetting(STR_SETTINGS_TTS_VOICE, NULL, PROP_APP_TTS_VOICE);
         ttsvoices->addOption(new CRUIOptionItem(PROP_APP_TTS_VOICE_VALUE_SYSTEM, STR_SETTINGS_TTS_VOICE_VALUE_SYSTEM));
@@ -539,8 +543,11 @@ void CRUIMainWidget::createReaderSettings() {
             ttsvoices->addOption(new CRUIOptionItem(voiceList[i]->getId(), Utf8ToUnicode(voiceList[i]->getName())));
         }
         interfaceSettings->addChild(ttsvoices);
+    } else {
+        CRLog::trace("Creating Settings UI reader settings: interface: no text to speech on platform");
     }
 
+    //CRLog::trace("Creating Settings UI reader settings: interface: themes");
     if (!crconfig.einkMode) {
         CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
         themes->addOption(new CRUIOptionItem(PROP_APP_THEME_VALUE_LIGHT, STR_SETTINGS_THEME_VALUE_LIGHT));
@@ -550,6 +557,7 @@ void CRUIMainWidget::createReaderSettings() {
         //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
         interfaceSettings->addChild(themes);
     }
+    //CRLog::trace("Creating Settings UI reader settings: interface: toolbar");
     CRUISettingsOptionList * toolbar = new CRUISettingsOptionList(STR_SETTINGS_APP_READER_TOOLBAR, STR_SETTINGS_APP_READER_TOOLBAR_DESCRIPTION, PROP_APP_READER_SHOW_TOOLBAR);
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_OFF, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_OFF));
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_TOP, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_TOP));
@@ -557,10 +565,12 @@ void CRUIMainWidget::createReaderSettings() {
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_SHORT_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_SHORT_SIDE));
     toolbar->addOption(new CRUIOptionItem(PROP_APP_READER_SHOW_TOOLBAR_VALUE_LONG_SIDE, STR_SETTINGS_APP_READER_TOOLBAR_VALUE_LONG_SIDE));
     interfaceSettings->addChild(toolbar);
+    //CRLog::trace("Creating Settings UI reader settings: interface: scrollbar");
     interfaceSettings->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_READER_SCROLLBAR, NULL, PROP_APP_READER_SHOW_SCROLLBAR, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_ON, STR_SETTINGS_APP_READER_SCROLLBAR_VALUE_OFF));
 
     _readerSettings.addChild(interfaceSettings);
 
+    //CRLog::trace("Creating Settings UI reader settings: controls");
     CRUISettingsList * controls = new CRUISettingsList(STR_SETTINGS_CONTROLS, STR_SETTINGS_CONTROLS_DESCRIPTION, SETTINGS_PATH_CONTROLS);
     CRUITapZoneSettingsList * tznormal = new CRUITapZoneSettingsList(STR_SETTINGS_CONTROLS_TAP_ZONES_NORMAL, STR_SETTINGS_CONTROLS_TAP_ZONES_NORMAL_DESCRIPTION, TAPZONE_MODIFIER_NONE);
     CRUITapZoneSettingsList * tzdouble = new CRUITapZoneSettingsList(STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE, STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE_DESCRIPTION, TAPZONE_MODIFIER_TWOFINGER);
@@ -568,6 +578,7 @@ void CRUIMainWidget::createReaderSettings() {
     controls->addChild(tzdouble);
     _readerSettings.addChild(controls);
 
+    //CRLog::trace("Creating Settings UI reader settings: page layout");
     CRUISettingsList * pageLayout = new CRUISettingsList(STR_SETTINGS_PAGE_LAYOUT, STR_SETTINGS_PAGE_LAYOUT_DESCRIPTION, SETTINGS_PATH_READER_PAGELAYOUT);
 
     CRUISettingsOptionList * viewmode = new CRUISettingsOptionList(STR_SETTINGS_VIEW_MODE, STR_SETTINGS_VIEW_MODE_DESCRIPTION, PROP_PAGE_VIEW_MODE);
@@ -620,6 +631,7 @@ void CRUIMainWidget::createReaderSettings() {
     }
     _readerSettings.addChild(pageLayout);
 
+    //CRLog::trace("Creating Settings UI reader settings: formatting");
     CRUISettingsList * formattingOptions = new CRUISettingsList(STR_SETTINGS_TEXT_FORMATTING, STR_SETTINGS_TEXT_FORMATTING_DESCRIPTION, SETTINGS_PATH_READER_TEXTFORMATTING);
     formattingOptions->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FLOATING_PUNCTUATION, NULL, PROP_FLOATING_PUNCTUATION, STR_SETTINGS_FLOATING_PUNCTUATION_VALUE_ON, STR_SETTINGS_FLOATING_PUNCTUATION_VALUE_OFF));
     formattingOptions->addChild(new CRUISettingsCheckbox(STR_SETTINGS_FONT_KERNING, NULL, PROP_FONT_KERNING_ENABLED, STR_SETTINGS_FONT_KERNING_VALUE_ON, STR_SETTINGS_FONT_KERNING_VALUE_OFF));
@@ -700,6 +712,8 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     int oldPropCount = _currentSettings->getCount();
 
     bool bigScreen = deviceInfo.longSideMillimeters > 130;
+
+    CRLog::trace("Applying default settings.");
 
     _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
     _currentSettings->setStringDef(PROP_APP_READER_SHOW_SCROLLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
@@ -817,16 +831,23 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_NIGHT, 0x800000);
 
     if (_currentSettings->getCount() != oldPropCount) {
+        CRLog::trace("Saving settings");
         saveSettings();
     }
+    CRLog::trace("Creating Settings UI objects: browser settings");
     createBrowserSettings();
+    CRLog::trace("Creating Settings UI objects: reader settings");
     createReaderSettings();
 
+    CRLog::trace("Creating CRUIHomeWidget");
     _home = new CRUIHomeWidget(this);
+    CRLog::trace("Creating CRUIReadWidget");
     _read = new CRUIReadWidget(this);
     _history.add(new HomeItem(this, _home));
 
+    CRLog::trace("Applying settings");
     applySettings(_currentSettings, _currentSettings, _currentSettings);
+    CRLog::trace("Exiting CRUIMainWidget::CRUIMainWidget");
 }
 
 static volatile int LAST_UPDATE_REQUEST_ID = 1;
