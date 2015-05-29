@@ -56,7 +56,10 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	
 	@TargetApi(14)
 	@SuppressLint("NewApi")
-	private class Api18Support extends NewApiSupport {
+	private class Api14Support extends Api8Support {
+		public TextToSpeech createTextToSpeech(String engineName) {
+			return new TextToSpeech(_context, CRTTS.this, engineName);
+		}
 		public void construct() {
 			
 		}
@@ -64,7 +67,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	
 	@TargetApi(18)
 	@SuppressLint("NewApi")
-	private class Api18Support extends NewApiSupport {
+	private class Api18Support extends Api14Support {
 		public void construct() {
 			
 		}
@@ -72,7 +75,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 	
 	@TargetApi(21)
 	@SuppressLint("NewApi")
-	private class Api21Support extends NewApiSupport {
+	private class Api21Support extends Api18Support {
 		public void construct() {
 			log.d("api21.construct");
 			List<TextToSpeech.EngineInfo> engines = _textToSpeech.getEngines();
@@ -120,7 +123,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 		_engineName = engineName;
 		_initialized = false;
 		_error = false;
-		_textToSpeech = new TextToSpeech(_context, this, _engineName);
+		_textToSpeech = _apiSupport.createTextToSpeech(_engineName);
 	}
 
 	@Override
