@@ -783,9 +783,9 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xFFFFFF);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xFFFFFF);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x000000);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xB04030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xB04030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x703020);
     } else {
         _currentSettings->setString(PROP_NIGHT_MODE, "0");
         _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
@@ -797,9 +797,9 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED, "0");
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "0");
         _currentSettings->setString(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "0");
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xB04030);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xB04030);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x703020);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xFFFFFF);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x000000);
     }
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS, COLOR_TRANSFORM_BRIGHTNESS_NONE);
     _currentSettings->setColorDef(PROP_BACKGROUND_IMAGE_CORRECTION_BRIGHTNESS_DAY, COLOR_TRANSFORM_BRIGHTNESS_NONE);

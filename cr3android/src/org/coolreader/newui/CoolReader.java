@@ -279,6 +279,48 @@ public class CoolReader extends Activity {
 	}
 	int initialBatteryLevel = 100;
 
+	boolean justCreated = true;
+	@Override
+	protected void onStart() {
+		log.i("CoolReader.onStart()");
+		super.onStart();
+		
+		// Donations support code
+//		if (billingSupported)
+//			ResponseHandler.register(mPurchaseObserver);
+		
+//		PhoneStateReceiver.setPhoneActivityHandler(new Runnable() {
+//			@Override
+//			public void run() {
+//				if (mReaderView != null) {
+//					mReaderView.stopTTS();
+//					mReaderView.save();
+//				}
+//			}
+//		});
+		
+		
+//		if ( isBookOpened() ) {
+//			showOpenedBook();
+//			return;
+//		}
+//		
+//		if (!isFirstStart)
+//			return;
+//		isFirstStart = false;
+		
+		if (justCreated) {
+			justCreated = false;
+			if (!processIntent(getIntent())) {
+				//showLastLocation();
+			}
+		}
+		
+		
+		log.i("CoolReader.onStart() exiting");
+	}
+	
+	
     @Override
     protected void onPause() {
 		log.i("CoolReader.onPause() is called");

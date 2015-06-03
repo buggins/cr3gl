@@ -461,8 +461,12 @@ public:
     	_eventManager.setRootWidget(_widget);
 		CRLog::trace("setFullscreen");
     	setFullscreen(_widget->getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false));
-    	if (!_fileToOpen.empty())
-        	_widget->openBookFromFile(_fileToOpen);
+    	if (!_fileToOpen.empty()) {
+    		CRLog::trace("DocViewNative::create - setting book to open on start: %s", _fileToOpen.c_str());
+    		_widget->setFileToOpenOnStart(_fileToOpen);
+    		_fileToOpen.clear();
+        	//_widget->openBookFromFile(_fileToOpen);
+    	}
 		CRLog::trace("Created widget");
     	return true;
     }
@@ -1136,6 +1140,7 @@ public:
         	CRLog::trace("~AndroidThread");
         }
         virtual void start() {
+        	crSetSignalHandler();
         	startMethod.callVoid();
         }
         virtual void join() {

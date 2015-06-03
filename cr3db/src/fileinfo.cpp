@@ -549,10 +549,14 @@ void CRDirCache::run() {
         }
         if (task) {
             CRDirContentItem * item = task->dir;
-            CRLog::trace("CRDirCache::run :: calling refresh()");
-            item->refresh();
-            CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
-            concurrencyProvider->executeGui(task); // callback will be deleted in GUI thread
+            if (!item) {
+				CRLog::trace("CRDirCache::run :: task->dir is null");
+            } else {
+				CRLog::trace("CRDirCache::run :: calling refresh()");
+				item->refresh();
+				CRLog::trace("CRDirCache::run :: posting callback to GUI thread");
+				concurrencyProvider->executeGui(task); // callback will be deleted in GUI thread
+            }
         }
     }
     CRLog::info("CRCoverPageManager thread finished");

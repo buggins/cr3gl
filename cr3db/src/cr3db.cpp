@@ -1715,6 +1715,7 @@ bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<Book
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
     SQLiteTransactionGuard dbGuard(_db);
     CR_UNUSED2(guard, dbGuard);
+    CRLog::trace("CRBookDB::loadRecentBooks entered");
     books.clear();
     lastPositions.clear();
     if (!_lastPositionCache.length()) {
@@ -1758,6 +1759,7 @@ bool CRBookDB::loadRecentBooks(LVPtrVector<BookDBBook> & books, LVPtrVector<Book
             }
         }
     }
+    CRLog::trace("CRBookDB::loadRecentBooks exiting");
     return true;
 }
 
