@@ -30,7 +30,7 @@ CRENGINE_INCLUDES := \
     -I$(LOCAL_PATH)/cr3/cr3gl/include \
     -I$(LOCAL_PATH)/cr3/cr3ui/include
     
-LOCAL_CFLAGS += $(CRFLAGS) $(CRENGINE_INCLUDES) -Wno-psabi -Wno-unused-variable -Wno-sign-compare -Wno-write-strings -Wno-main -Wno-unused-but-set-variable -Wno-unused-function -Wall
+LOCAL_CFLAGS += $(CRFLAGS) $(CRENGINE_INCLUDES) -Wno-psabi -Wno-unused-variable -Wno-sign-compare -Wno-write-strings -Wno-main -Wno-unused-but-set-variable -Wno-unused-function -Wall -fno-omit-frame-pointer
 
 
 CRENGINE_SRC_FILES := \
@@ -278,7 +278,7 @@ LOCAL_SRC_FILES := \
     $(CHM_SRC_FILES) \
     $(ANTIWORD_SRC_FILES)
 
-LOCAL_LDLIBS    := -lm -llog -lz -lGLESv1_CM -ldl -Wl,-Map=cr3engine.map
+LOCAL_LDLIBS    := -lm -llog -lz -lGLESv1_CM -ldl
 #-ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

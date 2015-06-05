@@ -228,7 +228,7 @@ void CRUIFontSampleWidget::format() {
         getPadding(margins);
         rc.shrinkBy(frameWidths);
         _docview->Resize(rc.width(), rc.height());
-        _docview->setPageMargins(margins);
+        //_docview->setPageMargins(margins);
         CRPropRef propsForDocview = LVCreatePropsContainer();
         static const char * props_for_copy[] = {
             PROP_FONT_COLOR,
@@ -242,6 +242,10 @@ void CRUIFontSampleWidget::format() {
             PROP_PAGE_MARGINS,
             PROP_APP_BOOK_COVER_COLOR,
             PROP_APP_BOOK_COVER_VISIBLE,
+            PROP_PAGE_MARGIN_LEFT,
+            PROP_PAGE_MARGIN_RIGHT,
+            PROP_PAGE_MARGIN_TOP,
+            PROP_PAGE_MARGIN_BOTTOM,
             NULL
         };
         for (int i = 0; props_for_copy[i]; i++) {
@@ -388,14 +392,14 @@ bool CRUIInterlineSpaceEditorWidget::onScrollPosChange(CRUIScrollBase * widget, 
 }
 
 CRUIPageMarginsEditorWidget::CRUIPageMarginsEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
-    int sz = props->getIntDef(PROP_PAGE_MARGINS, 500);
+    int sz = props->getIntDef(PROP_PAGE_MARGINS, 300);
     _sizetext = new CRUITextWidget();
     _sizetext->setAlign(ALIGN_CENTER);
     _sizetext->setPadding(PT_TO_PX(6));
     _sizetext->setText(formatPageMargins(sz));
     _sizetext->setFontSize(FONT_SIZE_XLARGE);
     _sizetext->setMinHeight(MIN_ITEM_PX);
-    _slider = new CRUISliderWidget(100, 2000, sz);
+    _slider = new CRUISliderWidget(100, 1000, sz);
     _slider->setPadding(PT_TO_PX(4));
     _slider->setScrollPosCallback(this);
     _slider->setMinHeight(MIN_ITEM_PX);

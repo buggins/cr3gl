@@ -62,8 +62,14 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
             int marginPercent = props->getIntDef(key.c_str(), 5000);
             int hmargin = deviceInfo.shortSide * marginPercent / 10000;
             lvRect margins(hmargin, hmargin / 2, hmargin, hmargin / 2);
-            setPageMargins(margins);
-            requestRender();
+            if (propsGetCurrent()->getIntDef(PROP_PAGE_MARGIN_LEFT, 0) != margins.left)
+                forDocview->setInt(PROP_PAGE_MARGIN_LEFT, margins.left);
+            if (propsGetCurrent()->getIntDef(PROP_PAGE_MARGIN_RIGHT, 0) != margins.right)
+                forDocview->setInt(PROP_PAGE_MARGIN_RIGHT, margins.right);
+            if (propsGetCurrent()->getIntDef(PROP_PAGE_MARGIN_TOP, 0) != margins.top)
+                forDocview->setInt(PROP_PAGE_MARGIN_TOP, margins.top);
+            if (propsGetCurrent()->getIntDef(PROP_PAGE_MARGIN_BOTTOM, 0) != margins.bottom)
+                forDocview->setInt(PROP_PAGE_MARGIN_BOTTOM, margins.bottom);
         } else if (key == PROP_APP_BOOK_COVER_VISIBLE) {
             _showCover = props->getBoolDef(key.c_str(), true);
         } else if (key == PROP_APP_BOOK_COVER_COLOR) {
@@ -894,12 +900,12 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
 
 void CRUIReadWidget::prepareScroll(int direction) {
     if (renderIfNecessary()) {
-        //CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
+        CRLog::trace("CRUIReadWidget::prepareScroll(%d)", direction);
         if (_viewMode == DVM_PAGES)
             _pagedCache.prepare(_docview, _docview->getCurPage(), _measuredWidth, _measuredHeight, direction, true, _pageAnimation);
         else
             _scrollCache.prepare(_docview, _docview->GetPos(), _measuredWidth, _measuredHeight, direction, true);
-        //CRLog::trace("CRUIReadWidget::prepareScroll(%d) - done", direction);
+        CRLog::trace("CRUIReadWidget::prepareScroll(%d) - done", direction);
     }
 }
 
@@ -3071,7 +3077,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
 	//CRLog::trace("Created page %08x", (lUInt32) page->drawbuf);
     page->back = back;
     LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
-    //CRLog::trace("Preparing page image for page %d ; buf = %08x", pageNumber, (lUInt32)buf);
+    CRLog::trace("CRUIReadWidget::PagedModePageCache::preparePage Preparing page image for page %d ; buf = %08x", pageNumber, (lUInt32)buf);
     buf->beforeDrawing();
     buf->SetTextColor(_docview->getTextColor());
     buf->SetBackgroundColor(_docview->getBackgroundColor());
@@ -3080,7 +3086,9 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     if (oldPage != pageNumber)
         _docview->goToPage(pageNumber);
     //_docview->Draw(*buf, -1, pageNumber, false, false);
+    CRLog::trace("_docview->Draw calling");
     _docview->Draw(*buf, false);
+    CRLog::trace("_docview->Draw done");
 //    if ((pageNumber & 1))
 //    	buf->FillRect(100, 10, 110, 20, 0x800000FF);
 //    else
@@ -3090,6 +3098,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     if (oldPage != pageNumber)
         _docview->goToPage(oldPage);
     if (!crconfig.einkMode) {
+        CRLog::trace("drawing page gradients");
         int sdx = dx / 10 / _docview->getVisiblePageCount();
         lUInt32 cl1 = 0xE0000000;
         lUInt32 cl2 = 0xFF000000;
@@ -3099,6 +3108,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
             buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
             buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
         }
+        CRLog::trace("drawing page gradients done");
     }
     if (_docview->getVisiblePageCount() == 2) {
         lvRect rc1 = rc;
@@ -3122,8 +3132,11 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         rc.shrink(1);
         buf->DrawFrame(rc, 0xE0404040, 1);
     }
+    CRLog::trace("calling buf->afterDrawing()");
     buf->afterDrawing();
+    CRLog::trace("done buf->afterDrawing()");
     pages.add(page);
+    CRLog::trace("CRUIReadWidget::PagedModePageCache::preparePage page is prepared");
 }
 
 /// ensure images are prepared
