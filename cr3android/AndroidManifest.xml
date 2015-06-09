@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.coolreader.newui"
     android:installLocation="auto"
-    android:versionCode="45"
-    android:versionName="3.3.45" >
+    android:versionCode="47"
+    android:versionName="3.3.47" >
 
     <uses-sdk
         android:minSdkVersion="7"

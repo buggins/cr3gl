@@ -520,7 +520,8 @@ SOURCES += \
     ../../cr3ui/src/opdsbrowser.cpp \
     ../../cr3ui/src/cruiopdsprops.cpp \
     ../../cr3ui/src/cruiopdsbook.cpp \
-    ../../cr3ui/src/stringresource.cpp
+    ../../cr3ui/src/stringresource.cpp \
+    ../../cr3ui/src/litresplugin.cpp
 
 HEADERS += \
     ../../cr3db/include/basedb.h \
@@ -555,7 +556,8 @@ HEADERS += \
     ../../cr3ui/include/cruiopdsprops.h \
     ../../cr3ui/include/cruiopdsbook.h \
     ../../cr3ui/include/cruisettings.h \
-    ../../cr3ui/include/stringresource.h
+    ../../cr3ui/include/stringresource.h \
+    ../../cr3ui/include/litresplugin.h
 
 SOURCES += \
     qtsingleapplication/qtlocalpeer.cpp \
