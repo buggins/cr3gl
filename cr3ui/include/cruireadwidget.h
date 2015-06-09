@@ -41,7 +41,7 @@ class CRUIDocView : public LVDocView {
     //CRUIImageRef backgroundScrollRight;
     lUInt32 _coverColor;
     bool _showCover;
-    bool _pages3d;
+    bool _pageAnimationSupportsCoverFrame;
 public:
     CRUIDocView();
     /// clears page background

@@ -169,6 +169,9 @@ public:
     virtual void setFileToOpenOnStart(lString8 filename);
 
 
+    void restorePositionAndShow();
+    void saveWindowStateAndPosition();
+
 public slots:
     void renderLater();
     void renderNow();

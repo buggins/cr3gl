@@ -44,7 +44,7 @@ CRUIDocView::CRUIDocView() : LVDocView() {
     //background = resourceResolver->getIcon("leather.jpg", true);
     _coverColor = 0xA04030;
     _showCover = true;
-    _pages3d = true;
+    _pageAnimationSupportsCoverFrame = true;
     background = CRUIImageRef(new CRUISolidFillImage(0xFFFFFF));
 }
 
@@ -75,7 +75,11 @@ CRPropRef CRUIDocView::propsApply(CRPropRef props) {
         } else if (key == PROP_APP_BOOK_COVER_COLOR) {
             _coverColor = props->getColorDef(key.c_str(), 0xA04030);
         } else if (key == PROP_PAGE_VIEW_ANIMATION) {
-            _pages3d = props->getIntDef(PROP_PAGE_VIEW_ANIMATION, 0) == PAGE_ANIMATION_3D;
+            _pageAnimationSupportsCoverFrame =
+                    props->getIntDef(PROP_PAGE_VIEW_ANIMATION, 0) == PAGE_ANIMATION_3D ||
+                    props->getIntDef(PROP_PAGE_VIEW_ANIMATION, 0) == PAGE_ANIMATION_NONE ||
+                    props->getIntDef(PROP_PAGE_VIEW_ANIMATION, 0) == PAGE_ANIMATION_FADE
+                    ;
         } else if (key == PROP_FONT_ANTIALIASING) {
             int antialiasingMode = props->getIntDef(PROP_FONT_ANTIALIASING, 2);
             if (antialiasingMode == 1) {
@@ -179,7 +183,7 @@ lvRect CRUIDocView::calcCoverFrameWidths(lvRect rc)
     overrideVisiblePageCount(pageCount);
 
     lvRect res;
-    if (!_showCover || !_pages3d)
+    if (!_showCover || !_pageAnimationSupportsCoverFrame)
         return res;
 
     int visiblePages = getVisiblePageCount();
@@ -879,9 +883,12 @@ void CRUIReadWidget::layout(int left, int top, int right, int bottom) {
     lvRect frame = _docview->calcCoverFrameWidths(_clientRect);
     _clientRect.shrinkBy(frame);
     CRUIReadMenu * saved = _toolbar;
+    CRUIScrollBar * savedsb = _scrollbar;
     _toolbar = NULL;
+    _scrollbar = NULL;
     CRUIWindowWidget::layout(left, top, right, bottom);
     _toolbar = saved;
+    _scrollbar = savedsb;
     if (_toolbar) {
         if (toolbarVertical)
             _toolbar->layout(left, top, left + toolbarWidth, bottom);
@@ -956,7 +963,13 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
             //CRLog::trace("preparing");
             _pagedCache.prepare(_docview, _docview->getCurPage(), _clientRect.width(), _clientRect.height(), direction, false, _pageAnimation);
             //CRLog::trace("drawing");
-            _docview->drawCoverFrame(*buf, _bookRect, _clientRect);
+            LVDrawStateSaver s(*buf);
+            CR_UNUSED(s);
+            if (_viewMode == DVM_PAGES) {
+                buf->SetClipRect(&_bookRect);
+                _docview->drawCoverFrame(*buf, _bookRect, _clientRect);
+            }
+            buf->SetClipRect(&_clientRect);
             _pagedCache.draw(buf, _docview->getCurPage(), direction, progress, _clientRect.left, _clientRect.top, startx, currx);
             //CRLog::trace("drawing done");
         } else {
@@ -966,6 +979,13 @@ void CRUIReadWidget::draw(LVDrawBuf * buf) {
     } else {
         // document render in progress; draw just page background
         //CRLog::trace("Document is locked, just drawing background");
+        LVDrawStateSaver s(*buf);
+        CR_UNUSED(s);
+        if (_viewMode == DVM_PAGES) {
+            buf->SetClipRect(&_bookRect);
+            _docview->drawCoverFrame(*buf, _bookRect, _clientRect);
+        }
+        buf->SetClipRect(&_clientRect);
         _docview->drawPageBackground(*buf, _clientRect.left, _clientRect.top);
     }
     // scroll bottom and top gradients
@@ -3172,10 +3192,11 @@ void CRUIReadWidget::PagedModePageCache::prepare(LVDocView * _docview, int _page
         //CRLog::trace("preparePage(_docview, nextPage)");
         preparePage(_docview, nextPage);
     }
-    if (pageAnimation == PAGE_ANIMATION_3D && direction > 0 && numPages == 1)
+    if (pageAnimation == PAGE_ANIMATION_3D && direction > 0 && numPages == 1) {
         preparePage(_docview, thisPage, true);
-    if (pageAnimation == PAGE_ANIMATION_3D && direction < 0 && numPages == 1 && nextPage != -1)
-        preparePage(_docview, nextPage, true);
+        if (nextPage != -1)
+            preparePage(_docview, nextPage, true);
+    }
     //CRLog::trace("prepare done");
 }
 

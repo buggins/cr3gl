@@ -191,6 +191,82 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 }
 //! [1]
 
+void OpenGLWindow::restorePositionAndShow() {
+    CRPropRef settings = _widget->getSettings();
+    int state = settings->getIntDef(PROP_APP_WINDOW_STATE, WINDOW_STATE_NORMAL);
+    _fullscreen = settings->getBoolDef(PROP_APP_FULLSCREEN, false);
+    if (_fullscreen)
+        state = WINDOW_STATE_FULLSCREEN;
+    if (state == WINDOW_STATE_MINIMIZED)
+        state = WINDOW_STATE_NORMAL;
+    int x = settings->getIntDef(PROP_APP_WINDOW_X, -1);
+    int y = settings->getIntDef(PROP_APP_WINDOW_Y, -1);
+    int width = settings->getIntDef(PROP_APP_WINDOW_WIDTH, -1);
+    int height = settings->getIntDef(PROP_APP_WINDOW_HEIGHT, -1);
+    if (width > 0 && height > 0 && state == WINDOW_STATE_NORMAL)
+        resize(width, height);
+    if (x >= 0 && y >= 0 && state == WINDOW_STATE_NORMAL)
+        setPosition(x, y);
+    if (state == WINDOW_STATE_MAXIMIZED)
+        showMaximized();
+    else if (state == WINDOW_STATE_FULLSCREEN)
+        showFullScreen();
+    else
+        show();
+}
+
+void OpenGLWindow::saveWindowStateAndPosition() {
+    if (!_widget)
+        return;
+    CRPropRef settings = _widget->getSettings();
+    int oldstate = settings->getIntDef(PROP_APP_WINDOW_STATE, WINDOW_STATE_NORMAL);
+    int oldx = settings->getIntDef(PROP_APP_WINDOW_X, -1);
+    int oldy = settings->getIntDef(PROP_APP_WINDOW_Y, -1);
+    int oldwidth = settings->getIntDef(PROP_APP_WINDOW_WIDTH, -1);
+    int oldheight = settings->getIntDef(PROP_APP_WINDOW_HEIGHT, -1);
+    int newstate = oldstate;
+    int newx = oldx;
+    int newy = oldy;
+    int newwidth = oldwidth;
+    int newheight = oldheight;
+    switch(visibility()) {
+    default:
+    case Windowed:
+        newstate = WINDOW_STATE_NORMAL;
+        break;
+    case Minimized:
+        newstate = WINDOW_STATE_MINIMIZED;
+        break;
+    case Maximized:
+        newstate = WINDOW_STATE_MAXIMIZED;
+        break;
+    case FullScreen:
+        newstate = WINDOW_STATE_FULLSCREEN;
+        break;
+    }
+    if (newstate == WINDOW_STATE_MINIMIZED)
+        return; // don't save minimized state
+    bool fullscreen = settings->getBoolDef(PROP_APP_FULLSCREEN, false);
+    if (fullscreen)
+        newstate = WINDOW_STATE_FULLSCREEN;
+    bool changed = false;
+    if (newstate == WINDOW_STATE_NORMAL) {
+        if (oldx != newx || oldy != newy || oldwidth != newwidth || oldheight != newheight) {
+            settings->setInt(PROP_APP_WINDOW_X, newx);
+            settings->setInt(PROP_APP_WINDOW_Y, newy);
+            settings->setInt(PROP_APP_WINDOW_WIDTH, newwidth);
+            settings->setInt(PROP_APP_WINDOW_HEIGHT, newheight);
+            changed = true;
+        }
+    }
+    if (newstate != oldstate) {
+        settings->setInt(PROP_APP_WINDOW_STATE, newstate);
+        changed = true;
+    }
+    if (changed)
+        _widget->saveSettings();
+}
+
 void OpenGLWindow::onMessageReceived(const QString & msg) {
     lString8 fn((const char *)msg.toUtf8().constData());
     CRLog::info("onMessageReceived: %s", fn.c_str());

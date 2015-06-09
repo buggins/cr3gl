@@ -102,5 +102,17 @@
 #define PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_NIGHT "crengine.highlight.bookmarks.color.comment.night"
 #define PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_NIGHT "crengine.highlight.bookmarks.color.correction.night"
 
+#define PROP_APP_WINDOW_STATE "app.window.state"
+#define PROP_APP_WINDOW_X "app.window.x"
+#define PROP_APP_WINDOW_Y "app.window.y"
+#define PROP_APP_WINDOW_WIDTH "app.window.width"
+#define PROP_APP_WINDOW_HEIGHT "app.window.height"
+
+enum WindowState {
+    WINDOW_STATE_NORMAL,
+    WINDOW_STATE_MINIMIZED,
+    WINDOW_STATE_MAXIMIZED,
+    WINDOW_STATE_FULLSCREEN
+};
 
 #endif // CRUISETTINGS_H

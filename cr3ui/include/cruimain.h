@@ -396,10 +396,10 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     /// if not initialized, run background tasks
     void runStartupTasksIfNeeded();
 
-    void saveSettings();
 
     void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
+    void saveSettings();
 
     void setBatteryLevel(int level);
     CRPropRef getSettings() { return _currentSettings; } // curretnly active settings

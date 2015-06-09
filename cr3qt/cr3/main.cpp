@@ -53,11 +53,7 @@ int main(int argc, char *argv[])
             if (!filename.empty()) {
                 w.setFileToOpenOnStart(filename);
             }
-            bool fullscreen = w.getSettings()->getBoolDef(PROP_APP_FULLSCREEN, false);
-            if (fullscreen)
-                w.showFullScreen();
-            else
-                w.show();
+            w.restorePositionAndShow();
             res = a.exec();
 
             crconfig.uninitEngine();
