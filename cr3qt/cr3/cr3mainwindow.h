@@ -178,11 +178,16 @@ public slots:
     void onMessageReceived(const QString &message);
 
 protected:
-    bool event(QEvent *event);
+    virtual bool event(QEvent *event);
 
-    void exposeEvent(QExposeEvent *event);
+    virtual void exposeEvent(QExposeEvent *event);
+    virtual void resizeEvent(QResizeEvent *);
+    virtual void moveEvent(QMoveEvent *);
+    virtual void showEvent(QShowEvent *);
+
 
 private:
+    bool m_initialized;
     bool m_update_pending;
     bool m_animating;
     bool m_coverpageManagerPaused;

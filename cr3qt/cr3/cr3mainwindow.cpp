@@ -159,6 +159,7 @@ CRUIQtTextToSpeech::~CRUIQtTextToSpeech() {
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
+    , m_initialized(false)
     , m_update_pending(false)
     , m_animating(false)
     , m_coverpageManagerPaused(false)
@@ -216,7 +217,7 @@ void OpenGLWindow::restorePositionAndShow() {
 }
 
 void OpenGLWindow::saveWindowStateAndPosition() {
-    if (!_widget)
+    if (!_widget || !m_initialized)
         return;
     CRPropRef settings = _widget->getSettings();
     int oldstate = settings->getIntDef(PROP_APP_WINDOW_STATE, WINDOW_STATE_NORMAL);
@@ -233,6 +234,10 @@ void OpenGLWindow::saveWindowStateAndPosition() {
     default:
     case Windowed:
         newstate = WINDOW_STATE_NORMAL;
+        newx = x();
+        newy = y();
+        newwidth = width();
+        newheight = height();
         break;
     case Minimized:
         newstate = WINDOW_STATE_MINIMIZED;
@@ -374,6 +379,7 @@ void OpenGLWindow::render()
 {
     if (!m_device)
         m_device = new QOpenGLPaintDevice;
+    m_initialized = true;
     //CRLog::trace("Render is called");
     glClearColor(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -532,6 +538,20 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 }
 //! [3]
 
+void OpenGLWindow::resizeEvent(QResizeEvent * event) {
+    QWindow::resizeEvent(event);
+    saveWindowStateAndPosition();
+}
+
+void OpenGLWindow::moveEvent(QMoveEvent * event) {
+    QWindow::moveEvent(event);
+    saveWindowStateAndPosition();
+}
+
+void OpenGLWindow::showEvent(QShowEvent * event) {
+    QWindow::showEvent(event);
+    //saveWindowStateAndPosition();
+}
 
 //! [4]
 void OpenGLWindow::renderNow()
