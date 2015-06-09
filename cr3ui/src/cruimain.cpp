@@ -656,6 +656,12 @@ void CRUIMainWidget::ttsInitialized() {
 	}
 }
 
+/// in case of inbound call, stop TTS on phones
+void CRUIMainWidget::stopTTS() {
+    if (_platform->getTextToSpeech() && _platform->getTextToSpeech()->isSpeaking() && _read)
+        _read->stopReadAloud();
+}
+
 void CRUIMainWidget::showVirtualKeyboard(int mode, lString16 text, bool multiline) {
     //CRLog::trace("showVirtualKeyboard(text = %s)", LCSTR(text));
     if (_keyboard)

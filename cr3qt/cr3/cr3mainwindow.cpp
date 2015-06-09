@@ -254,6 +254,9 @@ void OpenGLWindow::saveWindowStateAndPosition() {
     bool fullscreen = settings->getBoolDef(PROP_APP_FULLSCREEN, false);
     if (fullscreen)
         newstate = WINDOW_STATE_FULLSCREEN;
+
+    CRLog::trace("saveWindowStateAndPosition()");
+
     bool changed = false;
     if (newstate == WINDOW_STATE_NORMAL) {
         if (oldx != newx || oldy != newy || oldwidth != newwidth || oldheight != newheight) {
@@ -540,11 +543,13 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 
 void OpenGLWindow::resizeEvent(QResizeEvent * event) {
     QWindow::resizeEvent(event);
+    CRLog::trace("OpenGLWindow::resizeEvent");
     saveWindowStateAndPosition();
 }
 
 void OpenGLWindow::moveEvent(QMoveEvent * event) {
     QWindow::moveEvent(event);
+    CRLog::trace("OpenGLWindow::moveEvent");
     saveWindowStateAndPosition();
 }
 

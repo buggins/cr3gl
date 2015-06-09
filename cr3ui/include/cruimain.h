@@ -513,6 +513,9 @@ public:
     void createTtsOptions();
     void ttsInitialized();
 
+    /// in case of inbound call, stop TTS on phones
+    void stopTTS();
+
     CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, CRUIPlatform * platform);
     virtual ~CRUIMainWidget();
 };
