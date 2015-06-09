@@ -58,6 +58,7 @@ DEFINES += USE_FREETYPE=1 \
     FT2_BUILD_LIBRARY=1
 
 macx:DEFINES += USE_FONTCONFIG=0 CR3_OSX=1
+ios:DEFINES += USE_FONTCONFIG=0 CR3_OSX=1
 
 INCLUDEPATH += ../../../cr3/crengine/include \
     ../../../cr3/thirdparty/libpng \
@@ -272,7 +273,7 @@ HEADERS += \
 
 
 #!win32 {
-    unix:!macx:LIBS += -ljpeg
+    unix:!macx:!ios:LIBS += -ljpeg
 #    win32:LIBS += libjpeg.lib
 #}
 win32 {
@@ -327,7 +328,7 @@ win32 {
 #        ../../../cr3/thirdparty/libjpeg/jmemnobs.c
 }
 #!win32 {
-    unix:!macx:LIBS += -lpng -ldl
+    unix:!macx:!ios:LIBS += -lpng -ldl
 #    win32:LIBS += libpng.lib
 #}
 win32 {
@@ -350,7 +351,7 @@ win32 {
 #        ../../../cr3/thirdparty/libpng/pngpread.c
 }
 #!win32 {
-    unix:!macx:LIBS += -lfreetype -lfontconfig
+    unix:!macx:!ios:LIBS += -lfreetype -lfontconfig
 #    win32:LIBS += libfreetype.lib
 #}
 win32 {
@@ -395,7 +396,7 @@ win32 {
 #        ../../../cr3/thirdparty/freetype/src/winfonts/winfnt.c
 }
 #!win32 {
-    unix:!macx:LIBS += -lz
+    unix:!macx:!ios:LIBS += -lz
 #    win32:LIBS += libz.lib
 #}
 win32 {
@@ -590,6 +591,10 @@ macx {
     LIBS *= -framework AppKit
 }
 
+ios {
+    OBJECTIVE_SOURCES += qt-speech/QtSpeech_ios.mm
+}
+
 win32 {
     SOURCES += qt-speech/QtSpeech_win.cpp
 
@@ -600,7 +605,7 @@ win32 {
     LIBS += -L"C:/Program Files/Microsoft Speech SDK 5.1/Lib/i386"
 }
 
-unix:!mac {
+unix:!mac:!ios {
     HEADERS += qt-speech/QtSpeech_unx.h
     SOURCES += qt-speech/QtSpeech_unx.cpp
 
