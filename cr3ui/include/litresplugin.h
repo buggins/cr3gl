@@ -25,4 +25,5 @@ public:
     virtual ~LitresConnection();
 };
 
+
 #endif // LITRESPLUGIN_H

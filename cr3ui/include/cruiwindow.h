@@ -63,8 +63,17 @@ enum CRUI_FOCUS_OP {
     FOCUS_RIGHT
 };
 
+class CRUIDownloadCallback {
+public:
+    virtual ~CRUIDownloadCallback() { }
+    /// download result
+    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) { }
+    /// download progress
+    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) { }
+};
+
 /// base class for full screen widgets, supporting popups
-class CRUIWindowWidget : public CRUIFrameLayout, public CRUIDragListener {
+class CRUIWindowWidget : public CRUIFrameLayout, public CRUIDragListener, public CRUIDownloadCallback {
 protected:
     CRUIMainWidget * _main;
     CRUILinearLayout * _body;

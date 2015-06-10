@@ -12,3 +12,4 @@ APP_ABI := armeabi-v7a
 #mips mips-r2
 #x86
 #armeabi-v7a
+APP_PLATFORM := android-7
