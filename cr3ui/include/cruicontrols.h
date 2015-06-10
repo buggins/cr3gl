@@ -60,8 +60,11 @@ class CRUIImageWidget : public CRUIWidget {
 protected:
     CRUIImageRef _image;
     lString8 _imageRes;
+    int _scale;
 public:
-    CRUIImageWidget(const char * imageRes = NULL) : _imageRes(imageRes) { }
+    CRUIImageWidget(const char * imageRes = NULL) : _imageRes(imageRes), _scale(1) { }
+    virtual int getScale() { return _scale; }
+    virtual void setScale(int scale) { _scale = scale; }
     virtual void setImage(const char * imageRes) { _image.Clear(); _imageRes = imageRes; requestLayout(); }
     virtual void setImage(const lString8 & imageRes) { _image.Clear(); _imageRes = imageRes; requestLayout(); }
     virtual void setImage(CRUIImageRef img) { _image = img; _imageRes.clear(); requestLayout(); }

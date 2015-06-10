@@ -288,6 +288,7 @@ void CRUIMainWidget::showSlowOperationPopup()
     CRUIImageWidget * pleaseWait = new CRUIImageWidget("clock");
     pleaseWait->setPadding(PT_TO_PX(7));
     pleaseWait->setAlign(ALIGN_CENTER);
+    pleaseWait->setScale(2);
     pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
 //#if 0
 //    CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));

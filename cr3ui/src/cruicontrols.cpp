@@ -207,6 +207,10 @@ void CRUIImageWidget::measure(int baseWidth, int baseHeight) {
     CRUIImageRef image = getImage();
     int width = !image ? 0 : image->originalWidth();
     int height = !image ? 0 : image->originalHeight();
+    if (_scale > 1) {
+        width *= _scale;
+        height *= _scale;
+    }
 	defMeasure(baseWidth, baseHeight, width, height);
 }
 
@@ -230,6 +234,10 @@ void CRUIImageWidget::draw(LVDrawBuf * buf) {
     CRUIImageRef image = getImage();
     int width = !image ? 0 : image->originalWidth();
     int height = !image ? 0 : image->originalHeight();
+    if (_scale > 1) {
+        width *= _scale;
+        height *= _scale;
+    }
     if (!image.isNull()) {
 		//CRLog::trace("rc=%d,%d %dx%d align=%d w=%d h=%d", rc.left, rc.top, rc.width(), rc.height(), getAlign(), _image->originalWidth(), _image->originalHeight());
         applyAlign(rc, width, height);
