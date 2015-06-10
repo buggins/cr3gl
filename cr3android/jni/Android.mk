@@ -261,6 +261,7 @@ NEWUI_FILES := \
     cr3/cr3ui/src/cruiopdsbook.cpp \
     cr3/cr3ui/src/vkeyboard.cpp \
     cr3/cr3ui/src/litresplugin.cpp \
+    cr3/cr3ui/src/onlinestore.cpp \
     cr3/cr3ui/src/stringresource.cpp
 
     
