@@ -624,3 +624,7 @@ unix:!mac:!ios {
     # Mac: use system Frameworks
     #LIBS += -framework CoreAudio -framework AudioUnit -framework AudioToolbox -framework Carbon
 }
+
+#win32 {
+	#QMAKE_LFLAGS += -static
+#}

@@ -3097,7 +3097,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
 	//CRLog::trace("Created page %08x", (lUInt32) page->drawbuf);
     page->back = back;
     LVDrawBuf * buf = page->drawbuf; //dynamic_cast<GLDrawBuf*>(page->drawbuf);
-    CRLog::trace("CRUIReadWidget::PagedModePageCache::preparePage Preparing page image for page %d ; buf = %08x", pageNumber, (lUInt32)buf);
+    //CRLog::trace("CRUIReadWidget::PagedModePageCache::preparePage Preparing page image for page %d ; buf = %08x", pageNumber, (lUInt32)buf);
     buf->beforeDrawing();
     buf->SetTextColor(_docview->getTextColor());
     buf->SetBackgroundColor(_docview->getBackgroundColor());
