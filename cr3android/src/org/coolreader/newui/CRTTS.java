@@ -136,7 +136,7 @@ public class CRTTS implements TextToSpeech.OnInitListener, TextToSpeech.OnUttera
 			_textToSpeech.setOnUtteranceCompletedListener(this);
 			_rate = 50;
 			Locale locale = _textToSpeech.getLanguage();
-			String lang = locale.getLanguage();
+			String lang = locale != null ? locale.getLanguage() : "unknown";
 			log.i("TTS language: " + lang);
 			if (_ttsCallback != null)
 				_ttsCallback.onTtsInitDone();

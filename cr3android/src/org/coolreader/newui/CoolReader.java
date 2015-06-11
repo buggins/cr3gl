@@ -88,7 +88,7 @@ public class CoolReader extends Activity {
 	static class OldApiHelper {
 		@TargetApi(Build.VERSION_CODES.FROYO)
 		static private String getExtFilesDir(Activity activity) {
-			return activity.getExternalFilesDir(null).getAbsolutePath();
+			return activity.getExternalFilesDir(null) != null ? activity.getExternalFilesDir(null).getAbsolutePath() : null;
 		}
 	}
 	
@@ -222,20 +222,25 @@ public class CoolReader extends Activity {
 		return sdkInt;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void setFullscreenFlagsApi19() {
+		int flag = 0;
+		flag |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+				| View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        mDecorView.setSystemUiVisibility(flag);
+	}
+	
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
 	super.onWindowFocusChanged(hasFocus);
 	if (hasFocus && (DeviceInfo.getSDKLevel() >= 19)) {
-		int flag = 0;
 		if (fullscreen)
-			flag |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-					| View.SYSTEM_UI_FLAG_FULLSCREEN;
-
-            mDecorView.setSystemUiVisibility(flag);
+			setFullscreenFlagsApi19();
         }
     }
 	
