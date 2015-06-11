@@ -293,12 +293,14 @@ void OpenGLWindow::setFileToOpenOnStart(lString8 filename) {
 
 OpenGLWindow::~OpenGLWindow()
 {
+    if (_textToSpeech) {
+        delete _textToSpeech;
+        _textToSpeech = NULL;
+    }
+    delete _widget;
     delete _eventAdapter;
     delete _eventManager;
     delete _downloadManager;
-    if (_textToSpeech)
-        delete _textToSpeech;
-    delete _widget;
 //    delete m_device;
     //_qtgl = NULL;
 }

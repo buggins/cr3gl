@@ -626,5 +626,5 @@ unix:!mac:!ios {
 }
 
 #win32 {
-	#QMAKE_LFLAGS += -static
+#	QMAKE_LIBFLAGS += -static /VERBOSE
 #}

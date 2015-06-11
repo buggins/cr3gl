@@ -16,16 +16,6 @@ class CRUIOpdsItemListWidget;
 class CRUIMainWidget;
 
 class CRUIOpdsBrowserWidget : public CRUIOnlineStoreWidget {
-	CRUITitleBarWidget * _title;
-    CRUIOpdsItemListWidget * _fileList;
-    LVClonePtr<BookDBCatalog> _catalog;
-    CROpdsCatalogsItem * _dir;
-    int _requestId;
-    lString8 _nextPartURL;
-    int _coverTaskId;
-    CRDirEntry* _coverTaskBook;
-    LVPtrVector<CRDirEntry> _coversToLoad;
-    lString8 _searchUrl;
 public:
     virtual bool onListItemClick(CRUIListWidget * widget, int itemIndex);
 

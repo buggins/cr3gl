@@ -47,14 +47,16 @@ int main(int argc, char *argv[])
             LVAppendPathDelimiter(exePath);
             InitCREngine(exePath);
 
-            OpenGLWindow w;
-            a.setActivationWindow(&w);
-            a.setMessageHandler(&w);
-            if (!filename.empty()) {
-                w.setFileToOpenOnStart(filename);
+            {
+                OpenGLWindow w;
+                a.setActivationWindow(&w);
+                a.setMessageHandler(&w);
+                if (!filename.empty()) {
+                    w.setFileToOpenOnStart(filename);
+                }
+                w.restorePositionAndShow();
+                res = a.exec();
             }
-            w.restorePositionAndShow();
-            res = a.exec();
 
             crconfig.uninitEngine();
         }
