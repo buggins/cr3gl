@@ -11,6 +11,12 @@
 #include "crcoverpages.h"
 #include "gldrawbuf.h"
 #include "glfont.h"
+#if defined(__arm__)
+#include "coffeecatch/coffeecatch.h"
+#include "coffeecatch/coffeejni.h"
+#else
+#define COFFEE_TRY_JNI(ENV, CODE) CODE;
+#endif
 
 static jfieldID gNativeObjectID = 0;
 
@@ -1335,7 +1341,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_callCRRunnableInternal
 {
 	//CRLog::trace("Calling CRRunnable %08x", (unsigned)ptr);
 	CRRunnable * runnable = (CRRunnable*)ptr;
-	runnable->run();
+	COFFEE_TRY_JNI(env, runnable->run());
 	delete runnable;
 }
 
@@ -1348,7 +1354,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_uninitInternal
   (JNIEnv * _env, jobject _this)
 {
 	DocViewNative * native = getNative(_env, _this);
-	native->uninit();
+	COFFEE_TRY_JNI(_env, native->uninit());
 	return JNI_TRUE;
 }
 
@@ -1362,7 +1368,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_drawInternal
 {
 	DocViewNative * native = getNative(_env, _this);
 	//CRLog::trace("Java_org_coolreader_newui_CRView_drawInternal");
-	native->onDraw();
+	COFFEE_TRY_JNI(_env, native->onDraw());
 }
 
 /*
@@ -1375,7 +1381,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onSentenceFinishedIntern
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRLog::trace("Java_org_coolreader_newui_CRView_onSentenceFinishedInternal");
-	native->onSentenceFinished();
+	COFFEE_TRY_JNI(_env, native->onSentenceFinished());
 	//native->onPause();
 }
 
@@ -1389,7 +1395,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onTtsInitializedInternal
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRLog::trace("Java_org_coolreader_newui_CRView_onTtsInitializedInternal");
-	native->onTtsInitialized();
+	COFFEE_TRY_JNI(_env, native->onTtsInitialized());
 	//native->onPause();
 }
 
@@ -1404,7 +1410,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onPauseInternal
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRLog::trace("Java_org_coolreader_newui_CRView_onPauseInternal");
-	native->onPause();
+	COFFEE_TRY_JNI(_env, native->onPause());
 }
 
 /*
@@ -1417,7 +1423,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onResumeInternal
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRLog::trace("Java_org_coolreader_newui_CRView_onResumeInternal");
-	native->onResume();
+	COFFEE_TRY_JNI(_env, native->onResume());
 }
 
 /*
@@ -1429,7 +1435,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceChangedInternal
   (JNIEnv * _env, jobject _this, jint dx, jint dy)
 {
 	DocViewNative * native = getNative(_env, _this);
-	native->onSurfaceChanged(dx, dy);
+	COFFEE_TRY_JNI(_env, native->onSurfaceChanged(dx, dy));
 }
 
 /*
@@ -1441,7 +1447,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_surfaceDestroyedInternal
   (JNIEnv * _env, jobject _this)
 {
 	DocViewNative * native = getNative(_env, _this);
-	native->onSurfaceDestroyed();
+	COFFEE_TRY_JNI(_env, native->onSurfaceDestroyed());
 }
 
 /*
@@ -1454,7 +1460,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleKeyEventIntern
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRKeyEventWrapper event(_env, _event);
-	jboolean res = native->handleKeyEvent(&event) ? JNI_TRUE : JNI_FALSE;
+	jboolean res = JNI_FALSE;
+	COFFEE_TRY_JNI(_env, res = native->handleKeyEvent(&event) ? JNI_TRUE : JNI_FALSE);
 	return res;
 }
 
@@ -1468,7 +1475,8 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_handleTouchEventInte
 {
 	DocViewNative * native = getNative(_env, _this);
 	CRTouchEventWrapper event(_env, _event);
-	jboolean res = native->handleTouchEvent(&event) ? JNI_TRUE : JNI_FALSE;
+	jboolean res = JNI_FALSE;
+	COFFEE_TRY_JNI(_env, res = native->handleTouchEvent(&event) ? JNI_TRUE : JNI_FALSE);
     return res;
 }
 
@@ -1483,7 +1491,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_loadBookInternal
     CRJNIEnv env(_env);
 	DocViewNative * native = getNative(_env, _this);
 	lString16 path = env.fromJavaString(_path);
-	native->loadDocument(path);
+	COFFEE_TRY_JNI(_env, native->loadDocument(path));
 }
 
 /*
@@ -1495,7 +1503,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_setBatteryLevelInternal
   (JNIEnv * _env, jobject _this, jint level)
 {
 	DocViewNative * native = getNative(_env, _this);
-	native->setBatteryLevel(level);
+	COFFEE_TRY_JNI(_env, native->setBatteryLevel(level));
 }
 
 // void onDownloadResult(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, byte[] data, String file);
@@ -1517,7 +1525,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadResult
 	if (data) {
 		stream = env.jbyteArrayToStream(data);
 	}
-	native->onDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+	COFFEE_TRY_JNI(_env, native->onDownloadResult(downloadTaskId, url, result, resultMessage, mimeType, size, stream));
 }
 
 // void onDownloadProgress(int downloadTaskId, String url, int result, String resultMessage, String mimeType, int size, int sizeDownloaded);
@@ -1534,7 +1542,7 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadProgress
 	lString8 url = UnicodeToUtf8(env.fromJavaString(_url));
 	lString8 resultMessage = UnicodeToUtf8(env.fromJavaString(_resultMessage));
 	lString8 mimeType = UnicodeToUtf8(env.fromJavaString(_mimeType));
-	native->onDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+	COFFEE_TRY_JNI(_env, native->onDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded));
 }
 
 

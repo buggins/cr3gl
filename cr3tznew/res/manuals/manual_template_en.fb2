@@ -196,6 +196,7 @@
 			<li>antiword</li>
 			<li>sqlite</li>
 			<li>Icon set Windows 8 Metro Style by <a href="http://www.visualpharm.com/">http://www.visualpharm.com/</a> is used</li>
+			<li><a href="https://github.com/xroche/coffeecatch">CoffeeCatch</a> library is used to get stack traces from JNI code</li>
 		</ul>
 		</section>
 		<section id="links">

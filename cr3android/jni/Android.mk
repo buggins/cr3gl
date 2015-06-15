@@ -32,7 +32,7 @@ CRENGINE_INCLUDES := \
     -I$(LOCAL_PATH)/cr3/cr3ui/include
     
 LOCAL_CFLAGS += $(CRFLAGS) $(CRENGINE_INCLUDES) -Wno-psabi -Wno-unused-variable -Wno-sign-compare -Wno-write-strings -Wno-main -Wno-unused-but-set-variable -Wno-unused-function -Wall -fno-omit-frame-pointer
-
+LOCAL_CFLAGS += -funwind-tables -Wl,--no-merge-exidx-entries
 
 CRENGINE_SRC_FILES := \
     cr3/crengine/src/cri18n.cpp \
@@ -270,6 +270,10 @@ JNI_SRC_FILES := \
     crenginegl.cpp \
     cr3java.cpp
 
+COFFEECATCH_SRC_FILES := \
+    coffeecatch/coffeecatch.c \
+    coffeecatch/coffeejni.c
+
 LOCAL_SRC_FILES := \
     $(JNI_SRC_FILES) \
     $(NEWUI_FILES) \
@@ -280,6 +284,16 @@ LOCAL_SRC_FILES := \
     $(JPEG_SRC_FILES) \
     $(CHM_SRC_FILES) \
     $(ANTIWORD_SRC_FILES)
+
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+LOCAL_SRC_FILES += \
+    $(COFFEECATCH_SRC_FILES)
+endif
+
+ifeq ($(TARGET_ARCH_ABI),armeabi)
+LOCAL_SRC_FILES += \
+    $(COFFEECATCH_SRC_FILES)
+endif
 
 LOCAL_LDLIBS    := -lm -llog -lz -lGLESv1_CM -ldl
 #-ljnigraphics

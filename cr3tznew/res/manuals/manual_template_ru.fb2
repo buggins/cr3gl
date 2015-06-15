@@ -195,6 +195,7 @@
 			<li>antiword</li>
 			<li>sqlite</li>
 			<li>Использован набор иконок Windows 8 Metro Style с <a href="http://www.visualpharm.com/">http://www.visualpharm.com/</a></li>
+			<li>Библиотека <a href="https://github.com/xroche/coffeecatch">CoffeeCatch</a></li>
 		</ul>
 		</section>
 		<section id="links">
