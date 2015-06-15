@@ -100,6 +100,7 @@ public:
 	    }
 	}
 	void drawItem(GLGlyphCacheItem * item, int x, int y, lUInt32 color, lvRect * clip) {
+		lUInt64 startTs = GetCurrentTimeMillis();
 		if (needUpdateTexture)
 			updateTexture();
 		if (textureId != 0) {
@@ -134,6 +135,7 @@ public:
             if (!dstrc.isEmpty())
                 CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcrc, dstrc, color, false);
         }
+		if (LVGLPeekScene()) LVGLPeekScene()->updateCharacterDrawStats(GetCurrentTimeMillis() - startTs);
 	}
 	GLGlyphCacheItem * addItem(GLFont * font, LVFontGlyphCacheItem * glyph) {
 		if (closed)

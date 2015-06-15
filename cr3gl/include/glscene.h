@@ -9,6 +9,7 @@
 #define GLSCENE_H_
 
 #include <lvptrvec.h>
+#include <lvstring.h>
 
 class GLSceneItem {
 public:
@@ -20,12 +21,43 @@ public:
 class GLScene {
 	LVPtrVector<GLSceneItem, true> _list;
 public:
+
+	lUInt64 characterDrawDuration;
+	int characterDrawCount;
+	lUInt64 rectDrawDuration;
+	int rectDrawCount;
+
 	/// adds item to scene
 	virtual void add(GLSceneItem * item);
 	/// draws all items of scene
 	virtual void draw();
 	/// removes all items from scene
 	virtual void clear();
+
+	virtual int itemCount() { return _list.length(); }
+
+	void updateCharacterDrawStats(long duration) {
+		characterDrawDuration += duration;
+		characterDrawCount++;
+	}
+
+	void updateRectDrawStats(long duration) {
+		rectDrawDuration += duration;
+		rectDrawCount++;
+	}
+
+	GLScene()
+		: characterDrawDuration(0)
+		, characterDrawCount(0)
+		, rectDrawDuration(0)
+		, rectDrawCount(0)
+	{
+
+	}
+
+	void dumpStats() {
+		CRLog::trace("scene stats: chars %d duration %lld  rects %d duration %lld", characterDrawCount, characterDrawDuration, rectDrawCount, rectDrawDuration);
+	}
 
 	virtual ~GLScene();
 };

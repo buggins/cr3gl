@@ -765,6 +765,7 @@ public:
 	}
     void drawItem(GLImageCacheItem * item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, lUInt32 color, lUInt32 options, lvRect * clip, int rotationAngle) {
         CR_UNUSED(options);
+        lUInt64 startTs = GetCurrentTimeMillis();
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
@@ -814,6 +815,7 @@ public:
             }
 
         }
+		if (LVGLPeekScene()) LVGLPeekScene()->updateCharacterDrawStats(GetCurrentTimeMillis() - startTs);
 	}
 	void close() {
 		_closed = true;
@@ -1132,8 +1134,10 @@ public:
 //        LVGLFillColor(color3, colors + 4*4, 1);
 //        LVGLFillColor(color2, colors + 4*5, 1);
 
+    	lUInt64 startTs = GetCurrentTimeMillis();
         lvRect rc(x0, y0, x1, y1);
         CRGL->drawSolidFillRect(rc, color1, color2, color3, color4);
+		if (LVGLPeekScene()) LVGLPeekScene()->updateRectDrawStats(GetCurrentTimeMillis() - startTs);
         //CRGL->drawSolidFillRect(vertices, colors);
 
     }
@@ -1333,7 +1337,9 @@ public:
     {
     }
     virtual void draw() {
+    	lUInt64 startTs = GetCurrentTimeMillis();
         CRGL->drawColorAndTextureRect(textureId, tdx, tdy, srcrc, dstrc, color, linear);
+		if (LVGLPeekScene()) LVGLPeekScene()->updateCharacterDrawStats(GetCurrentTimeMillis() - startTs);
     }
 };
 
@@ -1505,9 +1511,15 @@ void GLDrawBuf::afterDrawing()
 //        if (_textureBuf && _framebufferId) {
 //            CRGL->bindFramebuffer(_framebufferId);
 //        }
+        lUInt64 startTs1 = GetCurrentTimeMillis();
+        lUInt64 duration1 = startTs1;
+        int sceneLen = 0;
         if (_scene) {
+        	sceneLen = _scene->itemCount();
             CRGL->setOrthoProjection(_dx, _dy);
             _scene->draw();
+            duration1 = GetCurrentTimeMillis() - startTs1;
+            _scene->dumpStats();
 			_scene->clear();
             GLScene * s = LVGLPopScene();
             if (s != _scene) {
@@ -1521,7 +1533,10 @@ void GLDrawBuf::afterDrawing()
         } else {
             CRLog::error("GLDrawBuf::afterDrawing() -- No scene!!!");
         }
+        lUInt64 startTs = GetCurrentTimeMillis();
         CRGL->flush();
+        lUInt64 duration = GetCurrentTimeMillis() - startTs;
+        CRLog::trace("Scene len=%d drawing took %lld millis, CRGL->flush() took %lld millis", sceneLen, duration1, duration);
         if (_textureBuf) {
 			//bind the base framebuffer
             CRGL->bindFramebuffer(0);

@@ -67,9 +67,15 @@ class CRUIDownloadCallback {
 public:
     virtual ~CRUIDownloadCallback() { }
     /// download result
-    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream) { }
+    virtual void onDownloadResult(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, LVStreamRef stream)
+    {
+        CR_UNUSED7(downloadTaskId, url, result, resultMessage, mimeType, size, stream);
+    }
     /// download progress
-    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded) { }
+    virtual void onDownloadProgress(int downloadTaskId, lString8 url, int result, lString8 resultMessage, lString8 mimeType, int size, int sizeDownloaded)
+    {
+        CR_UNUSED7(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded);
+    }
 };
 
 /// base class for full screen widgets, supporting popups

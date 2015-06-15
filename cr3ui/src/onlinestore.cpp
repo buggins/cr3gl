@@ -595,11 +595,13 @@ void CRUIOnlineStoreWidget::setDirectory(LVClonePtr<BookDBCatalog> & catalog, CR
 }
 
 bool CRUIOnlineStoreWidget::onListItemClick(CRUIListWidget * widget, int index) {
+    CR_UNUSED2(widget, index);
     return false;
 
 }
 
 void CRUIOnlineStoreWidget::openSearchResults(lString16 pattern) {
+    CR_UNUSED(pattern);
 }
 
 void CRUIOnlineStoreWidget::showSearchPopup() {
