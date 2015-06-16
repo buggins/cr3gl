@@ -36,12 +36,12 @@ public:
 
 	virtual int itemCount() { return _list.length(); }
 
-	void updateCharacterDrawStats(long duration) {
+    void updateCharacterDrawStats(lUInt64 duration) {
 		characterDrawDuration += duration;
 		characterDrawCount++;
 	}
 
-	void updateRectDrawStats(long duration) {
+    void updateRectDrawStats(lUInt64 duration) {
 		rectDrawDuration += duration;
 		rectDrawCount++;
 	}

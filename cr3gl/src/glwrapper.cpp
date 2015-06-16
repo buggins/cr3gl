@@ -59,6 +59,60 @@
 //#endif
 #endif
 
+struct CRGLBatch {
+    lUInt32 textureId;
+    int tdx;
+    int tdy;
+    bool linear;
+    LVArray<float> vertices;
+    LVArray<float> txcoords;
+    LVArray<float> colors;
+    int count;
+
+    bool isChanged(lUInt32 textureId, int tdx, int tdy, bool linear) {
+        return this->textureId != textureId
+                || this->tdx != tdx
+                || this->tdy != tdy
+                || this->linear != linear;
+    }
+
+    void begin(lUInt32 textureId, int tdx, int tdy, bool linear) {
+        reset();
+        this->textureId = textureId;
+        this->tdx = tdx;
+        this->tdy = tdy;
+        this->linear = linear;
+    }
+
+    void add(float * vertices, float * txcoords, float * colors) {
+        this->vertices.add(vertices, 3 * 6);
+        if (txcoords)
+            this->txcoords.add(txcoords, 2 * 6);
+        this->colors.add(colors, 4 * 6);
+    }
+
+    void reset() {
+        vertices.reset();
+        txcoords.reset();
+        colors.reset();
+        count = 0;
+    }
+
+    CRGLBatch()
+        : textureId(0)
+        , tdx(0)
+        , tdy(0)
+        , linear(false)
+        , count()
+    {
+        vertices.reserve(3 * 6 * 2000);
+        txcoords.reserve(2 * 6 * 2000);
+        colors.reserve(4 * 6 * 2000);
+    }
+
+    ~CRGLBatch() {
+    }
+};
 
 #ifdef QT_OPENGL_ES_2
 QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
@@ -85,13 +139,15 @@ class CRGLSupportImpl :
     int rotationX;
     int rotationY;
     int rotationAngle;
+
+    CRGLBatch batch;
+
     void init();
     void uninit();
     void myGlOrtho(float left, float right, float bottom, float top,
                                              float zNearPlane, float zFarPlane);
 protected:
     //void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId);
-    void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear);
     void drawSolidFillRect(float vertices[], lUInt32 color);
     void drawSolidFillRect(float vertices[], float colors[]);
 public:
@@ -101,6 +157,7 @@ public:
     virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear);
+    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount = 1);
 
     virtual int getMaxTextureSize();
 
@@ -370,7 +427,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
 
 }
 
-void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear) {
+void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount) {
 //    CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
 //            , currentFramebufferId
 //            , textureId
@@ -438,7 +495,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     program_texture->setAttributeArray
         (PROGRAM_TEXCOORD_ATTRIBUTE, texcoords, 2);
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * rectCount);
     checkError("glDrawArrays");
     program_texture->disableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program_texture->disableAttributeArray(PROGRAM_COLOR_ATTRIBUTE);
@@ -483,7 +540,7 @@ void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[
     glColorPointer(4, GL_FLOAT, 0, colors);
     checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * rectCount);
     checkError("glDrawArrays");
 
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);

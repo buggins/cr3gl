@@ -611,12 +611,17 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	public void onTtsInitDone() {
 		log.i("CRTTS callback: onTtsInitDone");
 		// process in GL thread
-		queueEvent(new Runnable() {
+		postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				onTtsInitializedInternal();
+				queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						onTtsInitializedInternal();
+					}
+				});
 			}
-		});
+		}, 2000);
 	}
 	
 	private long mNativeObject; // holds pointer to native object instance
