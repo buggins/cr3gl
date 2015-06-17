@@ -1519,7 +1519,7 @@ void GLDrawBuf::afterDrawing()
             CRGL->setOrthoProjection(_dx, _dy);
             _scene->draw();
             duration1 = GetCurrentTimeMillis() - startTs1;
-            _scene->dumpStats();
+            //_scene->dumpStats();
 			_scene->clear();
             GLScene * s = LVGLPopScene();
             if (s != _scene) {
@@ -1536,7 +1536,7 @@ void GLDrawBuf::afterDrawing()
         lUInt64 startTs = GetCurrentTimeMillis();
         CRGL->flush();
         lUInt64 duration = GetCurrentTimeMillis() - startTs;
-        CRLog::trace("Scene len=%d drawing took %lld millis, CRGL->flush() took %lld millis", sceneLen, duration1, duration);
+        //CRLog::trace("Scene len=%d drawing took %lld millis, CRGL->flush() took %lld millis", sceneLen, duration1, duration);
         if (_textureBuf) {
 			//bind the base framebuffer
             CRGL->bindFramebuffer(0);

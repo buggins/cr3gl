@@ -2833,9 +2833,11 @@ void CRUIReadWidget::OnLoadFileStart( lString16 filename ) {
 void CRUIReadWidget::OnLoadFileFormatDetected(doc_format_t fileFormat) {
     lString8 cssFile = crconfig.cssDir + LVDocFormatCssFileName(fileFormat);
 
+    CRLog::trace("OnLoadFileFormatDetected cssFile=%s", cssFile.c_str());
     lString8 css;
     if (!LVLoadStylesheetFile(Utf8ToUnicode(cssFile), css)) {
         // todo: fallback
+        CRLog::error("LVLoadStylesheetFile %s is failed", cssFile.c_str());
     }
     _docview->setStyleSheet(css);
 }

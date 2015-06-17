@@ -91,7 +91,6 @@ pre { display: block;
    margin-bottom: 0.5em; 
    white-space: pre; 
    text-align: left; 
-  /* background-color: #BFBFBF; */ 
    } 
 
 nobr { display: inline; hyphenate: none; white-space: nowrap; } 
@@ -104,13 +103,11 @@ h1,h2,h3,h4,h5,h6 {
    text-align: left; 
    } 
 h1 { font-size: 150%; 
-/*     color: #FFFFFF; background-color: #000000; */ 
      padding: 10px ; 
      margin-top: 0.5em; 
      margin-bottom: 0.5em; 
    } 
 h2 { font-size: 135%; 
-/*     color: #FFFFFF; background-color: #808080;   */ 
      padding: 10px ; 
      margin-top: 0.5em; 
      margin-bottom: 0.5em; 
@@ -125,7 +122,6 @@ ul, ol, dl {
    margin-left: 1em; 
    margin-top:0.3em; 
    margin-bottom: 0.3em; 
-/*   background-color: #808080; */ 
    } 
 
 li { 

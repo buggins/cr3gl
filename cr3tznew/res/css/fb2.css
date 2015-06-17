@@ -4,7 +4,7 @@ p { $def.all }
 
 empty-line { height: 1em }
 
-hr { height: 1px; background-color: #808080; margin-top: 0.5em; margin-bottom: 0.5em; /* 2px */ }
+hr { height: 1px; background-color: #808080; margin-top: 0.5em; margin-bottom: 0.5em; }
 
 a { display: inline; $link.all }
 a[type="note"] { $footnote-link.all }
@@ -65,7 +65,6 @@ h5 { font-size: 110% }
 table { font-size: 80% }
 td, th { text-indent: 0px; padding: 3px }
 th {  font-weight: bold; text-align: center; } 
-/* #808080; */
 table caption { text-indent: 0px; padding: 4px; }
 
 tt, samp, kbd, code, pre { font-family: "Courier New", "Courier", monospace; } 
@@ -75,11 +74,11 @@ code, pre {
     $pre.all
 }
 
-body[name="notes"] { font-size: 80%; $footnote.all  }
+body[name="notes"] { $footnote.all }
 body[name="notes"] section title { display: run-in; text-align: left; $footnote-title.all page-break-before: auto; page-break-inside: auto; page-break-after: auto; }
 body[name="notes"] section title p { display: inline }
 
-body[name="comments"] { font-size: 80%; $footnote.all }
+body[name="comments"] { $footnote.all }
 body[name="comments"] section title { display: run-in; text-align: left; $footnote-title.all page-break-before: auto; page-break-inside: auto; page-break-after: auto; }
 body[name="comments"] section title p { display: inline }
 

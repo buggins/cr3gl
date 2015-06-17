@@ -99,7 +99,6 @@ pre { display: block;
    margin-bottom: 0.5em; 
    white-space: pre; 
    text-align: left; 
-  /* background-color: #BFBFBF; */ 
    } 
 
 nobr { display: inline; hyphenate: none; white-space: nowrap; } 
