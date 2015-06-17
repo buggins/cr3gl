@@ -10,15 +10,17 @@ protected:
     //virtual void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId) = 0;
     virtual void drawSolidFillRect(float vertices[], lUInt32 color) = 0;
     virtual void drawSolidFillRect(float vertices[], float colors[]) = 0;
+    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear) = 0;
+
+    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) = 0;
 
 public:
     CRGLSupport() {}
     virtual ~CRGLSupport() {}
     virtual int getMaxTextureSize() = 0;
+
     virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4) = 0;
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear) = 0;
-    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear) = 0;
-    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount = 1) = 0;
 
     virtual lUInt32 genTexture() = 0;
     virtual bool isTexture(lUInt32 textureId) = 0;

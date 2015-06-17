@@ -2,6 +2,7 @@
 #include <lvstring.h>
 #include "cruiconfig.h"
 
+#define TRACE_BATCH 0
 
 #if QT_GL
 
@@ -61,26 +62,22 @@
 
 struct CRGLBatch {
     lUInt32 textureId;
-    int tdx;
-    int tdy;
     bool linear;
     LVArray<float> vertices;
     LVArray<float> txcoords;
     LVArray<float> colors;
     int count;
 
-    bool isChanged(lUInt32 textureId, int tdx, int tdy, bool linear) {
+    bool isChanged(lUInt32 textureId, bool linear) {
+        if (!count)
+            return false;
         return this->textureId != textureId
-                || this->tdx != tdx
-                || this->tdy != tdy
                 || this->linear != linear;
     }
 
-    void begin(lUInt32 textureId, int tdx, int tdy, bool linear) {
+    void begin(lUInt32 textureId, bool linear) {
         reset();
         this->textureId = textureId;
-        this->tdx = tdx;
-        this->tdy = tdy;
         this->linear = linear;
     }
 
@@ -89,6 +86,7 @@ struct CRGLBatch {
         if (txcoords)
             this->txcoords.add(txcoords, 2 * 6);
         this->colors.add(colors, 4 * 6);
+        count++;
     }
 
     void reset() {
@@ -96,14 +94,14 @@ struct CRGLBatch {
         txcoords.reset();
         colors.reset();
         count = 0;
+        textureId = 0;
+        linear = false;
     }
 
     CRGLBatch()
         : textureId(0)
-        , tdx(0)
-        , tdy(0)
         , linear(false)
-        , count()
+        , count(0)
     {
         vertices.reserve(3 * 6 * 2000);
         txcoords.reserve(2 * 6 * 2000);
@@ -149,15 +147,22 @@ class CRGLSupportImpl :
 protected:
     //void drawColorAndTextureRect(float vertices[], float texcoords[], lUInt32 color, lUInt32 textureId);
     void drawSolidFillRect(float vertices[], lUInt32 color);
+
     void drawSolidFillRect(float vertices[], float colors[]);
+    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear);
+    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
+
+    void commitBatch();
+    void drawColorAndTextureRectBatch(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount);
+    void drawSolidFillRectBatch(float vertices[], float colors[], int count);
+
 public:
     CRGLSupportImpl();
     virtual ~CRGLSupportImpl();
 
+
     virtual void drawSolidFillRect(lvRect & rc, lUInt32 color1, lUInt32 color2, lUInt32 color3, lUInt32 color4);
-    virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, lUInt32 color, bool linear);
     virtual void drawColorAndTextureRect(lUInt32 textureId, int tdx, int tdy, lvRect & srcrc, lvRect & dstrc, lUInt32 color, bool linear);
-    virtual void drawColorAndTextureRect(float vertices[], float txcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount = 1);
 
     virtual int getMaxTextureSize();
 
@@ -315,6 +320,17 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], lUInt32 color) {
 }
 
 void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
+    bool needBegin = batch.count == 0;
+    if (batch.isChanged(0, false)) {
+        commitBatch();
+        needBegin = true;
+    }
+    if (needBegin)
+        batch.begin(0, false);
+    batch.add(vertices, NULL, colors);
+}
+
+void CRGLSupportImpl::drawSolidFillRectBatch(float vertices[], float colors[], int count) {
 //    CRLog::trace("CRGLSupportImpl::drawSolidFillRect(fb=%d\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
 //            , currentFramebufferId
 //            , vertices[0], vertices[1], vertices[2]
@@ -348,7 +364,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
         (PROGRAM_COLOR_ATTRIBUTE_SOLID, colors, 4);
 //    program_solid->setAttributeArray
 //        (PROGRAM_TEXCOORD_ATTRIBUTE, texcoords);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * count);
     checkError("glDrawArrays");
     program_solid->disableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE_SOLID);
     program_solid->disableAttributeArray(PROGRAM_COLOR_ATTRIBUTE_SOLID);
@@ -369,7 +385,7 @@ void CRGLSupportImpl::drawSolidFillRect(float vertices[], float colors[]) {
     glColorPointer(4, GL_FLOAT, 0, colors);
     checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * count);
     checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
 
     glDisableClientState(GL_COLOR_ARRAY);
@@ -427,29 +443,41 @@ void CRGLSupportImpl::drawColorAndTextureRect(lUInt32 textureId, int tdx, int td
 
 }
 
-void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount) {
-//    CRLog::trace("CRGLSupportImpl::drawColorAndTextureRect(fb=%d texture=%08x\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f,\n\t%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f\n\t%f,%f,%f,%f)"
-//            , currentFramebufferId
-//            , textureId
-//            , vertices[0], vertices[1], vertices[2]
-//            , vertices[3], vertices[4], vertices[5]
-//            , vertices[6], vertices[7], vertices[8]
-//            , vertices[9], vertices[10], vertices[11]
-//            , vertices[12], vertices[13], vertices[14]
-//            , vertices[15], vertices[16], vertices[17]
-//            , texcoords[0], texcoords[1]
-//            , texcoords[2], texcoords[3]
-//            , texcoords[4], texcoords[5]
-//            , texcoords[6], texcoords[7]
-//            , texcoords[8], texcoords[9]
-//            , texcoords[10], texcoords[11]
-//            , colors[0], colors[1], colors[2], colors[3]
-//            , colors[4], colors[5], colors[6], colors[7]
-//            , colors[8], colors[9], colors[10], colors[11]
-//            , colors[12], colors[13], colors[14], colors[15]
-//            , colors[16], colors[17], colors[18], colors[19]
-//            , colors[20], colors[21], colors[22], colors[23]
-//            );
+
+void CRGLSupportImpl::commitBatch() {
+    if (batch.count) {
+        if (batch.textureId) {
+#if TRACE_BATCH == 1
+            CRLog::trace("commitBatch of %d rectangles with texture %d", batch.count, batch.textureId);
+#endif
+            drawColorAndTextureRectBatch(batch.vertices.get(), batch.txcoords.get(), batch.colors.get(), batch.textureId, batch.linear, batch.count);
+        } else {
+#if TRACE_BATCH == 1
+            CRLog::trace("commitBatch of %d color rectangles", batch.count);
+#endif
+            drawSolidFillRectBatch(batch.vertices.get(), batch.colors.get(), batch.count);
+        }
+    }
+    batch.reset();
+}
+
+void CRGLSupportImpl::drawColorAndTextureRect(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear) {
+    bool needBegin = batch.count == 0;
+    if (batch.isChanged(textureId, linear)) {
+//        if (textureId != batch.textureId)
+//            CRLog::trace("texture is changed from %d to %d", batch.textureId, textureId);
+//        if (linear != batch.linear)
+//            CRLog::trace("linear is changed");
+        commitBatch();
+        needBegin = true;
+    }
+    if (needBegin)
+        batch.begin(textureId, linear);
+
+    batch.add(vertices, texcoords, colors);
+}
+
+void CRGLSupportImpl::drawColorAndTextureRectBatch(float vertices[], float texcoords[], float colors[], lUInt32 textureId, bool linear, int rectCount) {
     checkError("before CRGLSupportImpl::drawColorAndTextureRect");
 
     if (!glIsTexture(textureId)) {
@@ -876,6 +904,10 @@ void CRGLSupportImpl::deleteFramebuffer(lUInt32 &framebufferId) {
 }
 
 bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
+//    if (currentFramebufferId != framebufferId) {
+//        CRLog::trace("commit batch on framebuffer change");
+//        commitBatch();
+//    }
     //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebufferId);
     currentFramebufferId = framebufferId;
@@ -883,6 +915,10 @@ bool CRGLSupportImpl::bindFramebuffer(lUInt32 framebufferId) {
 }
 
 void CRGLSupportImpl::flush() {
+#if TRACE_BATCH == 1
+    CRLog::trace("commit batch on flush");
+#endif
+    commitBatch();
     glFlush();
     checkError("glFlush");
     //CRLog::trace("CRGLSupportImpl::flush()");
@@ -907,6 +943,12 @@ void CRGLSupportImpl::myGlOrtho(float left, float right, float bottom, float top
 
 void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
     //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
+
+//    if (bufferDx != dx || bufferDy != dy) {
+//        CRLog::trace("commit batch on ortho projection change");
+//        commitBatch();
+//    }
+
     bufferDx = dx;
     bufferDy = dy;
     //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
@@ -934,12 +976,18 @@ void CRGLSupportImpl::setOrthoProjection(int dx, int dy) {
 }
 
 void CRGLSupportImpl::setRotation(int x, int y, int rotationAngle) {
+    if (!currentFramebufferId) {
+        y = bufferDy - y;
+    }
+    if (this->rotationAngle == rotationAngle && rotationX == x && rotationY == y)
+        return;
+#if TRACE_BATCH == 1
+    CRLog::trace("commit batch on rotation angle change");
+#endif
+    commitBatch();
     this->rotationAngle = rotationAngle;
     rotationX = x;
     rotationY = y;
-    if (!currentFramebufferId) {
-        rotationY = bufferDy - rotationY;
-    }
 
 #ifdef QT_OPENGL_ES_2
     QMatrix4x4 matrix2;

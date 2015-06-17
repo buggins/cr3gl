@@ -285,24 +285,24 @@ void CRUIMainWidget::showSlowOperationPopup()
 		return;
 	}
 	CRLog::trace("CRUIMainWidget::showSlowOperationPopup()");
-    CRUIImageWidget * pleaseWait = new CRUIImageWidget("clock");
+//    CRUIImageWidget * pleaseWait = new CRUIImageWidget("clock");
+//    pleaseWait->setPadding(PT_TO_PX(7));
+//    pleaseWait->setAlign(ALIGN_CENTER);
+//    pleaseWait->setScale(2);
+//    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+#if 0
+    CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));
+    pleaseWait->setBackground(0xFFFFFF);
     pleaseWait->setPadding(PT_TO_PX(7));
     pleaseWait->setAlign(ALIGN_CENTER);
-    pleaseWait->setScale(2);
     pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-//#if 0
-//    CRUITextWidget * pleaseWait = new CRUITextWidget(lString16("Please wait"));
-//    pleaseWait->setBackground(0xFFFFFF);
-//    pleaseWait->setPadding(PT_TO_PX(7));
-//    pleaseWait->setAlign(ALIGN_CENTER);
-//    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-//#else
-//    CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("spinner_white_48", 360 + 180);
-//    //CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("ic_menu_back");
-//    pleaseWait->setPadding(PT_TO_PX(7));
-//    pleaseWait->setAlign(ALIGN_CENTER);
-//    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-//#endif
+#else
+    CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("spinner_white_48", 360 + 180);
+    //CRUISpinnerWidget * pleaseWait = new CRUISpinnerWidget("ic_menu_back");
+    pleaseWait->setPadding(PT_TO_PX(7));
+    pleaseWait->setAlign(ALIGN_CENTER);
+    pleaseWait->setLayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+#endif
     LVDrawBuf * buf = CRUICreateDrawBuf(_pos.width(), _pos.height(), 32);
     buf->beforeDrawing();
     _history.currentWidget()->draw(buf);

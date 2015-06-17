@@ -1528,7 +1528,7 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     int key = event->key();
 	//CRLog::trace("CRUIReadWidget::onKeyEvent(%d  0x%x  popup.closing=%s   popup.progress=%d)", key, key, _popupControl.closing ? "yes" : "no", _popupControl.progress);
     if (_popupControl.popup) {
-    	CRLog::trace("Popup is active - transferring key to window");
+        CRLog::trace("Popup is active - transferring key to window");
     	return CRUIWindowWidget::onKeyEvent(event);
     }
 
@@ -3106,9 +3106,9 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     if (oldPage != pageNumber)
         _docview->goToPage(pageNumber);
     //_docview->Draw(*buf, -1, pageNumber, false, false);
-    CRLog::trace("_docview->Draw calling");
+    //CRLog::trace("_docview->Draw calling");
     _docview->Draw(*buf, false);
-    CRLog::trace("_docview->Draw done");
+    //CRLog::trace("_docview->Draw done");
 //    if ((pageNumber & 1))
 //    	buf->FillRect(100, 10, 110, 20, 0x800000FF);
 //    else
@@ -3118,7 +3118,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
     if (oldPage != pageNumber)
         _docview->goToPage(oldPage);
     if (!crconfig.einkMode) {
-        CRLog::trace("drawing page gradients");
+        //CRLog::trace("drawing page gradients");
         int sdx = dx / 10 / _docview->getVisiblePageCount();
         lUInt32 cl1 = 0xE0000000;
         lUInt32 cl2 = 0xFF000000;
@@ -3128,7 +3128,7 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
             buf->GradientRect(dx / 2, 0, dx / 2 + sdx, dy, cl1, cl2, cl2, cl1);
             buf->GradientRect(dx / 2 - sdx, 0, dx / 2, dy, cl2, cl1, cl1, cl2);
         }
-        CRLog::trace("drawing page gradients done");
+        //CRLog::trace("drawing page gradients done");
     }
     if (_docview->getVisiblePageCount() == 2) {
         lvRect rc1 = rc;
@@ -3152,9 +3152,9 @@ void CRUIReadWidget::PagedModePageCache::preparePage(LVDocView * _docview, int p
         rc.shrink(1);
         buf->DrawFrame(rc, 0xE0404040, 1);
     }
-    CRLog::trace("calling buf->afterDrawing()");
+    //CRLog::trace("calling buf->afterDrawing()");
     buf->afterDrawing();
-    CRLog::trace("done buf->afterDrawing()");
+    //CRLog::trace("done buf->afterDrawing()");
     pages.add(page);
     CRLog::trace("CRUIReadWidget::PagedModePageCache::preparePage page is prepared");
 }
