@@ -711,6 +711,44 @@ void CRUIHttpTaskQt::httpError(QNetworkReply::NetworkError code) {
     CRLog::warn("httpError(result=%d resultMessage=%s url='%s')", _result, _result ? _resultMessage.c_str() : "", _url.c_str());
 }
 
+lString8 extractHostUrl(lString8 url) {
+    int i = 0;
+    if (url.startsWith("http://"))
+        i = 7;
+    else if (url.startsWith("https://"))
+        i = 8;
+    for (; i < url.length() && url[i] != '?' && url[i] != '/'; i++) {
+    }
+    return url.substr(0, i) + "/";
+}
+
+lString8 extractPathUrl(lString8 url) {
+    int i = 0;
+    if (url.startsWith("http://"))
+        i = 7;
+    else if (url.startsWith("https://"))
+        i = 8;
+    for (; i < url.length() && url[i] != '?'; i++) {
+    }
+    url = url.substr(0, i);
+    if (!url.endsWith("/"))
+        url += '/';
+    return url;
+}
+
+lString8 makeRedirectUrl(lString8 from, lString8 to) {
+    if (to.startsWith("http://") || to.startsWith("https://"))
+        return to;
+    if (to.startsWith("/")) {
+        lString8 serverurl = extractHostUrl(from);
+        return serverurl + to.substr(1);
+    }
+    if (to.startsWith("./"))
+        to = to.substr(2);
+    from = extractPathUrl(from);
+    return from + to;
+}
+
 void CRUIHttpTaskQt::httpFinished() {
     //CRLog::trace("CRUIHttpTaskQt::httpFinished()");
      QNetworkReply::NetworkError error = reply->error();
@@ -725,7 +763,8 @@ void CRUIHttpTaskQt::httpFinished() {
         CRLog::warn("Redirection to %s", redir.c_str());
         if (redirectCount < 3 && canRedirect(redir)) {
             redirectCount++;
-            _url = redir;
+            _url = makeRedirectUrl(_url, redir);
+            CRLog::warn("New URL: %s", _url.c_str());
             reply->deleteLater();
             doDownload();
             return;

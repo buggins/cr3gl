@@ -262,7 +262,9 @@ public:
     virtual void OnAttribute( const lChar16 * nsname, const lChar16 * attrname, const lChar16 * attrvalue ) {
         CR_UNUSED(nsname);
         lString16 attr(attrname);
-        lString8 value8 = UnicodeToUtf8(attrvalue);
+        lString16 value16 = attrvalue;
+        PreProcessXmlString(value16, 0);
+        lString8 value8 = UnicodeToUtf8(value16);
         CRLog::trace("%s  attribute: %s = %s", margin.c_str(), LCSTR(attr), value8.c_str());
         value8.trim();
         if (insideLink) {
