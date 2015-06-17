@@ -22,6 +22,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -73,12 +74,60 @@ public class CoolReader extends Activity {
 	public final static int SCREEN_ORIENTATION_270 = 5;
 	public final static int SCREEN_ORIENTATION_PORTRAIT = 6;
 	public final static int SCREEN_ORIENTATION_LANDSCAPE = 7;
-	private int _screenOrientation = SCREEN_ORIENTATION_SYSTEM;
+	
+	private int _screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+	// support pre API LEVEL 9
+	final static public int ActivityInfo_SCREEN_ORIENTATION_SENSOR_PORTRAIT = 7;
+	final static public int ActivityInfo_SCREEN_ORIENTATION_SENSOR_LANDSCAPE = 6;
+	final static public int ActivityInfo_SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9;
+	final static public int ActivityInfo_SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8;
+	final static public int ActivityInfo_SCREEN_ORIENTATION_FULL_SENSOR = 10;
+	
+	private static int toAndroidOrientation(int orient) {
+		boolean level9 = DeviceInfo.getSDKLevel() >= 9;
+		switch(orient) {
+		default:
+		case SCREEN_ORIENTATION_SYSTEM:
+			return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+		case SCREEN_ORIENTATION_SENSOR:
+			return level9 ? ActivityInfo_SCREEN_ORIENTATION_FULL_SENSOR : ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+		case SCREEN_ORIENTATION_0:
+			return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+		case SCREEN_ORIENTATION_90:
+			return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+		case SCREEN_ORIENTATION_180:
+			return level9 ? ActivityInfo_SCREEN_ORIENTATION_REVERSE_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+		case SCREEN_ORIENTATION_270:
+			return level9 ? ActivityInfo_SCREEN_ORIENTATION_REVERSE_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+		case SCREEN_ORIENTATION_PORTRAIT:
+			return level9 ? ActivityInfo_SCREEN_ORIENTATION_SENSOR_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+		case SCREEN_ORIENTATION_LANDSCAPE:
+			return level9 ? ActivityInfo_SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+		}
+	}
+	
 	public final void setScreenOrientation(int orient) {
+		orient = toAndroidOrientation(orient);
 		if (_screenOrientation == orient)
 			return;
 		log.d("setScreenOrientation " + orient);
 		_screenOrientation = orient;
+		setRequestedOrientation(_screenOrientation);
+		applyScreenOrientation(getWindow());
+	}
+
+	public void applyScreenOrientation( Window wnd )
+	{
+		if ( wnd!=null ) {
+			WindowManager.LayoutParams attrs = wnd.getAttributes();
+			attrs.screenOrientation = _screenOrientation;
+			wnd.setAttributes(attrs);
+			if (DeviceInfo.EINK_SCREEN){
+				//TODO:
+				//EinkScreen.ResetController(mReaderView);
+			}
+			
+		}
 	}
 
 	public final void showVirtualKeyboard() {
