@@ -116,6 +116,12 @@ lString8 mimeToExtension(lString8 mime) {
         return lString8("doc");
     if (mime.startsWith("application/rtf"))
         return lString8("rtf");
+    if (mime.startsWith("application/x-palmreader"))
+        return lString8("palm");
+    if (mime.startsWith("application/x-"))
+        return mime.substr(14);
+    if (mime.startsWith("application/"))
+        return mime.substr(12);
     return normalizeFilename(mime, 15, false);
 }
 
@@ -273,13 +279,13 @@ public:
         _button->setOnClickListener(this);
         _button->setMinHeight(MIN_ITEM_PX * 3 / 4);
         _button->setMinWidth(MIN_ITEM_PX * 3 / 4);
-        _button->setMaxHeight(MIN_ITEM_PX);
-        _button->setMaxWidth(MIN_ITEM_PX);
+        //_button->setMaxHeight(MIN_ITEM_PX * 8 / 4);
+        //_button->setMaxWidth(MIN_ITEM_PX * 8 / 4);
         _button->setAlign(ALIGN_CENTER);
 
         _caption = new CRUITextWidget(lString16("Download ") + _formatName);
         _caption->setMaxLines(2);
-        _caption->setFontSize(FONT_SIZE_LARGE);
+        _caption->setFontSize(FONT_SIZE_MEDIUM);
         _caption->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
         _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _caption->setMargin(PT_TO_PX(1));
@@ -334,13 +340,13 @@ public:
         _button->setOnClickListener(this);
         _button->setMinHeight(MIN_ITEM_PX * 3 / 4);
         _button->setMinWidth(MIN_ITEM_PX * 3 / 4);
-        _button->setMaxHeight(MIN_ITEM_PX);
-        _button->setMaxWidth(MIN_ITEM_PX);
+        //_button->setMaxHeight(MIN_ITEM_PX);
+        //_button->setMaxWidth(MIN_ITEM_PX);
         _button->setAlign(ALIGN_CENTER);
 
         _caption = new CRUITextWidget(convertDescription(_link->title));
         _caption->setMaxLines(2);
-        _caption->setFontSize(FONT_SIZE_LARGE);
+        _caption->setFontSize(FONT_SIZE_MEDIUM);
         _caption->setAlign(ALIGN_LEFT | ALIGN_VCENTER);
         _caption->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
         _caption->setMargin(PT_TO_PX(1));
