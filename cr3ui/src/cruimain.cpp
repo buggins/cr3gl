@@ -493,6 +493,19 @@ void addScreenOrientationSettings(CRUISettingsList * settings) {
     settings->addChild(orient);
 }
 
+void addScreenBacklightTimeoutSettings(CRUISettingsList * settings) {
+    CRUISettingsOptionList * list = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT, NULL, PROP_APP_SCREEN_BACKLIGHT_TIMEOUT);
+    list->addOption(new CRUIOptionItem("0", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_SYSTEM));
+    list->addOption(new CRUIOptionItem("1", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_1MIN));
+    list->addOption(new CRUIOptionItem("2", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_2MIN));
+    list->addOption(new CRUIOptionItem("3", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_3MIN));
+    list->addOption(new CRUIOptionItem("5", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_5MIN));
+    list->addOption(new CRUIOptionItem("10", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_10MIN));
+    list->addOption(new CRUIOptionItem("15", STR_SETTINGS_APP_SCREEN_BACKLIGHT_TIMEOUT_VALUE_15MIN));
+    settings->addChild(list);
+}
+
+
 void CRUIMainWidget::createBrowserSettings() {
     if (!crconfig.einkMode) {
         CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
@@ -511,7 +524,12 @@ void CRUIMainWidget::createBrowserSettings() {
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
 
-    addScreenOrientationSettings(&_browserSettings);
+    if (_platform->supportsScreenOrientation()) {
+        addScreenOrientationSettings(&_browserSettings);
+    }
+    if (_platform->supportsScreenBacklightTimeout()) {
+        addScreenBacklightTimeoutSettings(&_browserSettings);
+    }
 }
 
 void CRUIMainWidget::createReaderSettings() {
@@ -555,6 +573,9 @@ void CRUIMainWidget::createReaderSettings() {
 
     if (_platform->supportsScreenOrientation()) {
         addScreenOrientationSettings(_interfaceSettings);
+    }
+    if (_platform->supportsScreenBacklightTimeout()) {
+        addScreenBacklightTimeoutSettings(_interfaceSettings);
     }
 
     //CRLog::trace("Creating Settings UI reader settings: interface: tts");
@@ -866,6 +887,8 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     }
     _currentSettings->setStringDef(PROP_APP_FULLSCREEN, "0");
     _currentSettings->setStringDef(PROP_APP_SCREEN_ORIENTATION, "0");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_TIMEOUT, "0");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, "0");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
@@ -1105,6 +1128,20 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
                 v = SCREEN_ORIENTATION_SYSTEM;
             if (getPlatform())
                 getPlatform()->setScreenOrientation(v);
+        }
+        if (key == PROP_APP_SCREEN_BACKLIGHT_TIMEOUT) {
+            int v = newValue.atoi();
+            if (v < 0 || v > 15)
+                v = 0;
+            if (getPlatform())
+                getPlatform()->setScreenBacklightTimeout(v);
+        }
+        if (key == PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS) {
+            int v = newValue.atoi();
+            if (v < 0 || v > 15)
+                v = 0;
+            if (getPlatform())
+                getPlatform()->setScreenBacklightBrightness(v);
         }
     }
     _currentSettings->set(LVClonePropsContainer(newSettings));
@@ -1484,6 +1521,16 @@ void copyDayNightSettings(CRPropRef & props, const char * from, const char * to)
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_SELECTION_COLOR);
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT);
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION);
+}
+
+void CRUIMainWidget::changeBrightness(int newBrightness) {
+    CRPropRef props = initNewSettings();
+    if (newBrightness < 0 || newBrightness > 100)
+        newBrightness = 0;
+    if (props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1) == newBrightness)
+        return;
+    props->setInt(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, newBrightness);
+    applySettings();
 }
 
 /// handle menu or other action

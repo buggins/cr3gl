@@ -97,6 +97,12 @@ public:
     virtual bool supportsScreenOrientation() { return false; }
     virtual void setScreenOrientation(int n) { CR_UNUSED(n); }
 
+    virtual bool supportsScreenBacklightTimeout() { return true; }
+    virtual void setScreenBacklightTimeout(int n) { CR_UNUSED(n); }
+
+    virtual bool supportsScreenBacklightBrightness() { return true; }
+    virtual void setScreenBacklightBrightness(int n) { CR_UNUSED(n); }
+
     virtual void setFileToOpenOnStart(lString8 filename) {
         CRLog::debug("setFileToOpenOnStart(%s)", filename.c_str());
     }
@@ -460,6 +466,8 @@ public:
     virtual bool onAction(const CRUIAction * action);
     /// handle menu or other action - find standard action by id
     virtual bool onAction(int actionId);
+
+    virtual void changeBrightness(int newBrightness);
 
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);

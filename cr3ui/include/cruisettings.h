@@ -30,6 +30,8 @@
 #define PROP_APP_FULLSCREEN "app.fullscreen"
 
 #define PROP_APP_SCREEN_ORIENTATION "app.screen.orientation"
+#define PROP_APP_SCREEN_BACKLIGHT_TIMEOUT "app.screen.backlight.timeout"
+#define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS "app.screen.backlight.brightness"
 
 #define PROP_APP_TTS_VOICE "app.tts.voice"
 #define PROP_APP_TTS_VOICE_VALUE_SYSTEM "@system"

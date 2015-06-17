@@ -130,6 +130,22 @@ public class CoolReader extends Activity {
 		}
 	}
 
+	private int _screenBacklightTimeout = 0;
+	public final void setScreenBacklightTimeout(int v) {
+		if (_screenBacklightTimeout == v)
+			return;
+		_screenBacklightTimeout = v;
+		// TODO
+	}
+
+	private int _screenBacklightBrightness = -1;
+	public final void setScreenBacklightBrightness(int v) {
+		if (_screenBacklightBrightness == v)
+			return;
+		_screenBacklightBrightness = v;
+		// TODO
+	}
+
 	public final void showVirtualKeyboard() {
 		log.d("showVirtualKeyboard() - java hasFocus = " + crview.hasFocus());
 		//crview.req

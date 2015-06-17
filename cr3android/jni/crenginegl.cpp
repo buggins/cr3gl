@@ -436,6 +436,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _updateScreenMethod;
     CRMethodAccessor _setVolumeKeysEnabledMethod;
     CRMethodAccessor _setScreenOrientationMethod;
+    CRMethodAccessor _setScreenBacklightTimeoutMethod;
+    CRMethodAccessor _setScreenBacklightBrightnessMethod;
     CRMethodAccessor _copyToClipboardMethod;
     CRMethodAccessor _openLinkInExternalBrowserMethod;
     CRMethodAccessor _openFileInExternalAppMethod;
@@ -596,6 +598,17 @@ public:
     	//CRLog::trace("setScreenOrientation %d", n);
     	_setScreenOrientationMethod.callVoidInt(n);
     }
+
+    virtual bool supportsScreenBacklightTimeout() { return true; }
+    virtual void setScreenBacklightTimeout(int n) {
+    	_setScreenBacklightTimeoutMethod.callVoidInt(n);
+    }
+
+    virtual bool supportsScreenBacklightBrightness() { return true; }
+    virtual void setScreenBacklightBrightness(int n) {
+    	_setScreenBacklightBrightnessMethod.callVoidInt(n);
+    }
+
 
     // CRUIPlatform methods
     virtual void exitApp() {
@@ -1022,6 +1035,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
 	, _setVolumeKeysEnabledMethod(_obj, "setVolumeKeysEnabled", "(Z)V")
 	, _setScreenOrientationMethod(_obj, "setScreenOrientation", "(I)V")
+	, _setScreenBacklightTimeoutMethod(_obj, "setScreenBacklightTimeout", "(I)V")
+	, _setScreenBacklightBrightnessMethod(_obj, "setScreenBacklightBrightness", "(I)V")
 	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
 	, _openLinkInExternalBrowserMethod(_obj, "openLinkInExternalBrowser", "(Ljava/lang/String;)Z")
 	, _openFileInExternalAppMethod(_obj, "openFileInExternalApp", "(Ljava/lang/String;Ljava/lang/String;)Z")
