@@ -480,6 +480,19 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     }
 }
 
+void addScreenOrientationSettings(CRUISettingsList * settings) {
+    CRUISettingsOptionList * orient = new CRUISettingsOptionList(STR_SETTINGS_APP_SCREEN_ORIENTATION, NULL, PROP_APP_SCREEN_ORIENTATION);
+    orient->addOption(new CRUIOptionItem("0", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_SYSTEM));
+    orient->addOption(new CRUIOptionItem("1", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_SENSOR));
+    orient->addOption(new CRUIOptionItem("2", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_0));
+    orient->addOption(new CRUIOptionItem("3", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_90));
+    orient->addOption(new CRUIOptionItem("4", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_180));
+    orient->addOption(new CRUIOptionItem("5", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_270));
+    orient->addOption(new CRUIOptionItem("6", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_PORTRAIT));
+    orient->addOption(new CRUIOptionItem("7", STR_SETTINGS_APP_SCREEN_ORIENTATION_VALUE_LANDSCAPE));
+    settings->addChild(orient);
+}
+
 void CRUIMainWidget::createBrowserSettings() {
     if (!crconfig.einkMode) {
         CRUISettingsOptionList * themes = new CRUISettingsOptionList(STR_SETTINGS_THEME, NULL, PROP_APP_THEME);
@@ -497,6 +510,8 @@ void CRUIMainWidget::createBrowserSettings() {
     _browserSettings.addChild(uilangs);
     //themes->setDefaultValue(PROP_APP_THEME_VALUE_LIGHT);
     _browserSettings.addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_FULLSCREEN, NULL, PROP_APP_FULLSCREEN, STR_SETTINGS_APP_FULLSCREEN_VALUE_ON, STR_SETTINGS_APP_FULLSCREEN_VALUE_OFF));
+
+    addScreenOrientationSettings(&_browserSettings);
 }
 
 void CRUIMainWidget::createReaderSettings() {
@@ -537,6 +552,10 @@ void CRUIMainWidget::createReaderSettings() {
         uilangs->addOption(new CRUIOptionItem(lang->id.c_str(), lang->nameRes.c_str()));
     }
     _interfaceSettings->addChild(uilangs);
+
+    if (_platform->supportsScreenOrientation()) {
+        addScreenOrientationSettings(_interfaceSettings);
+    }
 
     //CRLog::trace("Creating Settings UI reader settings: interface: tts");
     if (getPlatform()->getTextToSpeech()) {
@@ -846,6 +865,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->setString(PROP_NIGHT_MODE, "0");
     }
     _currentSettings->setStringDef(PROP_APP_FULLSCREEN, "0");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_ORIENTATION, "0");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
@@ -1078,6 +1098,13 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         if (key == PROP_APP_FULLSCREEN) {
             if (getPlatform())
                 getPlatform()->setFullscreen(changed->getBoolDef(PROP_APP_FULLSCREEN, false));
+        }
+        if (key == PROP_APP_SCREEN_ORIENTATION) {
+            int v = newValue.atoi();
+            if (v < SCREEN_ORIENTATION_SYSTEM || v > SCREEN_ORIENTATION_LANDSCAPE)
+                v = SCREEN_ORIENTATION_SYSTEM;
+            if (getPlatform())
+                getPlatform()->setScreenOrientation(v);
         }
     }
     _currentSettings->set(LVClonePropsContainer(newSettings));

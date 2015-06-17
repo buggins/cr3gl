@@ -90,8 +90,12 @@ public:
     virtual bool supportsFullscreen() { return false; }
     virtual bool isFullscreen() { return false; }
     virtual void setFullscreen(bool fullscreen) { CR_UNUSED(fullscreen); }
-    virtual bool supportsVolumeKeys() { return true; }
+
+    virtual bool supportsVolumeKeys() { return false; }
     virtual void setVolumeKeysEnabled(bool flg) { CR_UNUSED(flg); }
+
+    virtual bool supportsScreenOrientation() { return true; }
+    virtual void setScreenOrientation(int n) { CR_UNUSED(n); }
 
     virtual void setFileToOpenOnStart(lString8 filename) {
         CRLog::debug("setFileToOpenOnStart(%s)", filename.c_str());

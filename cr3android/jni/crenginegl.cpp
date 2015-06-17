@@ -434,6 +434,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _getLeftMethod;
     CRMethodAccessor _getTopMethod;
     CRMethodAccessor _updateScreenMethod;
+    CRMethodAccessor _setVolumeKeysEnabledMethod;
+    CRMethodAccessor _setScreenOrientationMethod;
     CRMethodAccessor _copyToClipboardMethod;
     CRMethodAccessor _openLinkInExternalBrowserMethod;
     CRMethodAccessor _openFileInExternalAppMethod;
@@ -582,6 +584,17 @@ public:
     	_updateScreenMethod.callVoid(updateNow ? JNI_TRUE : JNI_FALSE, animationFps > 0 ? JNI_TRUE : JNI_FALSE);
     }
 
+    virtual bool supportsVolumeKeys() {
+    	return true;
+    }
+    virtual void setVolumeKeysEnabled(bool flg) {
+    	_setVolumeKeysEnabledMethod.callVoid(flg ? JNI_TRUE : JNI_FALSE);
+    }
+
+    virtual bool supportsScreenOrientation() { return true; }
+    virtual void setScreenOrientation(int n) {
+    	_setScreenOrientationMethod.callVoid(n);
+    }
 
     // CRUIPlatform methods
     virtual void exitApp() {
@@ -1006,6 +1019,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _getLeftMethod(_obj, "getLeft", "()I")
 	, _getTopMethod(_obj, "getTop", "()I")
 	, _updateScreenMethod(_obj, "updateScreen", "(ZZ)V")
+	, _setVolumeKeysEnabledMethod(_obj, "setVolumeKeysEnabled", "(Z)V")
+	, _setScreenOrientationMethod(_obj, "setScreenOrientation", "(I)V")
 	, _copyToClipboardMethod(_obj, "copyToClipboard", "(Ljava/lang/String;)V")
 	, _openLinkInExternalBrowserMethod(_obj, "openLinkInExternalBrowser", "(Ljava/lang/String;)Z")
 	, _openFileInExternalAppMethod(_obj, "openFileInExternalApp", "(Ljava/lang/String;Ljava/lang/String;)Z")

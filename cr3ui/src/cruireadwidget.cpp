@@ -1551,6 +1551,9 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
     bool longPress = event->getDownDuration() > 500;
     if (event->getType() == KEY_ACTION_RELEASE) {
         switch(key) {
+        case CR_KEY_VOLUME_UP:
+        case CR_KEY_VOLUME_DOWN:
+            return _volumeKeysEnabled;
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
         case CR_KEY_PGUP:
@@ -1625,11 +1628,19 @@ bool CRUIReadWidget::onKeyEvent(const CRUIKeyEvent * event) {
             doCommand(DCMD_SELECT_PREV_SENTENCE);
             return true;
 #endif
+        case CR_KEY_VOLUME_DOWN:
+            if (!_volumeKeysEnabled)
+                return false;
+            // fall down
         case CR_KEY_PGDOWN:
         case CR_KEY_SPACE:
             doCommand(DCMD_PAGEDOWN);
             invalidate();
             return true;
+        case CR_KEY_VOLUME_UP:
+            if (!_volumeKeysEnabled)
+                return false;
+            // fall down
         case CR_KEY_PGUP:
             doCommand(DCMD_PAGEUP);
             invalidate();

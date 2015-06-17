@@ -143,6 +143,10 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public boolean onKeyDown(int keyCode, final KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			if (!_volumeKeysEnabled)
+				return false;
+		}
 		// process in GL thread
 		queueEvent(new Runnable() {
 			@Override
@@ -607,6 +611,20 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		});
 	}
 
+	private boolean _volumeKeysEnabled = false;
+	public void setVolumeKeysEnabled(boolean enabled) {
+		_volumeKeysEnabled = enabled;
+	}
+	
+	public void setScreenOrientation(final int orient) {
+		post(new Runnable() {
+			@Override
+			public void run() {
+				activity.setScreenOrientation(orient);
+			}
+		});
+	}
+	
 	@Override
 	public void onTtsInitDone() {
 		log.i("CRTTS callback: onTtsInitDone");

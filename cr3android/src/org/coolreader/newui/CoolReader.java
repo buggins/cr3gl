@@ -65,6 +65,22 @@ public class CoolReader extends Activity {
 			clipboardManager.setText(s);
 	}
 	
+	public final static int SCREEN_ORIENTATION_SYSTEM = 0;
+	public final static int SCREEN_ORIENTATION_SENSOR = 1;
+	public final static int SCREEN_ORIENTATION_0 = 2;
+	public final static int SCREEN_ORIENTATION_90 = 3;
+	public final static int SCREEN_ORIENTATION_180 = 4;
+	public final static int SCREEN_ORIENTATION_270 = 5;
+	public final static int SCREEN_ORIENTATION_PORTRAIT = 6;
+	public final static int SCREEN_ORIENTATION_LANDSCAPE = 7;
+	private int _screenOrientation = SCREEN_ORIENTATION_SYSTEM;
+	public final void setScreenOrientation(int orient) {
+		if (_screenOrientation == orient)
+			return;
+		log.d("setScreenOrientation " + orient);
+		_screenOrientation = orient;
+	}
+
 	public final void showVirtualKeyboard() {
 		log.d("showVirtualKeyboard() - java hasFocus = " + crview.hasFocus());
 		//crview.req
