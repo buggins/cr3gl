@@ -617,6 +617,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	}
 	
 	public void setScreenOrientation(final int orient) {
+		log.d("setScreenOrientation " + orient);
 		post(new Runnable() {
 			@Override
 			public void run() {

@@ -593,7 +593,8 @@ public:
 
     virtual bool supportsScreenOrientation() { return true; }
     virtual void setScreenOrientation(int n) {
-    	_setScreenOrientationMethod.callVoid(n);
+    	//CRLog::trace("setScreenOrientation %d", n);
+    	_setScreenOrientationMethod.callVoidInt(n);
     }
 
     // CRUIPlatform methods

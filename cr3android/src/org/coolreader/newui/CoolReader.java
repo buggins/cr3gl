@@ -106,11 +106,11 @@ public class CoolReader extends Activity {
 		}
 	}
 	
-	public final void setScreenOrientation(int orient) {
-		orient = toAndroidOrientation(orient);
+	public final void setScreenOrientation(int v) {
+		int orient = toAndroidOrientation(v);
 		if (_screenOrientation == orient)
 			return;
-		log.d("setScreenOrientation " + orient);
+		log.d("setScreenOrientation " + v + " (android:" + orient + ")");
 		_screenOrientation = orient;
 		setRequestedOrientation(_screenOrientation);
 		applyScreenOrientation(getWindow());

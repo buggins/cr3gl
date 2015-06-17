@@ -94,7 +94,7 @@ public:
     virtual bool supportsVolumeKeys() { return false; }
     virtual void setVolumeKeysEnabled(bool flg) { CR_UNUSED(flg); }
 
-    virtual bool supportsScreenOrientation() { return true; }
+    virtual bool supportsScreenOrientation() { return false; }
     virtual void setScreenOrientation(int n) { CR_UNUSED(n); }
 
     virtual void setFileToOpenOnStart(lString8 filename) {
