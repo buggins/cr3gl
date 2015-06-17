@@ -315,6 +315,8 @@ class CRUIReadWidget : public CRUIWindowWidget
     int _toolbarPosition;
     CRUIScrollBar * _scrollbar;
 
+    bool _volumeKeysEnabled;
+
     void setToolbarPosition(int position);
     bool isToolbarVertical(int baseWidth, int baseHeight);
 
@@ -406,6 +408,7 @@ public:
     void showTOC();
     void showBookmarks();
 
+    void updateVolumeControls();
     void startReadAloud();
     void stopReadAloud();
 
@@ -421,6 +424,8 @@ public:
     void moveByPage(int direction);
 
     virtual void beforeNavigationFrom();
+    virtual void afterNavigationFrom();
+    virtual void afterNavigationTo();
 
 
     // DocView callback

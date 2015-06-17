@@ -52,6 +52,8 @@
 #define PROP_APP_SCREEN_UPDATE_MODE "app.screen.update.mode"
 #define PROP_APP_SCREEN_UPDATE_INTERVAL "app.screen.update.interval"
 
+#define PROP_APP_CONTROLS_VOLUME_KEYS "app.controls.volumekeys"
+
 #define PROP_PAGE_VIEW_MODE_VALUE_SCROLL "0"
 #define PROP_PAGE_VIEW_MODE_VALUE_1PAGE "1"
 #define PROP_PAGE_VIEW_MODE_VALUE_2PAGES "2"

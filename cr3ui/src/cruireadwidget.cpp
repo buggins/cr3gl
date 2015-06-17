@@ -807,6 +807,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _toolbar(NULL)
     , _toolbarPosition(READER_TOOLBAR_OFF)
     , _scrollbar(NULL)
+    , _volumeKeysEnabled(false)
 {
     setId("READ");
     _docview = createDocView();
@@ -1146,6 +1147,14 @@ bool CRUIReadWidget::restorePosition() {
         return true;
     }
     return false;
+}
+
+void CRUIReadWidget::afterNavigationFrom() {
+    updateVolumeControls();
+}
+
+void CRUIReadWidget::afterNavigationTo() {
+    updateVolumeControls();
 }
 
 void CRUIReadWidget::beforeNavigationFrom() {
@@ -2658,7 +2667,17 @@ void CRUIReadWidget::stopReadAloud() {
         clearImageCaches();
         invalidate();
         _main->update(false);
+        updateVolumeControls();
     }
+}
+
+void CRUIReadWidget::updateVolumeControls() {
+    bool volumeControlsEnabled = _volumeKeysEnabled;
+    if (_ttsInProgress)
+        volumeControlsEnabled = false;
+    if (_main->getMode() != MODE_READ)
+        volumeControlsEnabled = false;
+    _main->getPlatform()->setVolumeKeysEnabled(volumeControlsEnabled);
 }
 
 void CRUIReadWidget::startReadAloud() {
@@ -2685,6 +2704,7 @@ void CRUIReadWidget::startReadAloud() {
         _ttsInProgress = true;
         _main->getPlatform()->getTextToSpeech()->setTextToSpeechCallback(this);
         _main->getPlatform()->getTextToSpeech()->tell(_selection.selectionText);
+        updateVolumeControls();
     }
     invalidate();
 }
@@ -2782,6 +2802,10 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             if (n != _toolbarPosition) {
                 setToolbarPosition(n);
             }
+        }
+        if (key == PROP_APP_CONTROLS_VOLUME_KEYS) {
+            _volumeKeysEnabled = changed->getBoolDef(PROP_APP_CONTROLS_VOLUME_KEYS, false);
+            updateVolumeControls();
         }
         if (key == PROP_APP_READER_SHOW_SCROLLBAR) {
             bool flg = changed->getBoolDef(PROP_APP_READER_SHOW_SCROLLBAR, 0);

@@ -574,6 +574,10 @@ void CRUIMainWidget::createReaderSettings() {
     CRUITapZoneSettingsList * tzdouble = new CRUITapZoneSettingsList(STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE, STR_SETTINGS_CONTROLS_TAP_ZONES_DOUBLE_DESCRIPTION, TAPZONE_MODIFIER_TWOFINGER);
     controls->addChild(tznormal);
     controls->addChild(tzdouble);
+
+    if (_platform->supportsVolumeKeys())
+        controls->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS, NULL, PROP_APP_CONTROLS_VOLUME_KEYS, STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_ON, STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_OFF));
+
     _readerSettings.addChild(controls);
 
     //CRLog::trace("Creating Settings UI reader settings: page layout");
@@ -739,6 +743,8 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
 
     _currentSettings->setStringDef(PROP_APP_READER_SHOW_TOOLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
     _currentSettings->setStringDef(PROP_APP_READER_SHOW_SCROLLBAR, crconfig.desktopMode || bigScreen ? "1" : "0");
+
+    _currentSettings->setStringDef(PROP_APP_CONTROLS_VOLUME_KEYS, _platform->supportsVolumeKeys() ? "1" : "0");
 
     _currentSettings->setStringDef(PROP_APP_BOOK_COVER_VISIBLE, "1");
     _currentSettings->setStringDef(PROP_APP_TTS_RATE, "50");
