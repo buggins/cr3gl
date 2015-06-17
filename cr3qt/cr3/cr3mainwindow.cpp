@@ -739,6 +739,8 @@ lString8 extractPathUrl(lString8 url) {
 lString8 makeRedirectUrl(lString8 from, lString8 to) {
     if (to.startsWith("http://") || to.startsWith("https://"))
         return to;
+    if (to.startsWith("./"))
+        to = to.substr(1); // ebooks libres et graduits
     if (to.startsWith("/")) {
         lString8 serverurl = extractHostUrl(from);
         return serverurl + to.substr(1);
