@@ -626,6 +626,26 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		});
 	}
 	
+	public void setScreenBacklightTimeout(final int v) {
+		log.d("setScreenBacklightTimeout " + v);
+		post(new Runnable() {
+			@Override
+			public void run() {
+				activity.setScreenBacklightTimeout(v);
+			}
+		});
+	}
+	
+	public void setScreenBacklightBrightness(final int v) {
+		log.d("setScreenBacklightBrightness " + v);
+		post(new Runnable() {
+			@Override
+			public void run() {
+				activity.setScreenBacklightBrightness(v);
+			}
+		});
+	}
+	
 	@Override
 	public void onTtsInitDone() {
 		log.i("CRTTS callback: onTtsInitDone");

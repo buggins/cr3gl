@@ -40,6 +40,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+@SuppressWarnings("deprecation")
 public class CoolReader extends Activity {
 	
 	public CRView crview;
@@ -249,6 +250,7 @@ public class CoolReader extends Activity {
 		cfg.docCacheDir = externalFilesDir + "/doccache";
 		cfg.dbFile = externalFilesDir + "/cr3new.sqlite";
 		cfg.iniFile = externalFilesDir + "/cr3new.ini";
+		cfg.defaultDownloadsDir = standardDownloadsDir;
 		
 		
 		cfg.hyphDir = "@hyph";
@@ -930,6 +932,7 @@ public class CoolReader extends Activity {
 		}
 	}
 
+	@SuppressLint("SdCardPath")
 	private static void initMountRoots() {
 		Map<String, String> map = new LinkedHashMap<String, String>();
 
@@ -1003,7 +1006,7 @@ public class CoolReader extends Activity {
 		}
 
 		// TODO: probably, hardcoded list is not necessary after /etc/vold parsing 
-		String[] knownMountPoints = new String[] {
+		String[] standardMountPoints = new String[] {
 			"/system/media/sdcard", // internal SD card on Nook
 			"/media",
 			"/nand",
@@ -1016,6 +1019,11 @@ public class CoolReader extends Activity {
 			"/mnt/ext.sd",
 			"/ext.sd",
 			"/extsd",
+			"/storage/sdcard",
+			"/storage/sdcard0",
+			"/storage/sdcard1",
+			"/storage/sdcard2",
+			"/mnt/extSdCard",
 			"/sdcard",
 			"/sdcard2",
 			"/mnt/udisk",
@@ -1027,15 +1035,38 @@ public class CoolReader extends Activity {
 			"/mnt/sdcard2",
 			"/mnt/usb_storage",
 			"/mnt/external_sd",
+			"/storage/external_SD/",
 			"/emmc",
 			"/external",
 			"/Removable/SD",
 			"/Removable/MicroSD",
-			"/Removable/USBDisk1", 
+			"/Removable/USBDisk1",
+			"/storage/sdcard1",
+			"/mnt/sdcard/extStorages/SdCard",
+			"/storage/extSdCard",
 		};
+		ArrayList<String> knownMountPoints = new ArrayList<String>();
+		for (String mp : standardMountPoints)
+			knownMountPoints.add(mp);
+
+		
+		String storageList = System.getenv("SECONDARY_STORAGE");
+		if (storageList != null) {
+			for (String p : storageList.split(":")) {
+				if (p.startsWith("/"))
+					knownMountPoints.add(p);
+			}
+		}
+		
 		for (String point : knownMountPoints) {
 			String link = CRView.isLink(point);
 			if (link != null) {
+				String link2 = CRView.isLink(link);
+				if (link2 != null)
+					link = link2;
+				String link3 = CRView.isLink(link);
+				if (link3 != null)
+					link = link3;
 				log.d("standard mount point path is link: " + point + " > " + link);
 				addMountRoot(map, link, link);
 			} else {
@@ -1063,12 +1094,57 @@ public class CoolReader extends Activity {
 			String link = CRView.isLink(point);
 			if (link != null)
 				pathCorrector.addRootLink(point, link);
+			String link2 = CRView.isLink(link);
+			if (link2 != null) {
+				link = link2;
+				pathCorrector.addRootLink(point, link);
+			}
+			String link3 = CRView.isLink(link);
+			if (link3 != null) {
+				link = link3;
+				pathCorrector.addRootLink(point, link);
+			}
 		}
 		
 		Log.i("cr3", "Root list: " + list + ", root links: " + pathCorrector);
 //		testPathNormalization("/sdcard/books/test.fb2");
 //		testPathNormalization("/mnt/sdcard/downloads/test.fb2");
 //		testPathNormalization("/mnt/sd/dir/test.fb2");
+		String extDownloadDir = null;
+		if (DeviceInfo.getSDKLevel() >= 8) {
+			extDownloadDir = getExternalDownloadsDirApi8();
+		}
+		extDownloadDir = pathCorrector.normalizeIfPossible(extDownloadDir);
+		Log.i("cr3", "extDownloadDir from API: " + extDownloadDir);
+		if (extDownloadDir != null && (new File(extDownloadDir)).isDirectory() && (new File(extDownloadDir)).canWrite())
+			standardDownloadsDir = extDownloadDir;
+		if (standardDownloadsDir == null) {
+			for(File f: mountedRootsList) {
+				if (!f.isDirectory())
+					continue;
+				File subdir1 = new File(f, "Download");
+				if (subdir1.isDirectory() && subdir1.canWrite()) {
+					standardDownloadsDir = subdir1.getAbsolutePath();
+					break;
+				}
+				File subdir2 = new File(f, "Downloads");
+				if (subdir2.isDirectory() && subdir2.canWrite()) {
+					standardDownloadsDir = subdir2.getAbsolutePath();
+					break;
+				}
+			}
+			
+		}
 	}
+	
+	@TargetApi(Build.VERSION_CODES.FROYO)
+	private static String getExternalDownloadsDirApi8() {
+		File f = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+		if (f != null)
+			return f.getAbsolutePath();
+		return null;
+	}
+	
+	public static String standardDownloadsDir = null;
 
 }

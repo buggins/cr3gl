@@ -1295,6 +1295,7 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     crconfig.uiFontFace = CRStringField(cfg,"uiFontFace").get8();
     crconfig.fallbackFontFace = CRStringField(cfg,"fallbackFontFace").get8();
     crconfig.docCacheDir = CRStringField(cfg,"docCacheDir").get8();
+    crconfig.defaultDownloadsDir = CRStringField(cfg,"defaultDownloadsDir").get8();
     crconfig.i18nDir = CRStringField(cfg,"i18nDir").get8();
     crconfig.systemLanguage = CRStringField(cfg,"systemLanguage").get8();
     crconfig.updateScreenModeInCurrentThread = true;

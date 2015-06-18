@@ -140,6 +140,8 @@ public class MountPathCorrector {
 	}
 
 	public String normalizeIfPossible(String path) {
+		if (path == null)
+			return null;
 		String res = normalize(path);
 		if (res == null)
 			return path;

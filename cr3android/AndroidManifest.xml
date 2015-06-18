@@ -2,11 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.coolreader.newui"
     android:installLocation="auto"
-    android:versionCode="56"
-    android:versionName="3.3.56" >
+    android:versionCode="57"
+    android:versionName="3.3.57" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="7"
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>

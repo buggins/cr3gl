@@ -15,6 +15,7 @@ public class CRConfig {
     public String resourceDir;
     public String coverCacheDir;
     public String docCacheDir;
+    public String defaultDownloadsDir;
     public String i18nDir;
     public String themesDir;
     public String manualsDir;
