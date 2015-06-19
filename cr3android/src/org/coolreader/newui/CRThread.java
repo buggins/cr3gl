@@ -6,6 +6,7 @@ public class CRThread extends Thread {
 		this.crrunnablePtr = runnablePtr;
 	}
 	public void run() {
+		Thread.currentThread().setPriority(MAX_PRIORITY);
 		CRView.callCRRunnableInternal(crrunnablePtr);
 	}
 }

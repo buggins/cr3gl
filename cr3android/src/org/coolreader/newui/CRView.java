@@ -105,6 +105,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 				// clear GL caches
 				log.i("CRView.onResume - gl thread");
 				onResumeInternal();
+				Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 				//surfaceDestroyedInternal();
 			}
 		});
