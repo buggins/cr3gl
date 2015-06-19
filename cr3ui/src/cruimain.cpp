@@ -417,6 +417,7 @@ void CRUIMainWidget::showFolder(lString8 folder, bool appendHistory) {
 }
 
 void CRUIMainWidget::openBookFromFile(lString8 filename) {
+    setLastBookFilename(filename);
 	CRLog::trace("CRUIMainWidget::openBookFromFile %s", filename.c_str());
     lString8 arcname;
     lString8 fn;
@@ -463,6 +464,9 @@ void CRUIMainWidget::openBook(const CRFileItem * file) {
     if (!_read->openBook(file)) {
         hideSlowOperationPopup();
         showMessage(lString16("Failed to open book"), 3000);
+        setLastBookFilename(lString8::empty_str);
+    } else {
+        setLastBookFilename(file->getPathName());
     }
 }
 
@@ -474,7 +478,11 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
     dirCache->setDefaultCallback(this);
     crconfig.startBackgroundThreads();
     dirCache->scan(lString8(RECENT_DIR_TAG));
+    if (_filenameToOpen.empty()) {
+        _filenameToOpen = getLastBookFilename();
+    }
     if (!_filenameToOpen.empty()) {
+        CRLog::debug("File to open on start: %s", _filenameToOpen.c_str());
         openBookFromFile(_filenameToOpen);
         _filenameToOpen.clear();
     }
@@ -1151,6 +1159,27 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         onThemeChanged();
 }
 
+lString8 CRUIMainWidget::getLastBookFilename() {
+    lString8 lastBookSettingsFile = crconfig.iniFile + ".lastbook";
+    CRPropRef props = LVCreatePropsContainer();
+    LVStreamRef stream = LVOpenFileStream(lastBookSettingsFile.c_str(), LVOM_READ);
+    if (!stream.isNull()) {
+        props->loadFromStream(stream.get());
+        return UnicodeToUtf8(props->getStringDef("LASTBOOK", ""));
+    }
+    return lString8::empty_str;
+}
+
+void CRUIMainWidget::setLastBookFilename(lString8 fname) {
+    CRLog::debug("setLastBookFilename(%s)", fname.c_str());
+    lString8 lastBookSettingsFile = crconfig.iniFile + ".lastbook";
+    CRPropRef props = LVCreatePropsContainer();
+    props->setString("LASTBOOK", fname.c_str());
+    LVStreamRef stream = LVOpenFileStream(lastBookSettingsFile.c_str(), LVOM_WRITE);
+    if (!stream.isNull())
+        props->saveToStream(stream.get());
+}
+
 void CRUIMainWidget::saveSettings() {
     LVStreamRef stream = LVOpenFileStream(crconfig.iniFile.c_str(), LVOM_WRITE);
     if (!stream.isNull())
@@ -1365,6 +1394,7 @@ void CRUIMainWidget::draw(LVDrawBuf * buf) {
     if (_popup) {
         //CRLog::trace("Drawing popup");
         _popup->draw(buf);
+        concurrencyProvider->sleepMs(50);
     }
     if (_keyboard) {
         //CRLog::trace("Drawing popup");

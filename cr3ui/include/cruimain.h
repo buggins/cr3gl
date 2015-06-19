@@ -411,6 +411,12 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
+
+    /// get last book filename - to open on start
+    lString8 getLastBookFilename();
+    /// set last book filename - to open on start
+    void setLastBookFilename(lString8 fname);
+
     void saveSettings();
 
     void setBatteryLevel(int level);
@@ -447,7 +453,6 @@ public:
     }
 
     virtual void setFileToOpenOnStart(lString8 filename);
-
 
     virtual int getChildCount();
     virtual CRUIWidget * getChild(int index);

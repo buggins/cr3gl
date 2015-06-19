@@ -234,7 +234,7 @@ public class CoolReader extends Activity {
 				else if (path.contains("ExternalSD"))
 					rate = 7;
 				else if (path.contains("sdcard-ext"))
-					rate = 7;
+					rate = 9;
 				else if (path.contains("MicroSD"))
 					rate = 7;
 				else if (path.contains("external1"))

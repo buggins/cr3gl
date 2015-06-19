@@ -368,7 +368,7 @@ public:
         int iconh = icon->originalHeight();
         int iconw = icon->originalWidth();
         int texth = _labels ? font->getHeight() * 2 : 0;
-        _itemSize.y = iconh + texth + PT_TO_PX(4);
+        _itemSize.y = iconh + texth * 170 / 100 + PT_TO_PX(2);
         _itemSize.x = iconw * 120 / 100 + PT_TO_PX(4);
         if (_itemSize.y < MIN_ITEM_PX)
         	_itemSize.y = MIN_ITEM_PX;
@@ -2558,7 +2558,7 @@ CRUIReadMenu * CRUIReadWidget::createReaderMenu(bool forToolbar) {
         actions.add(ACTION_TOGGLE_FULLSCREEN);
     if (!forToolbar)
         actions.add(ACTION_EXIT);
-    CRUIReadMenu * menu = new CRUIReadMenu(this, actions, !forToolbar, !forToolbar, 1);
+    CRUIReadMenu * menu = new CRUIReadMenu(this, actions, !forToolbar, !forToolbar, forToolbar ? 1 : 0);
     if (forToolbar)
         menu->setStyle("TOOL_BAR");
     return menu;
