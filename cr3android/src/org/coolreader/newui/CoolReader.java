@@ -210,13 +210,18 @@ public class CoolReader extends Activity {
 
 		// internal storage
 		cfg.internalStorageDir = externalStorageDir;
+		String normalizedInternalStorage = pathCorrector.normalizeIfPossible(externalStorageDir);
 		// sd card
 		int bestSdLocationRate = 0;
 		for (File f : mountedRootsList) {
 			String path = f.getAbsolutePath();
-			if (!path.equals(externalStorageDir)) {
+			String normalizedPath = pathCorrector.normalizeIfPossible(path);
+			if (!path.equals(externalStorageDir) 
+					&& !path.equals(normalizedInternalStorage)
+					&& !normalizedPath.equals(externalStorageDir)
+					&& !normalizedPath.equals(normalizedInternalStorage)) {
 				int rate = 1;
-				if (path.contains("external_sd"))
+				if (path.contains("external_sd") || path.contains("external_SD"))
 					rate = 10;
 				else if (path.contains("extSdCard"))
 					rate = 9;
@@ -237,7 +242,9 @@ public class CoolReader extends Activity {
 				else if (path.contains("sdcard0"))
 					rate = 7;
 				else if (path.contains("sdcard"))
-					rate = 6;
+					rate = 4;
+				else if (path.contains("external"))
+					rate = 5;
 				if (cfg.sdcardDir == null || rate > bestSdLocationRate) {
 					bestSdLocationRate = rate;
 					cfg.sdcardDir = path;
@@ -842,6 +849,8 @@ public class CoolReader extends Activity {
 	private static MountPathCorrector pathCorrector;
 	
 	private static boolean addMountRoot(Map<String, String> list, String path, String name) {
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
 		if (list.containsKey(path))
 			return false;
 		for (String key : list.keySet()) {
@@ -860,7 +869,14 @@ public class CoolReader extends Activity {
 			File dir = new File(path);
 			if (dir.isDirectory()) {
 				String[] d = dir.list();
-				if ((d!=null && d.length>0)) {
+				if (d == null || d.length == 0) {
+					File books = new File(dir, "Books");
+					if (!books.mkdir())
+						return false;
+					log.i("Created Books directory at FS root: " + path + " " + name);
+					d = dir.list();
+				}
+				if ((d != null && d.length > 0)) {
 					log.i("Adding FS root: " + path + " " + name);
 					list.put(path, name);
 					return true;
