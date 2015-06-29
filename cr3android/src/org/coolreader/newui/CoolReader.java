@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -38,6 +40,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 
 @SuppressWarnings("deprecation")
@@ -48,7 +51,6 @@ public class CoolReader extends Activity {
 	public static final String TAG = "cr3";
 	public static final Logger log = L.create(TAG);
 
-	@SuppressWarnings("deprecation")
 	private ClipboardManager clipboardManager;
 	private InputMethodManager inputMethodManager;
 	BroadcastReceiver intentReceiver;
@@ -61,7 +63,6 @@ public class CoolReader extends Activity {
 		return downloadManager;
 	}
 
-	@SuppressWarnings("deprecation")
 	public final void copyToClipboard(String s) {
 		if (clipboardManager != null)
 			clipboardManager.setText(s);
@@ -89,7 +90,7 @@ public class CoolReader extends Activity {
 		switch(orient) {
 		default:
 		case SCREEN_ORIENTATION_SYSTEM:
-			return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+			return ActivityInfo.SCREEN_ORIENTATION_USER;
 		case SCREEN_ORIENTATION_SENSOR:
 			return level9 ? ActivityInfo_SCREEN_ORIENTATION_FULL_SENSOR : ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 		case SCREEN_ORIENTATION_0:
@@ -131,22 +132,309 @@ public class CoolReader extends Activity {
 		}
 	}
 
-	private int _screenBacklightTimeout = 0;
-	public final void setScreenBacklightTimeout(int v) {
-		if (_screenBacklightTimeout == v)
-			return;
-		_screenBacklightTimeout = v;
-		// TODO
+    private boolean mIsStarted = false;
+    private boolean mPaused = false;
+	
+	public boolean isStarted() { return mIsStarted; }
+	
+	public boolean isWakeLockEnabled() {
+		return screenBacklightDuration > 0;
 	}
 
-	private int _screenBacklightBrightness = -1;
-	public final void setScreenBacklightBrightness(int v) {
-		if (_screenBacklightBrightness == v)
-			return;
-		_screenBacklightBrightness = v;
-		// TODO
+	/**
+	 * @param backlightDurationMinutes 0 = system default, 1 == 3 minutes, 2..5 == 2..5 minutes
+	 */
+	public void setScreenBacklightDuration(int backlightDurationMinutes)
+	{
+		if (backlightDurationMinutes == 1)
+			backlightDurationMinutes = 3;
+		if (screenBacklightDuration != backlightDurationMinutes * 60 * 1000) {
+			screenBacklightDuration = backlightDurationMinutes * 60 * 1000;
+			if (screenBacklightDuration == 0)
+				backlightControl.release();
+			else
+				backlightControl.onUserActivity();
+		}
 	}
 
+    private final static int MIN_BACKLIGHT_LEVEL_PERCENT = DeviceInfo.MIN_SCREEN_BRIGHTNESS_PERCENT;
+    
+    protected void setDimmingAlpha(int alpha) {
+    	// TODO
+    }
+    
+    protected boolean allowLowBrightness() {
+    	// override to force higher brightness in non-reading mode (to avoid black screen on some devices when brightness level set to small value)
+    	// TODO
+    	return true;
+    }
+    
+    private final static int MIN_BRIGHTNESS_IN_BROWSER = 12;
+    public void onUserActivity()
+    {
+    	if (backlightControl != null)
+      	    backlightControl.onUserActivity();
+    	// Hack
+    	//if ( backlightControl.isHeld() )
+    	crview.post(new Runnable() {
+			@Override
+			public void run() {
+				try {
+		        	float b;
+		        	int dimmingAlpha = 255;
+		        	// screenBacklightBrightness is 0..100
+		        	if (screenBacklightBrightness >= 0) {
+		        		int percent = screenBacklightBrightness;
+		        		if (!allowLowBrightness() && percent < MIN_BRIGHTNESS_IN_BROWSER)
+		        			percent = MIN_BRIGHTNESS_IN_BROWSER;
+	        			float minb = MIN_BACKLIGHT_LEVEL_PERCENT / 100.0f; 
+		        		if ( percent >= 10 ) {
+		        			// real brightness control, no colors dimming
+		        			b = (percent - 10) / (100.0f - 10.0f); // 0..1
+		        			b = minb + b * (1-minb); // minb..1
+				        	if (b < minb) // BRIGHTNESS_OVERRIDE_OFF
+				        		b = minb;
+				        	else if (b > 1.0f)
+				        		b = 1.0f; //BRIGHTNESS_OVERRIDE_FULL
+		        		} else {
+			        		// minimal brightness with colors dimming
+			        		b = minb;
+			        		dimmingAlpha = 255 - (11-percent) * 180 / 10; 
+		        		}
+		        	} else {
+		        		// system
+		        		b = -1.0f; //BRIGHTNESS_OVERRIDE_NONE
+		        	}
+		        	setDimmingAlpha(dimmingAlpha);
+			    	//log.v("Brightness: " + b + ", dim: " + dimmingAlpha);
+			    	updateBacklightBrightness(b);
+			    	updateButtonsBrightness(keyBacklightOff ? 0.0f : -1.0f);
+				} catch ( Exception e ) {
+					// ignore
+				}
+			}
+    	});
+    }
+	
+	private Runnable backlightTimerTask = null;
+	private static long lastUserActivityTime;
+	public static final int DEF_SCREEN_BACKLIGHT_TIMER_INTERVAL = 3 * 60 * 1000;
+	private int screenBacklightDuration = DEF_SCREEN_BACKLIGHT_TIMER_INTERVAL;
+	private class ScreenBacklightControl {
+		PowerManager.WakeLock wl = null;
+
+		public ScreenBacklightControl() {
+		}
+
+		long lastUpdateTimeStamp;
+		
+		public void onUserActivity() {
+			lastUserActivityTime = Utils.timeStamp();
+			if (Utils.timeInterval(lastUpdateTimeStamp) < 5000)
+				return;
+			lastUpdateTimeStamp = android.os.SystemClock.uptimeMillis();
+			if (!isWakeLockEnabled())
+				return;
+			if (wl == null) {
+				PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+				wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+				/* | PowerManager.ON_AFTER_RELEASE */, "cr3");
+				log.d("ScreenBacklightControl: WakeLock created");
+			}
+			if (!isStarted()) {
+				log.d("ScreenBacklightControl: user activity while not started");
+				release();
+				return;
+			}
+
+			if (!isHeld()) {
+				log.d("ScreenBacklightControl: acquiring WakeLock");
+				wl.acquire();
+			}
+
+			if (backlightTimerTask == null) {
+				log.v("ScreenBacklightControl: timer task started");
+				backlightTimerTask = new BacklightTimerTask();
+				crview.postDelayed(backlightTimerTask,
+						screenBacklightDuration / 10);
+			}
+		}
+
+		public boolean isHeld() {
+			return wl != null && wl.isHeld();
+		}
+
+		public void release() {
+			if (wl != null && wl.isHeld()) {
+				log.d("ScreenBacklightControl: wl.release()");
+				wl.release();
+			}
+			backlightTimerTask = null;
+			lastUpdateTimeStamp = 0;
+		}
+
+		private class BacklightTimerTask implements Runnable {
+
+			@Override
+			public void run() {
+				if (backlightTimerTask == null)
+					return;
+				long interval = Utils.timeInterval(lastUserActivityTime);
+//				log.v("ScreenBacklightControl: timer task, lastActivityMillis = "
+//						+ interval);
+				int nextTimerInterval = screenBacklightDuration / 20;
+				boolean dim = false;
+				if (interval > screenBacklightDuration * 8 / 10) {
+					nextTimerInterval = nextTimerInterval / 8;
+					dim = true;
+				}
+				if (interval > screenBacklightDuration) {
+					log.v("ScreenBacklightControl: interval is expired");
+					release();
+				} else {
+					crview.postDelayed(backlightTimerTask, nextTimerInterval);
+					if (dim) {
+						updateBacklightBrightness(-0.9f); // reduce by 9%
+					}
+				}
+			}
+
+		};
+
+	}
+
+    private void turnOffKeyBacklight() {
+    	if (!isStarted())
+    		return;
+		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
+			setKeyBacklight(0);
+		}
+    	// repeat again in short interval
+    	if (!setKeyBacklightUsingHack(0)) {
+    		//log.w("Cannot control key backlight directly");
+    		return;
+    	}
+    	// repeat again in short interval
+    	Runnable task = new Runnable() {
+			@Override
+			public void run() {
+		    	if (!isStarted())
+		    		return;
+		    	if (!setKeyBacklightUsingHack(0)) {
+		    		//log.w("Cannot control key backlight directly (delayed)");
+		    	}
+			}
+		};
+		crview.postDelayed(task, 1);
+		//BackgroundThread.instance().postGUI(task, 10);
+    }
+    
+    private void updateBacklightBrightness(float b) {
+        Window wnd = getWindow();
+        if (wnd != null) {
+	    	LayoutParams attrs =  wnd.getAttributes();
+	    	boolean changed = false;
+	    	if (b < 0 && b > -0.99999f) {
+	    		//log.d("dimming screen by " + (int)((1 + b)*100) + "%");
+	    		b = -b * attrs.screenBrightness;
+	    		if (b < 0.15)
+	    			return;
+	    	}
+	    	float delta = attrs.screenBrightness - b;
+	    	if (delta < 0)
+	    		delta = -delta;
+	    	if (delta > 0.01) {
+	    		attrs.screenBrightness = b;
+	    		changed = true;
+	    	}
+	    	if ( changed ) {
+	    		log.d("Window attribute changed: " + attrs);
+	    		wnd.setAttributes(attrs);
+	    	}
+        }
+    }
+
+    
+    private boolean setKeyBacklightUsingHack(int value) {
+    	// TODO
+    	return false;
+    }
+    
+	private int currentKeyBacklightLevel = 1;
+	public int getKeyBacklight() {
+		return currentKeyBacklightLevel;
+	}
+	public boolean setKeyBacklight(int value) {
+		currentKeyBacklightLevel = value;
+		// Try ICS way
+		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
+			setSystemUiVisibility();
+		}
+		// thread safe
+		return setKeyBacklightUsingHack(value);
+	}
+    
+    private boolean keyBacklightOff = true;
+    public boolean isKeyBacklightDisabled() {
+    	return keyBacklightOff;
+    }
+    
+    public void setKeyBacklightDisabled(boolean disabled) {
+    	keyBacklightOff = disabled;
+    	onUserActivity();
+    }
+    
+    public void setScreenBacklightLevel( int percent )
+    {
+    	if ( percent<-1 )
+    		percent = -1;
+    	else if ( percent>100 )
+    		percent = -1;
+    	screenBacklightBrightness = percent;
+    	onUserActivity();
+    }
+    
+    private int screenBacklightBrightness = -1; // use default
+    
+    private static boolean brightnessHackError = false;
+    private void updateButtonsBrightness(float buttonBrightness) {
+        Window wnd = getWindow();
+        if (wnd != null) {
+	    	LayoutParams attrs =  wnd.getAttributes();
+	    	boolean changed = false;
+	    	// hack to set buttonBrightness field
+	    	//float buttonBrightness = keyBacklightOff ? 0.0f : -1.0f;
+	    	if (!brightnessHackError)
+	    	try {
+	        	Field bb = attrs.getClass().getField("buttonBrightness");
+	        	if (bb != null) {
+	        		Float oldValue = (Float)bb.get(attrs);
+	        		if (oldValue == null || oldValue.floatValue() != buttonBrightness) {
+	        			bb.set(attrs, buttonBrightness);
+		        		changed = true;
+	        		}
+	        	}
+	    	} catch ( Exception e ) {
+	    		log.e("WindowManager.LayoutParams.buttonBrightness field is not found, cannot turn buttons backlight off");
+	    		brightnessHackError = true;
+	    	}
+	    	//attrs.buttonBrightness = 0;
+	    	if (changed) {
+	    		log.d("Window attribute changed: " + attrs);
+	    		wnd.setAttributes(attrs);
+	    	}
+	    	if (keyBacklightOff)
+	    		turnOffKeyBacklight();
+        }
+    }
+	
+	public void releaseBacklightControl()
+	{
+		backlightControl.release();
+	}
+
+	ScreenBacklightControl backlightControl = new ScreenBacklightControl();
+	
 	public final void showVirtualKeyboard() {
 		log.d("showVirtualKeyboard() - java hasFocus = " + crview.hasFocus());
 		//crview.req
@@ -380,6 +668,10 @@ public class CoolReader extends Activity {
 		log.i("CoolReader.onStart()");
 		super.onStart();
 		
+		mIsStarted = true;
+		mPaused = false;
+		onUserActivity();
+		
 		// Donations support code
 //		if (billingSupported)
 //			ResponseHandler.register(mPurchaseObserver);
@@ -415,10 +707,17 @@ public class CoolReader extends Activity {
 		log.i("CoolReader.onStart() exiting");
 	}
 	
+	@Override
+	protected void onStop() {
+		mIsStarted = false;
+		super.onStop();
+	}
 	
     @Override
     protected void onPause() {
 		log.i("CoolReader.onPause() is called");
+		mIsStarted = false;
+		mPaused = true;
         super.onPause();
         crview.onPause();
     }

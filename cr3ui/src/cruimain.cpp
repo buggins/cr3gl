@@ -1139,15 +1139,15 @@ void CRUIMainWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
         }
         if (key == PROP_APP_SCREEN_BACKLIGHT_TIMEOUT) {
             int v = newValue.atoi();
-            if (v < 0 || v > 15)
+            if (v < 0 || v > 30)
                 v = 0;
             if (getPlatform())
                 getPlatform()->setScreenBacklightTimeout(v);
         }
         if (key == PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS) {
             int v = newValue.atoi();
-            if (v < 0 || v > 15)
-                v = 0;
+            if (v < -1 || v > 100)
+                v = -1;
             if (getPlatform())
                 getPlatform()->setScreenBacklightBrightness(v);
         }

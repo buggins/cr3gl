@@ -144,6 +144,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public boolean onKeyDown(int keyCode, final KeyEvent event) {
+		activity.onUserActivity();
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (!_volumeKeysEnabled)
 				return false;
@@ -161,6 +162,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public boolean onKeyUp(int keyCode, final KeyEvent event) {
+		activity.onUserActivity();
 		// process in GL thread
 		FutureTask<Boolean> f = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
@@ -182,6 +184,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
+		activity.onUserActivity();
 //		if (DeviceInfo.EINK_NOOK || DeviceInfo.EINK_NOOK_120 || DeviceInfo.EINK_SONY)
 //			log.d("onTouchEvent: scheduling processing of " + event);
 		// process in GL thread
@@ -632,7 +635,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		post(new Runnable() {
 			@Override
 			public void run() {
-				activity.setScreenBacklightTimeout(v);
+				activity.setScreenBacklightDuration(v);
 			}
 		});
 	}
@@ -642,7 +645,7 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 		post(new Runnable() {
 			@Override
 			public void run() {
-				activity.setScreenBacklightBrightness(v);
+				activity.setScreenBacklightLevel(v);
 			}
 		});
 	}
