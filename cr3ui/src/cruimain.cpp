@@ -896,7 +896,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setStringDef(PROP_APP_FULLSCREEN, "0");
     _currentSettings->setStringDef(PROP_APP_SCREEN_ORIENTATION, "0");
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_TIMEOUT, "0");
-    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, "0");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, "-1");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
