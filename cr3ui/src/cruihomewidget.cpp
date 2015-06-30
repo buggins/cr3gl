@@ -694,8 +694,10 @@ public:
         _textWidget->getPadding(textpadding);
         lvRect textmargin = _textWidget->getMargin();
         int textH = _textWidget->getFont()->getHeight() * 2;
+        //int scrollH = 0; //_list->getScrollbarWidth();
         int coverH = baseHeight - textH - textpadding.top - textpadding.bottom - itempadding.top - itempadding.bottom -
-                textmargin.top - textmargin.bottom - itemmargin.top - itemmargin.bottom;
+                textmargin.top - textmargin.bottom - itemmargin.top - itemmargin.bottom; // - scrollH;
+        //coverH = coverH * 85 / 100;
         _itemImage->setSize(coverH * 3 / 4, coverH);
 
         //_textWidget->setBackground(0xC060C0A0);
@@ -718,7 +720,8 @@ public:
         lvRect listpadding;
         _list->getPadding(listpadding);
 
-        int h = baseHeight - _caption->getMeasuredHeight() - listmargin.top - listmargin.bottom - listpadding.top - listpadding.bottom;
+        int scrollH = _list->getScrollbarWidth();
+        int h = baseHeight - _caption->getMeasuredHeight() - listmargin.top - listmargin.bottom - listpadding.top - listpadding.bottom - scrollH;
         //CRLog::trace("Recent list measure: %d", h);
 
         updateCoverSize(h);
@@ -757,10 +760,11 @@ void CRUIHomeWidget::measure(int baseWidth, int baseHeight)
 	_body->setMeasured(baseWidth, baseHeight);
     bool vertical = baseWidth < baseHeight * 85 / 100;
 	if (vertical) {
-        int nowReadingH = baseHeight * 20 / 100;
-        int recentH = baseHeight * 25 / 100;
-		int otherH = (baseHeight - nowReadingH - recentH) / 3;
-		_currentBook->measure(baseWidth, nowReadingH);
+        int h = baseHeight;
+        int nowReadingH = h * 17 / 100;
+        int recentH = h * 28 / 100;
+        int otherH = (h - nowReadingH - recentH) / 3;
+        _currentBook->measure(baseWidth, nowReadingH);
 		_recentBooksList->measure(baseWidth, recentH);
 		_fileSystem->measure(baseWidth, otherH);
 		_library->measure(baseWidth, otherH);
@@ -786,8 +790,8 @@ void CRUIHomeWidget::layout(int left, int top, int right, int bottom)
 	int h = (bottom - top);
     bool vertical = w < h * 85 / 100;
 	if (vertical) {
-        int nowReadingH = h * 20 / 100;
-        int recentH = h * 25 / 100;
+        int nowReadingH = h * 17 / 100;
+        int recentH = h * 28 / 100;
 		int otherH = (h - nowReadingH - recentH) / 3;
 		int y = top;
 		_currentBook->layout(left, y, right, y + nowReadingH);

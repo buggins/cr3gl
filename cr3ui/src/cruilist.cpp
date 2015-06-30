@@ -75,6 +75,15 @@ CRUIWidget * CRUIListWidget::getChild(int index) {
     return _scrollBar;
 }
 
+int CRUIListWidget::getScrollbarWidth() {
+    if (!_scrollBar)
+        return 0;
+    if (isVertical()) {
+        return _scrollBar->getMeasuredWidth();
+    }
+    return _scrollBar->getMeasuredHeight();
+}
+
 bool CRUIListWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
     CR_UNUSED2(widget, manual);
     setScrollOffset(pos);

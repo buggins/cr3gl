@@ -69,6 +69,7 @@ public:
     CRUIListWidget(bool vertical = true, CRUIListAdapter * adapter = NULL);
     virtual ~CRUIListWidget();
 
+    virtual int getScrollbarWidth();
     virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
 
     virtual void scrollToItem(int index) {
