@@ -896,6 +896,7 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
     }
     return CRUIWindowWidget::onAction(action);
 }
+
 bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
     if (widget->getId() == "MENU") {
         CRLog::debug("Home screen - Menu button pressed");
@@ -904,4 +905,7 @@ bool CRUIHomeWidget::onClick(CRUIWidget * widget) {
     return false;
 }
 
+void CRUIHomeWidget::afterNavigationTo() {
+    _main->setLastBookFilename(lString8());
+}
 
