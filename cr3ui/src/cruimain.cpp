@@ -513,6 +513,10 @@ void addScreenBacklightTimeoutSettings(CRUISettingsList * settings) {
     settings->addChild(list);
 }
 
+void addScreenBrightnessSettings(CRUISettingsList * settings) {
+    CRUIScreenBrightnessSetting * list = new CRUIScreenBrightnessSetting(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS, NULL, PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS);
+    settings->addChild(list);
+}
 
 void CRUIMainWidget::createBrowserSettings() {
     if (!crconfig.einkMode) {
@@ -537,6 +541,9 @@ void CRUIMainWidget::createBrowserSettings() {
     }
     if (_platform->supportsScreenBacklightTimeout()) {
         addScreenBacklightTimeoutSettings(&_browserSettings);
+    }
+    if (_platform->supportsScreenBacklightBrightness()) {
+        addScreenBrightnessSettings(&_browserSettings);
     }
 }
 
@@ -584,6 +591,9 @@ void CRUIMainWidget::createReaderSettings() {
     }
     if (_platform->supportsScreenBacklightTimeout()) {
         addScreenBacklightTimeoutSettings(_interfaceSettings);
+    }
+    if (_platform->supportsScreenBacklightBrightness()) {
+        addScreenBrightnessSettings(_interfaceSettings);
     }
 
     //CRLog::trace("Creating Settings UI reader settings: interface: tts");
@@ -897,6 +907,8 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setStringDef(PROP_APP_SCREEN_ORIENTATION, "0");
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_TIMEOUT, "0");
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, "-1");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_DAY, "-1");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_NIGHT, "-1");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
@@ -1551,6 +1563,7 @@ void copyDayNightSettings(CRPropRef & props, const char * from, const char * to)
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_SELECTION_COLOR);
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT);
     copyDayNightSetting(props, from, to, PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION);
+    copyDayNightSetting(props, from, to, PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS);
 }
 
 void CRUIMainWidget::changeBrightness(int newBrightness) {

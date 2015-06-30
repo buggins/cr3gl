@@ -300,6 +300,12 @@ static lString16 formatInterlineSpace(int sz) {
     return lString16(s);
 }
 
+static lString16 formatScreenBrightness(int sz) {
+    if (sz == -1)
+        return _16(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_VALUE_SYSTEM);
+    return lString16::itoa(sz) + L"%";
+}
+
 static lString16 formatPageMargins(int sz) {
 	char s[32];
 	sprintf(s, "%d.%02d%%", sz / 100, sz % 100);
@@ -388,6 +394,91 @@ bool CRUIInterlineSpaceEditorWidget::onScrollPosChange(CRUIScrollBase * widget, 
     _sizetext->setText(formatInterlineSpace(sz));
     _props->setInt(PROP_INTERLINE_SPACE, sz);
     _sample->invalidate();
+    return true;
+}
+
+class CRUIScreenBrightnessSystemSettingsCheckbox : public CRUISettingsCheckbox {
+protected:
+    lString8 _checkedDescriptionRes;
+    lString8 _uncheckedDescriptionRes;
+public:
+    CRUIScreenBrightnessSystemSettingsCheckbox() : CRUISettingsCheckbox(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_VALUE_SYSTEM, NULL, PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, NULL, NULL)
+    {
+
+    }
+    virtual ~CRUIScreenBrightnessSystemSettingsCheckbox() {}
+    virtual void toggle(CRPropRef props) const {
+        int sz = props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1);
+        if (sz != -1) {
+            sz = -1;
+            props->setInt(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, sz);
+        }
+    }
+
+    virtual bool isChecked(CRPropRef props) const {
+        int sz = props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1);
+        return sz == -1;
+    }
+
+    virtual lString8 getValueIconRes(CRPropRef props) const {
+        if (isChecked(props))
+            return lString8("checked_checkbox");
+        else
+            return lString8("unchecked_checkbox");
+    }
+};
+
+CRUIScreenBrightnessEditorWidget::CRUIScreenBrightnessEditorWidget(CRPropRef props, CRUISettingsItem * setting) : CRUISettingsEditor(props, setting) {
+    int sz = props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1);
+    _checkbox = new CRUIScreenBrightnessSystemSettingsCheckbox();
+    _checkboxWidget = new CRUISettingsListItemWidget();
+    _checkboxWidget->setId("ENABLE_TEXTURE");
+    _checkboxWidget->setSetting(_checkbox, _props);
+    _checkboxWidget->setOnClickListener(this);
+
+    _sizetext = new CRUITextWidget();
+    _sizetext->setAlign(ALIGN_CENTER);
+    _sizetext->setPadding(PT_TO_PX(6));
+    _sizetext->setText(sz >= 0 ? formatScreenBrightness(sz) : lString16("-"));
+    _sizetext->setFontSize(FONT_SIZE_LARGE);
+    _sizetext->setMinHeight(MIN_ITEM_PX);
+    _slider = new CRUISliderWidget(0, 100, sz >= 0 ? sz : 100);
+    _slider->setPadding(PT_TO_PX(4));
+    _slider->setScrollPosCallback(this);
+    _slider->setMinHeight(MIN_ITEM_PX);
+    addChildControl(_checkboxWidget);
+    //addChildSpacer();
+    addChildControl(_sizetext);
+    addChildControl(_slider);
+    addChildSpacer();
+
+    _sample = new CRUIFontSampleWidget(props);
+    addChild(_sample);
+
+}
+
+void CRUIScreenBrightnessEditorWidget::format() {
+    int sz = _props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1);
+    _sizetext->setText(sz >= 0 ? formatScreenBrightness(sz) : lString16("-"));
+    _sample->invalidate();
+    _platform->setScreenBacklightBrightness(sz);
+    _checkboxWidget->setSetting(_checkbox, _props);
+}
+
+bool CRUIScreenBrightnessEditorWidget::onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual) {
+    CR_UNUSED(widget);
+    if (!manual)
+        return false;
+    int sz = pos;
+    _props->setInt(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, sz);
+    format();
+    return true;
+}
+
+bool CRUIScreenBrightnessEditorWidget::onClick(CRUIWidget * widget) {
+    CR_UNUSED(widget);
+    _checkbox->toggle(_props);
+    format();
     return true;
 }
 
@@ -740,6 +831,16 @@ CRUISettingsEditor * CRUIInterlineSpaceSetting::createEditor(CRPropRef props) {
 lString16 CRUIInterlineSpaceSetting::getDescription(CRPropRef props) const {
     CR_UNUSED(props);
 	return lString16();
+}
+
+/// create editor widget based on option type
+CRUISettingsEditor * CRUIScreenBrightnessSetting::createEditor(CRPropRef props) {
+    return new CRUIScreenBrightnessEditorWidget(props, this);
+}
+
+lString16 CRUIScreenBrightnessSetting::getDescription(CRPropRef props) const {
+    int sz = props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1);
+    return formatScreenBrightness(sz);
 }
 
 /// create editor widget based on option type

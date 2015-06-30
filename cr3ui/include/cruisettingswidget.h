@@ -201,6 +201,16 @@ public:
     virtual lString16 getDescription(CRPropRef props) const;
 };
 
+class CRUIScreenBrightnessSetting : public CRUISettingsItem {
+public:
+    CRUIScreenBrightnessSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
+    }
+    /// create editor widget based on option type
+    virtual CRUISettingsEditor * createEditor(CRPropRef props);
+    virtual bool hasCustomEditor() { return true; }
+    virtual lString16 getDescription(CRPropRef props) const;
+};
+
 class CRUIPageMarginsSetting : public CRUISettingsItem {
 public:
 	CRUIPageMarginsSetting(const char * nameRes, const char * descriptionRes, const char * settingId) : CRUISettingsItem(nameRes, descriptionRes, settingId) {
@@ -368,6 +378,21 @@ protected:
 public:
     CRUIInterlineSpaceEditorWidget(CRPropRef props, CRUISettingsItem * setting);
     virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
+};
+
+class CRUISettingsListItemWidget;
+class CRUIScreenBrightnessEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback, public CRUIOnClickListener {
+protected:
+    CRUISettingsCheckbox * _checkbox;
+    CRUISettingsListItemWidget * _checkboxWidget;
+    CRUISliderWidget * _slider;
+    CRUITextWidget * _sizetext;
+    CRUIFontSampleWidget * _sample;
+public:
+    CRUIScreenBrightnessEditorWidget(CRPropRef props, CRUISettingsItem * setting);
+    virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
+    virtual bool onClick(CRUIWidget * widget);
+    void format();
 };
 
 class CRUIPageMarginsEditorWidget : public CRUISettingsEditor, public CRUIOnScrollPosCallback {
