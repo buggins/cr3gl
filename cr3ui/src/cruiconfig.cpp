@@ -122,7 +122,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
 
     // calculate fonts size
     int sz = deviceInfo.shortSide;
-    int sz1 = sz / 38;
+    int sz1 = sz / 45;
     //int sz2 = sz / 32;
     int sz3 = sz / 28;
     int sz4 = sz / 24;
@@ -132,8 +132,8 @@ void CRUIConfig::setupResourcesForScreenSize() {
     maxFontSize = sz / 8;
     if (maxFontSize > 340)
         maxFontSize = 340;
-    if (minFontSize < 9)
-        minFontSize = 9;
+    if (minFontSize < 8)
+        minFontSize = 8;
     defFontSize = sz3;
 
     // calculate folder icons size

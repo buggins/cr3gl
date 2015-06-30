@@ -242,10 +242,10 @@ void CRUIFontSampleWidget::format() {
             PROP_PAGE_MARGINS,
             PROP_APP_BOOK_COVER_COLOR,
             PROP_APP_BOOK_COVER_VISIBLE,
-            PROP_PAGE_MARGIN_LEFT,
-            PROP_PAGE_MARGIN_RIGHT,
-            PROP_PAGE_MARGIN_TOP,
-            PROP_PAGE_MARGIN_BOTTOM,
+            //PROP_PAGE_MARGIN_LEFT,
+            //PROP_PAGE_MARGIN_RIGHT,
+            //PROP_PAGE_MARGIN_TOP,
+            //PROP_PAGE_MARGIN_BOTTOM,
             NULL
         };
         for (int i = 0; props_for_copy[i]; i++) {

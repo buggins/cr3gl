@@ -32,6 +32,9 @@ CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(
 int CRUITheme::getFontSize(lUInt8 size) {
     int sz = size;
     switch (size) {
+    case FONT_SIZE_XXSMALL:
+        sz = deviceInfo.shortSide / 45;
+        break;
     case FONT_SIZE_XSMALL:
         sz = deviceInfo.shortSide / 38;
         break;
@@ -300,6 +303,8 @@ public:
         } else if (!lStr_cmp(attrname, "fontSize")) {
             if (value == "xsmall")
                 style->setFontSize(FONT_SIZE_XSMALL);
+            else if (value == "xxsmall")
+                style->setFontSize(FONT_SIZE_XXSMALL);
             else if (value == "small")
                 style->setFontSize(FONT_SIZE_SMALL);
             else if (value == "medium")

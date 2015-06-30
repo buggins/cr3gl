@@ -553,7 +553,7 @@ void CRUICheckUpdateOptions(CRUIWidget * widget, bool & needLayout, bool & needR
 		needRedraw = true;
 }
 
-void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
+void ScrollControl::start(lInt64 _pos, lInt64 _pos2, int _speed, int _friction) {
     active = true;
     manual = true;
     cancelling = false;
@@ -567,7 +567,7 @@ void ScrollControl::start(int _pos, int _pos2, int _speed, int _friction) {
     startpos1000 = pos1000;
 }
 
-void ScrollControl::start(int _pos, int _speed, int _friction) {
+void ScrollControl::start(lInt64 _pos, int _speed, int _friction) {
     active = true;
     cancelling = false;
     manual = false;

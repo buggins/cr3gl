@@ -77,7 +77,8 @@ namespace CRUI {
 	// font sizes
 	enum CRUIFontSizeOption {
 		FONT_SIZE_UNSPECIFIED = 250,
-		FONT_SIZE_XSMALL = 251,
+        FONT_SIZE_XXSMALL = 248,
+        FONT_SIZE_XSMALL = 251,
 		FONT_SIZE_SMALL = 252,
 		FONT_SIZE_MEDIUM = 253,
 		FONT_SIZE_LARGE = 254,

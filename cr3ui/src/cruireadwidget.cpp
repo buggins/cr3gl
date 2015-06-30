@@ -309,11 +309,11 @@ public:
             button->setId(lString8::itoa(action->id));
             button->setOnClickListener(this);
             button->setStyle("BUTTON_NOBACKGROUND");
-            button->setPadding(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2)));
-            button->setFontSize(FONT_SIZE_XSMALL);
+            button->setPadding(lvRect(PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1)));
+            button->setFontSize(FONT_SIZE_XXSMALL);
             if (labels) {
                 CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
-                caption->setMaxLines(2)->setFontSize(FONT_SIZE_XSMALL);
+                caption->setMaxLines(2)->setFontSize(FONT_SIZE_XXSMALL);
             }
             //if (!labels)
             //    caption->setVisibility(CRUI::GONE);
@@ -369,7 +369,7 @@ public:
         int iconw = icon->originalWidth();
         int texth = _labels ? font->getHeight() * 2 : 0;
         _itemSize.y = iconh + texth * 170 / 100 + PT_TO_PX(2);
-        _itemSize.x = iconw * 120 / 100 + PT_TO_PX(4);
+        _itemSize.x = iconw * 130 / 100 + PT_TO_PX(5);
         if (_itemSize.y < MIN_ITEM_PX)
         	_itemSize.y = MIN_ITEM_PX;
         if (_itemSize.x < MIN_ITEM_PX)
@@ -2137,8 +2137,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             int cmd = DCMD_PAGEDOWN;
             int param = 1;
             if (_viewMode == DVM_PAGES) {
-                if (_scroll.isActive())
-                    return true;
+                //if (_scroll.isActive())
+                //    return true;
                 if (delta < 0)
                     cmd = DCMD_PAGEDOWN;
                 else
@@ -2556,11 +2556,15 @@ CRUIReadMenu * CRUIReadWidget::createReaderMenu(bool forToolbar) {
     actions.add(ACTION_HELP);
     if (_main->getPlatform()->supportsFullscreen())
         actions.add(ACTION_TOGGLE_FULLSCREEN);
-    if (!forToolbar)
+    if (!forToolbar) {
         actions.add(ACTION_EXIT);
+    } else {
+        actions.add(ACTION_MENU);
+    }
     CRUIReadMenu * menu = new CRUIReadMenu(this, actions, !forToolbar, !forToolbar, forToolbar ? 1 : 0);
-    if (forToolbar)
+    if (forToolbar) {
         menu->setStyle("TOOL_BAR");
+    }
     return menu;
 }
 
@@ -2569,6 +2573,9 @@ void CRUIReadWidget::showReaderMenu() {
     CRUIReadMenu * menu = createReaderMenu(false);
     CRLog::trace("showing popup");
     lvRect margins;
+    margins.left = _clientRect.left - _pos.left;
+    if (margins.left < 0)
+        margins.left = 0;
     preparePopup(menu, ALIGN_BOTTOM, margins, 0x20);
 }
 

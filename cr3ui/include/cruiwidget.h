@@ -275,8 +275,8 @@ public:
     /// animate cancel: scroll to previous position
     void cancel() { cancelling = true; }
     bool isCancelled() { return cancelling; }
-    void start(int _pos, int _speed, int _friction);
-    void start(int _pos, int _pos2, int _speed, int _friction);
+    void start(lInt64 _pos, int _speed, int _friction);
+    void start(lInt64 _pos, lInt64 _pos2, int _speed, int _friction);
     // returns true if position changed
     bool animate(lUInt64 millisPassed);
 };
