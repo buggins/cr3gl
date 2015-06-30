@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
@@ -19,8 +21,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import android.util.Base64;
 
 public class DownloadManager {
 	
@@ -68,7 +68,38 @@ public class DownloadManager {
 	        HttpURLConnection connection = null;
 	        try {
 	            URL url = new URL(this.url);
-	            connection = (HttpURLConnection) url.openConnection();
+	            
+				URL newURL = url;
+				boolean useOrobotProxy = false;
+				String host = url.getHost();
+				if (host.endsWith(".onion"))
+				    useOrobotProxy = true;
+				String oldAddress = url.toString();
+				if (oldAddress.startsWith("orobot://")) {
+				    newURL = new URL("http://" + oldAddress.substring(9)); // skip orobot://
+				    useOrobotProxy = true;
+				    L.d("Converting url - " + oldAddress + " to " + newURL + " for using ORobot proxy");
+				} else if (oldAddress.startsWith("orobots://")) {
+				    newURL = new URL("https://" + oldAddress.substring(10)); // skip orobots://
+				    useOrobotProxy = true;
+				    L.d("Converting url - " + oldAddress + " to " + newURL + " for using ORobot proxy");
+				}
+				Proxy proxy = null;
+                System.setProperty("http.keepAlive", "false");					
+				if (useOrobotProxy) {
+                    // Set-up proxy
+                    //System.setProperty("http.proxyHost", "127.0.0.1");
+                    //System.setProperty("http.proxyPort", "8118");
+				    //L.d("Using ORobot proxy: " + proxy);
+				    proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8118)); // ORobot proxy running on this device
+				    L.d("Using ORobot proxy: " + proxy);
+				} else {
+                    //System.clearProperty("http.proxyHost");
+                    //System.clearProperty("http.proxyPort");
+				}
+			    
+	            
+	            connection = (HttpURLConnection) (proxy == null ? newURL.openConnection() : newURL.openConnection(proxy));
 	            
 	            if (connection instanceof HttpsURLConnection) {
 	            	HttpsURLConnection https = (HttpsURLConnection)connection;
