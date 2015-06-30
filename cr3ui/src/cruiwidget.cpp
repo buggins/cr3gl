@@ -397,7 +397,7 @@ LVFontRef CRUIWidget::getFont() {
 		if (_parent)
 			return _parent->getFont();
 	} else if (_fontSize != FONT_SIZE_UNSPECIFIED)
-		return currentTheme->getFontForSize(_fontSize);
+        return currentTheme->getFontForSize(_fontSize, getStyle()->getFontWeight(), getStyle()->getFontStyle());
 	return getStyle()->getFont();
 }
 

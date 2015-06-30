@@ -27,6 +27,9 @@ CRUITheme::CRUITheme(lString8 name) : CRUIStyle(NULL, name), _map(100), _colors(
     setColor(lString8(COLOR_ID_SLIDER_LINE_COLOR_INNER), 0xFFFFFF);
     setColor(lString8(COLOR_ID_SLIDER_POINTER_COLOR_OUTER), 0x000000);
     setColor(lString8(COLOR_ID_SLIDER_POINTER_COLOR_INNER), 0xFFFFFF);
+    _fontWeight = FONT_WEIGHT_NORMAL;
+    _fontStyle = FONT_STYLE_NORMAL;
+    _fontSize = FONT_SIZE_MEDIUM;
 }
 
 int CRUITheme::getFontSize(lUInt8 size) {
@@ -60,12 +63,12 @@ int CRUITheme::getFontSize(lUInt8 size) {
     return sz;
 }
 
-LVFontRef CRUITheme::getFontForSize(lUInt8 size) {
+LVFontRef CRUITheme::getFontForSize(lUInt8 size, lUInt8 weight, lUInt8 style) {
     LVFontRef res = _fonts.get(size);
     if (!res.isNull())
         return res;
     int sz = getFontSize(size);
-    res = fontMan->GetFont(sz, 400, false, css_ff_sans_serif, crconfig.uiFontFace, 0);
+    res = fontMan->GetFont(sz, weight == FONT_WEIGHT_NORMAL ? 400 : 800, style == FONT_STYLE_ITALIC, css_ff_sans_serif, crconfig.uiFontFace, 0);
     _fonts.set(sz, res);
 	return res;
 }
@@ -316,6 +319,16 @@ public:
             else {
                 style->setFontSize(parseSize(value));
             }
+        } else if (!lStr_cmp(attrname, "fontWeight")) {
+            if (value == "normal")
+                style->setFontWeight(FONT_WEIGHT_NORMAL);
+            else if (value == "bold")
+                style->setFontWeight(FONT_WEIGHT_BOLD);
+        } else if (!lStr_cmp(attrname, "fontStyle")) {
+            if (value == "normal")
+                style->setFontStyle(FONT_STYLE_NORMAL);
+            else if (value == "italic")
+                style->setFontStyle(FONT_STYLE_ITALIC);
         } else if (!lStr_cmp(attrname, "textColor")) {
             lUInt32 cl;
             if (CRPropAccessor::parseColor(value16, cl))
@@ -421,7 +434,7 @@ CRUIStyle::CRUIStyle(CRUITheme * theme, lString8 id, lUInt8 stateMask, lUInt8 st
 		_theme(theme), _styleId(id),
 		_backgroundColor(COLOR_NONE),
 		_background2Color(COLOR_NONE),
-		_fontSize(FONT_SIZE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL),
+        _fontSize(FONT_SIZE_UNSPECIFIED), _fontWeight(FONT_WEIGHT_UNSPECIFIED), _fontStyle(FONT_STYLE_UNSPECIFIED), _textColor(PARENT_COLOR), _parentStyle(NULL),
 		_stateMask(stateMask), _stateValue(stateValue),
 		_minWidth(UNSPECIFIED), _maxWidth(UNSPECIFIED), _minHeight(UNSPECIFIED), _maxHeight(UNSPECIFIED),
         _layoutWidth(WRAP_CONTENT), _layoutHeight(WRAP_CONTENT),
@@ -538,14 +551,37 @@ CRUIImageRef CRUIStyle::getBackground2() {
     return CRUIImageRef();
 }
 
+lUInt8 CRUIStyle::getFontSize() {
+    if (_fontSize == FONT_SIZE_UNSPECIFIED) {
+        if (_parentStyle && _parentStyle != this)
+            return _parentStyle->getFontSize();
+        return _theme->getFontSize();
+    }
+    return _fontSize;
+}
+
+lUInt8 CRUIStyle::getFontStyle() {
+    if (_fontStyle == FONT_STYLE_UNSPECIFIED) {
+        if (_parentStyle && _parentStyle != this)
+            return _parentStyle->getFontStyle();
+        return _theme->getFontStyle();
+    }
+    return _fontStyle;
+}
+
+lUInt8 CRUIStyle::getFontWeight() {
+    if (_fontWeight == FONT_WEIGHT_UNSPECIFIED) {
+        if (_parentStyle && _parentStyle != this)
+            return _parentStyle->getFontWeight();
+        return _theme->getFontWeight();
+    }
+    return _fontWeight;
+}
+
 LVFontRef CRUIStyle::getFont() {
 	if (!_font.isNull())
 		return _font;
-	if (_fontSize != FONT_SIZE_UNSPECIFIED)
-		return _theme->getFontForSize(_fontSize);
-	if (_parentStyle)
-		return _parentStyle->getFont();
-	return _theme->getFontForSize(FONT_SIZE_MEDIUM);
+    return _theme->getFontForSize(getFontSize(), getFontWeight(), getFontStyle());
 }
 
 lUInt32 CRUIStyle::getTextColor() {

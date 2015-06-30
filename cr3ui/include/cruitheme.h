@@ -86,7 +86,21 @@ namespace CRUI {
         FONT_USE_PARENT = 249
 	};
 
-	enum CRUIAlignmentOption {
+    // font weight
+    enum CRUIFontWeightOption {
+        FONT_WEIGHT_UNSPECIFIED = 255,
+        FONT_WEIGHT_NORMAL = 0,
+        FONT_WEIGHT_BOLD = 1,
+    };
+
+    // font weight
+    enum CRUIFontStyleOption {
+        FONT_STYLE_UNSPECIFIED = 255,
+        FONT_STYLE_NORMAL = 0,
+        FONT_STYLE_ITALIC = 1,
+    };
+
+    enum CRUIAlignmentOption {
 		ALIGN_UNSPECIFIED = 0,
 		ALIGN_LEFT = 1,
 		ALIGN_HCENTER = 2,
@@ -187,7 +201,9 @@ protected:
 	lUInt32 _background2Color;
     LVFontRef _font;
 	lUInt8 _fontSize;
-	lUInt32 _textColor;
+    lUInt8 _fontWeight;
+    lUInt8 _fontStyle;
+    lUInt32 _textColor;
 	CRUIStyle * _parentStyle;
 	lUInt8 _stateMask;
 	lUInt8 _stateValue;
@@ -256,7 +272,9 @@ public:
     virtual int getLayoutHeight();
 
 	virtual CRUIStyle * setFontSize(lUInt8 fontSize) { _fontSize = fontSize; return this; }
-	virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
+    virtual CRUIStyle * setFontWeight(lUInt8 fontWeight) { _fontWeight = fontWeight; return this; }
+    virtual CRUIStyle * setFontStyle(lUInt8 fontStyle) { _fontStyle = fontStyle; return this; }
+    virtual CRUIStyle * setFont(LVFontRef font) { _font = font; return this; }
 	virtual CRUIStyle * setTextColor(lUInt32 color) { _textColor = color; return this; }
 	//virtual CRUIStyle * setBackground(CRUIImageRef background) { _background = background; return this; }
     virtual CRUIStyle * setBackground(const char * resourceName, bool tiled = false) { _background = resourceName; _backgroundTiled = tiled; _backgroundColor = COLOR_NONE; return this; }
@@ -273,8 +291,10 @@ public:
 	virtual CRUIImageRef getBackground();
     /// additional (upper) layer of background
     virtual CRUIImageRef getBackground2();
-    virtual lUInt8 getFontSize() { return _fontSize; }
-	virtual LVFontRef getFont();
+    virtual lUInt8 getFontSize();
+    virtual lUInt8 getFontStyle();
+    virtual lUInt8 getFontWeight();
+    virtual LVFontRef getFont();
 	virtual lUInt32 getTextColor();
 	virtual lUInt32 getAlign() { return _align; }
 	virtual CRUIStyle * setAlign(lUInt32 align) { _align = align; return this; }
@@ -298,7 +318,7 @@ public:
     void remove(CRUIStyle * style);
 	virtual CRUIStyle * findStyle(const lString8 &id, bool defaultToTheme = true);
 	void registerStyle(CRUIStyle * style);
-	LVFontRef getFontForSize(lUInt8 size);
+    LVFontRef getFontForSize(lUInt8 size, lUInt8 weight = CRUI::FONT_WEIGHT_NORMAL, lUInt8 style = CRUI::FONT_STYLE_NORMAL);
     virtual lUInt8 getFontSize() { return CRUIStyle::getFontSize(); }
     int getFontSize(lUInt8 size);
 	CRUITheme(lString8 name);

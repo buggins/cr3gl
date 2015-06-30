@@ -3807,6 +3807,7 @@ CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRU
     _list->setOnItemClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
     _body->addChild(_list);
+    _highlightedItemIndex = 0;
     addTocItems(_toc, read->getDocView()->getToc());
     _itemWidget = new CRUIHorizontalLayout();
     _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
@@ -3829,6 +3830,8 @@ int CRUITOCWidget::getItemCount(CRUIListWidget * list) {
 CRUIWidget * CRUITOCWidget::getItemWidget(CRUIListWidget * list, int index) {
     CR_UNUSED(list);
     LVTocItem * item = _toc[index];
+    bool bold = (index == _highlightedItemIndex) ? true : false;
+    _chapter->setStyle(bold ? "TEXT_BOLD" : "TEXT_NORMAL");
     _chapter->setText(item->getName());
     _page->setText(formatPercent(item->getPercent()));
     lvRect padding;

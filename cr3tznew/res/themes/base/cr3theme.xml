@@ -29,6 +29,13 @@
         margin="0"
         padding="3pt"
     />
+    <style
+        id="TEXT_NORMAL"
+    />
+    <style
+        id="TEXT_BOLD"
+	fontWeight="bold"
+    />
 
     <style
         id = "HOME_WIDGET"
