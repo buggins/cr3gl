@@ -14,7 +14,7 @@ using namespace CRUI;
 //#define WINDOW_ANIMATION_DELAY 750
 #define SLOW_OPERATION_POPUP_DELAY 200
 #define SLOW_OPERATION_POPUP_DIMMING_DURATION 600
-#define SLOW_OPERATION_DIM_COLOR 0xB0000000
+#define SLOW_OPERATION_DIM_COLOR 0xA0000000
 
 void applyThemeChange(CRUIWidget * widget) {
     if (!widget)
@@ -1086,7 +1086,11 @@ void CRUIMainWidget::update(bool force) {
 
 void CRUIMainWidget::setBatteryLevel(int level) {
 	CRLog::info("CRUIMainWidget::setBatteryLevel %d", level);
-	crconfig.batteryLevel = level;
+    if (crconfig.batteryLevel != level) {
+        crconfig.batteryLevel = level;
+        if (_read)
+            _read->updateBatteryLevel();
+    }
 }
 
 // apply changed settings

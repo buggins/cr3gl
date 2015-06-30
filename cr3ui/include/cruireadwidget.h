@@ -399,6 +399,7 @@ public:
     // apply changed settings
     virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings);
 
+    void updateBatteryLevel();
     void updateBrightnessOnDrag(int y);
 
     bool onTapZone(int zone, bool additionalAction);

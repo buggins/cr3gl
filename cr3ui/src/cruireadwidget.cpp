@@ -819,6 +819,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     _docview->setStatusFontSize(deviceInfo.shortSide / 25);
     _docview->setStatusMode(0, false, true, false, true, false, true, true);
     _popupControl.setOwner(this);
+    updateBatteryLevel();
 }
 
 CRUIReadWidget::~CRUIReadWidget() {
@@ -2106,6 +2107,11 @@ void CRUIReadWidget::cancelSelection() {
     }
 }
 
+void CRUIReadWidget::updateBatteryLevel() {
+    if (_docview)
+        _docview->setBatteryState(crconfig.batteryLevel);
+}
+
 void CRUIReadWidget::updateBrightnessOnDrag(int y) {
     int newvalue = -1;
     int dc = _clientRect.height();
@@ -2849,8 +2855,26 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             }
             if (key == PROP_FONT_SIZE) {
                 int sz = changed->getIntDef(PROP_FONT_SIZE, 22);
-                docviewprops->setInt(PROP_STATUS_FONT_SIZE, sz * 75 / 100);
+                docviewprops->setInt(PROP_STATUS_FONT_SIZE, sz * 70 / 100);
             }
+            if (key == PROP_FONT_FACE) {
+                lString16 face = changed->getStringDef(PROP_FONT_FACE, "");
+                docviewprops->setString(PROP_STATUS_FONT_FACE, face);
+            }
+        }
+        if (key == PROP_APP_FULLSCREEN) {
+            bool fullscreen = changed->getBoolDef(PROP_APP_FULLSCREEN, false);
+            _docview->setStatusMode(0,
+                                    fullscreen, //clock
+                                    true, // title
+                                    fullscreen, // battery
+                                    true, // chapter marks
+                                    false, // percent
+                                    true, // page number
+                                    true // total pages
+                                    );
+            clearImageCaches();
+            invalidate();
         }
         if (key == PROP_BACKGROUND_COLOR
                 || key == PROP_BACKGROUND_IMAGE
