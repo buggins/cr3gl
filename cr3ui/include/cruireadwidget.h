@@ -148,6 +148,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     CRUIDocView * _docview;
     CRUIDocView * _pinchSettingPreview;
     bool _isDragging;
+    bool _isBrightnessControlDragging;
     lvPoint _dragStart;
     lvPoint _dragPos;
     int _dragStartOffset;
@@ -316,6 +317,7 @@ class CRUIReadWidget : public CRUIWindowWidget
     CRUIScrollBar * _scrollbar;
 
     bool _volumeKeysEnabled;
+    bool _brightnessTouchControlEnabled;
 
     void setToolbarPosition(int position);
     bool isToolbarVertical(int baseWidth, int baseHeight);
@@ -395,6 +397,7 @@ public:
     // apply changed settings
     virtual void applySettings(CRPropRef changed, CRPropRef oldSettings, CRPropRef newSettings);
 
+    void updateBrightnessOnDrag(int y);
 
     bool onTapZone(int zone, bool additionalAction);
 

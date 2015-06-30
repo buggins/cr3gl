@@ -795,6 +795,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     : CRUIWindowWidget(main)
     , _pinchSettingPreview(NULL)
 	, _isDragging(false)
+    , _isBrightnessControlDragging(false)
 	, _dragStartOffset(0)
     , _viewMode(DVM_PAGES)
     , _pageAnimation(PAGE_ANIMATION_SLIDE)
@@ -808,6 +809,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _toolbarPosition(READER_TOOLBAR_OFF)
     , _scrollbar(NULL)
     , _volumeKeysEnabled(false)
+    , _brightnessTouchControlEnabled(false)
 {
     setId("READ");
     _docview = createDocView();
@@ -2104,6 +2106,30 @@ void CRUIReadWidget::cancelSelection() {
     }
 }
 
+void CRUIReadWidget::updateBrightnessOnDrag(int y) {
+    int newvalue = -1;
+    int dc = _clientRect.height();
+    if (y > _clientRect.top + dc / 10) {
+        int miny = _clientRect.top + dc / 8;
+        int maxy = _clientRect.bottom - dc / 15;
+        if (y < miny)
+            y = miny;
+        if (y > maxy)
+            y = maxy;
+        if (maxy <= miny)
+            maxy = miny + 10;
+        newvalue = 100 - ((y - miny) * 100 / (maxy - miny));
+    }
+    if (_main->changeBrightness(newvalue)) {
+        lString16 msg = _16(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_TOAST_VALUE);
+        if (newvalue == -1)
+            msg += _16(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_TOAST_SYSTEM);
+        else
+            msg += lString16::itoa(newvalue) + L"%";
+        _main->showMessage(msg, 1000);
+    }
+}
+
 /// motion event handler, returns true if it handled event
 bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     if (_locked)
@@ -2168,6 +2194,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             }
         }
         _isDragging = false;
+        _isBrightnessControlDragging = false;
         if (insideClient) {
             _dragStart.x = event->getX();
             _dragStart.y = event->getY();
@@ -2199,6 +2226,8 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             } else if (_pinchOp) {
             	endPinchOp(pinchDx, pinchDy, false);
             	event->cancelAllPointers();
+            } else if (_isBrightnessControlDragging) {
+                _isBrightnessControlDragging = false;
             } else if (_isDragging) {
                 lvPoint speed = event->getSpeed(SCROLL_SPEED_CALC_INTERVAL);
                 if (_viewMode == DVM_PAGES) {
@@ -2311,6 +2340,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
         	endPinchOp(pinchDx, pinchDy, true);
         }
         _isDragging = false;
+        _isBrightnessControlDragging = false;
         cancelSelection();
         //setScrollOffset(_scrollOffset);
         //CRLog::trace("list CANCEL");
@@ -2320,9 +2350,13 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
             // update selection
             if (insideClient)
                 updateSelection(event->getX(), event->getY());
+        } else if (_isBrightnessControlDragging) {
+            // brightness dragging active
+            updateBrightnessOnDrag(event->getY());
         } else if (_pinchOp) {
             updatePinchOp(pinchDx, pinchDy);
     	} else if (!_isDragging && event->count() == 2) {
+            // Pinch gestures
             cancelSelection();
 			int ddx0 = myAbs(event->getStartX(0) - event->getStartX(1));
 			int ddy0 = myAbs(event->getStartY(0) - event->getStartY(1));
@@ -2345,6 +2379,13 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 			if (op0 == op1 && ddd > DRAG_THRESHOLD_X * 2 / 3) {
 				startPinchOp(op0, pinchDx, pinchDy);
 			}
+        } else if (!_isDragging && _brightnessTouchControlEnabled && insideClient
+                   && event->count() == 1 && ((delta > DRAG_THRESHOLD_X) || (-delta > DRAG_THRESHOLD_X))
+                   && event->getX() < _clientRect.left + DRAG_THRESHOLD_X
+                   && event->getStartX() < _clientRect.left + DRAG_THRESHOLD_X ) {
+            // start brightness dragging
+            _isBrightnessControlDragging = true;
+            updateBrightnessOnDrag(event->getY());
         } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             cancelSelection();
             if (insideClient) {
@@ -2820,6 +2861,9 @@ void CRUIReadWidget::applySettings(CRPropRef changed, CRPropRef oldSettings, CRP
             if (n != _toolbarPosition) {
                 setToolbarPosition(n);
             }
+        }
+        if (key == PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL) {
+            _brightnessTouchControlEnabled = changed->getBoolDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL, true);
         }
         if (key == PROP_APP_CONTROLS_VOLUME_KEYS) {
             _volumeKeysEnabled = changed->getBoolDef(PROP_APP_CONTROLS_VOLUME_KEYS, false);

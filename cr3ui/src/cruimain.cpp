@@ -634,7 +634,15 @@ void CRUIMainWidget::createReaderSettings() {
     controls->addChild(tzdouble);
 
     if (_platform->supportsVolumeKeys())
-        controls->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS, NULL, PROP_APP_CONTROLS_VOLUME_KEYS, STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_ON, STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_OFF));
+        controls->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS, NULL, PROP_APP_CONTROLS_VOLUME_KEYS,
+                                                    STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_ON, STR_SETTINGS_APP_CONTROLS_VOLUME_KEYS_VALUE_OFF));
+
+    if (_platform->supportsScreenBacklightBrightness()) {
+
+        controls->addChild(new CRUISettingsCheckbox(STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL, NULL,
+                                                    PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL,
+                                                    STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_VALUE_ON, STR_SETTINGS_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_VALUE_OFF));
+    }
 
     _readerSettings.addChild(controls);
 
@@ -909,6 +917,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, "-1");
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_DAY, "-1");
     _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_NIGHT, "-1");
+    _currentSettings->setStringDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL, _platform->supportsScreenBacklightBrightness() ? "1" : "0");
 
     _currentSettings->setIntDef(PROP_HIGHLIGHT_COMMENT_BOOKMARKS, (int)highlight_mode_solid);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR, 0xD0D0D0);
@@ -1566,14 +1575,15 @@ void copyDayNightSettings(CRPropRef & props, const char * from, const char * to)
     copyDayNightSetting(props, from, to, PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS);
 }
 
-void CRUIMainWidget::changeBrightness(int newBrightness) {
+bool CRUIMainWidget::changeBrightness(int newBrightness) {
     CRPropRef props = initNewSettings();
-    if (newBrightness < 0 || newBrightness > 100)
-        newBrightness = 0;
+    if (newBrightness < -1 || newBrightness > 100)
+        newBrightness = -1;
     if (props->getIntDef(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, -1) == newBrightness)
-        return;
+        return false;
     props->setInt(PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS, newBrightness);
     applySettings();
+    return true;
 }
 
 /// handle menu or other action

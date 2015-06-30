@@ -472,7 +472,7 @@ public:
     /// handle menu or other action - find standard action by id
     virtual bool onAction(int actionId);
 
-    virtual void changeBrightness(int newBrightness);
+    virtual bool changeBrightness(int newBrightness);
 
     /// return true if drag operation is intercepted
     virtual bool startDragging(const CRUIMotionEvent * event, bool vertical);

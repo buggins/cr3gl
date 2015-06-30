@@ -34,6 +34,9 @@
 #define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS "app.screen.backlight.brightness"
 #define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_DAY "app.screen.backlight.brightness.day"
 #define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_NIGHT "app.screen.backlight.brightness.night"
+#define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL "app.screen.backlight.brightness.touch.control"
+#define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_VALUE_ON "1"
+#define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS_TOUCH_CONTROL_VALUE_OFF "0"
 
 #define PROP_APP_TTS_VOICE "app.tts.voice"
 #define PROP_APP_TTS_VOICE_VALUE_SYSTEM "@system"
