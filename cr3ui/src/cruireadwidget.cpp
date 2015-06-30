@@ -809,7 +809,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _toolbarPosition(READER_TOOLBAR_OFF)
     , _scrollbar(NULL)
     , _volumeKeysEnabled(false)
-    , _brightnessTouchControlEnabled(false)
+    , _brightnessTouchControlEnabled(true)
 {
     setId("READ");
     _docview = createDocView();
@@ -2151,6 +2151,7 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
     int dy = event->getY() - event->getStartY();
     int pinchDx = event->getPinchDx();
     int pinchDy = event->getPinchDy();
+    int brightnessControlWidth = PT_TO_PX(20);
     int delta = dy; //isVertical() ? dy : dx;
     int delta2 = dx; //isVertical() ? dy : dx;
     //CRLog::trace("CRUIListWidget::onTouchEvent %d (%d,%d) dx=%d, dy=%d, delta=%d, itemIndex=%d [%d -> %d]", action, event->getX(), event->getY(), dx, dy, delta, index, _dragStartOffset, _scrollOffset);
@@ -2380,12 +2381,15 @@ bool CRUIReadWidget::onTouchEvent(const CRUIMotionEvent * event) {
 				startPinchOp(op0, pinchDx, pinchDy);
 			}
         } else if (!_isDragging && _brightnessTouchControlEnabled && insideClient
-                   && event->count() == 1 && ((delta > DRAG_THRESHOLD_X) || (-delta > DRAG_THRESHOLD_X))
-                   && event->getX() < _clientRect.left + DRAG_THRESHOLD_X
-                   && event->getStartX() < _clientRect.left + DRAG_THRESHOLD_X ) {
-            // start brightness dragging
-            _isBrightnessControlDragging = true;
-            updateBrightnessOnDrag(event->getY());
+                   && event->count() == 1
+                   && event->getX() < _clientRect.left + brightnessControlWidth
+                   && event->getStartX() < _clientRect.left + brightnessControlWidth ) {
+            if (((delta > brightnessControlWidth) || (-delta > brightnessControlWidth))) {
+                // start brightness dragging
+                _isBrightnessControlDragging = true;
+                updateBrightnessOnDrag(event->getY());
+                cancelSelection();
+            }
         } else if (_viewMode != DVM_PAGES && !_isDragging && ((delta > DRAG_THRESHOLD) || (-delta > DRAG_THRESHOLD))) {
             cancelSelection();
             if (insideClient) {
