@@ -24,6 +24,7 @@ CRUIListWidget::CRUIListWidget(bool vertical, CRUIListAdapter * adapter)
 {
     setStyle("MENU_LIST");
     setFocusable(true);
+    _itemIndexToScroll = -1;
     _scrollBar = new CRUIScrollBar(vertical, 0, 100, 0, 100);
     _scrollBar->setScrollPosCallback(this);
     _visibleSize = 0;
@@ -281,6 +282,18 @@ void CRUIListWidget::draw(LVDrawBuf * buf) {
     if (getVisibility() != VISIBLE) {
         return;
     }
+
+    if (_itemIndexToScroll >= 0) {
+        if (_itemIndexToScroll < _itemRects.length()) {
+            if (isVertical()) {
+                setScrollOffset(_itemRects[_itemIndexToScroll].top - _itemRects[0].top);
+            } else {
+                setScrollOffset(_itemRects[_itemIndexToScroll].left - _itemRects[_itemIndexToScroll].left);
+            }
+        }
+        _itemIndexToScroll = -1;
+    }
+
     CRUIWidget::draw(buf);
 //	if (!_adapter)
 //		return;

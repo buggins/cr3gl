@@ -70,6 +70,7 @@ class CRUITOCWidget : public CRUIWindowWidget, public CRUIListAdapter
     CRUITextWidget * _chapter;
     CRUITextWidget * _page;
     int _highlightedItemIndex;
+    bool _firstDraw;
 public:
     // list adapter methods
     virtual int getItemCount(CRUIListWidget * list);

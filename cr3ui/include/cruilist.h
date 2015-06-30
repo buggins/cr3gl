@@ -50,6 +50,7 @@ protected:
 	CRUIListAdapter * _adapter;
 	bool _ownAdapter;
 	int _scrollOffset;
+    int _itemIndexToScroll;
 	int _maxScrollOffset;
     int _visibleSize;
     int _topItem;
@@ -69,6 +70,11 @@ public:
     virtual ~CRUIListWidget();
 
     virtual bool onScrollPosChange(CRUIScrollBase * widget, int pos, bool manual);
+
+    virtual void scrollToItem(int index) {
+        _itemIndexToScroll = index;
+        invalidate();
+    }
 
     // scrollbar as a child
     virtual int getChildCount();

@@ -3807,8 +3807,16 @@ CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRU
     _list->setOnItemClickListener(this);
     _list->setStyle("SETTINGS_ITEM_LIST");
     _body->addChild(_list);
-    _highlightedItemIndex = 0;
+    _highlightedItemIndex = -1;
     addTocItems(_toc, read->getDocView()->getToc());
+    int currentp = read->getCurrentPositionPercent();
+    for (int i = 0; i < _toc.length(); i++) {
+        int p = _toc[i]->getPercent();
+        if (p >= currentp || i == _toc.length() - 1) {
+            _highlightedItemIndex = i;
+            break;
+        }
+    }
     _itemWidget = new CRUIHorizontalLayout();
     _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
     _itemWidget->setPadding(PT_TO_PX(2));
@@ -3820,6 +3828,8 @@ CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRU
     _chapter->setAlign(ALIGN_LEFT|ALIGN_VCENTER);
     _chapter->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
     _itemWidget->setStyle("LIST_ITEM");
+    _firstDraw = true;
+    _list->scrollToItem(_highlightedItemIndex);
 }
 
 int CRUITOCWidget::getItemCount(CRUIListWidget * list) {
@@ -3831,8 +3841,10 @@ CRUIWidget * CRUITOCWidget::getItemWidget(CRUIListWidget * list, int index) {
     CR_UNUSED(list);
     LVTocItem * item = _toc[index];
     bool bold = (index == _highlightedItemIndex) ? true : false;
+    int level = item->getLevel();
     _chapter->setStyle(bold ? "TEXT_BOLD" : "TEXT_NORMAL");
     _chapter->setText(item->getName());
+    _chapter->setMargin(lvRect(level * PT_TO_PX(5), 0, 0, 0));
     _page->setText(formatPercent(item->getPercent()));
     lvRect padding;
     padding.left = (item->getLevel() - 1) * MIN_ITEM_PX / 3;
