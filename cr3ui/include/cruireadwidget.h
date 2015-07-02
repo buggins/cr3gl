@@ -331,6 +331,8 @@ public:
     CRUIReadWidget(CRUIMainWidget * main);
     virtual ~CRUIReadWidget();
 
+    CRFileItem * getCurrentBookFile() { return _fileItem; }
+
     void removeBookmark(lInt64 id);
     LVPtrVector<BookDBBookmark> & getBookmarks() { return _bookmarks; }
 

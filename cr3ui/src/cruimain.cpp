@@ -1619,6 +1619,19 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     case CMD_SHOW_FOLDER:
         showFolder(action->sparam, false);
         return true;
+    case CMD_OPEN_CURRENT_BOOK_FOLDER:
+        if (_read && _read->getCurrentBookFile() && _read->getCurrentBookFile()->getBook()) {
+            // currently opened book
+            lString8 folder = _read->getCurrentBookFile()->getPathName();
+            lString8 arcPathName, arcItemPathName;
+            if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+                folder = arcPathName;
+            folder = LVExtractPath(folder);
+            showFolder(folder, false);
+        } else {
+            // top book from recent books list
+        }
+        return true;
     case CMD_NIGHT_MODE:
     case CMD_DAY_MODE:
     case CMD_TOGGLE_NIGHT_MODE:
