@@ -1601,6 +1601,9 @@ bool CRUIMainWidget::changeBrightness(int newBrightness) {
 }
 
 void CRUIMainWidget::removeBookFile(lString8 filename) {
+    CRFileItem * currentBook = _read ? _read->getCurrentBookFile() : NULL;
+    if (currentBook && currentBook->getPathName() == filename)
+        _read->closeBook();
     bookDB->removeBook(filename);
     LVDeleteFile(extractFilePath(filename));
     lString8 folder = extractFolderPath(filename);
