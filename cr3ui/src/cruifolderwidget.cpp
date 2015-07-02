@@ -380,6 +380,7 @@ CRUIFolderWidget::CRUIFolderWidget(CRUIMainWidget * main) : CRUIWindowWidget(mai
     _fileList = new CRUIFileListWidget(this);
 	_body->addChild(_fileList);
     _fileList->setOnItemClickListener(this);
+    _fileList->setOnItemLongClickListener(this);
     setDefaultWidget(_fileList);
 }
 
@@ -450,6 +451,15 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         _main->updateFolderBookmarks();
         return true;
     }
+    case CMD_REMOVE_BOOK_FILE:
+    {
+        // action->sparam
+        bookDB->removeBook(action->sparam);
+        LVDeleteFile(action->sparam);
+        // TODO: rescan directory
+        //_dir->;
+        return true;
+    }
     case CMD_MENU:
     {
         CRUIActionList actions;
@@ -469,6 +479,7 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
             actions.add(ACTION_NIGHT_MODE);
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_READER_HOME);
+        actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
         actions.add(ACTION_EXIT);
         lvRect margins;
         //margins.right = MIN_ITEM_PX * 120 / 100;
@@ -491,7 +502,55 @@ bool CRUIFolderWidget::onListItemClick(CRUIListWidget * widget, int index) {
         getMain()->showFolder(entry->getPathName(), true);
     } else {
         // Book? open book
+        widget->setSelectedItem(index);
         getMain()->openBook(static_cast<CRFileItem *>(entry));
+    }
+    return true;
+}
+
+bool CRUIFolderWidget::onListItemLongClick(CRUIListWidget * widget, int index) {
+    if (index < 0 || index > _dir->itemCount())
+        return false;
+    CRDirEntry * entry = _dir->getItem(index);
+    if (entry->isDirectory()) {
+        widget->setSelectedItem(index);
+        getMain()->showFolder(entry->getPathName(), true);
+    } else {
+        // Book? open book
+        widget->setSelectedItem(index);
+        //getMain()->openBook(static_cast<CRFileItem *>(entry));
+
+
+        if (!_dir->isArchive()) {
+            CRUIActionList actions;
+
+            CRUIAction openBook(*ACTION_OPEN_BOOK);
+            openBook.sparam = entry->getPathName();
+            actions.add(&openBook);
+
+            if (entry->getFolderPath() != _dir->getPathName()) {
+                CRUIAction showFolder(*ACTION_SHOW_FOLDER);
+                showFolder.sparam = entry->getFolderPath();
+                actions.add(&showFolder);
+            }
+
+            CRUIAction removeFile(*ACTION_REMOVE_BOOK_FILE);
+            removeFile.sparam = entry->getFilePath();
+            actions.add(&removeFile);
+
+            actions.add(ACTION_READER_HOME);
+            //actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
+            actions.add(ACTION_SETTINGS);
+
+            //actions.add(ACTION_BACK);
+            lvRect margins;
+            //margins.right = MIN_ITEM_PX * 5 / 4;
+            showMenu(actions, ALIGN_TOP, margins, false);
+        } else {
+            getMain()->openBook(static_cast<CRFileItem *>(entry));
+        }
+        return true;
+
     }
     return true;
 }

@@ -529,6 +529,33 @@ bool CRBookDB::saveOpdsCatalog(BookDBCatalog * catalog) {
     return !err;
 }
 
+/// remove last position record for book with specified path
+bool CRBookDB::removeRecentPosition(lString8 path) {
+    if (path.empty())
+        return false;
+    // TODO:
+    return false;
+}
+
+/// remove book with specified path
+bool CRBookDB::removeBook(lString8 path) {
+    if (path.empty())
+        return false;
+
+    BookDBBook * book = NULL;
+    BookDBBook * fromCache = _bookCache.get(DBString(path.c_str()));
+    if (fromCache) {
+        book = fromCache;
+        //return true;
+    }
+    //return insertBook(book);
+    if (!book)
+        return false;
+
+    // TODO
+    return false;
+}
+
 bool CRBookDB::removeOpdsCatalog(BookDBCatalog * catalog) {
     if (!catalog)
         return true;

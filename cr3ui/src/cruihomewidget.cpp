@@ -587,7 +587,7 @@ public:
 
 };
 
-class CRUIRecentBooksListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener {
+class CRUIRecentBooksListWidget : public CRUILinearLayout, public CRUIListAdapter, public CRUIOnListItemClickListener, public CRUIOnListItemLongClickListener {
 protected:
     CRUITextWidget * _caption;
     CRUIListWidget * _list;
@@ -607,6 +607,38 @@ public:
         return false;
     }
 
+    virtual bool onListItemLongClick(CRUIListWidget * widget, int itemIndex) {
+        CR_UNUSED(widget);
+        CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRFileItem * item = dir ? static_cast<CRFileItem*>(dir->getItem(itemIndex + 1)) : NULL;
+        if (item) {
+            CRUIActionList actions;
+
+            CRUIAction showFolder(*ACTION_SHOW_FOLDER);
+            showFolder.sparam = item->getFolderPath();
+            actions.add(&showFolder);
+
+            CRUIAction openBook(*ACTION_OPEN_BOOK);
+            openBook.sparam = item->getPathName();
+            actions.add(&openBook);
+
+            CRUIAction removeFile(*ACTION_REMOVE_BOOK_FILE);
+            removeFile.sparam = item->getFilePath();
+            actions.add(&removeFile);
+
+            CRUIAction removeRecent(*ACTION_REMOVE_BOOK_HISTORY);
+            removeRecent.sparam = item->getPathName();
+            actions.add(&removeRecent);
+
+            //actions.add(ACTION_BACK);
+            lvRect margins;
+            //margins.right = MIN_ITEM_PX * 5 / 4;
+            _home->showMenu(actions, ALIGN_TOP, margins, false);
+            return true;
+        }
+        return true;
+    }
+
     CRUIRecentBooksListWidget(CRUIHomeWidget * home) : CRUILinearLayout(true), _home(home) {
         setId("RECENT_BOOKS");
         _caption = new CRUITextWidget(STR_RECENT_BOOKS);
@@ -618,6 +650,7 @@ public:
         _list->setBackground("home_frame.9.png");
         _list->setPadding(PT_TO_PX(1));
         _list->setOnItemClickListener(this);
+        _list->setOnItemLongClickListener(this);
         _list->setId("RECENT_BOOKS_LIST");
         addChild(_list);
 
@@ -874,6 +907,7 @@ bool CRUIHomeWidget::onAction(const CRUIAction * action) {
     {
         CRUIActionList actions;
         actions.add(ACTION_SETTINGS);
+        actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
         actions.add(ACTION_HELP);
         if (_main->getSettings()->getBoolDef(PROP_NIGHT_MODE, false))
             actions.add(ACTION_DAY_MODE);

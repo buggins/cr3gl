@@ -1619,17 +1619,28 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
     case CMD_SHOW_FOLDER:
         showFolder(action->sparam, false);
         return true;
+    case CMD_OPEN_BOOK:
+        openBookFromFile(action->sparam);
+        return true;
+    case CMD_REMOVE_BOOK_FILE:
+        //openBook(action->sparam);
+        return true;
+    case CMD_REMOVE_BOOK_HISTORY:
+        //openBook(action->sparam);
+        return true;
     case CMD_OPEN_CURRENT_BOOK_FOLDER:
         if (_read && _read->getCurrentBookFile() && _read->getCurrentBookFile()->getBook()) {
             // currently opened book
-            lString8 folder = _read->getCurrentBookFile()->getPathName();
-            lString8 arcPathName, arcItemPathName;
-            if (LVSplitArcName(folder, arcPathName, arcItemPathName))
-                folder = arcPathName;
-            folder = LVExtractPath(folder);
+            lString8 folder = _read->getCurrentBookFile()->getFolderPath();
             showFolder(folder, false);
         } else {
             // top book from recent books list
+            CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+            CRFileItem * last = dir ? static_cast<CRFileItem*>(dir->getItem(0)) : NULL;
+            if (last && last->getBook()) {
+                lString8 folder = last->getFolderPath();
+                showFolder(folder, false);
+            }
         }
         return true;
     case CMD_NIGHT_MODE:

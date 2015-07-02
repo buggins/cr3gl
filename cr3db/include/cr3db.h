@@ -564,6 +564,11 @@ public:
     /// loads last position for book (returns cloned value), returns NULL if not found
     BookDBBookmark * loadLastPosition(BookDBBook * book);
 
+    /// remove last position record for book with specified path
+    bool removeRecentPosition(lString8 path);
+    /// remove book with specified path
+    bool removeBook(lString8 path);
+
     /// searches BookDB by field - return prefixes
     bool findPrefixes(SEARCH_FIELD field, lString16 searchString, lString8 folderFilter, LVPtrVector<BookDBPrefixStats> & prefixes);
     /// searches BookDB by field - return files

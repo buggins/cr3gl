@@ -94,6 +94,10 @@ public:
     virtual bool isSpecialItem();
     virtual int getBookCount() const { return 0; }
     virtual void setBookCount(int count) { CR_UNUSED(count); }
+    /// folder with current book's file
+    virtual lString8 getFolderPath() { return lString8::empty_str; }
+    /// current book's file (archive file or plain file)
+    virtual lString8 getFilePath() { return lString8::empty_str; }
 };
 
 class CRFileItem : public CRDirEntry {
@@ -109,6 +113,22 @@ public:
 	~CRFileItem() { if (_book) delete _book; }
 	virtual bool isDirectory() const { return false; }
     virtual CRDirEntry * clone() const { CRFileItem * res = new CRFileItem(this->getPathName(), this->isArchive()); res->setParsed(this->_parsed); res->setBook(this->_book ? this->_book->clone() : NULL); return res; }
+    virtual lString8 getFolderPath() {
+        lString8 folder = getPathName();
+        lString8 arcPathName, arcItemPathName;
+        if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+            folder = arcPathName;
+        folder = LVExtractPath(folder);
+        return folder;
+    }
+    /// current book's file (archive file or plain file)
+    virtual lString8 getFilePath() {
+        lString8 folder = getPathName();
+        lString8 arcPathName, arcItemPathName;
+        if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+            folder = arcPathName;
+        return folder;
+    }
 };
 
 class CRDirItem : public CRDirEntry {
