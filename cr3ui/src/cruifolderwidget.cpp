@@ -544,7 +544,7 @@ bool CRUIFolderWidget::onListItemLongClick(CRUIListWidget * widget, int index) {
             }
 
             CRUIAction removeFile(*ACTION_REMOVE_BOOK_FILE);
-            removeFile.sparam = entry->getFilePath();
+            removeFile.sparam = entry->getPathName();
             actions.add(&removeFile);
 
             actions.add(ACTION_READER_HOME);

@@ -212,6 +212,23 @@ bool CRDirCacheItem::scan() {
 	return res;
 }
 
+/// book's file (archive file or plain file)
+lString8 extractFilePath(lString8 folder) {
+    lString8 arcPathName, arcItemPathName;
+    if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+        folder = arcPathName;
+    return folder;
+}
+
+/// folder with book's file
+lString8 extractFolderPath(lString8 folder) {
+    lString8 arcPathName, arcItemPathName;
+    if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+        folder = arcPathName;
+    folder = LVExtractPath(folder);
+    return folder;
+}
+
 /// returns true for items like book-by-author, etc.
 bool CRDirEntry::isSpecialItem() {
     if (_pathName.startsWith("@"))

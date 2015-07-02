@@ -623,7 +623,7 @@ public:
             actions.add(&openBook);
 
             CRUIAction removeFile(*ACTION_REMOVE_BOOK_FILE);
-            removeFile.sparam = item->getFilePath();
+            removeFile.sparam = item->getPathName();
             actions.add(&removeFile);
 
             CRUIAction removeRecent(*ACTION_REMOVE_BOOK_HISTORY);

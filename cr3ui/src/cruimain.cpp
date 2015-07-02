@@ -1602,7 +1602,7 @@ bool CRUIMainWidget::changeBrightness(int newBrightness) {
 
 void CRUIMainWidget::removeBookFile(lString8 filename) {
     bookDB->removeBook(filename);
-    LVDeleteFile(filename);
+    LVDeleteFile(extractFilePath(filename));
     lString8 folder = extractFolderPath(filename);
     CRDirContentItem * dir = dirCache->find(folder);
     if (dir) {
@@ -1610,8 +1610,21 @@ void CRUIMainWidget::removeBookFile(lString8 filename) {
         CR_UNUSED(guard);
         for (int i = 0; i < dir->itemCount(); i++) {
             CRDirEntry * item = dir->getItem(i);
-            if (!item->isDirectory() && item->getPathName() == action->sparam) {
-                CRLog::trace("removed dir entry %s", action->sparam.c_str());
+            if (!item->isDirectory() && item->getPathName() == filename) {
+                CRLog::trace("removed dir entry %s", filename.c_str());
+                dir->remove(i);
+                break;
+            }
+        }
+    }
+    {
+        dir = dirCache->find(lString8(RECENT_DIR_TAG));
+        CRGuard guard(const_cast<CRMutex*>(dir->mutex()));
+        CR_UNUSED(guard);
+        for (int i = 0; i < dir->itemCount(); i++) {
+            CRDirEntry * item = dir->getItem(i);
+            if (!item->isDirectory() && item->getPathName() == filename) {
+                CRLog::trace("removed recent dir entry %s", filename);
                 dir->remove(i);
                 break;
             }
