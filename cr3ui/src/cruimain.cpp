@@ -1627,7 +1627,7 @@ void CRUIMainWidget::removeBookFile(lString8 filename) {
         for (int i = 0; i < dir->itemCount(); i++) {
             CRDirEntry * item = dir->getItem(i);
             if (!item->isDirectory() && item->getPathName() == filename) {
-                CRLog::trace("removed recent dir entry %s", filename);
+                CRLog::trace("removed recent dir entry %s", filename.c_str());
                 dir->remove(i);
                 break;
             }
