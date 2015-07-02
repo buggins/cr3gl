@@ -184,6 +184,21 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
         }
     } else {
         CRLog::trace("CRUIMainWidget::onDirectoryScanFinished -- scan finished other folder");
+
+        if (!item->isSpecialItem()) {
+            //CRLog::trace("scanned item: %s", item->getPathName().c_str());
+            for (int i = 0; i < _history.length(); i++) {
+                NavHistoryItem * p = _history[i];
+                if (p->getMode() != MODE_FOLDER)
+                    continue;
+                //CRLog::trace("window: %s", p->getPathName().c_str());
+                if (p->getPathName() == item->getPathName()) {
+                    //CRLog::debug("Updating directory content widget %s", item->getPathName().c_str());
+                    p->refreshContent();
+                }
+            }
+        }
+
         update(true);
     }
 }

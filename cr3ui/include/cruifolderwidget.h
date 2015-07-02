@@ -22,6 +22,9 @@ class CRUIFolderWidget : public CRUIWindowWidget, public CRUIOnListItemClickList
 	CRUIFileListWidget * _fileList;
     CRDirContentItem * _dir;
 public:
+
+    virtual bool createFolder(lString8 name);
+
     /// returns true if all coverpages are available, false if background tasks are submitted
     virtual bool requestAllVisibleCoverpages();
     /// motion event handler, returns true if it handled event
@@ -36,6 +39,9 @@ public:
     virtual bool onAction(const CRUIAction * action);
     /// override to handle menu or other action - by id
     virtual bool onAction(int actionId) { return CRUIWindowWidget::onAction(actionId); }
+
+    virtual void refreshContent();
+
     CRUIFolderWidget(CRUIMainWidget * main);
 	virtual ~CRUIFolderWidget();
 };

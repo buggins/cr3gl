@@ -206,6 +206,7 @@ bool LVCalcDirectoryHash(const lString8 & path, bool isArchive, lUInt64 & hash);
 bool CRDirCacheItem::scan() {
 	CRLog::trace("Scanning directory %s", getPathName().c_str());
 	lUInt64 hash;
+    _entries.clear();
 	bool res = LVListDirectory(getPathName(), isArchive(), _entries, hash);
 	_hash = hash;
 	_scanned = true;

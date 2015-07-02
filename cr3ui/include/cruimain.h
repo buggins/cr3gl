@@ -139,6 +139,7 @@ public:
     virtual const lString8 & getPathName() { return lString8::empty_str; }
     virtual VIEW_MODE getMode() = 0;
     virtual CRUIWindowWidget * getWidget() { return widget; }
+    virtual void refreshContent() { }
     NavHistoryItem(CRUIMainWidget * _main, CRUIWindowWidget * widget) : main(_main), widget(widget) {}
     virtual ~NavHistoryItem() {}
 };
@@ -182,6 +183,9 @@ public:
     virtual VIEW_MODE getMode() { return MODE_FOLDER; }
     FolderItem(CRUIMainWidget * _main, lString8 _pathname) : NavHistoryItem(_main, new CRUIFolderWidget(_main)), pathname(_pathname) {
         ((CRUIFolderWidget*)widget)->setDirectory(dirCache->getOrAdd(pathname));
+    }
+    virtual void refreshContent() {
+        ((CRUIFolderWidget*)widget)->refreshContent();
     }
     virtual const lString8 & getPathName() { return pathname; }
     virtual ~FolderItem() {

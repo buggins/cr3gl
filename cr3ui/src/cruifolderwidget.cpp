@@ -424,6 +424,95 @@ bool CRUIFolderWidget::onLongClick(CRUIWidget * widget) {
     return true;
 }
 
+class CRUICreateFolderPopup : public CRUIHorizontalLayout, public CRUIOnClickListener, public CRUIOnReturnPressListener {
+    CRUIFolderWidget * _window;
+    CRUIEditWidget * _editor;
+    CRUIImageButton * _nextButton;
+public:
+    CRUICreateFolderPopup(CRUIFolderWidget * window) : _window(window) {
+        setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+//        CRUIWidget * delimiter = new CRUIWidget();
+//        delimiter->setBackground(0xC0000000);
+//        delimiter->setMinHeight(PT_TO_PX(2));
+//        delimiter->setMaxHeight(PT_TO_PX(2));
+//        _scrollLayout->addChild(delimiter);
+        setId("FINDTEXT");
+
+        CRUIVerticalLayout * editlayout = new CRUIVerticalLayout();
+        CRUIWidget * spacer1 = new CRUIWidget();
+        spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        CRUIWidget * spacer2 = new CRUIWidget();
+        spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        _editor = new CRUIEditWidget();
+        _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
+        _editor->setBackgroundAlpha(0x80);
+        _editor->setOnReturnPressedListener(this);
+        //_editor->setPasswordChar('*');
+        editlayout->addChild(spacer1);
+        editlayout->addChild(_editor);
+        editlayout->addChild(spacer2);
+        editlayout->setLayoutParams(FILL_PARENT, FILL_PARENT);
+        editlayout->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        addChild(editlayout);
+
+        // Buttons
+        _nextButton = new CRUIImageButton("add_folder");
+        _nextButton->setId("FIND_NEXT");
+        addChild(_nextButton);
+        _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        _nextButton->setBackgroundAlpha(0x80);
+        setBackground("home_frame.9");
+
+        _nextButton->setOnClickListener(this);
+    }
+
+    virtual bool onReturnPressed(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        lString16 text = _editor->getText().trim();
+        if (text.empty())
+            return true;
+        _window->createFolder(UnicodeToUtf8(text));
+        return true;
+    }
+
+    virtual bool onClick(CRUIWidget * widget) {
+        CR_UNUSED(widget);
+        lString16 text = _editor->getText().trim();
+        if (text.empty())
+            return true;
+        _window->createFolder(UnicodeToUtf8(text));
+        return true;
+    }
+
+    /// call to set focus to appropriate child once widget appears on screen
+    virtual bool initFocus() {
+        CRUIEventManager::dispatchFocusChange(_editor);
+        return true;
+    }
+
+    virtual ~CRUICreateFolderPopup() {
+    }
+
+};
+
+bool CRUIFolderWidget::createFolder(lString8 name) {
+    _popupControl.close();
+    lString8 path = _dir->getPathName();
+    LVAppendPathDelimiter(path);
+    path += name;
+    if (LVCreateDirectory(Utf8ToUnicode(path))) {
+        dirCache->scan(_dir->getPathName());
+        return true;
+    } else {
+        _main->showMessage(_16(STR_ERROR_CANNOT_CREATE_DIRECTORY), 1500);
+        return false;
+    }
+}
+
+void CRUIFolderWidget::refreshContent() {
+    _fileList->setDirectory(_dir);
+}
+
 /// handle menu or other action
 bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     switch (action->id) {
@@ -449,6 +538,32 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         lString8 path = _dir->getPathName();
         bookDB->removeFolderBookmark(path);
         _main->updateFolderBookmarks();
+        return true;
+    }
+    case CMD_CREATE_FOLDER:
+    {
+        lvRect margins;
+        CRUICreateFolderPopup * popup = new CRUICreateFolderPopup(this);
+        preparePopup(popup, ALIGN_TOP, margins, 0x80, false, false);
+        return true;
+    }
+    case CMD_REMOVE_FOLDER:
+    {
+        if (LVDeleteDirectory(action->sparam)) {
+            CRGuard guard(const_cast<CRMutex*>(_dir->mutex()));
+            CR_UNUSED(guard);
+            for (int i = 0; i < _dir->itemCount(); i++) {
+                CRDirEntry * item = _dir->getItem(i);
+                if (item->isDirectory() && item->getPathName() == action->sparam) {
+                    CRLog::trace("removed dir entry %s", action->sparam.c_str());
+                    _dir->remove(i);
+                    break;
+                }
+            }
+            _fileList->setDirectory(_dir);
+        } else {
+            _main->showMessage(_16(STR_ERROR_CANNOT_REMOVE_DIRECTORY), 1500);
+        }
         return true;
     }
     case CMD_REMOVE_BOOK_FILE:
@@ -489,6 +604,9 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
         actions.add(ACTION_SETTINGS);
         actions.add(ACTION_READER_HOME);
         actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
+        if (!_dir->isSpecialItem()) {
+            actions.add(ACTION_CREATE_FOLDER);
+        }
         actions.add(ACTION_EXIT);
         lvRect margins;
         //margins.right = MIN_ITEM_PX * 120 / 100;
@@ -522,8 +640,25 @@ bool CRUIFolderWidget::onListItemLongClick(CRUIListWidget * widget, int index) {
         return false;
     CRDirEntry * entry = _dir->getItem(index);
     if (entry->isDirectory()) {
-        widget->setSelectedItem(index);
-        getMain()->showFolder(entry->getPathName(), true);
+        if (!entry->isSpecialItem() && LVDirectoryIsEmpty(entry->getPathName())) {
+            CRUIActionList actions;
+
+            CRUIAction removeDir(*ACTION_REMOVE_FOLDER);
+            removeDir.sparam = entry->getPathName();
+            actions.add(&removeDir);
+
+            actions.add(ACTION_READER_HOME);
+            //actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
+            actions.add(ACTION_SETTINGS);
+
+            //actions.add(ACTION_BACK);
+            lvRect margins;
+            //margins.right = MIN_ITEM_PX * 5 / 4;
+            showMenu(actions, ALIGN_TOP, margins, false);
+        } else {
+            widget->setSelectedItem(index);
+            getMain()->showFolder(entry->getPathName(), true);
+        }
     } else {
         // Book? open book
         widget->setSelectedItem(index);
