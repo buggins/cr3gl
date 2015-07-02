@@ -692,7 +692,13 @@ public:
     }
 
     void setBatteryLevel(int level) {
-    	// TODO
+    	CRLog::debug("setBatteryLevelInternal(%d)", level);
+    	if (!_widget)
+    		_widget->setBatteryLevel(level);
+    	else {
+    		CRLog::warn("Widget is not yet created");
+    		crconfig.batteryLevel = level;
+    	}
     }
 
     void loadDocument(lString16 path) {

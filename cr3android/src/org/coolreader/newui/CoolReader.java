@@ -649,6 +649,16 @@ public class CoolReader extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				int level = intent.getIntExtra("level", 0);
+				int scale = intent.getIntExtra("scale", 100);
+				int status = intent.getIntExtra("status", 0);
+				level = level * 100 / scale;
+				//if (status == 2) // BATTERY_STATUS_CHARGING
+				//	level = -1;
+				//else if (status == 5) // BATTERY_STATUS_FULL
+				//	level = 100;
+				if (level > 100)
+					level = 100;
+				L.d("intentReceiver.onReceive level=" + level);
 				if (crview != null)
 					crview.setBatteryLevel(level);
 				else
