@@ -54,7 +54,7 @@ void CRUIMainWidget::onThemeChanged()
 bool CRUIMainWidget::isChild(CRUIWidget * widget) {
     if (_keyboard && _keyboard->isChild(widget))
         return true;
-    return widget == this || _history.currentWidget()->isChild(widget);
+    return widget == this || (_history.currentWidget() && _history.currentWidget()->isChild(widget));
 }
 
 void CRUIMainWidget::showHome() {

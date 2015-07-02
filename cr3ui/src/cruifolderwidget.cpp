@@ -440,19 +440,21 @@ public:
 
         CRUIVerticalLayout * editlayout = new CRUIVerticalLayout();
         CRUIWidget * spacer1 = new CRUIWidget();
+        CRUITextWidget * label = new CRUITextWidget(_16(STR_CREATE_FOLDER_POPUP_TITLE));
         spacer1->setLayoutParams(FILL_PARENT, FILL_PARENT);
         CRUIWidget * spacer2 = new CRUIWidget();
         spacer2->setLayoutParams(FILL_PARENT, FILL_PARENT);
         _editor = new CRUIEditWidget();
         _editor->setLayoutParams(FILL_PARENT, WRAP_CONTENT);
-        _editor->setBackgroundAlpha(0x80);
+        //_editor->setBackgroundAlpha(0x80);
         _editor->setOnReturnPressedListener(this);
         //_editor->setPasswordChar('*');
         editlayout->addChild(spacer1);
+        editlayout->addChild(label);
         editlayout->addChild(_editor);
         editlayout->addChild(spacer2);
         editlayout->setLayoutParams(FILL_PARENT, FILL_PARENT);
-        editlayout->setMaxHeight(MIN_ITEM_PX * 3 / 4);
+        editlayout->setMaxHeight(MIN_ITEM_PX * 8 / 4);
         addChild(editlayout);
 
         // Buttons
@@ -460,7 +462,7 @@ public:
         _nextButton->setId("FIND_NEXT");
         addChild(_nextButton);
         _nextButton->setMaxHeight(MIN_ITEM_PX * 3 / 4);
-        _nextButton->setBackgroundAlpha(0x80);
+        //_nextButton->setBackgroundAlpha(0x80);
         setBackground("home_frame.9");
 
         _nextButton->setOnClickListener(this);
@@ -544,7 +546,7 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     {
         lvRect margins;
         CRUICreateFolderPopup * popup = new CRUICreateFolderPopup(this);
-        preparePopup(popup, ALIGN_TOP, margins, 0x80, false, false);
+        preparePopup(popup, ALIGN_TOP, margins, 0x0, false, false);
         return true;
     }
     case CMD_REMOVE_FOLDER:
