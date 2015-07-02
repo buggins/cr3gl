@@ -153,10 +153,12 @@ void CRUIMainWidget::onDirectoryScanFinished(CRDirContentItem * item) {
             delete _lastPosition;
             delete book;
         }
-        if (item->itemCount() > 0) {
-            _home->requestLayout();
+
+        _home->updateRecentBooks();
+        //if (item->itemCount() > 0) {
+            //_home->requestLayout();
             //_home->setLastBook(item->getItem(0));
-        }
+        //}
         update(true);
         return;
     }
@@ -773,6 +775,10 @@ bool CRUIMainWidget::isVirtualKeyboardShown() {
         return _platform->isVirtualKeyboardShown();
     }
     return false;
+}
+
+void CRUIMainWidget::updateRecentBooks() {
+    dirCache->scan(lString8(RECENT_DIR_TAG));
 }
 
 void CRUIMainWidget::updateFolderBookmarks() {
@@ -1594,6 +1600,26 @@ bool CRUIMainWidget::changeBrightness(int newBrightness) {
     return true;
 }
 
+void CRUIMainWidget::removeBookFile(lString8 filename) {
+    bookDB->removeBook(filename);
+    LVDeleteFile(filename);
+    lString8 folder = extractFolderPath(filename);
+    CRDirContentItem * dir = dirCache->find(folder);
+    if (dir) {
+        CRGuard guard(const_cast<CRMutex*>(dir->mutex()));
+        CR_UNUSED(guard);
+        for (int i = 0; i < dir->itemCount(); i++) {
+            CRDirEntry * item = dir->getItem(i);
+            if (!item->isDirectory() && item->getPathName() == action->sparam) {
+                CRLog::trace("removed dir entry %s", action->sparam.c_str());
+                dir->remove(i);
+                break;
+            }
+        }
+    }
+    updateRecentBooks();
+}
+
 /// handle menu or other action
 bool CRUIMainWidget::onAction(const CRUIAction * action) {
     if (!action)
@@ -1623,10 +1649,24 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
         openBookFromFile(action->sparam);
         return true;
     case CMD_REMOVE_BOOK_FILE:
-        //openBook(action->sparam);
+        removeBookFile(action->sparam);
         return true;
     case CMD_REMOVE_BOOK_HISTORY:
-        //openBook(action->sparam);
+        bookDB->removeRecentPosition(action->sparam);
+        {
+            CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+            CRGuard guard(const_cast<CRMutex*>(dir->mutex()));
+            CR_UNUSED(guard);
+            for (int i = 0; i < dir->itemCount(); i++) {
+                CRDirEntry * item = dir->getItem(i);
+                if (!item->isDirectory() && item->getPathName() == action->sparam) {
+                    CRLog::trace("removed dir entry %s", action->sparam.c_str());
+                    dir->remove(i);
+                    break;
+                }
+            }
+        }
+        updateRecentBooks();
         return true;
     case CMD_OPEN_CURRENT_BOOK_FOLDER:
         if (_read && _read->getCurrentBookFile() && _read->getCurrentBookFile()->getBook()) {

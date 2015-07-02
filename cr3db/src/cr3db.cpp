@@ -533,27 +533,60 @@ bool CRBookDB::saveOpdsCatalog(BookDBCatalog * catalog) {
 bool CRBookDB::removeRecentPosition(lString8 path) {
     if (path.empty())
         return false;
-    // TODO:
-    return false;
+    // protected by mutex
+    BookDBBook * book = loadBook(path);
+    if (!book || !book->id)
+        return true;
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    SQLiteStatement stmt(&_db);
+
+    _bookCache.remove(book->id);
+
+    bool err = false;
+    err = stmt.prepare("DELETE FROM bookmark WHERE book_fk = ? AND type = 0;") != 0;
+    if (!err) {
+        stmt.bindInt64(1, book->id);
+        err = (stmt.step() != DB_DONE) || err;
+    }
+    return !err;
 }
 
 /// remove book with specified path
 bool CRBookDB::removeBook(lString8 path) {
     if (path.empty())
         return false;
+    // protected by mutex
+    BookDBBook * book = loadBook(path);
+    if (!book || !book->id)
+        return true;
 
-    BookDBBook * book = NULL;
-    BookDBBook * fromCache = _bookCache.get(DBString(path.c_str()));
-    if (fromCache) {
-        book = fromCache;
-        //return true;
+    CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
+    SQLiteTransactionGuard dbGuard(_db);
+    CR_UNUSED2(guard, dbGuard);
+    SQLiteStatement stmt(&_db);
+
+    _bookCache.remove(book->id);
+    _lastPositionCache.remove(book->id);
+
+    bool err = false;
+    err = stmt.prepare("DELETE FROM book_author WHERE book_fk = ?;") != 0;
+    if (!err) {
+        stmt.bindInt64(1, book->id);
+        err = (stmt.step() != DB_DONE) || err;
     }
-    //return insertBook(book);
-    if (!book)
-        return false;
-
-    // TODO
-    return false;
+    err = stmt.prepare("DELETE FROM bookmark WHERE book_fk = ?;") != 0;
+    if (!err) {
+        stmt.bindInt64(1, book->id);
+        err = (stmt.step() != DB_DONE) || err;
+    }
+    err = stmt.prepare("DELETE FROM book WHERE id = ?;") != 0;
+    if (!err) {
+        stmt.bindInt64(1, book->id);
+        err = (stmt.step() != DB_DONE) || err;
+    }
+    return !err;
 }
 
 bool CRBookDB::removeOpdsCatalog(BookDBCatalog * catalog) {
@@ -1877,6 +1910,13 @@ BookDBBook * BookDBBookCache::get(const DBString & path) {
 		return NULL;
 	moveToHead(item);
 	return item->book;
+}
+
+void BookDBBookCache::remove(lUInt64 key) {
+    Item * item = _byId.get(key);
+    if (!item)
+        return;
+    remove(item);
 }
 
 void BookDBBookCache::put(BookDBBook * book) {

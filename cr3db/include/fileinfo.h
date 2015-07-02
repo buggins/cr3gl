@@ -100,6 +100,23 @@ public:
     virtual lString8 getFilePath() { return lString8::empty_str; }
 };
 
+/// book's file (archive file or plain file)
+lString8 extractFilePath(lString8 folder) {
+    lString8 arcPathName, arcItemPathName;
+    if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+        folder = arcPathName;
+    return folder;
+}
+
+/// folder with book's file
+lString8 extractFolderPath(lString8 folder) {
+    lString8 arcPathName, arcItemPathName;
+    if (LVSplitArcName(folder, arcPathName, arcItemPathName))
+        folder = arcPathName;
+    folder = LVExtractPath(folder);
+    return folder;
+}
+
 class CRFileItem : public CRDirEntry {
 private:
 	BookDBBook * _book;
@@ -113,21 +130,13 @@ public:
 	~CRFileItem() { if (_book) delete _book; }
 	virtual bool isDirectory() const { return false; }
     virtual CRDirEntry * clone() const { CRFileItem * res = new CRFileItem(this->getPathName(), this->isArchive()); res->setParsed(this->_parsed); res->setBook(this->_book ? this->_book->clone() : NULL); return res; }
+    /// folder with current book's file
     virtual lString8 getFolderPath() {
-        lString8 folder = getPathName();
-        lString8 arcPathName, arcItemPathName;
-        if (LVSplitArcName(folder, arcPathName, arcItemPathName))
-            folder = arcPathName;
-        folder = LVExtractPath(folder);
-        return folder;
+        return extractFolderPath(getPathName());
     }
     /// current book's file (archive file or plain file)
     virtual lString8 getFilePath() {
-        lString8 folder = getPathName();
-        lString8 arcPathName, arcItemPathName;
-        if (LVSplitArcName(folder, arcPathName, arcItemPathName))
-            folder = arcPathName;
-        return folder;
+        return extractFilePath(getPathName());
     }
 };
 
@@ -189,6 +198,7 @@ protected:
     virtual bool scan() = 0;
     virtual bool refresh();
 public:
+    virtual void remove(int index);
     virtual void lock() { _lockCount++; }
     virtual void unlock() { _lockCount--; }
     virtual void setParsed(bool parsed) { _scanned = parsed; }
@@ -198,6 +208,7 @@ public:
     CRDirContentItem(CRDirEntry * item);
     CRDirContentItem(const lString8 & pathname, bool isArchive);
     virtual void sort(int sortOrder);
+    CRMutex * mutex() { return _mutex.get(); }
 };
 
 

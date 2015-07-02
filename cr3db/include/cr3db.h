@@ -442,7 +442,8 @@ public:
 	BookDBBook * get(lInt64 key);
 	BookDBBook * get(const DBString & path);
 	void put(BookDBBook * item);
-	void clear();
+    void remove(lUInt64 key);
+    void clear();
 	~BookDBBookCache() { clear(); }
 };
 

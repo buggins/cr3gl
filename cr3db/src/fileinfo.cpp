@@ -295,6 +295,12 @@ lString16 CRDirEntry::getAuthorNames(bool fileAs) const {
     return lString16();
 }
 
+void CRDirContentItem::remove(int index) {
+    CRDirEntry * removed = _entries.remove(index);
+    if (removed)
+        delete removed;
+}
+
 int CRDirContentItem::itemCount() const {
     CRGuard guard(const_cast<CRMutex*>(_mutex.get()));
     return _entries.length();

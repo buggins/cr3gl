@@ -29,6 +29,7 @@ class CRUIHomeWidget : public CRUIWindowWidget, public CRUIOnClickListener {
 public:
 
     void updateFolderBookmarks();
+    void updateRecentBooks();
 
     CRUIHomeWidget(CRUIMainWidget * main);
     virtual ~CRUIHomeWidget() {}

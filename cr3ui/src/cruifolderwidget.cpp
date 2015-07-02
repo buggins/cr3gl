@@ -453,11 +453,20 @@ bool CRUIFolderWidget::onAction(const CRUIAction * action) {
     }
     case CMD_REMOVE_BOOK_FILE:
     {
-        // action->sparam
-        bookDB->removeBook(action->sparam);
-        LVDeleteFile(action->sparam);
-        // TODO: rescan directory
-        //_dir->;
+        CRLog::info("Removing book file %s", action->sparam.c_str());
+        // remove book by filename
+        _main->removeBookFile(action->sparam);
+        CRGuard guard(const_cast<CRMutex*>(_dir->mutex()));
+        CR_UNUSED(guard);
+        for (int i = 0; i < _dir->itemCount(); i++) {
+            CRDirEntry * item = _dir->getItem(i);
+            if (!item->isDirectory() && item->getPathName() == action->sparam) {
+                CRLog::trace("removed dir entry %s", action->sparam.c_str());
+                _dir->remove(i);
+                break;
+            }
+        }
+        _fileList->setDirectory(_dir);
         return true;
     }
     case CMD_MENU:

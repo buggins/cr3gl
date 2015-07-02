@@ -895,6 +895,14 @@ bool CRUIHomeWidget::onTouchEvent(const CRUIMotionEvent * event) {
     return true;
 }
 
+void CRUIHomeWidget::updateRecentBooks() {
+    //CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+    _recentBooksList->requestLayout();
+    _currentBook->requestLayout();
+    requestLayout();
+}
+
+
 void CRUIHomeWidget::updateFolderBookmarks() {
     _fileSystem->updateItems();
     invalidate();

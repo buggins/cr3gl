@@ -489,6 +489,9 @@ public:
 
     void openBookFromFile(lString8 filename);
     void openBook(const CRFileItem * file);
+
+    void removeBookFile(lString8 filename);
+
     void showFolder(lString8 folder, bool appendHistory);
     void showOpds(LVClonePtr<BookDBCatalog> & dir, lString8 url, lString16 title);
     void showOpdsProps(LVClonePtr<BookDBCatalog> & dir);
@@ -528,6 +531,7 @@ public:
 
 
     void updateFolderBookmarks();
+    void updateRecentBooks();
 
     void createTtsOptions();
     void ttsInitialized();
