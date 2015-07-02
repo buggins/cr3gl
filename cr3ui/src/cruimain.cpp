@@ -1088,11 +1088,11 @@ void CRUIMainWidget::setBatteryLevel(int level) {
 	CRLog::info("CRUIMainWidget::setBatteryLevel %d", level);
     if (crconfig.batteryLevel != level) {
         crconfig.batteryLevel = level;
-    	CRLog::info("CRUIMainWidget::setBatteryLevel changed: %d ", level);
-        if (_read)
+        if (_read) {
+        	CRLog::info("CRUIMainWidget::setBatteryLevel changed: %d ", level);
             _read->updateBatteryLevel();
-        else {
-        	CRLog::warn("Reader widget is not yet created");
+        } else {
+        	CRLog::warn("Battery level changed while reader widget is not yet created");
         }
     }
 }

@@ -693,7 +693,7 @@ public:
 
     void setBatteryLevel(int level) {
     	CRLog::debug("setBatteryLevelInternal(%d)", level);
-    	if (!_widget)
+    	if (_widget)
     		_widget->setBatteryLevel(level);
     	else {
     		CRLog::warn("Widget is not yet created");

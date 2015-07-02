@@ -811,6 +811,7 @@ CRUIReadWidget::CRUIReadWidget(CRUIMainWidget * main)
     , _volumeKeysEnabled(false)
     , _brightnessTouchControlEnabled(true)
 {
+	CRLog::debug("CRUIReadWidget()");
     setId("READ");
     _docview = createDocView();
     _docview->setCallback(this);
@@ -2108,8 +2109,10 @@ void CRUIReadWidget::cancelSelection() {
 }
 
 void CRUIReadWidget::updateBatteryLevel() {
+	CRLog::trace("CRUIReadWidget::updateBatteryLevel()");
     if (_docview)
         _docview->setBatteryState(crconfig.batteryLevel);
+	CRLog::trace("CRUIReadWidget::updateBatteryLevel() done");
 }
 
 void CRUIReadWidget::updateBrightnessOnDrag(int y) {
