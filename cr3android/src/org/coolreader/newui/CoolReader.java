@@ -649,7 +649,7 @@ public class CoolReader extends Activity {
 			@Override
 			public void onReceive(final Context context, final Intent intent) {
 				if (crview != null) {
-					crview.postDelayed(new Runnable() {
+					crview.post(new Runnable() {
 						@Override
 						public void run() {
 							int level = intent.getIntExtra("level", 0);
@@ -668,7 +668,7 @@ public class CoolReader extends Activity {
 							else
 								initialBatteryLevel = level;
 						}
-					}, 10);
+					});
 				}
 			}
 			

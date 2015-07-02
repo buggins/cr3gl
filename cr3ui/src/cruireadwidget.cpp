@@ -2110,8 +2110,11 @@ void CRUIReadWidget::cancelSelection() {
 
 void CRUIReadWidget::updateBatteryLevel() {
 	CRLog::trace("CRUIReadWidget::updateBatteryLevel()");
-    if (_docview)
+    if (_docview) {
         _docview->setBatteryState(crconfig.batteryLevel);
+        clearImageCaches();
+        invalidate();
+    }
 	CRLog::trace("CRUIReadWidget::updateBatteryLevel() done");
 }
 
