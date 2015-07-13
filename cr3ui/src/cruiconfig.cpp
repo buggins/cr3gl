@@ -122,7 +122,7 @@ void CRUIConfig::setupResourcesForScreenSize() {
 
     // calculate fonts size
     int sz = deviceInfo.shortSide;
-    int sz1 = sz / 45;
+    int sz1 = sz / 38;
     //int sz2 = sz / 32;
     int sz3 = sz / 28;
     int sz4 = sz / 24;

@@ -297,11 +297,13 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     int _maxRows;
     bool _labels;
     bool _vertical;
+    bool _hasMoreButton;
 public:
     CRUIReadMenu(CRUIReadWidget * window, const CRUIActionList & actionList, bool progressControl = true, bool labels = true, int maxRows = 0) : _window(window), _actionList(actionList) {
         _maxRows = maxRows;
         _labels = labels;
         _vertical = false;
+        _hasMoreButton = false;
         setId("MAINMENU");
         for (int i = 0; i < _actionList.length(); i++) {
             const CRUIAction * action = _actionList[i];
@@ -320,6 +322,8 @@ public:
             //    caption->setVisibility(CRUI::GONE);
             _buttons.add(button);
             addChild(button);
+            if (action->id == CMD_MENU)
+                _hasMoreButton = true;
         }
         if (progressControl) {
             _scrollLayout = new CRUIVerticalLayout();
@@ -433,6 +437,9 @@ public:
         lvRect rc = _pos;
         applyMargin(rc);
         applyPadding(rc);
+        CRUIButton * moreButton = NULL;
+        if (_hasMoreButton)
+            moreButton = _buttons[_buttons.length() - 1];
         if (_vertical) {
             int rowh = rc.height() / _buttons.length();
             if (rowh < _itemSize.y)
@@ -440,9 +447,19 @@ public:
             if (rowh > _itemSize.y * 130 / 100)
                 rowh = _itemSize.y * 130 / 100;
             lvRect btnrc = rc;
+            if (moreButton) {
+                btnrc.top = btnrc.bottom - rowh;
+                moreButton->setVisibility(CRUI::VISIBLE);
+                moreButton->measure(btnrc.width(), btnrc.height());
+                moreButton->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                rc.bottom -= rowh;
+                btnrc = rc;
+            }
             for (int y = 0; y < _buttons.length(); y++) {
                 btnrc.bottom = btnrc.top + rowh;
                 CRUIButton * button = _buttons[y];
+                if (button == moreButton)
+                    continue;
                 if (btnrc.bottom < rc.bottom) {
                     button->setVisibility(CRUI::VISIBLE);
                     button->measure(btnrc.width(), btnrc.height());
@@ -459,9 +476,19 @@ public:
             if (colw > _itemSize.x * 130 / 100)
                 colw = _itemSize.x * 130 / 100;
             lvRect btnrc = rc;
+            if (moreButton) {
+                btnrc.left = btnrc.right - colw;
+                moreButton->setVisibility(CRUI::VISIBLE);
+                moreButton->measure(btnrc.width(), btnrc.height());
+                moreButton->layout(btnrc.left, btnrc.top, btnrc.right, btnrc.bottom);
+                rc.right -= colw;
+                btnrc = rc;
+            }
             for (int y = 0; y < _buttons.length(); y++) {
                 btnrc.right = btnrc.left + colw;
                 CRUIButton * button = _buttons[y];
+                if (button == moreButton)
+                    continue;
                 if (btnrc.right <= rc.right) {
                     button->setVisibility(CRUI::VISIBLE);
                     button->measure(btnrc.width(), btnrc.height());
