@@ -17,6 +17,7 @@
 #else
 #define COFFEE_TRY_JNI(ENV, CODE) CODE;
 #endif
+#include <pthread.h>
 
 static jfieldID gNativeObjectID = 0;
 
@@ -1291,6 +1292,24 @@ public:
     virtual void sleepMs(int durationMs) {
     	crviewSleepMs.callVoid((jlong)durationMs);
     }
+
+    virtual void setThreadPriority(int p) {
+    	//CR_THREAD_PRIORITY_LOW
+        int policy;
+        struct sched_param param;
+
+        pthread_getschedparam(pthread_self(), &policy, &param);
+        int minp = sched_get_priority_min(policy);
+        int maxp = sched_get_priority_max(policy);
+        if (p == CR_THREAD_PRIORITY_LOW)
+            param.sched_priority = minp;
+        else if (p == CR_THREAD_PRIORITY_HIGH)
+        	param.sched_priority = maxp;
+        else
+        	param.sched_priority = (minp + maxp) / 2;
+        pthread_setschedparam(pthread_self(), policy, &param);
+    }
+
 
     virtual ~AndroidConcurrencyProvider() {}
 };

@@ -1118,6 +1118,7 @@ public:
     virtual void run() {
     	{
 			CRENGINE_GUARD;
+            concurrencyProvider->setThreadPriority(CR_THREAD_PRIORITY_HIGH);
 			CRLog::info("Loading book in background thread");
 			bool success = _read->getDocView()->LoadDocument(Utf8ToUnicode(_pathname).c_str()) != 0;
 			CRLog::info("Loading is finished %s", success ? "successfully" : "with error");
@@ -1127,15 +1128,16 @@ public:
 			if (!success) {
 				_read->getDocView()->createDefaultDocument(lString16("Cannot open document"), lString16("Error occured while trying to open document"));
 			}
-			concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
+            //concurrencyProvider->executeGui(new BookLoadedNotificationTask(_pathname, success, _main, _read));
 			CRLog::info("Rendering book in background thread");
-			_read->getDocView()->Render();
+            _read->getDocView()->Render();
 			_read->restorePosition();
 			_read->getDocView()->updateCache();
 	#ifdef SLOW_RENDER_SIMULATION
 			concurrencyProvider->sleepMs(3000);
 	#endif
-			CRLog::info("Render is finished");
+            concurrencyProvider->setThreadPriority(CR_THREAD_PRIORITY_NORMAL);
+            CRLog::info("Render is finished");
     	}
         concurrencyProvider->executeGui(new BookRenderedNotificationTask(_pathname, _main, _read));
     }
@@ -1289,10 +1291,14 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
         return false;
     if (!file)
         return false;
-    closeBook();
+    lvRect p = _main->getPos();
+    if (!p.isEmpty())
+        layout(p.left, p.top, p.right, p.bottom);
     _locked = true;
+    closeBook();
     clearImageCaches();
     _main->showSlowOperationPopup();
+
     _fileItem = static_cast<CRFileItem*>(file->clone());
     BookDBBook * book = file->getBook();
     if (!book) {
@@ -1306,6 +1312,7 @@ bool CRUIReadWidget::openBook(const CRFileItem * file) {
     //lString8 systemLang = crconfig.systemLanguage;
     setHyph(bookLang, settingsHyph);
     _main->executeBackground(new OpenBookTask(Utf8ToUnicode(getPathName()), _main, this));
+    _main->update(true);
     return true;
 }
 
