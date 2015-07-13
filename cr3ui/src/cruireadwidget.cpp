@@ -288,6 +288,7 @@ class CRUIReadMenu : public CRUIFrameLayout, CRUIOnClickListener, CRUIOnScrollPo
     CRUIActionList _actionList;
     LVPtrVector<CRUIButton, false> _buttons;
     CRUILinearLayout * _scrollLayout;
+    CRUITextWidget * _bookTitleText;
     CRUITextWidget * _positionText;
     CRUISliderWidget * _scrollSlider;
     lvPoint _itemSize;
@@ -309,8 +310,8 @@ public:
             button->setId(lString8::itoa(action->id));
             button->setOnClickListener(this);
             button->setStyle("BUTTON_NOBACKGROUND");
-            button->setPadding(lvRect(PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1), PT_TO_PX(1)));
-            button->setFontSize(FONT_SIZE_XXSMALL);
+            button->setPadding(lvRect(PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2), PT_TO_PX(2)));
+            button->setFontSize(FONT_SIZE_XSMALL);
             if (labels) {
                 CRUITextWidget* caption = (CRUITextWidget*)button->childById("BUTTON_CAPTION");
                 caption->setMaxLines(2)->setFontSize(FONT_SIZE_XXSMALL);
@@ -328,11 +329,24 @@ public:
     //        delimiter->setMinHeight(PT_TO_PX(2));
     //        delimiter->setMaxHeight(PT_TO_PX(2));
     //        _scrollLayout->addChild(delimiter);
+            _bookTitleText = NULL;
+            lString16 bookTitle = _window->getCurrentBookTitleAndAuthor();
+            if (!bookTitle.empty()) {
+                _bookTitleText = new CRUITextWidget();
+                _bookTitleText->setText(bookTitle);
+                _bookTitleText->setPadding(lvRect(PT_TO_PX(4), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
+                _bookTitleText->setFontSize(FONT_SIZE_SMALL);
+            }
+
             _positionText = new CRUITextWidget();
             _positionText->setText(_window->getCurrentPositionDesc());
-            _positionText->setPadding(lvRect(PT_TO_PX(8), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
+            _positionText->setPadding(lvRect(PT_TO_PX(4), MIN_ITEM_PX / 8, PT_TO_PX(2), 0));
             _positionText->setFontSize(FONT_SIZE_SMALL);
+
+            if (_bookTitleText)
+                _scrollLayout->addChild(_bookTitleText);
             _scrollLayout->addChild(_positionText);
+
             _scrollSlider = new CRUISliderWidget(0, 10000, _window->getCurrentPositionPercent());
             _scrollSlider->setScrollPosCallback(this);
             _scrollSlider->setMaxHeight(MIN_ITEM_PX * 3 / 4);
@@ -343,6 +357,7 @@ public:
             _scrollLayout = NULL;
             _scrollSlider = NULL;
             _positionText = NULL;
+            _bookTitleText = NULL;
         }
     }
     virtual bool isVertical() {
@@ -369,11 +384,11 @@ public:
         int iconw = icon->originalWidth();
         int texth = _labels ? font->getHeight() * 2 : 0;
         _itemSize.y = iconh + texth * 170 / 100 + PT_TO_PX(2);
-        _itemSize.x = iconw * 130 / 100 + PT_TO_PX(5);
-        if (_itemSize.y < MIN_ITEM_PX)
-        	_itemSize.y = MIN_ITEM_PX;
-        if (_itemSize.x < MIN_ITEM_PX)
-        	_itemSize.x = MIN_ITEM_PX;
+        _itemSize.x = iconw * 140 / 100 + PT_TO_PX(5);
+        if (_itemSize.y < MIN_ITEM_PX * 120 / 100)
+            _itemSize.y = MIN_ITEM_PX * 120 / 100;
+        if (_itemSize.x < MIN_ITEM_PX * 150 / 100)
+            _itemSize.x = MIN_ITEM_PX * 150 / 100;
         int count = _actionList.length();
         if (_vertical) {
             int rows = baseHeight / _itemSize.y;
@@ -1866,8 +1881,53 @@ bool CRUIReadWidget::allowInterceptTouchEvent(const CRUIMotionEvent * event) {
 	return true;
 }
 
+lString16 getBookTitleAndAuthor(BookDBBook * book) {
+    lString16 res;
+    if (book) {
+        lString16 title = Utf8ToUnicode(book->title.c_str());
+        lString16 series;
+        if (!book->series.isNull()) {
+            series += Utf8ToUnicode(book->series->name.c_str());
+            if (book->seriesNumber) {
+                if (series.length())
+                    series += " ";
+                series += "#";
+                series += lString16::itoa(book->seriesNumber);
+            }
+        }
+        lString16 authors;
+        for (int i = 0; i < book->authors.length(); i++) {
+            if (authors.length())
+                authors += L", ";
+            authors += Utf8ToUnicode(book->authors[i]->name.c_str());
+        }
+        res = authors;
+        if (!res.empty()) {
+            if (!res.endsWith("."))
+                res += ".";
+            res += " ";
+        }
+        res += title;
+        if (!series.empty()) {
+            if (!res.empty())
+                res += " ";
+            res += "(";
+            res += series;
+            res += ")";
+        }
+    }
+    return res;
+}
+
+lString16 CRUIReadWidget::getCurrentBookTitleAndAuthor() {
+    if (_fileItem && _fileItem->getBook()) {
+        return getBookTitleAndAuthor(_fileItem->getBook());
+    }
+    return lString16::empty_str;
+}
+
 void CRUIReadWidget::removeBookmark(lInt64 id) {
-    if (!_fileItem->getBook())
+    if (!_fileItem || !_fileItem->getBook())
         return;
     for (int i = 0; i < _bookmarks.length(); i++) {
         BookDBBookmark * item = _bookmarks[i];
