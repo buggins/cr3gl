@@ -10,6 +10,7 @@ import java.util.concurrent.FutureTask;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.coolreader.Dictionaries.DictInstallationInfo;
 import org.coolreader.newui.DownloadManager.DownloadManagerCallback;
 
 import android.content.ActivityNotFoundException;
@@ -322,6 +323,8 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 	native private void onSentenceFinishedInternal();
 
 	native private void onTtsInitializedInternal();
+
+	native private void onDictionaryErrorInternal(int code);
 	
 	// accessible from Java JNI calls
 	
@@ -666,6 +669,31 @@ public class CRView extends GLSurfaceView implements GLSurfaceView.Renderer, Dow
 			}
 		}, 2000);
 	}
+	
+	public DictInstallationInfo[] getAvailableDictionaries() {
+		return activity.getAvailableDictionaries();
+	}
+	
+	public void lookupInDictionary(final String dictionaryId, final String word) {
+		log.d("lookupInDictionary " + dictionaryId + " : `" + word + "`");
+		post(new Runnable() {
+			@Override
+			public void run() {
+				activity.lookupInDictionary(dictionaryId, word);
+			}
+		});
+	}
+	
+	public void onDictionaryError(final int code) {
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				onDictionaryErrorInternal(code);
+			}
+		});
+	}
+	
+	
 	
 	private long mNativeObject; // holds pointer to native object instance
 	private AssetManager mAssetManager;

@@ -450,6 +450,8 @@ class DocViewNative : public LVAssetContainerFactory, public CRUIScreenUpdateMan
     CRMethodAccessor _setScreenUpdateModeMethod;
     CRMethodAccessor _setScreenUpdateIntervalMethod;
     CRMethodAccessor _getTTSMethod;
+    CRMethodAccessor _lookupInDictionaryMethod;
+    CRMethodAccessor _getAvailableDictionariesMethod;
 
     CRUIMainWidget * _widget;
     CRUIEventManager _eventManager;
@@ -758,6 +760,47 @@ public:
 		_widget->ttsInitialized();
 	}
 
+	void onDictionaryError(int errorCode) {
+		CRLog::info("onDictionaryError %d", errorCode);
+		// TODO
+	}
+
+    virtual void findInDictionary(lString8 dictionaryId, lString16 word) {
+    	jstring dictId = _env.toJavaString(Utf8ToUnicode(dictionaryId));
+    	jstring text = _env.toJavaString(word);
+        _lookupInDictionaryMethod.callVoid(dictId, text);
+    }
+
+    CRUIDictionaryInfo * dictFromJava(jobject obj) {
+    	CRUIDictionaryInfo * res = new CRUIDictionaryInfo();
+    	if (obj) {
+    	    CRObjectAccessor acc(obj);
+    		CRStringField id(acc, "id");
+    		CRStringField name(acc, "name");
+    		CRBoolField installed(acc, "installed");
+    		res->id = id.get8();
+    		res->name = name.get();
+    		res->installed = installed.get();
+        	_env->DeleteLocalRef(obj);
+    	}
+    	return res;
+    }
+
+    virtual void getDictionaryList(LVPtrVector<CRUIDictionaryInfo> & list) {
+        list.clear();
+    	jobjectArray arr = _getAvailableDictionariesMethod.callObjArray();
+		if (arr) {
+			int len = _env->GetArrayLength(arr);
+			for (int i=0; i < len; i++) {
+				jobject obj = (jobject)_env->GetObjectArrayElement(arr, i);
+				if (obj) {
+					list.add(dictFromJava(obj));
+				}
+			}
+        	_env->DeleteLocalRef(arr);
+		}
+    }
+
 	~DocViewNative() {
     	delete _widget;
     	if (_tts)
@@ -1056,6 +1099,8 @@ DocViewNative::DocViewNative(jobject obj)
 	, _setScreenUpdateModeMethod(_obj, "setScreenUpdateMode", "(I)V")
 	, _setScreenUpdateIntervalMethod(_obj, "setScreenUpdateInterval", "(I)V")
 	, _getTTSMethod(_obj, "getTTS", "()Lorg/coolreader/newui/CRTTS;")
+	, _lookupInDictionaryMethod(_obj, "lookupInDictionary", "(Ljava/lang/String;Ljava/lang/String;)V") //    lookupInDictionary(final String dictionaryId, final String word)
+	, _getAvailableDictionariesMethod(_obj, "getAvailableDictionaries", "()[Lorg/coolreader/Dictionaries$DictInstallationInfo;")
 	, _widget(NULL)
 	, _eventAdapter(&_eventManager)
 	, _surfaceCreated(false)
@@ -1584,6 +1629,19 @@ JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDownloadProgress
 	COFFEE_TRY_JNI(_env, native->onDownloadProgress(downloadTaskId, url, result, resultMessage, mimeType, size, sizeDownloaded));
 }
 
+// void onDictionaryErrorInternal(int code);
+/*
+ * Class:     org_coolreader_newui_CRView
+ * Method:    onDictionaryErrorInternal
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_coolreader_newui_CRView_onDictionaryErrorInternal
+  (JNIEnv * _env, jobject _this, jint errorCode)
+{
+    CRJNIEnv env(_env);
+	DocViewNative * native = getNative(_env, _this);
+	COFFEE_TRY_JNI(_env, native->onDictionaryError(errorCode));
+}
 
 //============================================================================================================
 // register JNI methods
@@ -1607,7 +1665,8 @@ static JNINativeMethod sCRViewMethods[] =
 	{"onDownloadResult", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;I[B)V", (void*)Java_org_coolreader_newui_CRView_onDownloadResult},
 	{"onDownloadProgress", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V", (void*)Java_org_coolreader_newui_CRView_onDownloadProgress},
 	{"onSentenceFinishedInternal", "()V", (void*)Java_org_coolreader_newui_CRView_onSentenceFinishedInternal},
-	{"onTtsInitializedInternal", "()V", (void*)Java_org_coolreader_newui_CRView_onTtsInitializedInternal}
+	{"onTtsInitializedInternal", "()V", (void*)Java_org_coolreader_newui_CRView_onTtsInitializedInternal},
+	{"onDictionaryErrorInternal", "(I)V", (void*)Java_org_coolreader_newui_CRView_onDictionaryErrorInternal}
 };
 
 /*

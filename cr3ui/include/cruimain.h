@@ -63,6 +63,13 @@ public:
     virtual ~CRUITextToSpeech() {}
 };
 
+class CRUIDictionaryInfo {
+public:
+    lString8 id;
+    lString16 name;
+    bool installed;
+};
+
 class CRUIPlatform {
 public:
 	/// completely exit app
@@ -105,6 +112,38 @@ public:
 
     virtual void setFileToOpenOnStart(lString8 filename) {
         CRLog::debug("setFileToOpenOnStart(%s)", filename.c_str());
+    }
+
+    virtual void findInDictionary(lString8 dictionaryId, lString16 word) {
+        //
+    }
+
+    virtual lString8 getDefaultDictionary() {
+        lString8 res;
+        LVPtrVector<CRUIDictionaryInfo> list;
+        getDictionaryList(list);
+        if (list.length() > 0)
+            res = list[0]->id;
+        return res;
+    }
+
+    virtual void getDictionaryList(LVPtrVector<CRUIDictionaryInfo> & list) {
+#if 1
+        // test Dictionary settings
+        CRUIDictionaryInfo * p;
+        p = new CRUIDictionaryInfo();
+        p->id = "Fora";
+        p->name = "Fora";
+        p->installed = true;
+        list.add(p);
+        p = new CRUIDictionaryInfo();
+        p->id = "Dictan";
+        p->name = "Dictan";
+        p->installed = false;
+        list.add(p);
+#else
+        CR_UNUSED(list);
+#endif
     }
 
     enum {
@@ -393,6 +432,7 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     CRUISettingsList _browserSettings;
     CRUISettingsList _readerSettings;
     CRUISettingsList * _interfaceSettings;
+    CRUISettingsOptionList * _dictionarySettings;
 
     CRPropRef _currentSettings; // curretnly active settings
     CRPropRef _newSettings; // to be edited by Settings editors
@@ -404,6 +444,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
 
     void createBrowserSettings();
     void createReaderSettings();
+    void updateDictionarySettingsList();
+
 
     void beforeNavigation(NavHistoryItem * from, NavHistoryItem * to);
     void afterNavigation(NavHistoryItem * from, NavHistoryItem * to);
@@ -416,6 +458,8 @@ class CRUIMainWidget : public CRUIWidget, public CRDirScanCallback, public CRUIS
     void setEventManager(CRUIEventManager * eventManager) { _eventManager = eventManager; }
 public:
 
+    /// find word in dictionary
+    void findInDictionary(lString16 word);
     /// get last book filename - to open on start
     lString8 getLastBookFilename();
     /// set last book filename - to open on start

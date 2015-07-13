@@ -29,6 +29,8 @@
 #define PROP_APP_INTERFACE_LANGUAGE_VALUE_SYSTEM "@system"
 #define PROP_APP_FULLSCREEN "app.fullscreen"
 
+#define PROP_APP_DICTIONARY "app.dictionary"
+
 #define PROP_APP_SCREEN_ORIENTATION "app.screen.orientation"
 #define PROP_APP_SCREEN_BACKLIGHT_TIMEOUT "app.screen.backlight.timeout"
 #define PROP_APP_SCREEN_BACKLIGHT_BRIGHTNESS "app.screen.backlight.brightness"

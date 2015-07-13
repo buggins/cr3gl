@@ -16,6 +16,10 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.coolreader.Dictionaries;
+import org.coolreader.Dictionaries.DictInstallationInfo;
+import org.coolreader.Dictionaries.DictionaryException;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -54,6 +58,7 @@ public class CoolReader extends Activity {
 	private ClipboardManager clipboardManager;
 	private InputMethodManager inputMethodManager;
 	BroadcastReceiver intentReceiver;
+	private Dictionaries dicts;
 	
 	private CRTTS tts;
 	
@@ -630,6 +635,7 @@ public class CoolReader extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		log.i("CoolReader.onCreate() is called");
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dicts = new Dictionaries(this);
 		tts = new CRTTS(this);
 		mDecorView = getWindow().getDecorView();
 		super.onCreate(savedInstanceState);
@@ -1479,4 +1485,19 @@ public class CoolReader extends Activity {
 	
 	public static String standardDownloadsDir = null;
 
+	public DictInstallationInfo[] getAvailableDictionaries() {
+		return dicts.getAvailableDictionaries();
+	}
+	
+	public void lookupInDictionary(final String dictionaryId, final String word) {
+		dicts.setDict(dictionaryId);
+		try {
+			dicts.findInDictionary(word);
+		} catch (DictionaryException e) {
+			L.e(e.getMessage());
+			if (crview != null)
+				crview.onDictionaryError(1);
+		}
+	}
+	
 }

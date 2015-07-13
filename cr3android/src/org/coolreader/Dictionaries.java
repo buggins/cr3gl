@@ -1,8 +1,11 @@
 package org.coolreader;
 
-import org.coolreader.crengine.DeviceInfo;
-import org.coolreader.crengine.L;
-import org.coolreader.crengine.Logger;
+import java.util.Arrays;
+
+import org.coolreader.newui.DeviceInfo;
+import org.coolreader.newui.L;
+import org.coolreader.newui.Logger;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
@@ -40,6 +43,27 @@ public class Dictionaries {
 		}
 		public DictInfo setDataKey(String key) { this.dataKey = key; return this; }
 	}
+	
+	public static class DictInstallationInfo implements Comparable<DictInstallationInfo> {
+		public final String id; 
+		public final String name;
+		public final boolean installed;
+		DictInstallationInfo(String id, String name, boolean installed) {
+			this.id = id;
+			this.name = name;
+			this.installed = installed;
+		}
+
+		@Override
+		public int compareTo(DictInstallationInfo another) {
+			if (installed && !another.installed)
+				return -1;
+			if (!installed && another.installed)
+				return 1;
+			return 0; //name.compareTo(another.name);
+		}
+		
+	}
 
 	static final DictInfo dicts[] = {
 		new DictInfo("Fora", "Fora Dictionary", "com.ngc.fora", "com.ngc.fora.ForaDictionary", Intent.ACTION_SEARCH, 0),
@@ -75,6 +99,15 @@ public class Dictionaries {
 	
 	public static DictInfo[] getDictList() {
 		return dicts;
+	}
+
+	public DictInstallationInfo[] getAvailableDictionaries() {
+		DictInstallationInfo[] res = new DictInstallationInfo[dicts.length];
+		for (int i = 0; i < dicts.length; i++) {
+			res[i] = new DictInstallationInfo(dicts[i].id, dicts[i].name, isPackageInstalled(dicts[i].packageName));
+		}
+		Arrays.sort(res);
+		return res;
 	}
 
 	public void setDict( String id ) {

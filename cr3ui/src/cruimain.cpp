@@ -243,6 +243,9 @@ CRUISettingsList * CRUIMainWidget::findSettings(lString8 path) {
         return &_browserSettings;
     } else if (path.startsWith("reader")) {
         // TODO: support subsettings
+
+        updateDictionarySettingsList();
+
         return &_readerSettings;
     } else {
         return NULL;
@@ -564,7 +567,31 @@ void CRUIMainWidget::createBrowserSettings() {
     }
 }
 
+void CRUIMainWidget::findInDictionary(lString16 word) {
+    lString8 dictId = UnicodeToUtf8(_currentSettings->getStringDef(PROP_APP_DICTIONARY));
+    if (!dictId.empty()) {
+        _platform->findInDictionary(dictId, word);
+    }
+}
+
+void CRUIMainWidget::updateDictionarySettingsList() {
+    _dictionarySettings->clearOptions();
+    LVPtrVector<CRUIDictionaryInfo> dicts;
+    _platform->getDictionaryList(dicts);
+    for (int i = 0; i < dicts.length(); i++) {
+        CRUIDictionaryInfo * item = dicts[i];
+        lString16 label = item->name + " ";
+        if (item->installed) {
+            label += _16(STR_SETTINGS_APP_DICTIONARY_STATE_INSTALLED);
+        } else {
+            label += _16(STR_SETTINGS_APP_DICTIONARY_STATE_NOT_INSTALLED);
+        }
+        _dictionarySettings->addOption(new CRUIOptionItem(item->id, label));
+    }
+}
+
 void CRUIMainWidget::createReaderSettings() {
+
     //CRLog::trace("Creating Settings UI reader settings: fonts and colors");
     CRUISettingsList * fontsAndColors = new CRUISettingsList(STR_SETTINGS_FONTS_AND_COLORS, NULL, SETTINGS_PATH_READER_FONTSANDCOLORS);
     CRUISettingsOptionList * fontFaces = new CRUIFontFaceSetting(STR_SETTINGS_FONT_FACE, NULL, PROP_FONT_FACE);
@@ -611,6 +638,15 @@ void CRUIMainWidget::createReaderSettings() {
     }
     if (_platform->supportsScreenBacklightBrightness()) {
         addScreenBrightnessSettings(_interfaceSettings);
+    }
+//    for (int i = 0; i < dicts.length(); i++) {
+//        CRLog::trace("Dictionary %s : %s (%s)", dicts[i]->id.c_str(), LCSTR(dicts[i]->name), dicts[i]->installed ? "installed" : "not installed");
+//    }
+    _dictionarySettings = NULL;
+    if (!_platform->getDefaultDictionary().empty()) {
+        _dictionarySettings = new CRUISettingsOptionList(STR_SETTINGS_APP_DICTIONARY, NULL, PROP_APP_DICTIONARY);
+        updateDictionarySettingsList();
+        _interfaceSettings->addChild(_dictionarySettings);
     }
 
     //CRLog::trace("Creating Settings UI reader settings: interface: tts");
@@ -950,6 +986,8 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setColorDef(PROP_HIGHLIGHT_SELECTION_COLOR_NIGHT, 0x606050);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_COMMENT_NIGHT, 0x808020);
     _currentSettings->setColorDef(PROP_HIGHLIGHT_BOOKMARK_COLOR_CORRECTION_NIGHT, 0x800000);
+
+    _currentSettings->setStringDef(PROP_APP_DICTIONARY, _platform->getDefaultDictionary().c_str());
 
     if (_currentSettings->getCount() != oldPropCount) {
         CRLog::trace("Saving settings");

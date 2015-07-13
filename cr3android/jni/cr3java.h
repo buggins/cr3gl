@@ -277,6 +277,10 @@ public:
 	{
 		return objacc->CallVoidMethod( objacc.getObject(), methodid, s);
 	}
+	void callVoid(jstring s1, jstring s2)
+	{
+		return objacc->CallVoidMethod( objacc.getObject(), methodid, s1, s2);
+	}
 };
 
 class CRStaticMethodAccessor {

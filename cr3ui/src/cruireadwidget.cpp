@@ -1889,6 +1889,16 @@ void CRUIReadWidget::addSelectionBookmark() {
     cancelSelection();
 }
 
+void CRUIReadWidget::findInDictionary() {
+    if (_selectionBookmark.isNull())
+        return;
+    lString16 text = Utf8ToUnicode(_selectionBookmark->posText.c_str());
+    text.trimNonAlpha();
+    text.trimDoubleSpaces(false, false, false);
+    _main->findInDictionary(text);
+    cancelSelection();
+}
+
 void CRUIReadWidget::updateBookmarks() {
     LVPtrVector<CRBookmark> bookmarks;
     for (int i=0; i<_bookmarks.length(); i++) {
@@ -1983,6 +1993,7 @@ void CRUIReadWidget::selectionDone(int x, int y) {
         actions.add(ACTION_SELECTION_ADD_BOOKMARK);
         if (_main->getPlatform()->getTextToSpeech())
             actions.add(ACTION_TTS_PLAY);
+        actions.add(ACTION_FIND_IN_DICTIONARY);
         lvRect margins;
         CRUIReadMenu * menu = new CRUIReadMenu(this, actions, false);
         CRLog::trace("showing popup");
@@ -2799,6 +2810,10 @@ bool CRUIReadWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_SELECTION_COPY:
         _main->getPlatform()->copyToClipboard(_selection.selectionText);
+        cancelSelection();
+        return true;
+    case CMD_FIND_IN_DICTIONARY:
+        findInDictionary();
         cancelSelection();
         return true;
     case CMD_SELECTION_ADD_BOOKMARK:
