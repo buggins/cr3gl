@@ -282,6 +282,7 @@ void CRUIMainWidget::showBookmarks(CRUIBookmarksWidget * bm) {
 }
 
 #define MESSAGE_TIMER_ID 32145
+#define LOAD_BOOK_TIMER_ID 32146
 void CRUIMainWidget::showMessage(lString16 text, int duration) {
     _messageText = text;
     _eventManager->setTimer(MESSAGE_TIMER_ID, this, duration, false);
@@ -293,6 +294,13 @@ bool CRUIMainWidget::onTimerEvent(lUInt32 timerId) {
     if (timerId == MESSAGE_TIMER_ID) {
         _messageText.clear();
         update(true);
+        return false;
+    } else if (timerId == LOAD_BOOK_TIMER_ID) {
+        if (!_filenameToOpen.empty()) {
+            CRLog::debug("File to open on start: %s", _filenameToOpen.c_str());
+            openBookFromFile(_filenameToOpen);
+            _filenameToOpen.clear();
+        }
         return false;
     }
     return false;
@@ -502,9 +510,8 @@ void CRUIMainWidget::runStartupTasksIfNeeded() {
         _filenameToOpen = getLastBookFilename();
     }
     if (!_filenameToOpen.empty()) {
-        CRLog::debug("File to open on start: %s", _filenameToOpen.c_str());
-        openBookFromFile(_filenameToOpen);
-        _filenameToOpen.clear();
+        CRLog::debug("File to open on start: %s - starting timer for delayed book opening", _filenameToOpen.c_str());
+        _eventManager->setTimer(LOAD_BOOK_TIMER_ID, this, 200, false);
     }
 }
 

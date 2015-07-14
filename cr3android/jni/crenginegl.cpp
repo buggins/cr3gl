@@ -497,8 +497,10 @@ public:
 		_dx = dx;
 		_dy = dy;
 		_surfaceCreated = false;
-		deviceInfo.setScreenDimensions(_dx, _dy, 0);
-		crconfig.setupResourcesForScreenSize();
+		if (deviceInfo.width != dx || deviceInfo.height != dy) {
+			deviceInfo.setScreenDimensions(_dx, _dy, 0);
+			crconfig.setupResourcesForScreenSize();
+		}
 	}
 
 	virtual void clearImageCaches() {
