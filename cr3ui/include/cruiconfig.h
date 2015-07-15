@@ -87,6 +87,8 @@ struct CRUIConfig {
     /// separate font files to register
     lString8Collection fontFiles;
 
+    lString8 externalBackgroundsDir;
+
     LVPtrVector<CRUIInterfaceLanguage> interfaceLanguages;
     LVPtrVector<CRUIHyphenationDictionary> hyphenationDictionaries;
 

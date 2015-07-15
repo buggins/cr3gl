@@ -325,6 +325,16 @@ void InitCREngine(lString16 exePath) {
     LVAppendPathDelimiter(home8);
     CRLog::info("Home path: %s", home8.c_str());
     CRLog::info("Exe path: %s", UnicodeToUtf8(exePath).c_str());
+    lString16 extbg = exePath;
+    LVAppendPathDelimiter(extbg);
+    extbg += "backgrounds";
+    if (LVDirectoryExists(extbg))
+        crconfig.externalBackgroundsDir = UnicodeToUtf8(extbg);
+    lString16 extfonts = exePath;
+    LVAppendPathDelimiter(extfonts);
+    extfonts += "fonts";
+    if (LVDirectoryExists(extfonts))
+        crconfig.fontDirs.add(UnicodeToUtf8(extfonts));
 #if CR3_OSX
     exePath += "../Resources/";
 #endif

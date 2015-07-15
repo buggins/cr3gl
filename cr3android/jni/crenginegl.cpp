@@ -1394,6 +1394,33 @@ JNIEXPORT jboolean JNICALL Java_org_coolreader_newui_CRView_initInternal
     for (int i = 0; i < fontFilesField.length(); i++) {
     	crconfig.fontFiles.add(fontFilesField.get8(i));
     }
+    CRStringArrayField fontDirsField(cfg, "fontDirs");
+    for (int i = 0; i < fontDirsField.length(); i++) {
+    	crconfig.fontDirs.add(fontDirsField.get8(i));
+    }
+
+    lString8 bgdir = internalStorageDir;
+    LVAppendPathDelimiter(bgdir);
+    bgdir += ".cr3";
+    LVAppendPathDelimiter(bgdir);
+    bgdir += "backgrounds";
+    if (LVDirectoryExists(bgdir))
+    	crconfig.externalBackgroundsDir = bgdir;
+
+    lString8 fontsdir1 = internalStorageDir;
+    LVAppendPathDelimiter(fontsdir1);
+    fontsdir1 += ".cr3";
+    LVAppendPathDelimiter(fontsdir1);
+    fontsdir1 += "fonts";
+    if (LVDirectoryExists(fontsdir1))
+    	crconfig.fontDirs.add(fontsdir1);
+
+    lString8 fontsdir2 = internalStorageDir;
+    LVAppendPathDelimiter(fontsdir2);
+    fontsdir2 += "fonts";
+    if (LVDirectoryExists(fontsdir2))
+    	crconfig.fontDirs.add(fontsdir2);
+
     //env.fromJavaStringArray()
 
     CRLog::info("Calling initEngine");

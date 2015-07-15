@@ -387,7 +387,7 @@ void CRUIConfig::initEngine(bool setLogger) {
         	    	const LVContainerItemInfo * item = d->GetObjectInfo(j);
         	    	if (!item->IsContainer()) {
         	    		lString8 name = UnicodeToUtf8(item->GetName());
-        	    		if (name.endsWith(".ttf")) {
+                        if (name.endsWith(".ttf") || name.endsWith(".TTF")) {
         	                fontMan->RegisterFont(dir + name);
         	    		}
         	    	}
@@ -485,6 +485,25 @@ void CRUIConfig::initEngine(bool setLogger) {
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@wall1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_WALL1_DARK), lString8("tx_green_wall_dark.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1), lString8("tx_stones.jpg")));
     resourceResolver->addBackground(new CRUIBackgroundImageResource(lString8("@stones1_dark"), lString8(STR_RESOURCE_BACKGROUND_NAME_STONES1_DARK), lString8("tx_stones_dark.jpg")));
+
+    if (!crconfig.externalBackgroundsDir.empty()) {
+        LVContainerRef d = LVOpenDirectory(crconfig.externalBackgroundsDir);
+        for (int j = 0; j < d->GetObjectCount(); j++) {
+            const LVContainerItemInfo * item = d->GetObjectInfo(j);
+            if (!item->IsContainer()) {
+                lString8 name = UnicodeToUtf8(item->GetName());
+                if (name.endsWith(".jpg") || name.endsWith(".JPG") || name.endsWith(".jpeg") || name.endsWith(".JPEG") ||
+                        name.endsWith(".png") || name.endsWith(".PGN")) {
+                    lString8 filename = crconfig.externalBackgroundsDir;
+                    LVAppendPathDelimiter(filename);
+                    filename += name;
+                    lString8 bgid = LVExtractFilename(filename);
+                    CRLog::trace("Adding custom background: %s = %s", bgid.c_str(), filename.c_str());
+                    resourceResolver->addBackground(new CRUIBackgroundImageResource(bgid, Utf8ToUnicode(bgid), filename));
+                }
+            }
+        }
+    }
 
     CRLog::info("Setting theme to Light");
     setTheme(lString8("light"));
