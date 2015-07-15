@@ -393,6 +393,8 @@ public:
 	void set(int index, const lString8& str) { set(index, Utf8ToUnicode(str)); }
 	int length() {
 		jobjectArray array = (jobjectArray)objacc->GetObjectField(objacc.getObject(), fieldid);
+		if (!array)
+			return 0;
 		int res = objacc->GetArrayLength(array);
 		objacc->DeleteLocalRef(array);
 		return res;
