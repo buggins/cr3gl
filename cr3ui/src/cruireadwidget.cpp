@@ -3954,11 +3954,22 @@ CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRU
     _highlightedItemIndex = -1;
     addTocItems(_toc, read->getDocView()->getToc());
     int currentp = read->getCurrentPageEndPercent();
+    int currentpage = read->getDocView()->getCurPage() + 1;
+    if (read->getDocView()->getVisiblePageCount() == 2)
+        currentpage++;
     for (int i = 0; i < _toc.length(); i++) {
-        int p = _toc[i]->getPercent();
-        if (p < currentp || i == _toc.length() - 1) {
-            _highlightedItemIndex = i;
+        if (read->getDocView()->getViewMode() == DVM_SCROLL) {
+            int p = _toc[i]->getPercent();
+            if (p < currentp) {
+                _highlightedItemIndex = i;
+            }
+        } else {
+            int p = _toc[i]->getPage();
+            if (p < currentpage) {
+                _highlightedItemIndex = i;
+            }
         }
+
     }
     _itemWidget = new CRUIHorizontalLayout();
     _itemWidget->setMinHeight(MIN_ITEM_PX * 2 / 3);
