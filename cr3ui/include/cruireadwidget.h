@@ -425,6 +425,7 @@ public:
     bool hasTOC();
     lString16 getCurrentPositionDesc();
     int getCurrentPositionPercent();
+    int getCurrentPageEndPercent();
     void goToPercent(int percent);
     void goToPage(int page);
 

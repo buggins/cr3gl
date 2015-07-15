@@ -2624,6 +2624,10 @@ int CRUIReadWidget::getCurrentPositionPercent() {
     return _docview->getPosPercent();
 }
 
+int CRUIReadWidget::getCurrentPageEndPercent() {
+    return _docview->getPosEndPagePercent();
+}
+
 /// move by page w/o animation
 void CRUIReadWidget::moveByPage(int direction) {
     if (direction > 0)
@@ -3949,12 +3953,11 @@ CRUITOCWidget::CRUITOCWidget(CRUIMainWidget * main, CRUIReadWidget * read) : CRU
     _body->addChild(_list);
     _highlightedItemIndex = -1;
     addTocItems(_toc, read->getDocView()->getToc());
-    int currentp = read->getCurrentPositionPercent();
+    int currentp = read->getCurrentPageEndPercent();
     for (int i = 0; i < _toc.length(); i++) {
         int p = _toc[i]->getPercent();
-        if (p >= currentp || i == _toc.length() - 1) {
+        if (p < currentp || i == _toc.length() - 1) {
             _highlightedItemIndex = i;
-            break;
         }
     }
     _itemWidget = new CRUIHorizontalLayout();
