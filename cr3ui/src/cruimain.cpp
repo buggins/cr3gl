@@ -897,6 +897,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "5", "SETTINGS");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "6", "PAGE_UP_10");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "7", "GOTO_PERCENT");
+    _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "8", "PREVIOUS_BOOK");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_DOUBLE "9", "PAGE_DOWN_10");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "1", "PAGE_UP");
     _currentSettings->setStringDef(PROP_APP_TAP_ZONE_ACTION_NORMAL "2", "PAGE_UP");
@@ -1701,10 +1702,16 @@ void CRUIMainWidget::showPreviousBook() {
     CRGuard guard(const_cast<CRMutex*>(dir->mutex()));
     CR_UNUSED(guard);
     if (dir->itemCount() >= 2) {
-        CRDirEntry * item = dir->getItem(1);
-        if (item && !item->isDirectory()) {
-            CRFileItem * file = static_cast<CRFileItem*>(item);
-            openBook(file);
+        CRDirEntry * item1 = dir->getItem(0);
+        CRDirEntry * item2 = dir->getItem(1);
+        if (item1 && !item1->isDirectory() && item2 && !item2->isDirectory()) {
+            CRFileItem * file1 = static_cast<CRFileItem*>(item1);
+            CRFileItem * file2 = static_cast<CRFileItem*>(item2);
+            CRFileItem * currentfile = _read->getCurrentBookFile();
+            if (currentfile->getPathName() == file1->getPathName())
+                openBook(file2);
+            else
+                openBook(file1);
         }
     }
 }

@@ -1304,6 +1304,7 @@ static const char * TAP_ZONE_ACTION_LIST[] = {
     "MENU",
     "SETTINGS",
     "TOC",
+    "PREVIOUS_BOOK",
     "BACK",
     "LINK_BACK",
     "LINK_FORWARD",
