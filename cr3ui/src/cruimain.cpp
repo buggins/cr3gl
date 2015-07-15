@@ -1696,6 +1696,19 @@ void CRUIMainWidget::removeBookFile(lString8 filename) {
     updateRecentBooks();
 }
 
+void CRUIMainWidget::showPreviousBook() {
+    CRDirContentItem * dir = dirCache->find(lString8(RECENT_DIR_TAG));
+    CRGuard guard(const_cast<CRMutex*>(dir->mutex()));
+    CR_UNUSED(guard);
+    if (dir->itemCount() >= 2) {
+        CRDirEntry * item = dir->getItem(1);
+        if (item && !item->isDirectory()) {
+            CRFileItem * file = static_cast<CRFileItem*>(item);
+            openBook(file);
+        }
+    }
+}
+
 /// handle menu or other action
 bool CRUIMainWidget::onAction(const CRUIAction * action) {
     if (!action)
@@ -1720,6 +1733,10 @@ bool CRUIMainWidget::onAction(const CRUIAction * action) {
         return true;
     case CMD_SHOW_FOLDER:
         showFolder(action->sparam, false);
+        return true;
+    case CMD_PREVIOUS_BOOK:
+        CRLog::trace("action: PREVIOUS_BOOK");
+        showPreviousBook();
         return true;
     case CMD_OPEN_BOOK:
         openBookFromFile(action->sparam);

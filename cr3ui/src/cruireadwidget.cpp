@@ -2720,6 +2720,7 @@ CRUIReadMenu * CRUIReadWidget::createReaderMenu(bool forToolbar) {
         actions.add(ACTION_PAGE_DOWN);
     }
     actions.add(ACTION_OPEN_CURRENT_BOOK_FOLDER);
+    actions.add(ACTION_PREVIOUS_BOOK);
     actions.add(ACTION_HELP);
     if (_main->getPlatform()->supportsFullscreen())
         actions.add(ACTION_TOGGLE_FULLSCREEN);

@@ -549,6 +549,9 @@ public:
     void showSettings(CRUISettingsItem * setting);
     void showTOC(CRUITOCWidget * toc);
     void showBookmarks(CRUIBookmarksWidget * toc);
+
+    void showPreviousBook();
+
     void back(bool fast = false);
 
     virtual void onAllCoverpagesReady(int newpos);
