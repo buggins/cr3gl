@@ -867,7 +867,7 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->loadFromStream(stream.get());
     int oldPropCount = _currentSettings->getCount();
 
-    bool bigScreen = deviceInfo.longSideMillimeters > 130;
+    bool bigScreen = deviceInfo.longSideMillimeters > 180;
 
     CRLog::trace("Applying default settings.");
 
@@ -931,9 +931,9 @@ CRUIMainWidget::CRUIMainWidget(CRUIScreenUpdateManagerCallback * screenUpdater, 
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_DAY, "1");
         _currentSettings->setStringDef(PROP_BACKGROUND_IMAGE_ENABLED_NIGHT, "1");
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0xB04030);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0xB04030);
-        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x703020);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR, 0x504030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_DAY, 0x504030);
+        _currentSettings->setColorDef(PROP_APP_BOOK_COVER_COLOR_NIGHT, 0x302010);
     } else {
         _currentSettings->setString(PROP_NIGHT_MODE, "0");
         _currentSettings->setColorDef(PROP_FONT_COLOR, 0x000000);
