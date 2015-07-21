@@ -72,6 +72,9 @@ public:
 
     /// make absolute URL from relative
     lString8 makeLink(lString8 relativeLink) {
+        if (relativeLink.startsWith("//")) {
+            return protocol + ":" + relativeLink;
+        }
         if (relativeLink.startsWith("/")) {
             return serverurl + relativeLink.substr(1);
         }
