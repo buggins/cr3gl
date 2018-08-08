@@ -1,16 +1,6 @@
-cr3gp
+cr3gl
 =====
 
-CoolReader 3 OpenGL UI - GamePlay based
+CoolReader 3 OpenGL UI
 
 
-Directory structure:
-
-|
-+ GamePlay -- gameplay git@github.com:buggins/cr3gp.git
-+ cr3
-  |
-  + crengine -- coolreader repository ssh://buggins@git.code.sf.net/p/crengine/crengine
-  + cr3gp -- this repository
-    |
-    + cr3gp -- GamePlay based UI projects
